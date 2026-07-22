@@ -1,0 +1,72 @@
+﻿@{
+    ViewData["Title"] = "Recuperar Contraseña";
+}
+
+<style>
+    /* Botón de Enviar Enlace (Principal) */
+    .btn-recover-main {
+        background-color: #0d2a4a;
+        border-radius: 10px;
+        border: none;
+        transition: all 0.3s ease;
+    }
+        /* Al pasar el mouse: se aclara un poco */
+        .btn-recover-main:hover {
+            background-color: #143d6a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(13, 42, 74, 0.25);
+        }
+
+    /* Botón de Volver al Inicio de Sesión (Secundario) */
+    .btn-recover-back {
+        background-color: #0d2a4a;
+        color: #ffffff !important;
+        border-radius: 10px;
+        border: none;
+        transition: all 0.3s ease;
+    }
+        /* Al pasar el mouse: se oscurece un poco para diferenciarse */
+        .btn-recover-back:hover {
+            background-color: #081a2e;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(13, 42, 74, 0.25);
+        }
+</style>
+
+<div class="container my-5 py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card border-0 shadow-lg" style="border-radius: 20px; background-color: #fdf8f3;">
+                <div class="card-body p-5">
+
+                    <div class="text-center mb-4">
+                        <h3 class="fw-bold" style="color: #0d2a4a;">¿Olvidaste tu contraseña?</h3>
+                        <p class="text-muted small">Ingresa tu correo y te enviaremos un enlace para restablecerla.</p>
+                    </div>
+
+                    <form asp-action="OlvideContraseña" asp-controller="Login" method="post">
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Correo electrónico</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-envelope"></i></span>
+                                <input type="email" name="correo" class="form-control" placeholder="correo@ejemplo.com" required>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-3 mb-3">
+                            <button type="submit" class="btn btn-lg text-white btn-recover-main">
+                                Enviar enlace
+                            </button>
+
+                            <a href="/Login" class="btn btn-lg text-white btn-recover-back d-flex justify-content-center align-items-center">
+                                <i class="bi bi-arrow-left me-2"></i> Volver al inicio de sesión
+                            </a>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,30 @@
+﻿@model IEnumerable<ProyectoPAE.Models.Estudiante>
+
+<div class="container mt-4">
+    <h2>Seleccionar Estudiante para Reporte</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Apellido</th>
+                <th>Correo</th>
+                <th>Acción</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.nombre</td>
+                    <td>@item.apellido</td>
+                    <td>@item.email</td>
+                    <td>
+                        <a asp-action="DescargarReportePro" asp-route-id="@item.id_estudiante" class="btn btn-danger btn-sm">
+                            Generar PDF
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,204 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>@ViewData["Title"] - PAE</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap-reboot.css" />
+        <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+        <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    </head>
+    <body>
+        <header>
+            <nav class="navbar navbar-expand-md navbar-light border-bottom box-shadow mb-3" style="background-color: #ffffff;">
+                <div class="container">
+                    <a class="navbar-brand d-flex align-items-center" asp-controller="Home" asp-action="Index">
+                        <img src="~/images/logo.png" alt="PAE Logo" style="height: 45px;" class="me-2">
+                        <span class="fw-bold" style="color: #0d2a4a; font-size: 1.2rem;">Portal de Autogestión Educativa</span>
+                    </a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="navbar-collapse collapse d-sm-inline-flex">
+                        <ul class="navbar-nav flex-grow-1 justify-content-center">
+                            <li class="nav-item">
+                                <a class="nav-link text-dark mx-2" asp-controller="Home" asp-action="Index">Inicio</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark mx-2" asp-controller="Home" asp-action="Nosotros">Nosotros</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark mx-2" asp-controller="Home" asp-action="Cursos">Módulos</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark px-3" asp-controller="Home" asp-action="Blog">Blog</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark mx-2" asp-controller="Home" asp-action="Contacto">Contacto</a>
+                            </li>
+                        </ul>
+                        <div class="d-flex align-items-center">
+                            @using Microsoft.AspNetCore.Http
+                                                @if (Context.Session.GetString("NombreUsuario") != null)
+                            {
+                                <div class="dropdown me-2">
+                                    <button class="btn btn-link text-decoration-none dropdown-toggle d-flex align-items-center fw-bold"
+                                            type="button" id="dropdownMenuPerfil" data-bs-toggle="dropdown" aria-expanded="false"
+                                            style="color: #0d2a4a;">
+                                        <i class="bi bi-person-circle me-1"></i>
+                                        @Context.Session.GetString("NombreUsuario")
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="dropdownMenuPerfil">
+                                        <li>
+                                            <a class="dropdown-item py-2" asp-controller="Home" asp-action="Perfil">
+                                                <i class="bi bi-person-badge me-2"></i> Ver Mi Perfil
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <a class="dropdown-item text-danger py-2" asp-controller="Login" asp-action="Logout">
+                                                <i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            }
+                            else
+                            {
+                                <a asp-controller="Login" asp-action="Index" class="btn text-white px-4" style="background-color: #e67e22; border-radius: 10px;">
+                                    Iniciar Sesión
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="container-fluid p-0">
+            <main role="main">
+                @RenderBody()
+            </main>
+        </div>
+
+        <footer class="border-top footer text-muted mt-5" style="background-color: #ffffff; padding: 40px 0;">
+            <div class="container">
+                <div class="row text-dark">
+                    <div class="col-md-4">
+                        <h5 class="fw-bold">PAE</h5>
+                        <p class="small">Portal de Autogestión Educativa.</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h5 class="fw-bold">Enlaces</h5>
+                        <ul class="list-unstyled small">
+                            <li><a asp-action="Index" class="text-decoration-none text-muted">Inicio</a></li>
+                            <li><a asp-action="Nosotros" class="text-decoration-none text-muted">Nosotros</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <h5 class="fw-bold">Contacto</h5>
+                        <p class="small">info@pae.edu.co</p>
+                    </div>
+                </div>
+            </div>
+        </footer>
+
+        <script src="~/lib/jquery/dist/jquery.min.js"></script>
+        <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="~/js/site.js" asp-append-version="true"></script>
+        @await RenderSectionAsync("Scripts", required: false)
+
+        @if (Context.Session.GetString("NombreUsuario") != null)
+        {
+            <text>
+                <!-- Modal de advertencia -->
+                <div class="modal fade" id="modalSesion" tabindex="-1" data-bs-backdrop="static">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content border-0 shadow">
+                            <div class="modal-header" style="background-color: #e67e22;">
+                                <h5 class="modal-title text-white">
+                                    <i class="bi bi-clock-history me-2"></i>Sesión por expirar
+                                </h5>
+                            </div>
+                            <div class="modal-body text-center py-4">
+                                <p class="fs-5">Tu sesión expirará en</p>
+                                <h2 id="cuentaRegresiva" class="fw-bold" style="color: #e67e22;">60</h2>
+                                <p class="text-muted">segundos. ¿Deseas continuar?</p>
+                            </div>
+                            <div class="modal-footer justify-content-center">
+                                <button onclick="continuarSesion()" class="btn btn-primary px-4">
+                                    <i class="bi bi-arrow-clockwise me-1"></i> Continuar sesión
+                                </button>
+                                <a href="/Login/Logout" class="btn btn-outline-danger px-4">
+                                    <i class="bi bi-box-arrow-right me-1"></i> Cerrar sesión
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <script>
+                            // Tiempo total de sesión en segundos (debe coincidir con Program.cs)
+                            const TIEMPO_SESION = 15 * 60; // 15 minutos
+                            const AVISO_ANTES  = 60;       // mostrar alerta 1 minuto antes
+
+                            let tiempoRestante = TIEMPO_SESION;
+                            let intervalo;
+                            let modalMostrado = false;
+                            let modal = new bootstrap.Modal(document.getElementById('modalSesion'));
+
+                            function iniciarTemporizador() {
+                                intervalo = setInterval(() => {
+                                    tiempoRestante--;
+
+                                    // Mostrar alerta cuando queda 1 minuto
+                                    if (tiempoRestante <= AVISO_ANTES && !modalMostrado) {
+                                        modalMostrado = true;
+                                        modal.show();
+                                        iniciarCuentaRegresiva();
+                                    }
+
+                                    // Redirigir al login cuando llega a 0
+                                    if (tiempoRestante <= 0) {
+                                        clearInterval(intervalo);
+                                        window.location.href = '/Login/Logout';
+                                    }
+                                }, 1000);
+                            }
+
+                            function iniciarCuentaRegresiva() {
+                                let segundos = AVISO_ANTES;
+                                document.getElementById('cuentaRegresiva').textContent = segundos;
+
+                                let cuentaIntervalo = setInterval(() => {
+                                    segundos--;
+                                    document.getElementById('cuentaRegresiva').textContent = segundos;
+                                    if (segundos <= 0) clearInterval(cuentaIntervalo);
+                                }, 1000);
+                            }
+
+                            function continuarSesion() {
+                                // Hacer una petición al servidor para renovar la sesión
+                                fetch('/Home/RenovarSesion')
+                                    .then(() => {
+                                        tiempoRestante = TIEMPO_SESION;
+                                        modalMostrado  = false;
+                                        modal.hide();
+                                    });
+                            }
+
+                            // Reiniciar el temporizador cuando el usuario hace algo
+                            ['click', 'keypress', 'mousemove', 'scroll'].forEach(evento => {
+                                document.addEventListener(evento, () => {
+                                    tiempoRestante = TIEMPO_SESION;
+                                    modalMostrado  = false;
+                                });
+                            });
+
+                            iniciarTemporizador();
+                </script>
+            </text>
+        }
+    </body>
+</html>

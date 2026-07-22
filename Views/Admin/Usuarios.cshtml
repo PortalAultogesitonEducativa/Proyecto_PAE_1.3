@@ -1,0 +1,215 @@
+﻿@model IEnumerable<ProyectoPAE.Models.Usuario>
+
+<div class="container mt-4">
+    <div class="row g-3 mb-4">
+        <div class="col-12">
+            <h2 class="text-secondary"><i class="bi bi-people-fill text-success me-2"></i>Gestión de Usuarios</h2>
+            <hr />
+        </div>
+
+        <form method="get" asp-action="Usuarios" class="row g-3 mb-4">
+            <div class="col-md-10">
+                <input type="text" name="buscar" class="form-control" placeholder="Buscar por nombre o rol...">
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-success w-100">Buscar</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="text-secondary">Lista de Usuarios</h3>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalRegistroUsuario">
+            <i class="bi bi-person-plus-fill"></i> + Registrar Usuario
+        </button>
+    </div>
+
+    <table class="table table-striped table-hover align-middle">
+        <thead class="table-dark">
+            <tr>
+                <th>Nombre</th>
+                <th>Correo</th>
+                <th>Rol</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                foreach (var usuario in Model)
+                {
+                    // 2. LÓGICA DE COLORES PERSONALIZADOS SEGÚN EL PANEL
+                    string colorHex = "#6c757d"; // Gris por defecto
+                    string rolNormalizado = usuario.ROL?.ToLower() ?? "";
+
+                    if (rolNormalizado.Contains("admin")) { colorHex = "#e67e22"; }      // Naranja Admin
+                    else if (rolNormalizado.Contains("docente")) { colorHex = "#0d6efd"; } // Azul Docente
+                    else if (rolNormalizado.Contains("estudiante")) { colorHex = "#6f42c1"; } // Púrpura Estudiante
+                    else if (rolNormalizado.Contains("acudiente")) { colorHex = "#198754"; }  // Verde Acudiente
+
+                    <tr>
+                        <td>@usuario.NOMBRES @usuario.APELLIDOS</td>
+                        <td>@usuario.CORREO_ELECTRONICO</td>
+                        <td>
+                            <span class="badge text-white" style="background-color: @colorHex;">
+                                @usuario.ROL
+                            </span>
+                        </td>
+                        <td><span class="badge bg-success-subtle text-success border border-success-subtle">Activo</span></td>
+                        <td>
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-primary"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#modalCambiarRol"
+                                    data-bs-correo="@usuario.CORREO_ELECTRONICO"
+                                    data-bs-nombre="@usuario.NOMBRES @usuario.APELLIDOS"
+                                    data-bs-rol="@usuario.ROL">
+                                <i class="bi bi-pencil"></i> Cambiar Rol
+                            </button>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="5" class="text-center text-muted">No se encontraron usuarios disponibles.</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<div class="modal fade" id="modalCambiarRol" tabindex="-1" aria-labelledby="modalCambiarRolLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="@Url.Action("ActualizarRol", "Admin")" method="post">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title" id="modalCambiarRolLabel"><i class="bi bi-shield-shaded me-2"></i>Modificar Permisos</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted">Vas a cambiar el rol del siguiente usuario:</p>
+                    <div class="alert alert-secondary">
+                        <strong id="editNombreUsuario">Cargando...</strong><br />
+                        <span id="editCorreoUsuario" class="small text-muted"></span>
+                    </div>
+
+                    <input type="hidden" name="CORREO_ELECTRONICO" id="editInputCorreo" />
+
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold">Selecciona el Nuevo Rol</label>
+                        <select name="NUEVO_ROL" id="editSelectRol" class="form-select" required>
+                            <option value="admin">Administrador</option>
+                            <option value="Docente">Docente</option>
+                            <option value="Estudiante">Estudiante</option>
+                            <option value="Acudiente">Acudiente</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-dark">Actualizar Rol</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="modalRegistroUsuario" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="@Url.Action("RegistrarUsuario", "Admin")" method="post">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="modalLabel">Nuevo Registro de Usuario</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Nombres Completos</label>
+                        <input type="text" name="NOMBRES" class="form-control" placeholder="Ej: Juan" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Apellidos</label>
+                        <input type="text" name="APELLIDOS" class="form-control" placeholder="Ej: Pérez" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Correo Institucional</label>
+                        <input type="email" name="CORREO_ELECTRONICO" class="form-control" placeholder="ejemplo@institucion.edu.co" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Asignar Rol</label>
+                        <select name="ROL" id="selectRolAdmin" class="form-select" required onchange="toggleFiltroCurso()">
+                            <option value="" disabled selected>Seleccione un rol...</option>
+                            <option value="Estudiante">Estudiante</option>
+                            <option value="Docente">Docente</option>
+                            <option value="Coordinador" id="optCoordinador" disabled>Coordinador (Solo por ascenso/retiro)</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3" id="divAsignarCurso">
+                        <label class="form-label">Asignar a Curso (Grado)</label>
+                        <select name="CursoSeleccionado" id="selectCursoAdmin" class="form-select" required>
+                            <option value="" disabled selected>Seleccione un grado...</option>
+                            <option value="6">Grado 6°</option>
+                            <option value="7">Grado 7°</option>
+                            <option value="8">Grado 8°</option>
+                            <option value="9">Grado 9°</option>
+                            <option value="10">Grado 10°</option>
+                            <option value="11">Grado 11°</option>
+                        </select>
+                        <small class="text-muted d-block">Se registrará automáticamente en la tabla MATRICULA.</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Contraseña Temporal</label>
+                        <input type="password" name="CONTRASEÑA" class="form-control" required />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar Usuario</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleFiltroCurso() {
+        var rol = document.getElementById("selectRolAdmin").value;
+        var divCurso = document.getElementById("divAsignarCurso");
+        var selectCurso = document.getElementById("selectCursoAdmin");
+
+        if (rol === "Estudiante") {
+            divCurso.style.display = "block";
+            selectCurso.required = true;
+        } else {
+            divCurso.style.display = "none";
+            selectCurso.required = false;
+            selectCurso.value = "";
+        }
+    }
+
+    // JS INTELIGENTE: Detecta a qué usuario le diste clic y llena el modal de edición automáticamente
+    const modalCambiarRol = document.getElementById('modalCambiarRol');
+    if (modalCambiarRol) {
+        modalCambiarRol.addEventListener('show.bs.modal', event => {
+            const boton = event.relatedTarget;
+
+            // Extraer la información de los atributos data-bs-*
+            const correo = boton.getAttribute('data-bs-correo');
+            const nombre = boton.getAttribute('data-bs-nombre');
+            const rolActual = boton.getAttribute('data-bs-rol');
+
+            // Asignar los datos a los elementos visuales dentro del modal
+            document.getElementById('editNombreUsuario').textContent = nombre;
+            document.getElementById('editCorreoUsuario').textContent = correo;
+            document.getElementById('editInputCorreo').value = correo;
+            document.getElementById('editSelectRol').value = rolActual;
+        });
+    }
+</script>

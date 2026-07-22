@@ -1,0 +1,142 @@
+﻿@model List<ProyectoPAE.Models.Usuario>
+@{
+    ViewData["Title"] = "Planilla de Notas";
+}
+
+<!-- Esta vista usa el _Layout.cshtml del proyecto (el navbar y footer ya existentes),
+     por eso aquí NO se incluye <html>, <head>, <header> ni <aside>. -->
+
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700;800&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+<!-- Bootstrap solo para el modal -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<style>
+    .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    display: inline-block;
+    vertical-align: middle;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #c1c6d7;
+    border-radius: 10px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #717786;
+    }
+</style>
+
+<div class="p-4" style="max-width:1200px;margin:0 auto;">
+
+    <!-- Hero: azul oscuro sólido, sin imagen -->
+    <div class="rounded-3 mb-4 p-4" style="background-color:#0d2a4a;">
+        <h1 class="text-white fw-bold mb-1" style="font-family:'Hanken Grotesk', sans-serif;">Planilla de Calificaciones</h1>
+        <p class="text-white mb-0" style="opacity:0.8;">Gestiona el progreso académico de tus estudiantes de manera eficiente.</p>
+    </div>
+
+    <!-- Listado de Estudiantes -->
+    <div class="bg-white rounded-3 shadow-sm border overflow-hidden">
+        <div class="p-4 border-bottom d-flex align-items-center gap-3" style="background-color:#f4f3f3;">
+            <div style="width:4px;height:40px;background-color:#F58F1C;border-radius:99px;"></div>
+            <div>
+                <h3 class="fw-bold mb-0" style="color:#0d2a4a;">Listado de Estudiantes</h3>
+                <p class="small text-muted mb-0">@Model.Count Estudiantes Inscritos</p>
+            </div>
+        </div>
+
+        <div class="table-responsive custom-scrollbar">
+            <table class="table align-middle mb-0">
+                <thead style="background-color:#f4f3f3;">
+                    <tr class="text-muted">
+                        <th class="p-3">ID</th>
+                        <th class="p-3">Nombre Completo</th>
+                        <th class="p-3">Correo Electrónico</th>
+                        <th class="p-3 text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var estudiante in Model)
+                    {
+                        <tr>
+                            <td class="p-3 text-muted small">@estudiante.ID_Usuario</td>
+                            <td class="p-3 fw-medium">@estudiante.NOMBRES @estudiante.APELLIDOS</td>
+                            <td class="p-3 text-muted">@estudiante.CORREO_ELECTRONICO</td>
+                            <td class="p-3 text-center">
+                                <button class="btn btn-sm fw-bold text-white" style="background-color:#F58F1C;"
+                                        onclick="abrirModalNota(@estudiante.ID_Usuario, '@estudiante.NOMBRES @estudiante.APELLIDOS')">
+                                    <i class="bi bi-plus-circle"></i> Calificar
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Calificar (funcional: hace POST real a Docente/GuardarNota) -->
+<div class="modal fade" id="modalCalificar" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="@Url.Action("GuardarNota", "Docente")" method="post">
+                <div class="modal-header" style="background:#F58F1C;color:#fff;">
+                    <h5 class="modal-title">Registrar Nota para <span id="nombreEstudiante"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="ID_Estudiante" id="idEstudiante" />
+
+                    <div class="mb-3">
+                        <label class="form-label">Materia</label>
+                        <select name="Materia" class="form-select" required>
+                            <option value="Matemáticas">Matemáticas</option>
+                            <option value="Español">Español</option>
+                            <option value="Ciencias">Ciencias</option>
+                            <option value="Inglés">Inglés</option>
+                        </select>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <label class="form-label">Nota (0.0 - 5.0)</label>
+                            <input type="number" name="Nota" class="form-control" step="0.1" min="0" max="5" required />
+                        </div>
+                        <div class="col-6 mb-3">
+                            <label class="form-label">Periodo</label>
+                            <select name="Periodo" class="form-select">
+                                <option value="1">1° Periodo</option>
+                                <option value="2">2° Periodo</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn" style="background:#F58F1C;color:#fff;">Guardar Calificación</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function abrirModalNota(id, nombre) {
+    document.getElementById('idEstudiante').value = id;
+    document.getElementById('nombreEstudiante').innerText = nombre;
+    var myModal = new bootstrap.Modal(document.getElementById('modalCalificar'));
+    myModal.show();
+    }
+</script>
