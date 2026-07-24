@@ -1,0 +1,80 @@
+﻿@model ProyectoPAE.Servicios.ResultadoVerificacion
+
+@{
+    ViewData["Title"] = "Verificar Certificado";
+}
+
+<div class="container mt-4">
+    <h2>Verificar autenticidad de un certificado</h2>
+    <p class="text-muted">Ingresa el código de verificación que aparece impreso en el certificado (ej: PAE-8F2A91C4).</p>
+
+    <form asp-action="VerificarCodigo" method="get" class="row g-2 mb-4">
+        <div class="col-auto">
+            <input type="text" name="codigo" class="form-control" placeholder="PAE-XXXXXXXX" required />
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary">Verificar</button>
+        </div>
+    </form>
+
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert alert-warning" asp-validation-summary="All"></div>
+    }
+
+    @if (Model != null && Model.Certificado != null)
+    {
+        if (Model.Valido)
+        {
+            <div class="alert alert-success">
+                <strong>✔ Certificado válido.</strong> @Model.Motivo
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-danger">
+                <strong>✘ Certificado no válido.</strong> @Model.Motivo
+            </div>
+        }
+
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    @Model.Certificado.Estudiante?.NOMBRES @Model.Certificado.Estudiante?.APELLIDOS
+                </h5>
+                <p class="card-text">
+                    <strong>Tipo:</strong> @Model.Certificado.TipoCertificado <br />
+                    <strong>Código:</strong> @Model.Certificado.CodigoVerificacion <br />
+                    <strong>Fecha de emisión:</strong> @Model.Certificado.FechaEmision.ToString("dd/MM/yyyy HH:mm") <br />
+                    <strong>Estado:</strong> @Model.Certificado.Estado
+                </p>
+
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Materia</th>
+                            <th>Periodo</th>
+                            <th>Nota Final</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var d in Model.Detalles)
+                        {
+                            <tr>
+                                <td>@d.Materia</td>
+                                <td>@d.Periodo</td>
+                                <td>@d.NotaFinal</td>
+                                <td>@d.EstadoNota</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+    else if (Model != null && !string.IsNullOrEmpty(Model.Motivo))
+    {
+        <div class="alert alert-danger">@Model.Motivo</div>
+    }
+</div>
