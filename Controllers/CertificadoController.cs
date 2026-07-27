@@ -1,0 +1,128 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using ProyectoPAE.Models;
+using ProyectoPAE.Servicios;
+using QRCoder;
+
+namespace ProyectoPAE.Controllers
+{
+    public class CertificadoController : Controller
+    {
+        private readonly ApplicationDbContext _context;
+        private readonly CertificadoService _certificadoService;
+
+        public CertificadoController(ApplicationDbContext context, CertificadoService certificadoService)
+        {
+            _context = context;
+            _certificadoService = certificadoService;
+        }
+
+        // ==========================================================
+        // GENERACIÓN (requiere sesión de administrador/docente)
+        // TODO: agrega aquí tu filtro de autenticación/rol existente
+        // (el mismo que usan AdminController / DocenteController)
+        // ==========================================================
+
+        // GET: /Certificado/Generar/5
+        [HttpGet]
+        public async Task<IActionResult> Generar(int idEstudiante)
+        {
+            var estudiante = await _context.Usuarios.FindAsync(idEstudiante);
+            if (estudiante == null || estudiante.ROL != "estudiante") return NotFound();
+
+            var calificaciones = await _context.Calificaciones
+                .Where(c => c.ID_Estudiante == idEstudiante)
+                .ToListAsync();
+
+            ViewBag.Estudiante = estudiante;
+            return View(calificaciones);
+        }
+
+        // POST: /Certificado/Generar
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Generar(int idEstudiante, List<int> idsCalificacion, string tipoCertificado)
+        {
+            if (idsCalificacion == null || idsCalificacion.Count == 0)
+            {
+                ModelState.AddModelError("", "Selecciona al menos una calificación para certificar.");
+                return RedirectToAction(nameof(Generar), new { idEstudiante });
+            }
+
+            // TODO: reemplaza este valor fijo por el id del usuario autenticado
+            // (ej. int idUsuarioEmisor = HttpContext.Session.GetInt32("IdUsuario").Value;)
+            int idUsuarioEmisor = 1;
+
+            var certificado = await _certificadoService.GenerarCertificadoAsync(
+                idEstudiante, tipoCertificado ?? "Reporte de calificaciones", idsCalificacion, idUsuarioEmisor);
+
+            return RedirectToAction(nameof(Confirmacion), new { id = certificado.IdCertificado });
+        }
+
+        // GET: /Certificado/Confirmacion/3
+        [HttpGet]
+        public async Task<IActionResult> Confirmacion(int id)
+        {
+            var certificado = await _context.Certificados
+                .Include(c => c.Estudiante)
+                .Include(c => c.Detalles)
+                .FirstOrDefaultAsync(c => c.IdCertificado == id);
+
+            if (certificado == null) return NotFound();
+
+            // Construye la URL pública de verificación y genera el QR como PNG base64
+            string urlVerificacion = Url.Action(
+                nameof(VerificarCodigo), "Certificado",
+                new { codigo = certificado.CodigoVerificacion },
+                protocol: Request.Scheme);
+
+            ViewBag.QrBase64 = GenerarQRBase64(urlVerificacion);
+            ViewBag.UrlVerificacion = urlVerificacion;
+
+            return View(certificado);
+        }
+
+        /// <summary>
+        /// Genera un código QR en memoria a partir de una URL y lo devuelve
+        /// como cadena base64 lista para usar en un <img src="data:image/png;base64,...">.
+        /// </summary>
+        private string GenerarQRBase64(string contenido)
+        {
+            using var qrGenerator = new QRCodeGenerator();
+            using var qrData = qrGenerator.CreateQrCode(contenido, QRCodeGenerator.ECCLevel.Q);
+            using var qrCode = new PngByteQRCode(qrData);
+            byte[] qrBytes = qrCode.GetGraphic(20);
+            return Convert.ToBase64String(qrBytes);
+        }
+
+        // ==========================================================
+        // VERIFICACIÓN PÚBLICA (sin login — cualquiera con el código
+        // debe poder consultarla)
+        // ==========================================================
+
+        // GET: /Certificado/Verificar
+        [HttpGet]
+        public IActionResult Verificar()
+        {
+            return View(new ResultadoVerificacion());
+        }
+
+        // GET: /Certificado/Verificar?codigo=PAE-8F2A91C4
+        [HttpGet]
+        public async Task<IActionResult> VerificarCodigo(string codigo)
+        {
+            if (string.IsNullOrWhiteSpace(codigo))
+            {
+                ModelState.AddModelError("", "Ingresa un código de verificación.");
+                return View("Verificar", new ResultadoVerificacion());
+            }
+
+            var resultado = await _certificadoService.VerificarAsync(codigo.Trim());
+            return View("Verificar", resultado);
+        }
+    }
+}

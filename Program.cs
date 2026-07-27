@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using ProyectoPAE.Models;
 using ProyectoPAE.Services;
 using Rotativa.AspNetCore;
+using ProyectoPAE.Servicios;
 
 var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
@@ -20,7 +21,10 @@ builder.Services.AddSession(options =>
 });
 
 // 3. REGISTRAR SERVICIO DE CORREO
-builder.Services.AddScoped<ServicioEmail>();  
+builder.Services.AddScoped<ServicioEmail>();
+
+// CERTIFICADOS
+builder.Services.AddScoped<CertificadoService>();
 
 var app = builder.Build();
 // Configuración de Rotativa para encontrar el ejecutable en wwwroot/Rotativa

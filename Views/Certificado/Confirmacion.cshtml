@@ -1,0 +1,58 @@
+﻿@model ProyectoPAE.Models.Certificado
+
+@{
+    ViewData["Title"] = "Certificado generado";
+}
+
+<div class="container mt-4">
+    <div class="card p-4">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <h3>@Model.TipoCertificado</h3>
+                <p class="mb-1">
+                    <strong>Estudiante:</strong> @Model.Estudiante?.NOMBRES @Model.Estudiante?.APELLIDOS
+                </p>
+                <p class="mb-1"><strong>Fecha de emisión:</strong> @Model.FechaEmision.ToString("dd/MM/yyyy HH:mm")</p>
+                <p class="mb-1"><strong>Código de verificación:</strong> @Model.CodigoVerificacion</p>
+            </div>
+
+            <div class="text-center">
+                <img src="data:image/png;base64,@ViewBag.QrBase64" alt="QR de verificación" style="width:120px;height:120px;" />
+                <p class="small text-muted mb-0">Escanea para verificar</p>
+            </div>
+        </div>
+
+        <hr />
+
+        <table class="table table-sm">
+            <thead>
+                <tr>
+                    <th>Materia</th>
+                    <th>Periodo</th>
+                    <th>Nota Final</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var d in Model.Detalles)
+                {
+                    <tr>
+                        <td>@d.Materia</td>
+                        <td>@d.Periodo</td>
+                        <td>@d.NotaFinal</td>
+                        <td>@d.EstadoNota</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <p class="small text-muted mt-2">
+            Verifica este certificado en:
+            <a href="@ViewBag.UrlVerificacion">@ViewBag.UrlVerificacion</a>
+        </p>
+
+        <div class="mt-2">
+            <button class="btn btn-secondary" onclick="window.print()">🖶 Imprimir PDF</button>
+        </div>
+    </div>
+</div>
