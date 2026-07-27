@@ -1,0 +1,46 @@
+﻿@model List<ProyectoPAE.Models.Calificacion>
+
+@{
+    ViewData["Title"] = "Generar Certificado";
+    var estudiante = ViewBag.Estudiante as ProyectoPAE.Models.Usuario;
+}
+
+<div class="container mt-4">
+    <h2>Generar certificado</h2>
+    <p><strong>Estudiante:</strong> @estudiante?.NOMBRES @estudiante?.APELLIDOS</p>
+
+    <form asp-action="Generar" method="post">
+        <input type="hidden" name="idEstudiante" value="@estudiante?.ID_Usuario" />
+
+        <div class="mb-3">
+            <label class="form-label">Tipo de certificado</label>
+            <input type="text" name="tipoCertificado" class="form-control" value="Reporte de calificaciones" />
+        </div>
+
+        <table class="table">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Materia</th>
+                    <th>Periodo</th>
+                    <th>Nota</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var c in Model)
+                {
+                    <tr>
+                        <td>
+                            <input type="checkbox" name="idsCalificacion" value="@c.ID_Calificacion" />
+                        </td>
+                        <td>@c.Materia</td>
+                        <td>@c.Periodo</td>
+                        <td>@c.Nota</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <button type="submit" class="btn btn-primary">Generar certificado</button>
+    </form>
+</div>

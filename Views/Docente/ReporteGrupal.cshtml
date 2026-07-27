@@ -1,5 +1,9 @@
 ﻿@model IEnumerable<dynamic>
 
+@{
+    var idsMostrados = new HashSet<int>();
+}
+
 <div class="container mt-4">
     <div class="card shadow border-0">
         <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
@@ -9,7 +13,7 @@
             </button>
         </div>
         <div class="card-body">
-            
+
             <div class="row mb-5 justify-content-center">
                 <div class="col-md-8">
                     <canvas id="graficaNotas" style="max-height: 300px;"></canvas>
@@ -25,6 +29,7 @@
                             <th>Periodo</th>
                             <th class="text-center">Nota Final</th>
                             <th>Estado</th>
+                            <th>Certificado</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -45,6 +50,19 @@
                                         <span class="text-danger"><i class="bi bi-x-circle-fill me-1"></i> Reprobado</span>
                                     }
                                 </td>
+                                <td>
+                                    @{
+                                        int idEst = (int)item.IdEstudiante;
+                                    }
+                                    @if (idsMostrados.Add(idEst))
+                                    {
+                                        <a asp-controller="Certificado" asp-action="Generar"
+                                           asp-route-idEstudiante="@idEst"
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-patch-check me-1"></i> Generar
+                                        </a>
+                                    }
+                                </td>
                             </tr>
                         }
                     </tbody>
@@ -57,27 +75,27 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     const ctx = document.getElementById('graficaNotas');
-    
+
     // Extraemos los datos de C# a JavaScript
     const colores = notas.map(n => n >= 3.0 ? 'rgba(39, 174, 96, 0.5)' : 'rgba(231, 76, 60, 0.5)');
     const bordes = notas.map(n => n >= 3.0 ? 'rgba(39, 174, 96, 1)' : 'rgba(231, 76, 60, 1)');
 
     new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: nombres,
-            datasets: [{
-                label: 'Calificación Final',
-                data: notas,
-                backgroundColor: 'rgba(39, 174, 96, 0.5)',
-                borderColor: 'rgba(39, 174, 96, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            scales: {
-                y: { beginAtZero: true, max: 5 }
-            }
-        }
+    type: 'bar',
+    data: {
+    labels: nombres,
+    datasets: [{
+    label: 'Calificación Final',
+    data: notas,
+    backgroundColor: 'rgba(39, 174, 96, 0.5)',
+    borderColor: 'rgba(39, 174, 96, 1)',
+    borderWidth: 1
+    }]
+    },
+    options: {
+    scales: {
+    y: { beginAtZero: true, max: 5 }
+    }
+    }
     });
 </script>
