@@ -22,5 +22,9 @@ namespace ProyectoPAE.Models
         // ── Recuperación de contraseña ──
         public DbSet<GU_RECUPERACION_PASSWORD> RecuperacionesPassword { get; set; }
         public DbSet<GU_HISTORIAL_PASSWORD> HistorialPasswords { get; set; }
+
+        // --- FIRMA DE CERTIFICADOS ---
+        public DbSet<Certificado> Certificados { get; set; }
+        public DbSet<CertificadoDetalle> CertificadosDetalle { get; set; }
     }
 }

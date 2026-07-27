@@ -51,6 +51,7 @@ namespace ProyectoPAE.Controllers
                       u => u.ID_Usuario,
                       (c, u) => new { c, u })
                 .Select(res => new {
+                    IdEstudiante = res.u.ID_Usuario,
                     NombreEstudiante = res.u.NOMBRES + " " + res.u.APELLIDOS,
                     Materia = res.c.Materia,
                     Nota = res.c.Nota,
