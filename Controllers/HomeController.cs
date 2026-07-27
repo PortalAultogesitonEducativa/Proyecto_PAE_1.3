@@ -44,26 +44,31 @@ namespace ProyectoPAE.Controllers
         }
 
         // --- MÉTODO DASHBOARD ACTUALIZADO PARA PADRES ---
-        public IActionResult Dashboard()
+        // --- MÉTODO DASHBOARD ACTUALIZADO PARA SOPORTAR NAVEGACIÓN Y ROLES ---
+        public IActionResult Dashboard(string rol = null)
         {
             // 1. Recuperamos los datos de la sesión
             var nombreUsuario = HttpContext.Session.GetString("NombreUsuario");
-            var rol = HttpContext.Session.GetString("UserRol");
+            var rolSesion = HttpContext.Session.GetString("UserRol");
             var userIdStr = HttpContext.Session.GetString("UserIdStr");
 
-            // 2. Verificación de seguridad: si no hay sesión, al Login
-            if (string.IsNullOrEmpty(nombreUsuario) || string.IsNullOrEmpty(rol))
+            // 2. Verificación de seguridad: si no hay sesión, redirecciona al Login
+            if (string.IsNullOrEmpty(nombreUsuario) || string.IsNullOrEmpty(rolSesion))
             {
                 return RedirectToAction("Index", "Login");
             }
 
-            ViewBag.Nombre = nombreUsuario;
-            ViewBag.Rol = rol;
+            // 3. Determinamos el rol a mostrar y lo convertimos SIEMPRE a minúsculas (.ToLower())
+            // Esto evita fallos si la base de datos o el parámetro trae mayúsculas como "Docente" o "ADMINISTRADOR"
+            string rolActivo = !string.IsNullOrEmpty(rol) ? rol.Trim().ToLower() : rolSesion.Trim().ToLower();
 
-            // 3. Lógica específica para el ACUDIENTE
-            if (rol == "acudiente")
+            ViewBag.Nombre = nombreUsuario;
+            ViewBag.Rol = rolActivo; // Se enviará limpio (ej: "docente", "admin", "acudiente")
+
+            // 4. Lógica específica para el ACUDIENTE
+            if (rolActivo == "acudiente")
             {
-                // Usamos TryParse para evitar el error de formato (FormatException)
+                // Usamos TryParse para evitar errores de formato (FormatException)
                 if (int.TryParse(userIdStr, out int userId))
                 {
                     // Buscar IDs de hijos vinculados
@@ -107,7 +112,7 @@ namespace ProyectoPAE.Controllers
                 }
                 else
                 {
-                    // Si el ID llega corrupto (como el error de la imagen 4), lo mandamos a re-identificarse
+                    // Si el ID llega corrupto, lo mandamos a re-identificarse
                     return RedirectToAction("Index", "Login");
                 }
             }
