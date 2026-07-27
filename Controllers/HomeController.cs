@@ -3,6 +3,7 @@ using ProyectoPAE.Models;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using System.Linq;
+using System;
 
 namespace ProyectoPAE.Controllers
 {
@@ -46,12 +47,10 @@ namespace ProyectoPAE.Controllers
         // --- MÉTODO DASHBOARD ACTUALIZADO PARA PADRES ---
         public IActionResult Dashboard()
         {
-            // 1. Recuperamos los datos de la sesión
             var nombreUsuario = HttpContext.Session.GetString("NombreUsuario");
             var rol = HttpContext.Session.GetString("UserRol");
             var userIdStr = HttpContext.Session.GetString("UserIdStr");
 
-            // 2. Verificación de seguridad: si no hay sesión, al Login
             if (string.IsNullOrEmpty(nombreUsuario) || string.IsNullOrEmpty(rol))
             {
                 return RedirectToAction("Index", "Login");
@@ -60,19 +59,15 @@ namespace ProyectoPAE.Controllers
             ViewBag.Nombre = nombreUsuario;
             ViewBag.Rol = rol;
 
-            // 3. Lógica específica para el ACUDIENTE
             if (rol == "acudiente")
             {
-                // Usamos TryParse para evitar el error de formato (FormatException)
                 if (int.TryParse(userIdStr, out int userId))
                 {
-                    // Buscar IDs de hijos vinculados
                     var hijosIds = _context.ESTUDIANTE_PADRE
                                            .Where(ep => ep.ID_PADRE == userId)
                                            .Select(ep => ep.ID_ESTUDIANTE)
                                            .ToList();
 
-                    // Traer la información de los usuarios que son estudiantes
                     var listaHijos = _context.Usuarios
                         .Where(u => hijosIds.Contains(u.ID_Usuario))
                         .AsEnumerable()
@@ -83,17 +78,14 @@ namespace ProyectoPAE.Controllers
                     {
                         int primerHijoId = listaHijos.First().ID_Usuario;
 
-                        // Promedio de notas
                         var promedio = _context.EVALUACIONES
                                                .Where(e => e.id_estudiante == primerHijoId)
                                                .Select(e => (double?)e.nota)
                                                .Average() ?? 0.0;
 
-                        // Contador de fallas
                         var fallas = _context.ASISTENCIAS
                                              .Count(a => a.id_estudiante == primerHijoId && a.estado == "Falla");
 
-                        // Citaciones
                         var listaCitaciones = _context.CITACIONES
                                                       .Where(c => c.id_estudiante == primerHijoId)
                                                       .OrderByDescending(c => c.fecha)
@@ -107,34 +99,26 @@ namespace ProyectoPAE.Controllers
                 }
                 else
                 {
-                    // Si el ID llega corrupto (como el error de la imagen 4), lo mandamos a re-identificarse
                     return RedirectToAction("Index", "Login");
                 }
             }
 
             return View();
         }
+
         public IActionResult Perfil()
         {
-            // Cambiamos "IdUsuario" por "UserId" para que coincida con el resto de tu app
             var userId = HttpContext.Session.GetInt32("UserId");
-
-            // Si no hay sesión, regresamos al Login
             if (userId == null)
-            {
                 return RedirectToAction("Index", "Login");
-            }
 
-            // Buscamos al usuario por su ID
             var usuario = _context.Usuarios.Find(userId);
-
             if (usuario == null)
-            {
                 return RedirectToAction("Index", "Login");
-            }
 
             return View(usuario);
         }
+
         // 1. Mostrar el formulario de edición
         public IActionResult EditarPerfil()
         {
@@ -155,24 +139,67 @@ namespace ProyectoPAE.Controllers
             var usuarioBd = _context.Usuarios.Find(userId);
             if (usuarioBd != null)
             {
-                // Actualizamos solo los campos permitidos por el RF3.2
                 usuarioBd.TELEFONO = usuarioEditado.TELEFONO;
                 usuarioBd.DIRECCION = usuarioEditado.DIRECCION;
                 usuarioBd.CORREO_ELECTRONICO = usuarioEditado.CORREO_ELECTRONICO;
-                // La foto requiere una lógica extra para guardar el archivo, 
-                // por ahora aseguremos los datos de texto.
-
                 _context.SaveChanges();
-
-                // Actualizamos el nombre en sesión por si cambió el correo o algo importante
                 TempData["Mensaje"] = "Perfil actualizado correctamente";
             }
 
             return RedirectToAction("Perfil");
         }
+
+        // 3. Cambiar contraseña desde el perfil
+        [HttpPost]
+        public IActionResult CambiarContrasena(string contrasenaActual, string nuevaContrasena, string confirmar)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null) return RedirectToAction("Index", "Login");
+
+            var usuario = _context.Usuarios.Find(userId);
+
+            if (usuario.CONTRASEÑA != contrasenaActual)
+            {
+                ViewBag.ErrorPassword = "La contraseña actual es incorrecta.";
+                return View("Perfil", usuario);
+            }
+
+            if (nuevaContrasena != confirmar)
+            {
+                ViewBag.ErrorPassword = "Las contraseñas nuevas no coinciden.";
+                return View("Perfil", usuario);
+            }
+
+            if (nuevaContrasena.Length < 8)
+            {
+                ViewBag.ErrorPassword = "La contraseña debe tener al menos 8 caracteres.";
+                return View("Perfil", usuario);
+            }
+
+            if (nuevaContrasena == contrasenaActual)
+            {
+                ViewBag.ErrorPassword = "La nueva contraseña debe ser diferente a la actual.";
+                return View("Perfil", usuario);
+            }
+
+            // Guardar en historial
+            _context.HistorialPasswords.Add(new GU_HISTORIAL_PASSWORD
+            {
+                id_usuario = usuario.ID_Usuario,
+                contrasena_hash = usuario.CONTRASEÑA,
+                fecha_cambio = DateTime.Now
+            });
+
+            // Actualizar contraseña
+            usuario.CONTRASEÑA = nuevaContrasena;
+            _context.SaveChanges();
+
+            ViewBag.ExitoPassword = "Contraseña Se Actualizo Correctamente.";
+            return View("Perfil", usuario);
+        }
+
         public IActionResult RenovarSesion()
         {
-            // Solo acceder a la sesión es suficiente para renovarla
             var _ = HttpContext.Session.GetString("NombreUsuario");
             return Ok();
         }
