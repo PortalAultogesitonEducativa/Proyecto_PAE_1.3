@@ -1488,7 +1488,33 @@
 
         const miModal = new bootstrap.Modal(document.getElementById('modalFormularioMejora'));
         miModal.show();
-    }
+   // Inicialización automática al cargar el Dashboard según el rol activo
+    document.addEventListener("DOMContentLoaded", function () {
+        // Obtenemos el rol enviado desde ViewBag.Rol en C# y lo normalizamos a minúsculas
+        var rolActual = "@ViewBag.Rol".trim().toLowerCase();
+
+        // Dependiendo del rol activo, mostramos su panel principal correspondiente
+        if (rolActual === "docente") {
+            const panelDocente = document.getElementById('panel-docente');
+            const docenteMain = document.getElementById('docente-main');
+            if (panelDocente) panelDocente.classList.remove('d-none');
+            if (docenteMain) docenteMain.classList.remove('d-none');
+        } 
+        else if (rolActual === "acudiente" || rolActual === "padre") {
+            const panelAcudiente = document.getElementById('panel-acudiente');
+            if (panelAcudiente) panelAcudiente.classList.remove('d-none');
+        } 
+        else if (rolActual === "estudiante") {
+            const panelEstudiante = document.getElementById('panel-estudiante');
+            const estudianteMain = document.getElementById('estudiante-main');
+            if (panelEstudiante) panelEstudiante.classList.remove('d-none');
+            if (estudianteMain) estudianteMain.classList.remove('d-none');
+        } 
+        else if (rolActual === "administrador" || rolActual === "admin") {
+            const panelAdmin = document.getElementById('panel-admin');
+            if (panelAdmin) panelAdmin.classList.remove('d-none');
+        }
+    });
 </script>
 
 <style>
