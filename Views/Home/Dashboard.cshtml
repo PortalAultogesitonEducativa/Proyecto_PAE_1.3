@@ -5,39 +5,54 @@
 
 @{
     var nombre = Context.Session.GetString("NombreUsuario");
-    var rol = Context.Session.GetString("UserRol");
+    var rolReal = Context.Session.GetString("UserRol"); // Rol original de la sesión
 }
 
-<input type="hidden" id="rolOculto" value="@rol" />
+<input type="hidden" id="rolOculto" value="@ViewBag.Rol" />
+
+<input type="hidden" id="rolRealSesion" value="@rolReal" />
 
 <center><h2>Bienvenido/a, @nombre</h2></center>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const rolActivo = document.getElementById('rolOculto').value;
+    document.addEventListener("DOMContentLoaded", function() {
+        const inputRol = document.getElementById('rolOculto');
+        const selector = document.getElementById('roleSelector');
 
-        // Usamos la función switchRole que ya existe,
-        // pero le pasamos el valor automáticamente
-        document.getElementById('roleSelector').value = rolActivo;
-        switchRole();
+        // Rol activo que se quiere visualizar en la vista
+        const rolActivo = inputRol ? inputRol.value.toLowerCase().trim() : '';
 
-        // OPCIONAL: Esconder el selector para que el usuario no cambie de rol
-        document.getElementById('roleSelector').style.display = 'none';
+        if (selector && rolActivo) {
+            // Asigna la opción seleccionada según el rol activo
+            selector.value = rolActivo;
+
+            // Cambia el panel visible
+            if (typeof switchRole === "function") {
+                switchRole();
+            }
+        }
     });
 </script>
 
+<!-- BARRA SUPERIOR AZUL -->
 <div class="container-fluid fw-bold py-3 mb-4" style="background-color: #0d2a4a; color: white;">
     <div class="container d-flex justify-content-between align-items-center">
+        <!-- Título a la izquierda -->
         <span><i class="bi bi-mortarboard-fill me-2"></i>SISTEMA DE GESTIÓN PAE</span>
-        <div class="d-flex align-items-center gap-2">
-            <small class="opacity-75">Rol actual:</small>
-            <select id="roleSelector" class="form-select form-select-sm" onchange="switchRole()" style="width: auto;">
-                <option value="admin">Administrador</option>
-                <option value="docente">Docente</option>
-                <option value="estudiante">Estudiante</option>
-                <option value="acudiente">Acudiente</option>
-            </select>
-        </div>
+
+        <!-- Selector de Rol a la derecha (solo visible para Administrador) -->
+        @if (rolReal != null && (rolReal.ToLower() == "admin" || rolReal.ToLower() == "administrador"))
+        {
+            <div id="contenedorSelectorRol" class="d-flex align-items-center gap-2">
+                <small class="opacity-75">Rol actual:</small>
+                <select id="roleSelector" class="form-select form-select-sm" onchange="switchRole()" style="width: auto;">
+                    <option value="admin">Administrador</option>
+                    <option value="docente">Docente</option>
+                    <option value="estudiante">Estudiante</option>
+                    <option value="acudiente">Acudiente</option>
+                </select>
+            </div>
+        }
     </div>
 </div>
 
@@ -98,7 +113,7 @@
                 </div>
             </div>
         </div>
-  <div id="admin-matricula" class="d-none">
+        <div id="admin-matricula" class="d-none">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h3 style="color: #e67e22;"><i class="bi bi-clipboard-check me-2"></i>Matrículas</h3>
                 <button class="btn btn-outline-secondary btn-sm" onclick="volverAdmin()">Volver</button>
@@ -344,13 +359,13 @@
             <h2 class="mb-4" style="color: #2980b9;"><i class="bi bi-person-badge-fill me-2"></i>Panel del Docente</h2>
 
             <div class="row">
-                <!-- Tarjeta: Planilla de Notas -->
-                <div class="col-md-4 mb-4" onclick="location.href='/Docente/Planilla'" style="cursor: pointer;">
+                <!-- Tarjeta: Planilla de Notas (Actualizado para usar la vista interna) -->
+                <div class="col-md-4 mb-4" onclick="verPlanilla()" style="cursor: pointer;">
                     <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover" style="border-top: 4px solid #2980b9 !important;">
                         <i class="bi bi-clipboard-check fs-2 mb-2" style="color: #2980b9;"></i>
                         <h5 class="text-dark">Planilla de Notas</h5>
                         <p class="small text-muted">Gestión de calificaciones y promedios.</p>
-                        <button class="btn btn-sm btn-outline-primary mt-auto w-100">Ver Planilla</button>
+                        <button class="btn btn-sm btn-outline-primary mt-auto w-100" type="button">Ver Planilla</button>
                     </div>
                 </div>
 
@@ -393,8 +408,8 @@
                         <button class="btn btn-sm btn-outline-primary mt-auto w-100">Gestionar Mejoras</button>
                     </div>
                 </div>
-            </div> <!-- /row -->
-        </div> <!-- ¡AQUÍ ES LA CORRECCIÓN! Este div ahora cierra a docente-main para independizarlo -->
+            </div>
+        </div>
         <!-- ========================================== -->
         <!-- 2. MÓDULOS INDEPENDIENTES Y COMPONENTES OCULTOS -->
         <!-- ========================================== -->
@@ -467,7 +482,9 @@
         <div id="docente-planilla" class="d-none">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h3 style="color: #2980b9;"><i class="bi bi-pencil-square me-2"></i>Planilla de Calificaciones</h3>
-                <button class="btn btn-outline-secondary btn-sm" onclick="volverDocente()">Volver</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="volverDocente()">
+                    Volver
+                </button>
             </div>
 
             <div class="card border-0 shadow-sm p-4 mb-4">
@@ -1211,33 +1228,35 @@
 </div>
 
 <script>
+    /**
+     * Oculta todas las subsecciones y paneles principales de la interfaz SPA.
+     * Utiliza la clase 'd-none' de Bootstrap.
+     */
     function ocultarTodo() {
         const subs = [
             'admin-main', 'admin-matricula', 'admin-usuarios', 'admin-certificados', 'admin-notificaciones', 'admin-asignacion', 'admin-reportes',
             'docente-main', 'docente-planilla', 'docente-asistencia', 'docente-observaciones', 'docente-mejoras',
-            'estudiante-main',
-            'estudiante-horario',
-            'estudiante-calificaciones',
-            'estudiante-actividades',
-            'estudiante-cursosextra','estudiante-mejoras',
+            'estudiante-main', 'estudiante-horario', 'estudiante-calificaciones', 'estudiante-actividades', 'estudiante-cursosextra', 'estudiante-mejoras'
         ];
 
         const panelesPrincipales = [
             'panel-admin', 'panel-docente', 'panel-estudiante', 'panel-acudiente'
         ];
 
+        // Ocultar subsecciones
         subs.forEach(id => {
             const el = document.getElementById(id);
             if (el) el.classList.add('d-none');
         });
 
+        // Ocultar paneles principales
         panelesPrincipales.forEach(id => {
             const p = document.getElementById(id);
             if (p) p.classList.add('d-none');
         });
     }
 
-    // Funciones de navegación Admin
+    // --- FUNCIONES DE NAVEGACIÓN ADMINISTRADOR ---
     function verMatricula() { ocultarTodo(); mostrarAdminSub('admin-matricula'); }
     function verUsuarios() { ocultarTodo(); mostrarAdminSub('admin-usuarios'); }
     function verCertificados() { ocultarTodo(); mostrarAdminSub('admin-certificados'); }
@@ -1247,100 +1266,136 @@
 
     function mostrarAdminSub(id) {
         ocultarTodo();
-        document.getElementById('panel-admin').classList.remove('d-none');
+        const panelAdmin = document.getElementById('panel-admin');
+        if (panelAdmin) panelAdmin.classList.remove('d-none');
+
         const subSeccion = document.getElementById(id);
-        if (subSeccion) {
-            subSeccion.classList.remove('d-none');
-        }
+        if (subSeccion) subSeccion.classList.remove('d-none');
     }
 
     function volverAdmin() {
         ocultarTodo();
-        document.getElementById('panel-admin').classList.remove('d-none');
-        document.getElementById('admin-main').classList.remove('d-none'); 
+        const panelAdmin = document.getElementById('panel-admin');
+        const adminMain = document.getElementById('admin-main');
+        if (panelAdmin) panelAdmin.classList.remove('d-none');
+        if (adminMain) adminMain.classList.remove('d-none');
     }
 
-    document.addEventListener("DOMContentLoaded", function () {
-        const rolDesdeSesion = document.getElementById('rolOculto').value;
+    // --- EVENTO DE INICIALIZACIÓN (SE EJECUTA AL CARGAR / RECARGAR LA PÁGINA) ---
+    document.addEventListener("DOMContentLoaded", function() {
+        const inputRol = document.getElementById('rolOculto');
+
+        // Toma el valor enviado desde HomeController (ViewBag.Rol)
+        const rolDesdeSesion = inputRol ? inputRol.value.toLowerCase().trim() : '';
         const selector = document.getElementById('roleSelector');
 
         if (selector && rolDesdeSesion) {
-            // Sincronizamos el selector con el rol del login
+            // 1. Asigna el rol recibido al selector (ej. 'docente' si volviste desde Planilla)
             selector.value = rolDesdeSesion;
 
-            // Ejecutamos la vista inicial
+            // 2. Muestra automáticamente el panel correcto
             switchRole();
 
-            // Lógica de visibilidad del selector:
-            if (rolDesdeSesion !== 'admin') {
-                // Si NO es admin, escondemos el selector para que no "salte" de rol
+            // 3. Si el rol del login NO es administrador, oculta el desplegable de roles
+            if (rolDesdeSesion !== 'admin' && rolDesdeSesion !== 'administrador') {
                 selector.style.display = 'none';
-                // También puedes esconder el texto "Rol actual:" si quieres
-                document.querySelector('.opacity-75').style.display = 'none';
+                const etiquetaRol = document.querySelector('.opacity-75');
+                if (etiquetaRol) etiquetaRol.style.display = 'none';
             } else {
-                // Si ES admin, nos aseguramos de que el selector sea visible
                 selector.style.display = 'block';
-                console.log("Modo Administrador: Selector de roles habilitado.");
             }
         }
     });
 
+    /**
+     * Alterna la vista activa según el rol seleccionado en la barra superior.
+     */
     function switchRole() {
-        const role = document.getElementById('roleSelector').value.toLowerCase();
+        const selector = document.getElementById('roleSelector');
+        if (!selector) return;
+
+        let role = selector.value.toLowerCase().trim();
         console.log("Cambiando al rol: " + role);
 
         ocultarTodo();
+
+        // Normalización para el rol Administrador
+        if (role === 'administrador') {
+            role = 'admin';
+        }
 
         const panel = document.getElementById('panel-' + role);
 
         if (panel) {
             panel.classList.remove('d-none');
 
-            // AGREGAR ESTO: Instrucciones para mostrar el contenido de cada rol
+            // Enciende la tarjeta / menú principal de cada perfil
             if (role === 'admin') {
                 const sub = document.getElementById('admin-main');
                 if (sub) sub.classList.remove('d-none');
             }
             else if (role === 'docente') {
                 const sub = document.getElementById('docente-main');
-                if (sub) sub.classList.remove('d-none'); // Esto encenderá las tarjetas de Carlos Mendoza
+                if (sub) sub.classList.remove('d-none'); // Muestra las tarjetas del Docente
             }
             else if (role === 'estudiante') {
                 const sub = document.getElementById('estudiante-main');
-                if (sub) sub.classList.remove('d-none'); // Esto encenderá las tarjetas de Laura Gómez
+                if (sub) sub.classList.remove('d-none');
             }
-            // El acudiente no necesita esto porque su panel no tiene sub-secciones aún
         } else {
             console.error("No se encontró un panel con el ID: panel-" + role);
         }
     }
-    // Al cargar la página
-    document.addEventListener("DOMContentLoaded", function () {
-        switchRole();
-    });
 
-    // Navegación Docente
+    // --- FUNCIONES DE NAVEGACIÓN DOCENTE ---
+    // 1. Función para mostrar la planilla y ocultar el panel principal del docente
+    // Función para mostrar la planilla dentro de la misma vista (SPA)
     function verPlanilla() {
-        ocultarTodo();
-        document.getElementById('panel-docente').classList.remove('d-none');
-        document.getElementById('docente-planilla').classList.remove('d-none');
+        ocultarTodo(); // Limpia y oculta los demás paneles activos
+
+        const panelDocente = document.getElementById('panel-docente');
+        const docentePlanilla = document.getElementById('docente-planilla');
+
+        // Mostramos el panel general del docente y el sub-panel de la planilla
+        if (panelDocente) {
+            panelDocente.classList.remove('d-none');
+        }
+        if (docentePlanilla) {
+            docentePlanilla.classList.remove('d-none');
+        }
+    }
+
+    // Función para regresar desde la planilla de calificaciones al menú principal del docente
+    function volverDocente() {
+        ocultarTodo(); // Oculta todos los paneles secundarios activos
+
+        // Mostramos el contenedor general del panel docente
+        const panelDocente = document.getElementById('panel-docente');
+        if (panelDocente) {
+            panelDocente.classList.remove('d-none');
+        }
+
+        // Mostramos explícitamente el contenedor de las tarjetas principales
+        const docenteMain = document.getElementById('docente-main');
+        if (docenteMain) {
+            docenteMain.classList.remove('d-none');
+        }
     }
 
     function verAsistencia() {
         ocultarTodo();
-        document.getElementById('panel-docente').classList.remove('d-none');
-        document.getElementById('docente-asistencia').classList.remove('d-none');
+        const panelDocente = document.getElementById('panel-docente');
+        const docenteAsistencia = document.getElementById('docente-asistencia');
+        if (panelDocente) panelDocente.classList.remove('d-none');
+        if (docenteAsistencia) docenteAsistencia.classList.remove('d-none');
     }
 
-    function volverDocente() {
+    function verModuloMejorasDocente() {
         ocultarTodo();
-        document.getElementById('panel-docente').classList.remove('d-none');
-        document.getElementById('docente-main').classList.remove('d-none');
-    }
-        function verModuloMejorasDocente() {
-        ocultarTodo();
-        document.getElementById('panel-docente').classList.remove('d-none');
-        document.getElementById('docente-mejoras').classList.remove('d-none');
+        const panelDocente = document.getElementById('panel-docente');
+        const docenteMejoras = document.getElementById('docente-mejoras');
+        if (panelDocente) panelDocente.classList.remove('d-none');
+        if (docenteMejoras) docenteMejoras.classList.remove('d-none');
     }
 
     function volverDocenteMejoras() {
@@ -1348,90 +1403,120 @@
     }
 
     function verObservaciones() {
-        ocultarTodo(); // Limpia la pantalla usando la lista 'subs'
-
-        // Muestra el contenedor del docente
-        const panel = document.getElementById('panel-docente');
-        if (panel) panel.classList.remove('d-none');
-
-        // Muestra específicamente el formulario del observador
+        ocultarTodo();
+        const panelDocente = document.getElementById('panel-docente');
         const subVista = document.getElementById('docente-observaciones');
+        if (panelDocente) panelDocente.classList.remove('d-none');
         if (subVista) subVista.classList.remove('d-none');
     }
 
-    // Navegación Estudiante
+    // --- FUNCIONES DE NAVEGACIÓN ESTUDIANTE ---
     function verHorario() {
         ocultarTodo();
-        document.getElementById('panel-estudiante').classList.remove('d-none');
-        document.getElementById('estudiante-horario').classList.remove('d-none');
+        const panelEstudiante = document.getElementById('panel-estudiante');
+        const sub = document.getElementById('estudiante-horario');
+        if (panelEstudiante) panelEstudiante.classList.remove('d-none');
+        if (sub) sub.classList.remove('d-none');
     }
 
     function verCalificacionesEstudiante() {
         ocultarTodo();
-        document.getElementById('panel-estudiante').classList.remove('d-none');
-        document.getElementById('estudiante-calificaciones').classList.remove('d-none');
+        const panelEstudiante = document.getElementById('panel-estudiante');
+        const sub = document.getElementById('estudiante-calificaciones');
+        if (panelEstudiante) panelEstudiante.classList.remove('d-none');
+        if (sub) sub.classList.remove('d-none');
     }
 
     function verActividadesEstudiante() {
         ocultarTodo();
-
-        document.getElementById('panel-estudiante').classList.remove('d-none');
-
-        const divTareas = document.getElementById('estudiante-actividades');
-        if (divTareas) {
-            divTareas.classList.remove('d-none');
-        }
+        const panelEstudiante = document.getElementById('panel-estudiante');
+        const sub = document.getElementById('estudiante-actividades');
+        if (panelEstudiante) panelEstudiante.classList.remove('d-none');
+        if (sub) sub.classList.remove('d-none');
     }
 
     function volverEstudiante() {
-        switchRole();
         ocultarTodo();
-        document.getElementById('panel-estudiante').classList.remove('d-none');
-        document.getElementById('estudiante-main').classList.remove('d-none');
-    }
-    function verCursosExtra() {
-        ocultarTodo();
-        document.getElementById('panel-estudiante').classList.remove('d-none');
-        document.getElementById('estudiante-cursosextra').classList.remove('d-none');
-    }
-       function verModuloMejoras() {
-        ocultarTodo();
-        document.getElementById('panel-estudiante').classList.remove('d-none');
-        document.getElementById('estudiante-mejoras').classList.remove('d-none');
+        const panelEstudiante = document.getElementById('panel-estudiante');
+        const estudianteMain = document.getElementById('estudiante-main');
+        if (panelEstudiante) panelEstudiante.classList.remove('d-none');
+        if (estudianteMain) estudianteMain.classList.remove('d-none');
     }
 
-       function volverEstudianteMejoras() {
+    function verCursosExtra() {
+        ocultarTodo();
+        const panelEstudiante = document.getElementById('panel-estudiante');
+        const sub = document.getElementById('estudiante-cursosextra');
+        if (panelEstudiante) panelEstudiante.classList.remove('d-none');
+        if (sub) sub.classList.remove('d-none');
+    }
+
+    function verModuloMejoras() {
+        ocultarTodo();
+        const panelEstudiante = document.getElementById('panel-estudiante');
+        const sub = document.getElementById('estudiante-mejoras');
+        if (panelEstudiante) panelEstudiante.classList.remove('d-none');
+        if (sub) sub.classList.remove('d-none');
+    }
+
+    function volverEstudianteMejoras() {
         volverEstudiante();
     }
 
-    // 5. MODALES (ACCIONES DE MEJORA)
+    // --- GESTIÓN DE MODALES (ACCIONES DE MEJORA) ---
     function abrirCuadroTexto(idAccion, rol, tituloAccion) {
         document.getElementById('input_id_accion').value = idAccion;
         document.getElementById('input_remitente').value = rol;
         document.getElementById('txtComentario').value = "";
 
-        var header = document.getElementById('modalMejoraHeader');
-        var titulo = document.getElementById('modalMejoraTitulo');
-        var desc = document.getElementById('modalMejoraDescripcion');
-        var boton = document.getElementById('btnModalGuardar');
+        const header = document.getElementById('modalMejoraHeader');
+        const titulo = document.getElementById('modalMejoraTitulo');
+        const desc = document.getElementById('modalMejoraDescripcion');
+        const boton = document.getElementById('btnModalGuardar');
 
         if (rol === 'Estudiante') {
-            if(header) header.style.backgroundColor = '#6f42c1';
-            if(titulo) titulo.innerText = 'Registrar Avance: ' + tituloAccion;
-            if(desc) desc.innerText = 'Describe el progreso o las correcciones que has realizado.';
-            if(boton) boton.style.backgroundColor = '#6f42c1';
+            if (header) header.style.backgroundColor = '#6f42c1';
+            if (titulo) titulo.innerText = 'Registrar Avance: ' + tituloAccion;
+            if (desc) desc.innerText = 'Describe el progreso o las correcciones que has realizado.';
+            if (boton) boton.style.backgroundColor = '#6f42c1';
         } else {
-            if(header) header.style.backgroundColor = '#2980b9';
-            if(titulo) titulo.innerText = 'Escribir Observación: ' + tituloAccion;
-            if(desc) desc.innerText = 'Redacta los pendientes o comentarios para el estudiante.';
-            if(boton) boton.style.backgroundColor = '#2980b9';
+            if (header) header.style.backgroundColor = '#2980b9';
+            if (titulo) titulo.innerText = 'Escribir Observación: ' + tituloAccion;
+            if (desc) desc.innerText = 'Redacta los pendientes o comentarios para el estudiante.';
+            if (boton) boton.style.backgroundColor = '#2980b9';
         }
 
-        var miModal = new bootstrap.Modal(document.getElementById('modalFormularioMejora'));
+        const miModal = new bootstrap.Modal(document.getElementById('modalFormularioMejora'));
         miModal.show();
     }
 
+    // Inicialización automática al cargar el Dashboard según el rol activo
+    document.addEventListener("DOMContentLoaded", function () {
+        // Obtenemos el rol enviado desde ViewBag.Rol en C# y lo normalizamos a minúsculas
+        var rolActual = "@ViewBag.Rol".trim().toLowerCase();
 
+        // Dependiendo del rol activo, mostramos su panel principal correspondiente
+        if (rolActual === "docente") {
+            const panelDocente = document.getElementById('panel-docente');
+            const docenteMain = document.getElementById('docente-main');
+            if (panelDocente) panelDocente.classList.remove('d-none');
+            if (docenteMain) docenteMain.classList.remove('d-none');
+        } 
+        else if (rolActual === "acudiente" || rolActual === "padre") {
+            const panelAcudiente = document.getElementById('panel-acudiente');
+            if (panelAcudiente) panelAcudiente.classList.remove('d-none');
+        } 
+        else if (rolActual === "estudiante") {
+            const panelEstudiante = document.getElementById('panel-estudiante');
+            const estudianteMain = document.getElementById('estudiante-main');
+            if (panelEstudiante) panelEstudiante.classList.remove('d-none');
+            if (estudianteMain) estudianteMain.classList.remove('d-none');
+        } 
+        else if (rolActual === "administrador" || rolActual === "admin") {
+            const panelAdmin = document.getElementById('panel-admin');
+            if (panelAdmin) panelAdmin.classList.remove('d-none');
+        }
+    });
 </script>
 
 <style>
