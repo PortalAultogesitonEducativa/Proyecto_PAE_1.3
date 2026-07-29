@@ -3,19 +3,20 @@ using ProyectoPAE.Models;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using System.Linq;
-
+using System;
+ 
 namespace ProyectoPAE.Controllers
 {
     public class HomeController : Controller
     {
         private readonly ApplicationDbContext _context;
-
+ 
         public HomeController(ApplicationDbContext context)
         {
             _context = context;
         }
-
-        // Esta es la página principal (Pública)
+ 
+        // Esta es la pÃ¡gina principal (PÃºblica)
         public IActionResult Index()
         {
             var courses = new List<Course>
@@ -27,8 +28,8 @@ namespace ProyectoPAE.Controllers
                     LinkText = "Ver Curso >"
                 },
                 new Course {
-                    Title = "Tecnología e Innovación",
-                    Description = "Capacítate en las últimas tendencias tecnológicas.",
+                    Title = "TecnologÃ­a e InnovaciÃ³n",
+                    Description = "CapacÃ­tate en las Ãºltimas tendencias tecnolÃ³gicas.",
                     IconClass = "bi-laptop",
                     LinkText = "Ver Curso >"
                 },
@@ -39,66 +40,65 @@ namespace ProyectoPAE.Controllers
                     LinkText = "Ver Curso >"
                 }
             };
-
+ 
             return View(courses);
         }
-
-        // --- MÉTODO DASHBOARD ACTUALIZADO PARA PADRES ---
-        public IActionResult Dashboard()
+ 
+        // --- MÃ‰TODO DASHBOARD ACTUALIZADO PARA PADRES ---
+        // --- MÃ‰TODO DASHBOARD ACTUALIZADO PARA SOPORTAR NAVEGACIÃ“N Y ROLES ---
+        public IActionResult Dashboard(string rol = null)
         {
-            // 1. Recuperamos los datos de la sesión
             var nombreUsuario = HttpContext.Session.GetString("NombreUsuario");
-            var rol = HttpContext.Session.GetString("UserRol");
+            var rolSesion = HttpContext.Session.GetString("UserRol");
             var userIdStr = HttpContext.Session.GetString("UserIdStr");
-
-            // 2. Verificación de seguridad: si no hay sesión, al Login
-            if (string.IsNullOrEmpty(nombreUsuario) || string.IsNullOrEmpty(rol))
+ 
+            // 2. VerificaciÃ³n de seguridad: si no hay sesiÃ³n, redirecciona al Login
+            if (string.IsNullOrEmpty(nombreUsuario) || string.IsNullOrEmpty(rolSesion))
             {
                 return RedirectToAction("Index", "Login");
             }
-
+ 
+            // 3. Determinamos el rol a mostrar y lo convertimos SIEMPRE a minÃºsculas (.ToLower())
+            // Esto evita fallos si la base de datos o el parÃ¡metro trae mayÃºsculas como "Docente" o "ADMINISTRADOR"
+            string rolActivo = !string.IsNullOrEmpty(rol) ? rol.Trim().ToLower() : rolSesion.Trim().ToLower();
+ 
             ViewBag.Nombre = nombreUsuario;
-            ViewBag.Rol = rol;
-
-            // 3. Lógica específica para el ACUDIENTE
-            if (rol == "acudiente")
+            ViewBag.Rol = rolActivo; // Se enviarÃ¡ limpio (ej: "docente", "admin", "acudiente")
+ 
+            // 4. LÃ³gica especÃ­fica para el ACUDIENTE
+            if (rolActivo == "acudiente")
             {
-                // Usamos TryParse para evitar el error de formato (FormatException)
+                // Usamos TryParse para evitar errores de formato (FormatException)
                 if (int.TryParse(userIdStr, out int userId))
                 {
-                    // Buscar IDs de hijos vinculados
                     var hijosIds = _context.ESTUDIANTE_PADRE
                                            .Where(ep => ep.ID_PADRE == userId)
                                            .Select(ep => ep.ID_ESTUDIANTE)
                                            .ToList();
-
-                    // Traer la información de los usuarios que son estudiantes
+ 
                     var listaHijos = _context.Usuarios
                         .Where(u => hijosIds.Contains(u.ID_Usuario))
                         .AsEnumerable()
                         .Where(u => u.ROL != null && u.ROL.Trim().ToLower() == "estudiante")
                         .ToList();
-
+ 
                     if (listaHijos.Any())
                     {
                         int primerHijoId = listaHijos.First().ID_Usuario;
-
-                        // Promedio de notas
+ 
                         var promedio = _context.EVALUACIONES
                                                .Where(e => e.id_estudiante == primerHijoId)
                                                .Select(e => (double?)e.nota)
                                                .Average() ?? 0.0;
-
-                        // Contador de fallas
+ 
                         var fallas = _context.ASISTENCIAS
                                              .Count(a => a.id_estudiante == primerHijoId && a.estado == "Falla");
-
-                        // Citaciones
+ 
                         var listaCitaciones = _context.CITACIONES
                                                       .Where(c => c.id_estudiante == primerHijoId)
                                                       .OrderByDescending(c => c.fecha)
                                                       .ToList();
-
+ 
                         ViewBag.TotalCitaciones = listaCitaciones.Count;
                         ViewBag.PromedioRapido = promedio.ToString("0.0");
                         ViewBag.FallasRapidas = fallas;
@@ -107,77 +107,113 @@ namespace ProyectoPAE.Controllers
                 }
                 else
                 {
-                    // Si el ID llega corrupto (como el error de la imagen 4), lo mandamos a re-identificarse
+                    // Si el ID llega corrupto, lo mandamos a re-identificarse
                     return RedirectToAction("Index", "Login");
                 }
             }
-
+ 
             return View();
         }
+ 
         public IActionResult Perfil()
         {
-            // Cambiamos "IdUsuario" por "UserId" para que coincida con el resto de tu app
             var userId = HttpContext.Session.GetInt32("UserId");
-
-            // Si no hay sesión, regresamos al Login
             if (userId == null)
-            {
                 return RedirectToAction("Index", "Login");
-            }
-
-            // Buscamos al usuario por su ID
+ 
             var usuario = _context.Usuarios.Find(userId);
-
             if (usuario == null)
-            {
                 return RedirectToAction("Index", "Login");
-            }
-
+ 
             return View(usuario);
         }
-        // 1. Mostrar el formulario de edición
+ 
+        // 1. Mostrar el formulario de ediciÃ³n
         public IActionResult EditarPerfil()
         {
             var userId = HttpContext.Session.GetInt32("UserId");
             if (userId == null) return RedirectToAction("Index", "Login");
-
+ 
             var usuario = _context.Usuarios.Find(userId);
             return View(usuario);
         }
-
-        // 2. Procesar la actualización
+ 
+        // 2. Procesar la actualizaciÃ³n
         [HttpPost]
         public IActionResult ActualizarPerfil(Usuario usuarioEditado)
         {
             var userId = HttpContext.Session.GetInt32("UserId");
             if (userId == null) return RedirectToAction("Index", "Login");
-
+ 
             var usuarioBd = _context.Usuarios.Find(userId);
             if (usuarioBd != null)
             {
-                // Actualizamos solo los campos permitidos por el RF3.2
                 usuarioBd.TELEFONO = usuarioEditado.TELEFONO;
                 usuarioBd.DIRECCION = usuarioEditado.DIRECCION;
                 usuarioBd.CORREO_ELECTRONICO = usuarioEditado.CORREO_ELECTRONICO;
-                // La foto requiere una lógica extra para guardar el archivo, 
-                // por ahora aseguremos los datos de texto.
-
                 _context.SaveChanges();
-
-                // Actualizamos el nombre en sesión por si cambió el correo o algo importante
                 TempData["Mensaje"] = "Perfil actualizado correctamente";
             }
-
+ 
             return RedirectToAction("Perfil");
         }
+ 
+        // 3. Cambiar contraseÃ±a desde el perfil
+        [HttpPost]
+        public IActionResult CambiarContrasena(string contrasenaActual, string nuevaContrasena, string confirmar)
+        {
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null) return RedirectToAction("Index", "Login");
+ 
+            var usuario = _context.Usuarios.Find(userId);
+ 
+            if (usuario.CONTRASEÃ‘A != contrasenaActual)
+            {
+                ViewBag.ErrorPassword = "La contraseÃ±a actual es incorrecta.";
+                return View("Perfil", usuario);
+            }
+ 
+            if (nuevaContrasena != confirmar)
+            {
+                ViewBag.ErrorPassword = "Las contraseÃ±as nuevas no coinciden.";
+                return View("Perfil", usuario);
+            }
+ 
+            if (nuevaContrasena.Length < 8)
+            {
+                ViewBag.ErrorPassword = "La contraseÃ±a debe tener al menos 8 caracteres.";
+                return View("Perfil", usuario);
+            }
+ 
+            if (nuevaContrasena == contrasenaActual)
+            {
+                ViewBag.ErrorPassword = "La nueva contraseÃ±a debe ser diferente a la actual.";
+                return View("Perfil", usuario);
+            }
+ 
+            // Guardar en historial
+            _context.HistorialPasswords.Add(new GU_HISTORIAL_PASSWORD
+            {
+                id_usuario = usuario.ID_Usuario,
+                contrasena_hash = usuario.CONTRASEÃ‘A,
+                fecha_cambio = DateTime.Now
+            });
+ 
+            // Actualizar contraseÃ±a
+            usuario.CONTRASEÃ‘A = nuevaContrasena;
+            _context.SaveChanges();
+ 
+            ViewBag.ExitoPassword = "ContraseÃ±a Se Actualizo Correctamente.";
+            return View("Perfil", usuario);
+        }
+ 
         public IActionResult RenovarSesion()
         {
-            // Solo acceder a la sesión es suficiente para renovarla
             var _ = HttpContext.Session.GetString("NombreUsuario");
             return Ok();
         }
-
-        // Otros métodos existentes
+ 
+        // Otros mÃ©todos existentes
         public IActionResult Nosotros() => View();
         public IActionResult Contacto() => View();
         public IActionResult Cursos() => View();
