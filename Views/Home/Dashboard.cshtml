@@ -1459,11 +1459,11 @@
         if (sub) sub.classList.remove('d-none');
     }
 
-    function volverEstudianteMejoras() {
+ function volverEstudianteMejoras() {
         volverEstudiante();
     }
 
-    // --- GESTIÓN DE MODALES (ACCIONES DE MEJORA) ---
+    // --- GESTIÓN DE MODALES (ACCIONES DE MEJORA) ---    
     function abrirCuadroTexto(idAccion, rol, tituloAccion) {
         document.getElementById('input_id_accion').value = idAccion;
         document.getElementById('input_remitente').value = rol;
@@ -1487,9 +1487,16 @@
         }
 
         const miModal = new bootstrap.Modal(document.getElementById('modalFormularioMejora'));
+	Dashboard-cambios
         miModal.show(); }
 
    // Inicialización automática al cargar el Dashboard según el rol activo
+
+        miModal.show();
+    }
+
+    // --- INICIALIZACIÓN DEL DASHBOARD ---
+	main
     document.addEventListener("DOMContentLoaded", function () {
         // Obtenemos el rol enviado desde ViewBag.Rol en C# y lo normalizamos a minúsculas
         var rolActual = "@ViewBag.Rol".trim().toLowerCase();
