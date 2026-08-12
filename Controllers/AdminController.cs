@@ -1,7 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using ProyectoPAE.Models;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Rotativa.AspNetCore;
 
 namespace ProyectoPAE.Controllers
@@ -85,6 +88,214 @@ namespace ProyectoPAE.Controllers
                 }
             }
             return View("Usuarios", _context.Usuarios.ToList());
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RegistrarUsuario(RegistroUsuarioViewModel model)
+        {
+            if (model.ROL == "Estudiante" && model.CursoSeleccionado == null)
+                ModelState.AddModelError("CursoSeleccionado", "Debe seleccionar un grado para el estudiante.");
+
+            if (model.ROL == "Estudiante" && (model.Acudientes == null || !model.Acudientes.Any(a => !string.IsNullOrWhiteSpace(a.NOMBRES))))
+                ModelState.AddModelError("Acudientes", "Debe registrar al menos un acudiente.");
+
+            if (model.ROL == "Docente" && string.IsNullOrWhiteSpace(model.AREA_ASIGNATURA))
+                ModelState.AddModelError("AREA_ASIGNATURA", "Debe indicar el área o asignatura del docente.");
+
+            if (!ModelState.IsValid)
+            {
+                TempData["Error"] = "Revisa los campos del formulario, hay datos obligatorios sin diligenciar.";
+                return RedirectToAction("Usuarios");
+            }
+
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
+                var nuevoUsuario = new Usuario
+                {
+                    NOMBRE_USUARIO = await GenerarNombreUsuario(model.NOMBRES, model.APELLIDOS),
+                    CONTRASEÑA = BCrypt.Net.BCrypt.HashPassword(model.CONTRASEÑA),
+                    NOMBRES = model.NOMBRES,
+                    APELLIDOS = model.APELLIDOS,
+                    CORREO_ELECTRONICO = model.CORREO_ELECTRONICO,
+                    FECHA_CREACION = DateTime.Now,
+                    ACTIVO = model.ESTADO_ACTIVO,
+                    ROL = model.ROL,
+                    TELEFONO = model.CELULAR,
+                    DIRECCION = model.DIRECCION,
+                    TIPO_DOCUMENTO = model.TIPO_DOCUMENTO,
+                    NUM_DOCUMENTO = model.NUM_DOCUMENTO,
+                    FECHA_NACIMIENTO = model.FECHA_NACIMIENTO,
+                    GENERO = model.GENERO,
+                    LUGAR_NACIMIENTO = model.LUGAR_NACIMIENTO,
+                    CIUDAD = model.CIUDAD,
+                    BARRIO = model.BARRIO,
+                    AREA_ASIGNATURA = model.AREA_ASIGNATURA,
+                    COLEGIO_PROCEDENCIA = model.COLEGIO_PROCEDENCIA,
+                    TIPO_SANGRE = model.TIPO_SANGRE,
+                    EPS = model.EPS,
+                    ALERGIAS = model.ALERGIAS,
+                    CONDICIONES_MEDICAS = model.CONDICIONES_MEDICAS,
+                    OBSERVACIONES = model.OBSERVACIONES,
+                    FORZAR_CAMBIO_CLAVE = model.FORZAR_CAMBIO_CLAVE
+                };
+
+                _context.Usuarios.Add(nuevoUsuario);
+                await _context.SaveChangesAsync();
+
+                if (model.ROL == "Estudiante" && model.CursoSeleccionado.HasValue)
+                {
+                    var anioActual = DateTime.Now.Year;
+                    var consecutivo = await _context.ESTUDIANTE
+                        .CountAsync(e => e.codigo_estudiante.StartsWith($"EST-{anioActual}")) + 1;
+                    var codigoEstudiante = $"EST-{anioActual}-{consecutivo:D3}";
+
+                    var nuevoEstudiante = new Estudiante
+                    {
+                        nombre = model.NOMBRES,
+                        apellido = model.APELLIDOS,
+                        email = model.CORREO_ELECTRONICO,
+                        codigo_estudiante = codigoEstudiante,
+                        fecha_inscripcion = DateTime.Now,
+                        id_usuario = nuevoUsuario.ID_Usuario
+                    };
+                    _context.ESTUDIANTE.Add(nuevoEstudiante);
+                    await _context.SaveChangesAsync();
+
+                    var hoy = DateTime.Now;
+                    var semestre = hoy.Month <= 6 ? "I" : "II";
+
+                    _context.Matriculas.Add(new Matricula
+                    {
+                        id_estudiante = nuevoEstudiante.id_estudiante,
+                        id_curso = model.CursoSeleccionado.Value,
+                        fecha_matricula = hoy,
+                        periodo_academico = $"{hoy.Year}-{semestre}",
+                        estado = "Activa",
+                        ano = hoy.Year
+                    });
+
+                    if (model.Acudientes != null)
+                    {
+                        foreach (var acu in model.Acudientes.Where(a => !string.IsNullOrWhiteSpace(a.NOMBRES)))
+                        {
+                            var acudienteExistente = await BuscarAcudienteExistente(acu.DOCUMENTO, acu.CORREO);
+
+                            var partesNombre = acu.NOMBRES!.Trim().Split(' ', 2);
+                            var nombreAcudiente = partesNombre[0];
+                            var apellidoAcudiente = partesNombre.Length > 1 ? partesNombre[1] : "-";
+
+                            Usuario usuarioAcudiente;
+                            if (acudienteExistente != null)
+                            {
+                                usuarioAcudiente = acudienteExistente;
+                            }
+                            else
+                            {
+                                usuarioAcudiente = new Usuario
+                                {
+                                    NOMBRE_USUARIO = await GenerarNombreUsuario(nombreAcudiente, apellidoAcudiente),
+                                    CONTRASEÑA = BCrypt.Net.BCrypt.HashPassword(GenerarClaveTemporal()),
+                                    NOMBRES = nombreAcudiente,
+                                    APELLIDOS = apellidoAcudiente,
+                                    CORREO_ELECTRONICO = acu.CORREO,
+                                    NUM_DOCUMENTO = acu.DOCUMENTO,
+                                    TELEFONO = acu.CELULAR,
+                                    ROL = "acudiente",
+                                    ACTIVO = true,
+                                    FECHA_CREACION = DateTime.Now,
+                                    FORZAR_CAMBIO_CLAVE = true
+                                };
+                                _context.Usuarios.Add(usuarioAcudiente);
+                                await _context.SaveChangesAsync();
+                            }
+
+                            // Buscar o crear el registro legacy en PADRE_TUTOR, enlazado por id_usuario
+                            var padreTutor = await _context.PADRE_TUTOR
+                                .FirstOrDefaultAsync(p => p.id_usuario == usuarioAcudiente.ID_Usuario);
+
+                            if (padreTutor == null)
+                            {
+                                padreTutor = new PadreTutor
+                                {
+                                    nombre = nombreAcudiente,
+                                    apellido = apellidoAcudiente,
+                                    telefono = acu.CELULAR,
+                                    email = acu.CORREO,
+                                    relacion_estudiante = acu.PARENTESCO,
+                                    id_usuario = usuarioAcudiente.ID_Usuario
+                                };
+                                _context.PADRE_TUTOR.Add(padreTutor);
+                                await _context.SaveChangesAsync();
+                            }
+
+                            _context.ESTUDIANTE_PADRE.Add(new EstudiantePadre
+                            {
+                                ID_PADRE = padreTutor.id_padre,
+                                ID_ESTUDIANTE = nuevoEstudiante.id_estudiante,
+                                relacion = acu.PARENTESCO,
+                                ES_PRINCIPAL = acu.ES_PRINCIPAL
+                            });
+                        }
+                    }
+                }
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                TempData["Mensaje"] = "Usuario registrado correctamente.";
+                return RedirectToAction("Usuarios");
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                var detalle = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+                TempData["Error"] = "Ocurrió un error al guardar el usuario: " + detalle;
+                return RedirectToAction("Usuarios");
+            }
+        }
+
+        private async Task<Usuario?> BuscarAcudienteExistente(string? documento, string? correo)
+        {
+            if (!string.IsNullOrWhiteSpace(documento))
+            {
+                var porDocumento = await _context.Usuarios
+                    .FirstOrDefaultAsync(u => u.ROL == "acudiente" && u.NUM_DOCUMENTO == documento);
+                if (porDocumento != null) return porDocumento;
+            }
+
+            if (!string.IsNullOrWhiteSpace(correo))
+            {
+                return await _context.Usuarios
+                    .FirstOrDefaultAsync(u => u.ROL == "acudiente" && u.CORREO_ELECTRONICO == correo);
+            }
+
+            return null;
+        }
+
+        private async Task<string> GenerarNombreUsuario(string nombres, string apellidos)
+        {
+            var inicial = nombres.Trim().Substring(0, 1).ToLower();
+            var apellido = apellidos.Trim().Split(' ')[0].ToLower();
+            var baseNombre = string.IsNullOrWhiteSpace(apellido)
+                ? $"{inicial}.{nombres.Trim().ToLower()}"
+                : $"{inicial}.{apellido}";
+
+            var nombreUsuario = baseNombre;
+            var contador = 1;
+
+            while (await _context.Usuarios.AnyAsync(u => u.NOMBRE_USUARIO == nombreUsuario))
+            {
+                contador++;
+                nombreUsuario = $"{baseNombre}{contador}";
+            }
+
+            return nombreUsuario;
+        }
+
+        private string GenerarClaveTemporal()
+        {
+            return Guid.NewGuid().ToString("N").Substring(0, 10);
         }
 
         [HttpPost]

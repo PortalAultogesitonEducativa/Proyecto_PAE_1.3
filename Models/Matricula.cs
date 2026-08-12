@@ -1,6 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema; // Asegúrate de tener este using
-
+﻿using System;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+ 
 namespace ProyectoPAE.Models
 {
     [Table("MATRICULA")]
@@ -13,8 +14,8 @@ namespace ProyectoPAE.Models
         public DateTime fecha_matricula { get; set; }
         public string periodo_academico { get; set; } = "";
         public string estado { get; set; } = "";
-
-        [Column("año")]
+ 
+        [Column("anio")]
         public int ano { get; set; }
     }
 }
