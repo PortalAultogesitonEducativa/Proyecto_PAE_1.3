@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ProyectoPAE.Models
@@ -8,6 +9,8 @@ namespace ProyectoPAE.Models
     {
         [Key]
         public int ID_Usuario { get; set; }
+
+        // Ya existentes
         public string NOMBRE_USUARIO { get; set; } = string.Empty;
         public string CONTRASEÑA { get; set; } = string.Empty;
         public string? NOMBRES { get; set; }
@@ -19,16 +22,40 @@ namespace ProyectoPAE.Models
         public string? TELEFONO { get; set; }
         public string? DIRECCION { get; set; }
         public string? FOTO_URL { get; set; }
+
+        // Nuevos: identificación
+        public string? TIPO_DOCUMENTO { get; set; }
+        public string? NUM_DOCUMENTO { get; set; }
+        public DateTime? FECHA_NACIMIENTO { get; set; }
+        public string? GENERO { get; set; }
+        public string? LUGAR_NACIMIENTO { get; set; }
+
+        // Nuevos: contacto adicional
+        public string? CIUDAD { get; set; }
+        public string? BARRIO { get; set; }
+
+        // Nuevos: académico
+        public string? AREA_ASIGNATURA { get; set; }      // aplica a Docente
+        public string? COLEGIO_PROCEDENCIA { get; set; }  // aplica a Estudiante
+
+        // Nuevos: salud
+        public string? TIPO_SANGRE { get; set; }
+        public string? EPS { get; set; }
+        public string? ALERGIAS { get; set; }
+        public string? CONDICIONES_MEDICAS { get; set; }
+        public string? OBSERVACIONES { get; set; }
+
+        // Nuevos: seguridad
+        public bool FORZAR_CAMBIO_CLAVE { get; set; }
     }
 
     [Table("ESTUDIANTE_PADRE")]
     public class EstudiantePadre
     {
-        [Key]
-        public int ID_ESTUDIANTE_PADRE { get; set; }
         public int ID_PADRE { get; set; }
         public int ID_ESTUDIANTE { get; set; }
         public string? relacion { get; set; }
+        public bool ES_PRINCIPAL { get; set; }
     }
 
     [Table("ASISTENCIA")]
