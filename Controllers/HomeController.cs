@@ -4,18 +4,18 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using System.Linq;
 using System;
- 
+
 namespace ProyectoPAE.Controllers
 {
     public class HomeController : Controller
     {
         private readonly ApplicationDbContext _context;
- 
+
         public HomeController(ApplicationDbContext context)
         {
             _context = context;
         }
- 
+
         // Esta es la página principal (Pública)
         public IActionResult Index()
         {
@@ -40,10 +40,10 @@ namespace ProyectoPAE.Controllers
                     LinkText = "Ver Curso >"
                 }
             };
- 
+
             return View(courses);
         }
- 
+
         // --- MÉTODO DASHBOARD ACTUALIZADO PARA PADRES ---
         // --- MÉTODO DASHBOARD ACTUALIZADO PARA SOPORTAR NAVEGACIÓN Y ROLES ---
         public IActionResult Dashboard(string rol = null)
@@ -51,20 +51,20 @@ namespace ProyectoPAE.Controllers
             var nombreUsuario = HttpContext.Session.GetString("NombreUsuario");
             var rolSesion = HttpContext.Session.GetString("UserRol");
             var userIdStr = HttpContext.Session.GetString("UserIdStr");
- 
+
             // 2. Verificación de seguridad: si no hay sesión, redirecciona al Login
             if (string.IsNullOrEmpty(nombreUsuario) || string.IsNullOrEmpty(rolSesion))
             {
                 return RedirectToAction("Index", "Login");
             }
- 
+
             // 3. Determinamos el rol a mostrar y lo convertimos SIEMPRE a minúsculas (.ToLower())
             // Esto evita fallos si la base de datos o el parámetro trae mayúsculas como "Docente" o "ADMINISTRADOR"
             string rolActivo = !string.IsNullOrEmpty(rol) ? rol.Trim().ToLower() : rolSesion.Trim().ToLower();
- 
+
             ViewBag.Nombre = nombreUsuario;
             ViewBag.Rol = rolActivo; // Se enviará limpio (ej: "docente", "admin", "acudiente")
- 
+
             // 4. Lógica específica para el ACUDIENTE
             if (rolActivo == "acudiente")
             {
@@ -75,30 +75,30 @@ namespace ProyectoPAE.Controllers
                                            .Where(ep => ep.ID_PADRE == userId)
                                            .Select(ep => ep.ID_ESTUDIANTE)
                                            .ToList();
- 
+
                     var listaHijos = _context.Usuarios
                         .Where(u => hijosIds.Contains(u.ID_Usuario))
                         .AsEnumerable()
                         .Where(u => u.ROL != null && u.ROL.Trim().ToLower() == "estudiante")
                         .ToList();
- 
+
                     if (listaHijos.Any())
                     {
                         int primerHijoId = listaHijos.First().ID_Usuario;
- 
+
                         var promedio = _context.EVALUACIONES
                                                .Where(e => e.id_estudiante == primerHijoId)
                                                .Select(e => (double?)e.nota)
                                                .Average() ?? 0.0;
- 
+
                         var fallas = _context.ASISTENCIAS
                                              .Count(a => a.id_estudiante == primerHijoId && a.estado == "Falla");
- 
+
                         var listaCitaciones = _context.CITACIONES
                                                       .Where(c => c.id_estudiante == primerHijoId)
                                                       .OrderByDescending(c => c.fecha)
                                                       .ToList();
- 
+
                         ViewBag.TotalCitaciones = listaCitaciones.Count;
                         ViewBag.PromedioRapido = promedio.ToString("0.0");
                         ViewBag.FallasRapidas = fallas;
@@ -111,40 +111,68 @@ namespace ProyectoPAE.Controllers
                     return RedirectToAction("Index", "Login");
                 }
             }
- 
+
+            // 5. Lógica específica para el ADMIN: datos reales de matrículas
+            if (rolActivo == "admin")
+            {
+                var anioActual = DateTime.Now.Year;
+
+                ViewBag.TotalMatriculadosActivos = _context.Matriculas.Count(m => m.estado == "Activa");
+                ViewBag.MatriculasEsteAnio = _context.Matriculas.Count(m => m.ano == anioActual);
+                ViewBag.MatriculasFinalizadas = _context.Matriculas.Count(m => m.estado == "Finalizada");
+
+                var listaMatriculas = (from m in _context.Matriculas
+                                       join e in _context.ESTUDIANTE on m.id_estudiante equals e.id_estudiante
+                                       orderby m.fecha_matricula descending
+                                       select new MatriculaAdminItemViewModel
+                                       {
+                                           IdMatricula = m.id_matricula,
+                                           NombreEstudiante = e.nombre + " " + e.apellido,
+                                           CodigoEstudiante = e.codigo_estudiante,
+                                           Grado = m.id_curso,
+                                           FechaMatricula = m.fecha_matricula,
+                                           PeriodoAcademico = m.periodo_academico,
+                                           Estado = m.estado
+                                       })
+                                       .Take(20)
+                                       .ToList();
+
+                ViewBag.ListaMatriculas = listaMatriculas;
+            }
+
             return View();
         }
- 
+
         public IActionResult Perfil()
         {
             var userId = HttpContext.Session.GetInt32("UserId");
             if (userId == null)
                 return RedirectToAction("Index", "Login");
- 
+
             var usuario = _context.Usuarios.Find(userId);
             if (usuario == null)
                 return RedirectToAction("Index", "Login");
- 
+
             return View(usuario);
         }
- 
+
         // 1. Mostrar el formulario de edición
         public IActionResult EditarPerfil()
         {
             var userId = HttpContext.Session.GetInt32("UserId");
             if (userId == null) return RedirectToAction("Index", "Login");
- 
+
             var usuario = _context.Usuarios.Find(userId);
             return View(usuario);
         }
- 
+
         // 2. Procesar la actualización
         [HttpPost]
         public IActionResult ActualizarPerfil(Usuario usuarioEditado)
         {
             var userId = HttpContext.Session.GetInt32("UserId");
             if (userId == null) return RedirectToAction("Index", "Login");
- 
+
             var usuarioBd = _context.Usuarios.Find(userId);
             if (usuarioBd != null)
             {
@@ -154,43 +182,43 @@ namespace ProyectoPAE.Controllers
                 _context.SaveChanges();
                 TempData["Mensaje"] = "Perfil actualizado correctamente";
             }
- 
+
             return RedirectToAction("Perfil");
         }
- 
+
         // 3. Cambiar contraseña desde el perfil
         [HttpPost]
         public IActionResult CambiarContrasena(string contrasenaActual, string nuevaContrasena, string confirmar)
         {
             var userId = HttpContext.Session.GetInt32("UserId");
             if (userId == null) return RedirectToAction("Index", "Login");
- 
+
             var usuario = _context.Usuarios.Find(userId);
- 
+
             if (usuario.CONTRASEÑA != contrasenaActual)
             {
                 ViewBag.ErrorPassword = "La contraseña actual es incorrecta.";
                 return View("Perfil", usuario);
             }
- 
+
             if (nuevaContrasena != confirmar)
             {
                 ViewBag.ErrorPassword = "Las contraseñas nuevas no coinciden.";
                 return View("Perfil", usuario);
             }
- 
+
             if (nuevaContrasena.Length < 8)
             {
                 ViewBag.ErrorPassword = "La contraseña debe tener al menos 8 caracteres.";
                 return View("Perfil", usuario);
             }
- 
+
             if (nuevaContrasena == contrasenaActual)
             {
                 ViewBag.ErrorPassword = "La nueva contraseña debe ser diferente a la actual.";
                 return View("Perfil", usuario);
             }
- 
+
             // Guardar en historial
             _context.HistorialPasswords.Add(new GU_HISTORIAL_PASSWORD
             {
@@ -198,21 +226,21 @@ namespace ProyectoPAE.Controllers
                 contrasena_hash = usuario.CONTRASEÑA,
                 fecha_cambio = DateTime.Now
             });
- 
+
             // Actualizar contraseña
             usuario.CONTRASEÑA = nuevaContrasena;
             _context.SaveChanges();
- 
+
             ViewBag.ExitoPassword = "Contraseña Se Actualizo Correctamente.";
             return View("Perfil", usuario);
         }
- 
+
         public IActionResult RenovarSesion()
         {
             var _ = HttpContext.Session.GetString("NombreUsuario");
             return Ok();
         }
- 
+
         // Otros métodos existentes
         public IActionResult Nosotros() => View();
         public IActionResult Contacto() => View();
