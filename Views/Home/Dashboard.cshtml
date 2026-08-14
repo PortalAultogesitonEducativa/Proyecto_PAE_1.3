@@ -57,194 +57,188 @@
 </div>
 
 <div class="container pb-5">
+
     <div id="panel-admin" class="role-panel d-none">
 
         <div id="admin-main">
-            <h2 class="mb-4" style="color: #e67e22;"><i class="bi bi-speedometer2 me-2"></i>Panel del Administrador</h2>
+            <h2 class="mb-4" style="color: #e67e22;"><i class="bi bi-gear-fill me-2"></i>Gestión Administrativa</h2>
 
-            <div class="row">
-                <div class="col-md-4 mb-4" onclick="verMatricula()">
-                    <div class="card p-4 text-center border-0 shadow-sm h-100 card-admin">
+            <div class="row g-3 mb-3">
+                <div class="col-md-3">
+                    <div class="card p-3 shadow-sm border-0 h-100 text-center card-hover card-admin" onclick="verMatricula()" style="cursor: pointer;">
                         <i class="bi bi-clipboard-check fs-2 mb-2" style="color: #e67e22;"></i>
-                        <h5>Matrículas</h5>
-                        <p class="small text-muted">Gestión de matrículas activas e históricas.</p>
-                        <button class="btn btn-sm btn-outline-warning mt-auto w-100" type="button">Ver Matrículas</button>
+                        <h6>Matrículas</h6>
                     </div>
                 </div>
 
-                <div class="col-md-4 mb-4" onclick="verUsuarios()">
-                    <div class="card p-4 text-center border-0 shadow-sm h-100 card-admin">
-                        <i class="bi bi-people-fill fs-2 mb-2" style="color: #e67e22;"></i>
-                        <h5>Usuarios</h5>
-                        <p class="small text-muted">Administración de cuentas y roles.</p>
-                        <button class="btn btn-sm btn-outline-warning mt-auto w-100" type="button">Gestionar Usuarios</button>
+                <div class="col-md-3">
+                    <a href="/Admin/Usuarios" class="text-decoration-none h-100">
+                        <div class="card p-3 shadow-sm border-0 h-100 text-center card-hover card-admin">
+                            <i class="bi bi-people fs-2 mb-2" style="color: #e67e22;"></i>
+                            <h6 class="text-dark">Usuarios y Roles</h6>
+                        </div>
+                    </a>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card p-3 shadow-sm border-0 h-100 text-center card-hover card-admin" onclick="verCertificados()" style="cursor: pointer;">
+                        <i class="bi bi-file-earmark-pdf fs-2 mb-2" style="color: #e67e22;"></i>
+                        <h6>Certificados</h6>
                     </div>
                 </div>
 
-                <div class="col-md-4 mb-4" onclick="verCertificados()">
-                    <div class="card p-4 text-center border-0 shadow-sm h-100 card-admin">
-                        <i class="bi bi-file-earmark-pdf-fill fs-2 mb-2" style="color: #e67e22;"></i>
-                        <h5>Certificados</h5>
-                        <p class="small text-muted">Emisión y consulta de certificados.</p>
-                        <button class="btn btn-sm btn-outline-warning mt-auto w-100" type="button">Ver Certificados</button>
+                <div class="col-md-3">
+                    <div class="card p-3 shadow-sm border-0 h-100 text-center card-hover card-admin" onclick="verNotificaciones()" style="cursor: pointer;">
+                        <i class="bi bi-megaphone fs-2 mb-2" style="color: #e67e22;"></i>
+                        <h6>Notificaciones</h6>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <div class="card p-3 shadow-sm border-0 h-100 text-center card-hover card-admin" onclick="verAsignacion()" style="cursor: pointer;">
+                        <i class="bi bi-diagram-3 fs-2 mb-2" style="color: #e67e22;"></i>
+                        <h6>Asignación Académica</h6>
                     </div>
                 </div>
 
-                <div class="col-md-4 mb-4" onclick="verNotificaciones()">
-                    <div class="card p-4 text-center border-0 shadow-sm h-100 card-admin">
-                        <i class="bi bi-megaphone-fill fs-2 mb-2" style="color: #e67e22;"></i>
-                        <h5>Notificaciones</h5>
-                        <p class="small text-muted">Comunicados generales a la institución.</p>
-                        <button class="btn btn-sm btn-outline-warning mt-auto w-100" type="button">Enviar Comunicado</button>
-                    </div>
-                </div>
-
-                <div class="col-md-4 mb-4" onclick="verAsignacion()">
-                    <div class="card p-4 text-center border-0 shadow-sm h-100 card-admin">
-                        <i class="bi bi-diagram-3-fill fs-2 mb-2" style="color: #e67e22;"></i>
-                        <h5>Asignación Académica</h5>
-                        <p class="small text-muted">Asignación de materias y grupos a docentes.</p>
-                        <button class="btn btn-sm btn-outline-warning mt-auto w-100" type="button">Asignar</button>
-                    </div>
-                </div>
-
-                <div class="col-md-4 mb-4" onclick="verReportes()">
-                    <div class="card p-4 text-center border-0 shadow-sm h-100 card-admin">
-                        <i class="bi bi-graph-up-arrow fs-2 mb-2" style="color: #e67e22;"></i>
-                        <h5>Reportes Pro</h5>
-                        <p class="small text-muted">Estadísticas institucionales generales.</p>
-                        <button class="btn btn-sm btn-outline-warning mt-auto w-100" type="button">Ver Reportes</button>
-                    </div>
+                <div class="col-md-3">
+                    <a href="@Url.Action("ListaEstudiantes", "Admin")" class="text-decoration-none">
+                        <div class="card p-3 shadow-sm border-0 h-100 text-center card-hover card-admin">
+                            <i class="bi bi-people-fill fs-2 mb-2" style="color: #e67e22;"></i>
+                            <h6 class="text-dark">Gestionar Reportes</h6>
+                        </div>
+                    </a>
                 </div>
             </div>
         </div>
+        <div id="admin-matricula" class="d-none">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 style="color: #e67e22;"><i class="bi bi-clipboard-check me-2"></i>Matrículas</h3>
+                <button class="btn btn-outline-secondary btn-sm" onclick="volverAdmin()">Volver</button>
+            </div>
 
-      <div id="admin-matricula" class="d-none">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h3 style="color: #e67e22;"><i class="bi bi-clipboard-check me-2"></i>Matrículas</h3>
-            <button class="btn btn-outline-secondary btn-sm" onclick="volverAdmin()">Volver</button>
-        </div>
-
-        <!-- Resumen (datos reales de MATRICULA) -->
-        <div class="row g-3 mb-4">
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm p-4 h-100" style="border-left: 4px solid #0d2a4a !important;">
-                    <p class="text-muted text-uppercase small mb-2">Matrículas Activas</p>
-                    <div class="d-flex justify-content-between align-items-end">
-                        <span class="fs-3 fw-bold" style="color: #0d2a4a;">@ViewBag.TotalMatriculadosActivos</span>
+            <!-- Resumen (datos reales de MATRICULA) -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm p-4 h-100" style="border-left: 4px solid #0d2a4a !important;">
+                        <p class="text-muted text-uppercase small mb-2">Matrículas Activas</p>
+                        <div class="d-flex justify-content-between align-items-end">
+                            <span class="fs-3 fw-bold" style="color: #0d2a4a;">@ViewBag.TotalMatriculadosActivos</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm p-4 h-100" style="border-left: 4px solid #e67e22 !important;">
+                        <p class="text-muted text-uppercase small mb-2">Matrículas @DateTime.Now.Year</p>
+                        <div class="d-flex justify-content-between align-items-end">
+                            <span class="fs-3 fw-bold" style="color: #e67e22;">@ViewBag.MatriculasEsteAnio</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm p-4 h-100" style="border-left: 4px solid #0d2a4a99 !important;">
+                        <p class="text-muted text-uppercase small mb-2">Matrículas Finalizadas</p>
+                        <div class="d-flex justify-content-between align-items-end">
+                            <span class="fs-3 fw-bold" style="color: #0d2a4a;">@ViewBag.MatriculasFinalizadas</span>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm p-4 h-100" style="border-left: 4px solid #e67e22 !important;">
-                    <p class="text-muted text-uppercase small mb-2">Matrículas @DateTime.Now.Year</p>
-                    <div class="d-flex justify-content-between align-items-end">
-                        <span class="fs-3 fw-bold" style="color: #e67e22;">@ViewBag.MatriculasEsteAnio</span>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm p-4 h-100" style="border-left: 4px solid #0d2a4a99 !important;">
-                    <p class="text-muted text-uppercase small mb-2">Matrículas Finalizadas</p>
-                    <div class="d-flex justify-content-between align-items-end">
-                        <span class="fs-3 fw-bold" style="color: #0d2a4a;">@ViewBag.MatriculasFinalizadas</span>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- Tabla -->
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-white d-flex flex-wrap align-items-center justify-content-between gap-3 p-3">
-                <div class="d-flex gap-3">
-                    <div>
-                        <label class="form-label small mb-1">Filtrar por Grado</label>
-                        <select class="form-select form-select-sm">
-                            <option>Todos los Grados</option>
-                            <option>6</option>
-                            <option>7</option>
-                            <option>8</option>
-                            <option>9</option>
-                            <option>10</option>
-                            <option>11</option>
-                        </select>
+            <!-- Tabla -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white d-flex flex-wrap align-items-center justify-content-between gap-3 p-3">
+                    <div class="d-flex gap-3">
+                        <div>
+                            <label class="form-label small mb-1">Filtrar por Grado</label>
+                            <select id="filtroGrado" class="form-select form-select-sm" onchange="filtrarMatriculas()">
+                                <option>Todos los Grados</option>
+                                <option>6</option>
+                                <option>7</option>
+                                <option>8</option>
+                                <option>9</option>
+                                <option>10</option>
+                                <option>11</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="form-label small mb-1">Estado</label>
+                            <select id="filtroEstado" class="form-select form-select-sm" onchange="filtrarMatriculas()">
+                                <option>Cualquier Estado</option>
+                                <option>Activa</option>
+                                <option>Finalizada</option>
+                            </select>
+                        </div>
                     </div>
-                    <div>
-                        <label class="form-label small mb-1">Estado</label>
-                        <select class="form-select form-select-sm">
-                            <option>Cualquier Estado</option>
-                            <option>Activa</option>
-                            <option>Finalizada</option>
-                        </select>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-secondary btn-sm"><i class="bi bi-funnel me-1"></i>Más Filtros</button>
+                        <button class="btn btn-outline-secondary btn-sm"><i class="bi bi-download me-1"></i>Exportar</button>
                     </div>
                 </div>
-                <div class="d-flex gap-2">
-                    <button class="btn btn-outline-secondary btn-sm"><i class="bi bi-funnel me-1"></i>Más Filtros</button>
-                    <button class="btn btn-outline-secondary btn-sm"><i class="bi bi-download me-1"></i>Exportar</button>
-                </div>
-            </div>
 
-            <div class="table-responsive">
-                <table class="table align-middle mb-0">
-                    <thead class="table-light">
-                        <tr class="small text-uppercase text-muted">
-                            <th class="px-3 py-3">Estudiante</th>
-                            <th class="px-3 py-3">Grado</th>
-                            <th class="px-3 py-3">Periodo Académico</th>
-                            <th class="px-3 py-3">Fecha Matrícula</th>
-                            <th class="px-3 py-3">Estado</th>
-                            <th class="px-3 py-3 text-end">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @{
-                            var listaMatriculas = ViewBag.ListaMatriculas as List<ProyectoPAE.Models.MatriculaAdminItemViewModel>;
-                        }
-                        @if (listaMatriculas != null && listaMatriculas.Any())
-                        {
-                            foreach (var mat in listaMatriculas)
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead class="table-light">
+                            <tr class="small text-uppercase text-muted">
+                                <th class="px-3 py-3">Estudiante</th>
+                                <th class="px-3 py-3">Grado</th>
+                                <th class="px-3 py-3">Periodo Académico</th>
+                                <th class="px-3 py-3">Fecha Matrícula</th>
+                                <th class="px-3 py-3">Estado</th>
+                                <th class="px-3 py-3 text-end">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                var listaMatriculas = ViewBag.ListaMatriculas as List<ProyectoPAE.Models.MatriculaAdminItemViewModel>;
+                            }
+                            @if (listaMatriculas != null && listaMatriculas.Any())
                             {
-                                string colorFondo = mat.Estado == "Activa" ? "#0d2a4a1a" : "#6c757d1a";
-                                string colorTexto = mat.Estado == "Activa" ? "#0d2a4a" : "#6c757d";
-                                var iniciales = string.Join("", mat.NombreEstudiante.Split(' ').Take(2).Select(p => p.Length > 0 ? p[0].ToString().ToUpper() : ""));
+                                foreach (var mat in listaMatriculas)
+                                {
+                                    string colorFondo = mat.Estado == "Activa" ? "#0d2a4a1a" : "#6c757d1a";
+                                    string colorTexto = mat.Estado == "Activa" ? "#0d2a4a" : "#6c757d";
+                                    var iniciales = string.Join("", mat.NombreEstudiante.Split(' ').Take(2).Select(p => p.Length > 0 ? p[0].ToString().ToUpper() : ""));
 
-                                <tr>
-                                    <td class="px-3 py-3">
-                                        <div class="d-flex align-items-center gap-2">
-                                            <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width:40px;height:40px;background:@colorFondo;color:@colorTexto;">@iniciales</div>
-                                            <div>
-                                                <p class="fw-bold mb-0">@mat.NombreEstudiante</p>
-                                                <p class="text-muted small mb-0">ID: @mat.CodigoEstudiante</p>
+                                    <tr data-grado="@mat.Grado" data-estado="@mat.Estado">
+                                        <td class="px-3 py-3">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width:40px;height:40px;background:@colorFondo;color:@colorTexto;">@iniciales</div>
+                                                <div>
+                                                    <p class="fw-bold mb-0">@mat.NombreEstudiante</p>
+                                                    <p class="text-muted small mb-0">ID: @mat.CodigoEstudiante</p>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </td>
-                                    <td class="px-3 py-3">Grado @mat.Grado°</td>
-                                    <td class="px-3 py-3">@mat.PeriodoAcademico</td>
-                                    <td class="px-3 py-3">@mat.FechaMatricula.ToString("dd MMM, yyyy")</td>
-                                    <td class="px-3 py-3">
-                                        <span class="badge rounded-pill" style="background:@colorFondo;color:@colorTexto;">@mat.Estado.ToUpper()</span>
-                                    </td>
-                                    <td class="px-3 py-3 text-end">
-                                        <button class="btn btn-sm btn-light"><i class="bi bi-three-dots-vertical"></i></button>
-                                    </td>
+                                        </td>
+                                        <td class="px-3 py-3">Grado @mat.Grado°</td>
+                                        <td class="px-3 py-3">@mat.PeriodoAcademico</td>
+                                        <td class="px-3 py-3">@mat.FechaMatricula.ToString("dd MMM, yyyy")</td>
+                                        <td class="px-3 py-3">
+                                            <span class="badge rounded-pill" style="background:@colorFondo;color:@colorTexto;">@mat.Estado.ToUpper()</span>
+                                        </td>
+                                        <td class="px-3 py-3 text-end">
+                                            <button class="btn btn-sm btn-light"><i class="bi bi-three-dots-vertical"></i></button>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-4">No hay matrículas registradas.</td>
                                 </tr>
                             }
-                        }
-                        else
-                        {
-                            <tr>
-                                <td colspan="6" class="text-center text-muted py-4">No hay matrículas registradas.</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
+                        </tbody>
+                    </table>
+                </div>
 
-            <div class="card-footer bg-white d-flex align-items-center justify-content-between">
-                <p class="text-muted small mb-0">Mostrando las últimas @(listaMatriculas?.Count ?? 0) matrículas</p>
+                <div class="card-footer bg-white d-flex align-items-center justify-content-between">
+                    <p class="text-muted small mb-0">Mostrando las últimas @(listaMatriculas?.Count ?? 0) matrículas</p>
+                </div>
             </div>
         </div>
-    </div>
 
         <div id="admin-usuarios" class="d-none">
             <div class="d-flex justify-content-between align-items-center mb-4">
@@ -1176,298 +1170,322 @@
             </div>
         </div>
     </div>
-
+</div>
 
 <script>
-    /**
-     * Oculta todas las subsecciones y paneles principales de la interfaz SPA.
-     * Utiliza la clase 'd-none' de Bootstrap.
-     */
-    function ocultarTodo() {
-        const subs = [
-            'admin-main', 'admin-matricula', 'admin-usuarios', 'admin-certificados', 'admin-notificaciones', 'admin-asignacion', 'admin-reportes',
-            'docente-main', 'docente-planilla', 'docente-asistencia', 'docente-observaciones', 'docente-mejoras',
-            'estudiante-main', 'estudiante-horario', 'estudiante-calificaciones', 'estudiante-actividades', 'estudiante-cursosextra', 'estudiante-mejoras'
-        ];
+       /**
+        * Oculta todas las subsecciones y paneles principales de la interfaz SPA.
+        * Utiliza la clase 'd-none' de Bootstrap.
+        */
+       function ocultarTodo() {
+           const subs = [
+               'admin-main', 'admin-matricula', 'admin-usuarios', 'admin-certificados', 'admin-notificaciones', 'admin-asignacion', 'admin-reportes',
+               'docente-main', 'docente-planilla', 'docente-asistencia', 'docente-observaciones', 'docente-mejoras',
+               'estudiante-main', 'estudiante-horario', 'estudiante-calificaciones', 'estudiante-actividades', 'estudiante-cursosextra', 'estudiante-mejoras'
+           ];
 
-        const panelesPrincipales = [
-            'panel-admin', 'panel-docente', 'panel-estudiante', 'panel-acudiente'
-        ];
+           const panelesPrincipales = [
+               'panel-admin', 'panel-docente', 'panel-estudiante', 'panel-acudiente'
+           ];
 
-        // Ocultar subsecciones
-        subs.forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.classList.add('d-none');
-        });
+           // Ocultar subsecciones
+           subs.forEach(id => {
+               const el = document.getElementById(id);
+               if (el) el.classList.add('d-none');
+           });
 
-        // Ocultar paneles principales
-        panelesPrincipales.forEach(id => {
-            const p = document.getElementById(id);
-            if (p) p.classList.add('d-none');
-        });
-    }
+           // Ocultar paneles principales
+           panelesPrincipales.forEach(id => {
+               const p = document.getElementById(id);
+               if (p) p.classList.add('d-none');
+           });
+       }
 
-    // --- FUNCIONES DE NAVEGACIÓN ADMINISTRADOR ---
-    function verMatricula() { ocultarTodo(); mostrarAdminSub('admin-matricula'); }
-    function verUsuarios() { ocultarTodo(); mostrarAdminSub('admin-usuarios'); }
-    function verCertificados() { ocultarTodo(); mostrarAdminSub('admin-certificados'); }
-    function verNotificaciones() { ocultarTodo(); mostrarAdminSub('admin-notificaciones'); }
-    function verAsignacion() { ocultarTodo(); mostrarAdminSub('admin-asignacion'); }
-    function verReportes() { ocultarTodo(); mostrarAdminSub('admin-reportes'); }
+       // --- FUNCIONES DE NAVEGACIÓN ADMINISTRADOR ---
+       function verMatricula() { ocultarTodo(); mostrarAdminSub('admin-matricula'); }
+       function verUsuarios() { ocultarTodo(); mostrarAdminSub('admin-usuarios'); }
+       function verCertificados() { ocultarTodo(); mostrarAdminSub('admin-certificados'); }
+       function verNotificaciones() { ocultarTodo(); mostrarAdminSub('admin-notificaciones'); }
+       function verAsignacion() { ocultarTodo(); mostrarAdminSub('admin-asignacion'); }
+       function verReportes() { ocultarTodo(); mostrarAdminSub('admin-reportes'); }
 
-    function mostrarAdminSub(id) {
-        ocultarTodo();
-        const panelAdmin = document.getElementById('panel-admin');
-        if (panelAdmin) panelAdmin.classList.remove('d-none');
+       function mostrarAdminSub(id) {
+           ocultarTodo();
+           const panelAdmin = document.getElementById('panel-admin');
+           if (panelAdmin) panelAdmin.classList.remove('d-none');
 
-        const subSeccion = document.getElementById(id);
-        if (subSeccion) subSeccion.classList.remove('d-none');
-    }
+           const subSeccion = document.getElementById(id);
+           if (subSeccion) subSeccion.classList.remove('d-none');
+       }
 
-    function volverAdmin() {
-        ocultarTodo();
-        const panelAdmin = document.getElementById('panel-admin');
-        const adminMain = document.getElementById('admin-main');
-        if (panelAdmin) panelAdmin.classList.remove('d-none');
-        if (adminMain) adminMain.classList.remove('d-none');
-    }
+       function volverAdmin() {
+           ocultarTodo();
+           const panelAdmin = document.getElementById('panel-admin');
+           const adminMain = document.getElementById('admin-main');
+           if (panelAdmin) panelAdmin.classList.remove('d-none');
+           if (adminMain) adminMain.classList.remove('d-none');
+       }
 
-    // --- EVENTO DE INICIALIZACIÓN (SE EJECUTA AL CARGAR / RECARGAR LA PÁGINA) ---
-    document.addEventListener("DOMContentLoaded", function() {
-        const inputRol = document.getElementById('rolOculto');
+       function filtrarMatriculas() {
+           const grado = document.getElementById('filtroGrado').value;
+           const estado = document.getElementById('filtroEstado').value;
 
-        // Toma el valor enviado desde HomeController (ViewBag.Rol)
-        const rolDesdeSesion = inputRol ? inputRol.value.toLowerCase().trim() : '';
-        const selector = document.getElementById('roleSelector');
+           const filas = document.querySelectorAll('#admin-matricula tbody tr');
 
-        if (selector && rolDesdeSesion) {
-            // 1. Asigna el rol recibido al selector (ej. 'docente' si volviste desde Planilla)
-            selector.value = rolDesdeSesion;
+           filas.forEach(fila => {
+               const filaGrado = fila.getAttribute('data-grado');
+               const filaEstado = fila.getAttribute('data-estado');
 
-            // 2. Muestra automáticamente el panel correcto
-            switchRole();
+               // Si la fila no tiene esos atributos (ej. "No hay matrículas registradas"), no la tocamos
+               if (filaGrado === null || filaEstado === null) return;
 
-            // 3. Si el rol del login NO es administrador, oculta el desplegable de roles
-            if (rolDesdeSesion !== 'admin' && rolDesdeSesion !== 'administrador') {
-                selector.style.display = 'none';
-                const etiquetaRol = document.querySelector('.opacity-75');
-                if (etiquetaRol) etiquetaRol.style.display = 'none';
-            } else {
-                selector.style.display = 'block';
-            }
-        }
-    });
+               const coincideGrado = (grado === 'Todos los Grados') || (filaGrado === grado);
+               const coincideEstado = (estado === 'Cualquier Estado') || (filaEstado === estado);
 
-    /**
-     * Alterna la vista activa según el rol seleccionado en la barra superior.
-     */
-    function switchRole() {
-        const selector = document.getElementById('roleSelector');
-        if (!selector) return;
+               if (coincideGrado && coincideEstado) {
+                   fila.classList.remove('d-none');
+               } else {
+                   fila.classList.add('d-none');
+               }
+           });
+       }
 
-        let role = selector.value.toLowerCase().trim();
-        console.log("Cambiando al rol: " + role);
+       // --- EVENTO DE INICIALIZACIÓN (SE EJECUTA AL CARGAR / RECARGAR LA PÁGINA) ---
+       document.addEventListener("DOMContentLoaded", function() {
+           const inputRol = document.getElementById('rolOculto');
 
-        ocultarTodo();
+           // Toma el valor enviado desde HomeController (ViewBag.Rol)
+           const rolDesdeSesion = inputRol ? inputRol.value.toLowerCase().trim() : '';
+           const selector = document.getElementById('roleSelector');
 
-        // Normalización para el rol Administrador
-        if (role === 'administrador') {
-            role = 'admin';
-        }
+           if (selector && rolDesdeSesion) {
+               // 1. Asigna el rol recibido al selector (ej. 'docente' si volviste desde Planilla)
+               selector.value = rolDesdeSesion;
 
-        const panel = document.getElementById('panel-' + role);
+               // 2. Muestra automáticamente el panel correcto
+               switchRole();
 
-        if (panel) {
-            panel.classList.remove('d-none');
+               // 3. Si el rol del login NO es administrador, oculta el desplegable de roles
+               if (rolDesdeSesion !== 'admin' && rolDesdeSesion !== 'administrador') {
+                   selector.style.display = 'none';
+                   const etiquetaRol = document.querySelector('.opacity-75');
+                   if (etiquetaRol) etiquetaRol.style.display = 'none';
+               } else {
+                   selector.style.display = 'block';
+               }
+           }
+       });
 
-            // Enciende la tarjeta / menú principal de cada perfil
-            if (role === 'admin') {
-                const sub = document.getElementById('admin-main');
-                if (sub) sub.classList.remove('d-none');
-            }
-            else if (role === 'docente') {
-                const sub = document.getElementById('docente-main');
-                if (sub) sub.classList.remove('d-none'); // Muestra las tarjetas del Docente
-            }
-            else if (role === 'estudiante') {
-                const sub = document.getElementById('estudiante-main');
-                if (sub) sub.classList.remove('d-none');
-            }
-        } else {
-            console.error("No se encontró un panel con el ID: panel-" + role);
-        }
-    }
+       /**
+        * Alterna la vista activa según el rol seleccionado en la barra superior.
+        */
+       function switchRole() {
+           const selector = document.getElementById('roleSelector');
+           if (!selector) return;
 
-    // --- FUNCIONES DE NAVEGACIÓN DOCENTE ---
-    // 1. Función para mostrar la planilla y ocultar el panel principal del docente
-    // Función para mostrar la planilla dentro de la misma vista (SPA)
-    function verPlanilla() {
-        ocultarTodo(); // Limpia y oculta los demás paneles activos
+           let role = selector.value.toLowerCase().trim();
+           console.log("Cambiando al rol: " + role);
 
-        const panelDocente = document.getElementById('panel-docente');
-        const docentePlanilla = document.getElementById('docente-planilla');
+           ocultarTodo();
 
-        // Mostramos el panel general del docente y el sub-panel de la planilla
-        if (panelDocente) {
-            panelDocente.classList.remove('d-none');
-        }
-        if (docentePlanilla) {
-            docentePlanilla.classList.remove('d-none');
-        }
-    }
+           // Normalización para el rol Administrador
+           if (role === 'administrador') {
+               role = 'admin';
+           }
 
-    // Función para regresar desde la planilla de calificaciones al menú principal del docente
-    function volverDocente() {
-        ocultarTodo(); // Oculta todos los paneles secundarios activos
+           const panel = document.getElementById('panel-' + role);
 
-        // Mostramos el contenedor general del panel docente
-        const panelDocente = document.getElementById('panel-docente');
-        if (panelDocente) {
-            panelDocente.classList.remove('d-none');
-        }
+           if (panel) {
+               panel.classList.remove('d-none');
 
-        // Mostramos explícitamente el contenedor de las tarjetas principales
-        const docenteMain = document.getElementById('docente-main');
-        if (docenteMain) {
-            docenteMain.classList.remove('d-none');
-        }
-    }
+               // Enciende la tarjeta / menú principal de cada perfil
+               if (role === 'admin') {
+                   const sub = document.getElementById('admin-main');
+                   if (sub) sub.classList.remove('d-none');
+               }
+               else if (role === 'docente') {
+                   const sub = document.getElementById('docente-main');
+                   if (sub) sub.classList.remove('d-none'); // Muestra las tarjetas del Docente
+               }
+               else if (role === 'estudiante') {
+                   const sub = document.getElementById('estudiante-main');
+                   if (sub) sub.classList.remove('d-none');
+               }
+           } else {
+               console.error("No se encontró un panel con el ID: panel-" + role);
+           }
+       }
 
-    function verAsistencia() {
-        ocultarTodo();
-        const panelDocente = document.getElementById('panel-docente');
-        const docenteAsistencia = document.getElementById('docente-asistencia');
-        if (panelDocente) panelDocente.classList.remove('d-none');
-        if (docenteAsistencia) docenteAsistencia.classList.remove('d-none');
-    }
+       // --- FUNCIONES DE NAVEGACIÓN DOCENTE ---
+       // 1. Función para mostrar la planilla y ocultar el panel principal del docente
+       // Función para mostrar la planilla dentro de la misma vista (SPA)
+       function verPlanilla() {
+           ocultarTodo(); // Limpia y oculta los demás paneles activos
 
-    function verModuloMejorasDocente() {
-        ocultarTodo();
-        const panelDocente = document.getElementById('panel-docente');
-        const docenteMejoras = document.getElementById('docente-mejoras');
-        if (panelDocente) panelDocente.classList.remove('d-none');
-        if (docenteMejoras) docenteMejoras.classList.remove('d-none');
-    }
+           const panelDocente = document.getElementById('panel-docente');
+           const docentePlanilla = document.getElementById('docente-planilla');
 
-    function volverDocenteMejoras() {
-        volverDocente();
-    }
+           // Mostramos el panel general del docente y el sub-panel de la planilla
+           if (panelDocente) {
+               panelDocente.classList.remove('d-none');
+           }
+           if (docentePlanilla) {
+               docentePlanilla.classList.remove('d-none');
+           }
+       }
 
-    function verObservaciones() {
-        ocultarTodo();
-        const panelDocente = document.getElementById('panel-docente');
-        const subVista = document.getElementById('docente-observaciones');
-        if (panelDocente) panelDocente.classList.remove('d-none');
-        if (subVista) subVista.classList.remove('d-none');
-    }
+       // Función para regresar desde la planilla de calificaciones al menú principal del docente
+       function volverDocente() {
+           ocultarTodo(); // Oculta todos los paneles secundarios activos
 
-    // --- FUNCIONES DE NAVEGACIÓN ESTUDIANTE ---
-    function verHorario() {
-        ocultarTodo();
-        const panelEstudiante = document.getElementById('panel-estudiante');
-        const sub = document.getElementById('estudiante-horario');
-        if (panelEstudiante) panelEstudiante.classList.remove('d-none');
-        if (sub) sub.classList.remove('d-none');
-    }
+           // Mostramos el contenedor general del panel docente
+           const panelDocente = document.getElementById('panel-docente');
+           if (panelDocente) {
+               panelDocente.classList.remove('d-none');
+           }
 
-    function verCalificacionesEstudiante() {
-        ocultarTodo();
-        const panelEstudiante = document.getElementById('panel-estudiante');
-        const sub = document.getElementById('estudiante-calificaciones');
-        if (panelEstudiante) panelEstudiante.classList.remove('d-none');
-        if (sub) sub.classList.remove('d-none');
-    }
+           // Mostramos explícitamente el contenedor de las tarjetas principales
+           const docenteMain = document.getElementById('docente-main');
+           if (docenteMain) {
+               docenteMain.classList.remove('d-none');
+           }
+       }
 
-    function verActividadesEstudiante() {
-        ocultarTodo();
-        const panelEstudiante = document.getElementById('panel-estudiante');
-        const sub = document.getElementById('estudiante-actividades');
-        if (panelEstudiante) panelEstudiante.classList.remove('d-none');
-        if (sub) sub.classList.remove('d-none');
-    }
+       function verAsistencia() {
+           ocultarTodo();
+           const panelDocente = document.getElementById('panel-docente');
+           const docenteAsistencia = document.getElementById('docente-asistencia');
+           if (panelDocente) panelDocente.classList.remove('d-none');
+           if (docenteAsistencia) docenteAsistencia.classList.remove('d-none');
+       }
 
-    function volverEstudiante() {
-        ocultarTodo();
-        const panelEstudiante = document.getElementById('panel-estudiante');
-        const estudianteMain = document.getElementById('estudiante-main');
-        if (panelEstudiante) panelEstudiante.classList.remove('d-none');
-        if (estudianteMain) estudianteMain.classList.remove('d-none');
-    }
+       function verModuloMejorasDocente() {
+           ocultarTodo();
+           const panelDocente = document.getElementById('panel-docente');
+           const docenteMejoras = document.getElementById('docente-mejoras');
+           if (panelDocente) panelDocente.classList.remove('d-none');
+           if (docenteMejoras) docenteMejoras.classList.remove('d-none');
+       }
 
-    function verCursosExtra() {
-        ocultarTodo();
-        const panelEstudiante = document.getElementById('panel-estudiante');
-        const sub = document.getElementById('estudiante-cursosextra');
-        if (panelEstudiante) panelEstudiante.classList.remove('d-none');
-        if (sub) sub.classList.remove('d-none');
-    }
+       function volverDocenteMejoras() {
+           volverDocente();
+       }
 
-    function verModuloMejoras() {
-        ocultarTodo();
-        const panelEstudiante = document.getElementById('panel-estudiante');
-        const sub = document.getElementById('estudiante-mejoras');
-        if (panelEstudiante) panelEstudiante.classList.remove('d-none');
-        if (sub) sub.classList.remove('d-none');
-    }
+       function verObservaciones() {
+           ocultarTodo();
+           const panelDocente = document.getElementById('panel-docente');
+           const subVista = document.getElementById('docente-observaciones');
+           if (panelDocente) panelDocente.classList.remove('d-none');
+           if (subVista) subVista.classList.remove('d-none');
+       }
 
- function volverEstudianteMejoras() {
-        volverEstudiante();
-    }
+       // --- FUNCIONES DE NAVEGACIÓN ESTUDIANTE ---
+       function verHorario() {
+           ocultarTodo();
+           const panelEstudiante = document.getElementById('panel-estudiante');
+           const sub = document.getElementById('estudiante-horario');
+           if (panelEstudiante) panelEstudiante.classList.remove('d-none');
+           if (sub) sub.classList.remove('d-none');
+       }
 
-    // --- GESTIÓN DE MODALES (ACCIONES DE MEJORA) ---    
-    function abrirCuadroTexto(idAccion, rol, tituloAccion) {
-        document.getElementById('input_id_accion').value = idAccion;
-        document.getElementById('input_remitente').value = rol;
-        document.getElementById('txtComentario').value = "";
+       function verCalificacionesEstudiante() {
+           ocultarTodo();
+           const panelEstudiante = document.getElementById('panel-estudiante');
+           const sub = document.getElementById('estudiante-calificaciones');
+           if (panelEstudiante) panelEstudiante.classList.remove('d-none');
+           if (sub) sub.classList.remove('d-none');
+       }
 
-        const header = document.getElementById('modalMejoraHeader');
-        const titulo = document.getElementById('modalMejoraTitulo');
-        const desc = document.getElementById('modalMejoraDescripcion');
-        const boton = document.getElementById('btnModalGuardar');
+       function verActividadesEstudiante() {
+           ocultarTodo();
+           const panelEstudiante = document.getElementById('panel-estudiante');
+           const sub = document.getElementById('estudiante-actividades');
+           if (panelEstudiante) panelEstudiante.classList.remove('d-none');
+           if (sub) sub.classList.remove('d-none');
+       }
 
-        if (rol === 'Estudiante') {
-            if (header) header.style.backgroundColor = '#6f42c1';
-            if (titulo) titulo.innerText = 'Registrar Avance: ' + tituloAccion;
-            if (desc) desc.innerText = 'Describe el progreso o las correcciones que has realizado.';
-            if (boton) boton.style.backgroundColor = '#6f42c1';
-        } else {
-            if (header) header.style.backgroundColor = '#2980b9';
-            if (titulo) titulo.innerText = 'Escribir Observación: ' + tituloAccion;
-            if (desc) desc.innerText = 'Redacta los pendientes o comentarios para el estudiante.';
-            if (boton) boton.style.backgroundColor = '#2980b9';
-        }
+       function volverEstudiante() {
+           ocultarTodo();
+           const panelEstudiante = document.getElementById('panel-estudiante');
+           const estudianteMain = document.getElementById('estudiante-main');
+           if (panelEstudiante) panelEstudiante.classList.remove('d-none');
+           if (estudianteMain) estudianteMain.classList.remove('d-none');
+       }
 
-        const miModal = new bootstrap.Modal(document.getElementById('modalFormularioMejora'));
-        miModal.show();
-    }
+       function verCursosExtra() {
+           ocultarTodo();
+           const panelEstudiante = document.getElementById('panel-estudiante');
+           const sub = document.getElementById('estudiante-cursosextra');
+           if (panelEstudiante) panelEstudiante.classList.remove('d-none');
+           if (sub) sub.classList.remove('d-none');
+       }
 
-    // --- INICIALIZACIÓN DEL DASHBOARD ---
-    document.addEventListener("DOMContentLoaded", function () {
-        // Obtenemos el rol enviado desde ViewBag.Rol en C# y lo normalizamos a minúsculas
-        var rolActual = "@ViewBag.Rol".trim().toLowerCase();
+       function verModuloMejoras() {
+           ocultarTodo();
+           const panelEstudiante = document.getElementById('panel-estudiante');
+           const sub = document.getElementById('estudiante-mejoras');
+           if (panelEstudiante) panelEstudiante.classList.remove('d-none');
+           if (sub) sub.classList.remove('d-none');
+       }
 
-        // Dependiendo del rol activo, mostramos su panel principal correspondiente
-        if (rolActual === "docente") {
-            const panelDocente = document.getElementById('panel-docente');
-            const docenteMain = document.getElementById('docente-main');
-            if (panelDocente) panelDocente.classList.remove('d-none');
-            if (docenteMain) docenteMain.classList.remove('d-none');
-        } 
-        else if (rolActual === "acudiente" || rolActual === "padre") {
-            const panelAcudiente = document.getElementById('panel-acudiente');
-            if (panelAcudiente) panelAcudiente.classList.remove('d-none');
-        } 
-        else if (rolActual === "estudiante") {
-            const panelEstudiante = document.getElementById('panel-estudiante');
-            const estudianteMain = document.getElementById('estudiante-main');
-            if (panelEstudiante) panelEstudiante.classList.remove('d-none');
-            if (estudianteMain) estudianteMain.classList.remove('d-none');
-        } 
-        else if (rolActual === "administrador" || rolActual === "admin") {
-            const panelAdmin = document.getElementById('panel-admin');
-            if (panelAdmin) panelAdmin.classList.remove('d-none');
-        }
-    });
+    function volverEstudianteMejoras() {
+           volverEstudiante();
+       }
+
+       // --- GESTIÓN DE MODALES (ACCIONES DE MEJORA) ---
+       function abrirCuadroTexto(idAccion, rol, tituloAccion) {
+           document.getElementById('input_id_accion').value = idAccion;
+           document.getElementById('input_remitente').value = rol;
+           document.getElementById('txtComentario').value = "";
+
+           const header = document.getElementById('modalMejoraHeader');
+           const titulo = document.getElementById('modalMejoraTitulo');
+           const desc = document.getElementById('modalMejoraDescripcion');
+           const boton = document.getElementById('btnModalGuardar');
+
+           if (rol === 'Estudiante') {
+               if (header) header.style.backgroundColor = '#6f42c1';
+               if (titulo) titulo.innerText = 'Registrar Avance: ' + tituloAccion;
+               if (desc) desc.innerText = 'Describe el progreso o las correcciones que has realizado.';
+               if (boton) boton.style.backgroundColor = '#6f42c1';
+           } else {
+               if (header) header.style.backgroundColor = '#2980b9';
+               if (titulo) titulo.innerText = 'Escribir Observación: ' + tituloAccion;
+               if (desc) desc.innerText = 'Redacta los pendientes o comentarios para el estudiante.';
+               if (boton) boton.style.backgroundColor = '#2980b9';
+           }
+
+           const miModal = new bootstrap.Modal(document.getElementById('modalFormularioMejora'));
+           miModal.show();
+       }
+
+       // --- INICIALIZACIÓN DEL DASHBOARD ---
+       document.addEventListener("DOMContentLoaded", function () {
+           // Obtenemos el rol enviado desde ViewBag.Rol en C# y lo normalizamos a minúsculas
+           var rolActual = "@ViewBag.Rol".trim().toLowerCase();
+
+           // Dependiendo del rol activo, mostramos su panel principal correspondiente
+           if (rolActual === "docente") {
+               const panelDocente = document.getElementById('panel-docente');
+               const docenteMain = document.getElementById('docente-main');
+               if (panelDocente) panelDocente.classList.remove('d-none');
+               if (docenteMain) docenteMain.classList.remove('d-none');
+           }
+           else if (rolActual === "acudiente" || rolActual === "padre") {
+               const panelAcudiente = document.getElementById('panel-acudiente');
+               if (panelAcudiente) panelAcudiente.classList.remove('d-none');
+           }
+           else if (rolActual === "estudiante") {
+               const panelEstudiante = document.getElementById('panel-estudiante');
+               const estudianteMain = document.getElementById('estudiante-main');
+               if (panelEstudiante) panelEstudiante.classList.remove('d-none');
+               if (estudianteMain) estudianteMain.classList.remove('d-none');
+           }
+           else if (rolActual === "administrador" || rolActual === "admin") {
+               const panelAdmin = document.getElementById('panel-admin');
+               if (panelAdmin) panelAdmin.classList.remove('d-none');
+           }
+       });
 </script>
 
 <style>
