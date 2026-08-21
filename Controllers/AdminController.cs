@@ -240,6 +240,36 @@ namespace ProyectoPAE.Controllers
                     }
                 }
 
+                if (string.Equals(model.ROL, "Docente", StringComparison.OrdinalIgnoreCase))
+                {
+                    var profeExistente = await _context.PROFESOR
+                        .FirstOrDefaultAsync(p => p.email == model.CORREO_ELECTRONICO);
+
+                    if (profeExistente != null)
+                    {
+                        profeExistente.id_usuario = nuevoUsuario.ID_Usuario;
+                        profeExistente.especialidad = model.AREA_ASIGNATURA;
+                        profeExistente.telefono = model.CELULAR;
+                        profeExistente.direccion = model.DIRECCION;
+                    }
+                    else
+                    {
+                        var nuevoProfesor = new Profesor
+                        {
+                            nombre = model.NOMBRES,
+                            apellido = model.APELLIDOS,
+                            email = model.CORREO_ELECTRONICO,
+                            telefono = model.CELULAR,
+                            direccion = model.DIRECCION,
+                            especialidad = model.AREA_ASIGNATURA,
+                            id_departamento = 1,
+                            id_usuario = nuevoUsuario.ID_Usuario
+                        };
+                        _context.PROFESOR.Add(nuevoProfesor);
+                    }
+                    await _context.SaveChangesAsync();
+                }
+
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
 

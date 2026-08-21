@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using ProyectoPAE.Models;
 
 namespace ProyectoPAE.Models
@@ -18,6 +18,7 @@ namespace ProyectoPAE.Models
         public DbSet<Matricula> Matriculas { get; set; }
         public DbSet<Estudiante> ESTUDIANTE { get; set; }
         public DbSet<PadreTutor> PADRE_TUTOR { get; set; }
+        public DbSet<Profesor> PROFESOR { get; set; }
         public DbSet<Materia> MATERIA { get; set; }
 
         // ── Recuperación de contraseña ──

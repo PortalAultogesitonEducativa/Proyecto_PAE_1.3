@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -82,6 +82,71 @@ namespace ProyectoPAE.Servicios
             }
 
             // El hash se calcula sobre cabecera + TODAS las líneas, ya generado el código
+            certificado.HashContenido = CalcularHash(certificado);
+
+            _context.Certificados.Add(certificado);
+            await _context.SaveChangesAsync();
+
+            return certificado;
+        }
+
+        /// <summary>
+        /// Genera un certificado de constancia de matrícula. Como CERTIFICADO_DETALLE
+        /// está diseñado para calificaciones, aquí se guarda UNA sola fila "sintética"
+        /// que captura una fotografía de la matrícula en el momento de expedición
+        /// (grado, periodo, año, estado). Esa fotografía queda firmada en el hash,
+        /// así que si la matrícula cambia después, el certificado ya emitido no se
+        /// ve afectado — igual que pasaría con las notas de un boletín ya expedido.
+        /// </summary>
+        public async Task<Certificado> GenerarCertificadoMatriculaAsync(
+            int idEstudianteUsuario,
+            int idUsuarioEmisor)
+        {
+            var usuario = await _context.Usuarios.FindAsync(idEstudianteUsuario);
+            if (usuario == null || usuario.ROL?.Trim().ToLower() != "estudiante")
+                throw new InvalidOperationException("El usuario indicado no existe o no tiene rol de estudiante.");
+
+            var estudianteLegacy = await _context.ESTUDIANTE
+                .FirstOrDefaultAsync(e => e.id_usuario == idEstudianteUsuario);
+
+            if (estudianteLegacy == null)
+                throw new InvalidOperationException("No se encontró el registro académico del estudiante.");
+
+            var matricula = await _context.Matriculas
+                .Where(m => m.id_estudiante == estudianteLegacy.id_estudiante)
+                .OrderByDescending(m => m.fecha_matricula)
+                .FirstOrDefaultAsync();
+
+            if (matricula == null)
+                throw new InvalidOperationException("El estudiante no tiene ninguna matrícula registrada.");
+
+            var ahora = DateTime.Now;
+            var fechaSinFraccion = new DateTime(ahora.Year, ahora.Month, ahora.Day, ahora.Hour, ahora.Minute, ahora.Second);
+
+            var certificado = new Certificado
+            {
+                IdEstudiante = idEstudianteUsuario,
+                TipoCertificado = "Matricula",
+                FechaEmision = fechaSinFraccion,
+                IdUsuarioEmisor = idUsuarioEmisor,
+                Estado = "Vigente",
+                CodigoVerificacion = GenerarCodigoUnico()
+            };
+
+            // Fila sintética: reutiliza el esquema de CERTIFICADO_DETALLE para
+            // guardar la fotografía de la matrícula (ver comentario del método).
+            // NotaFinal es decimal(5,2) — NO cabe el año completo (ej. 2026 desborda
+            // ese tipo), así que aquí solo guardamos el grado; el año ya queda
+            // incluido dentro de periodo_academico (ej. "2026-I").
+            certificado.Detalles.Add(new CertificadoDetalle
+            {
+                IdCalificacion = matricula.id_matricula,
+                Materia = $"Grado {matricula.id_curso}°",
+                Periodo = matricula.periodo_academico,
+                NotaFinal = matricula.id_curso,
+                EstadoNota = matricula.estado
+            });
+
             certificado.HashContenido = CalcularHash(certificado);
 
             _context.Certificados.Add(certificado);
