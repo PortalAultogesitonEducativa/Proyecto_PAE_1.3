@@ -1,88 +1,13 @@
 USE [master]
 GO
-/****** Objeto: Database [GestionAcademica] Fecha de script: 31/07/2026 1:51:14 p. m. ******/
-CREATE DATABASE [GestionAcademica]
- CONTAINMENT = NONE
- ON  PRIMARY 
-( NAME = N'GestionAcademica', FILENAME = N'C:\Users\APRENDIZ\GestionAcademica.mdf' , SIZE = 73728KB , MAXSIZE = UNLIMITED, FILEGROWTH = 65536KB )
- LOG ON 
-( NAME = N'GestionAcademica_log', FILENAME = N'C:\Users\APRENDIZ\GestionAcademica_log.ldf' , SIZE = 8192KB , MAXSIZE = 2048GB , FILEGROWTH = 65536KB )
- WITH CATALOG_COLLATION = DATABASE_DEFAULT, LEDGER = OFF
-GO
-ALTER DATABASE [GestionAcademica] SET COMPATIBILITY_LEVEL = 150
-GO
-IF (1 = FULLTEXTSERVICEPROPERTY('IsFullTextInstalled'))
-begin
-EXEC [GestionAcademica].[dbo].[sp_fulltext_database] @action = 'enable'
-end
-GO
-ALTER DATABASE [GestionAcademica] SET ANSI_NULL_DEFAULT OFF 
-GO
-ALTER DATABASE [GestionAcademica] SET ANSI_NULLS OFF 
-GO
-ALTER DATABASE [GestionAcademica] SET ANSI_PADDING OFF 
-GO
-ALTER DATABASE [GestionAcademica] SET ANSI_WARNINGS OFF 
-GO
-ALTER DATABASE [GestionAcademica] SET ARITHABORT OFF 
-GO
-ALTER DATABASE [GestionAcademica] SET AUTO_CLOSE ON 
-GO
-ALTER DATABASE [GestionAcademica] SET AUTO_SHRINK OFF 
-GO
-ALTER DATABASE [GestionAcademica] SET AUTO_UPDATE_STATISTICS ON 
-GO
-ALTER DATABASE [GestionAcademica] SET CURSOR_CLOSE_ON_COMMIT OFF 
-GO
-ALTER DATABASE [GestionAcademica] SET CURSOR_DEFAULT  GLOBAL 
-GO
-ALTER DATABASE [GestionAcademica] SET CONCAT_NULL_YIELDS_NULL OFF 
-GO
-ALTER DATABASE [GestionAcademica] SET NUMERIC_ROUNDABORT OFF 
-GO
-ALTER DATABASE [GestionAcademica] SET QUOTED_IDENTIFIER OFF 
-GO
-ALTER DATABASE [GestionAcademica] SET RECURSIVE_TRIGGERS OFF 
-GO
-ALTER DATABASE [GestionAcademica] SET  ENABLE_BROKER 
-GO
-ALTER DATABASE [GestionAcademica] SET AUTO_UPDATE_STATISTICS_ASYNC OFF 
-GO
-ALTER DATABASE [GestionAcademica] SET DATE_CORRELATION_OPTIMIZATION OFF 
-GO
-ALTER DATABASE [GestionAcademica] SET TRUSTWORTHY OFF 
-GO
-ALTER DATABASE [GestionAcademica] SET ALLOW_SNAPSHOT_ISOLATION OFF 
-GO
-ALTER DATABASE [GestionAcademica] SET PARAMETERIZATION SIMPLE 
-GO
-ALTER DATABASE [GestionAcademica] SET READ_COMMITTED_SNAPSHOT OFF 
-GO
-ALTER DATABASE [GestionAcademica] SET HONOR_BROKER_PRIORITY OFF 
-GO
-ALTER DATABASE [GestionAcademica] SET RECOVERY SIMPLE 
-GO
-ALTER DATABASE [GestionAcademica] SET  MULTI_USER 
-GO
-ALTER DATABASE [GestionAcademica] SET PAGE_VERIFY CHECKSUM  
-GO
-ALTER DATABASE [GestionAcademica] SET DB_CHAINING OFF 
-GO
-ALTER DATABASE [GestionAcademica] SET FILESTREAM( NON_TRANSACTED_ACCESS = OFF ) 
-GO
-ALTER DATABASE [GestionAcademica] SET TARGET_RECOVERY_TIME = 60 SECONDS 
-GO
-ALTER DATABASE [GestionAcademica] SET DELAYED_DURABILITY = DISABLED 
-GO
-ALTER DATABASE [GestionAcademica] SET OPTIMIZED_LOCKING = OFF 
-GO
-ALTER DATABASE [GestionAcademica] SET ACCELERATED_DATABASE_RECOVERY = OFF  
-GO
-ALTER DATABASE [GestionAcademica] SET QUERY_STORE = OFF
+IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = N'GestionAcademica')
+BEGIN
+    CREATE DATABASE [GestionAcademica];
+END
 GO
 USE [GestionAcademica]
 GO
-/****** Objeto: Table [dbo].[AREA] Fecha de script: 31/07/2026 1:51:14 p. m. ******/
+/****** Object:  Table [dbo].[AREA]    Script Date: 16/04/2026 3:09:36 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -95,10 +20,10 @@ CREATE TABLE [dbo].[AREA](
 PRIMARY KEY CLUSTERED 
 (
 	[id_area] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Objeto: Table [dbo].[ASISTENCIA] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  Table [dbo].[ASISTENCIA]    Script Date: 16/04/2026 3:09:36 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -115,10 +40,10 @@ CREATE TABLE [dbo].[ASISTENCIA](
 PRIMARY KEY CLUSTERED 
 (
 	[id_asistencia] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Objeto: Table [dbo].[AULA] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  Table [dbo].[AULA]    Script Date: 16/04/2026 3:09:36 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -132,10 +57,10 @@ CREATE TABLE [dbo].[AULA](
 PRIMARY KEY CLUSTERED 
 (
 	[id_aula] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Objeto: Table [dbo].[Calificaciones] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  Table [dbo].[Calificaciones]    Script Date: 16/04/2026 3:09:36 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -150,49 +75,10 @@ CREATE TABLE [dbo].[Calificaciones](
 PRIMARY KEY CLUSTERED 
 (
 	[ID_Calificacion] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Objeto: Table [dbo].[CERTIFICADO] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE TABLE [dbo].[CERTIFICADO](
-	[id_certificado] [int] IDENTITY(1,1) NOT NULL,
-	[id_estudiante] [int] NOT NULL,
-	[tipo_certificado] [nvarchar](50) NOT NULL,
-	[codigo_verificacion] [nvarchar](20) NOT NULL,
-	[hash_contenido] [nvarchar](100) NOT NULL,
-	[fecha_emision] [datetime] NOT NULL,
-	[id_usuario_emisor] [int] NOT NULL,
-	[estado] [nvarchar](20) NOT NULL,
- CONSTRAINT [PK_CERTIFICADO] PRIMARY KEY CLUSTERED 
-(
-	[id_certificado] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-) ON [PRIMARY]
-GO
-/****** Objeto: Table [dbo].[CERTIFICADO_DETALLE] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE TABLE [dbo].[CERTIFICADO_DETALLE](
-	[id_detalle] [int] IDENTITY(1,1) NOT NULL,
-	[id_certificado] [int] NOT NULL,
-	[id_calificacion] [int] NOT NULL,
-	[materia] [nvarchar](80) NOT NULL,
-	[periodo] [nvarchar](20) NOT NULL,
-	[nota_final] [decimal](5, 2) NOT NULL,
-	[estado_nota] [nvarchar](20) NOT NULL,
- CONSTRAINT [PK_CERTIFICADO_DETALLE] PRIMARY KEY CLUSTERED 
-(
-	[id_detalle] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-) ON [PRIMARY]
-GO
-/****** Objeto: Table [dbo].[CITACION] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  Table [dbo].[CITACION]    Script Date: 16/04/2026 3:09:36 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -208,10 +94,10 @@ CREATE TABLE [dbo].[CITACION](
 PRIMARY KEY CLUSTERED 
 (
 	[id_citacion] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Objeto: Table [dbo].[CURSO] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  Table [dbo].[CURSO]    Script Date: 16/04/2026 3:09:36 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -226,10 +112,10 @@ CREATE TABLE [dbo].[CURSO](
 PRIMARY KEY CLUSTERED 
 (
 	[id_curso] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Objeto: Table [dbo].[CURSO_MATERIA] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  Table [dbo].[CURSO_MATERIA]    Script Date: 16/04/2026 3:09:36 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -244,10 +130,10 @@ CREATE TABLE [dbo].[CURSO_MATERIA](
 	[id_curso] ASC,
 	[id_materia] ASC,
 	[ano_escolar] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Objeto: Table [dbo].[DEPARTAMENTO] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  Table [dbo].[DEPARTAMENTO]    Script Date: 16/04/2026 3:09:36 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -259,10 +145,10 @@ CREATE TABLE [dbo].[DEPARTAMENTO](
 PRIMARY KEY CLUSTERED 
 (
 	[id_departamento] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Objeto: Table [dbo].[DOCUMENTO] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  Table [dbo].[DOCUMENTO]    Script Date: 16/04/2026 3:09:36 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -286,10 +172,10 @@ CREATE TABLE [dbo].[DOCUMENTO](
 PRIMARY KEY CLUSTERED 
 (
 	[id_documento] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Objeto: Table [dbo].[DOCUMENTO_ETIQUETA] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  Table [dbo].[DOCUMENTO_ETIQUETA]    Script Date: 16/04/2026 3:09:36 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -301,10 +187,10 @@ CREATE TABLE [dbo].[DOCUMENTO_ETIQUETA](
 PRIMARY KEY CLUSTERED 
 (
 	[id_etiqueta] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Objeto: Table [dbo].[DOCUMENTO_VERSION] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  Table [dbo].[DOCUMENTO_VERSION]    Script Date: 16/04/2026 3:09:36 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -321,10 +207,10 @@ CREATE TABLE [dbo].[DOCUMENTO_VERSION](
 PRIMARY KEY CLUSTERED 
 (
 	[id_version] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
-/****** Objeto: Table [dbo].[ESTUDIANTE] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  Table [dbo].[ESTUDIANTE]    Script Date: 16/04/2026 3:09:36 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -343,10 +229,10 @@ CREATE TABLE [dbo].[ESTUDIANTE](
 PRIMARY KEY CLUSTERED 
 (
 	[id_estudiante] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Objeto: Table [dbo].[ESTUDIANTE_PADRE] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  Table [dbo].[ESTUDIANTE_PADRE]    Script Date: 16/04/2026 3:09:36 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -360,10 +246,10 @@ CREATE TABLE [dbo].[ESTUDIANTE_PADRE](
 (
 	[id_estudiante] ASC,
 	[id_padre] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Objeto: Table [dbo].[EVALUACION] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  Table [dbo].[EVALUACION]    Script Date: 16/04/2026 3:09:36 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -380,10 +266,10 @@ CREATE TABLE [dbo].[EVALUACION](
 PRIMARY KEY CLUSTERED 
 (
 	[id_evaluacion] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Objeto: Table [dbo].[EXTRA_CURSO] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  Table [dbo].[EXTRA_CURSO]    Script Date: 16/04/2026 3:09:36 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -405,10 +291,10 @@ CREATE TABLE [dbo].[EXTRA_CURSO](
 PRIMARY KEY CLUSTERED 
 (
 	[id_extra_curso] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Objeto: Table [dbo].[EXTRA_INSCRIPCION] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  Table [dbo].[EXTRA_INSCRIPCION]    Script Date: 16/04/2026 3:09:36 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -425,10 +311,10 @@ CREATE TABLE [dbo].[EXTRA_INSCRIPCION](
 PRIMARY KEY CLUSTERED 
 (
 	[id_extra_inscripcion] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Objeto: Table [dbo].[GU_DETALLE_ROL] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  Table [dbo].[GU_DETALLE_ROL]    Script Date: 16/04/2026 3:09:36 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -442,10 +328,10 @@ CREATE TABLE [dbo].[GU_DETALLE_ROL](
 PRIMARY KEY CLUSTERED 
 (
 	[id_detalle] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Objeto: Table [dbo].[GU_HISTORIAL_PASSWORD] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  Table [dbo].[GU_HISTORIAL_PASSWORD]    Script Date: 16/04/2026 3:09:36 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -458,10 +344,10 @@ CREATE TABLE [dbo].[GU_HISTORIAL_PASSWORD](
 PRIMARY KEY CLUSTERED 
 (
 	[id_historial] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Objeto: Table [dbo].[GU_INTENTOS_LOGIN] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  Table [dbo].[GU_INTENTOS_LOGIN]    Script Date: 16/04/2026 3:09:36 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -476,10 +362,10 @@ CREATE TABLE [dbo].[GU_INTENTOS_LOGIN](
 PRIMARY KEY CLUSTERED 
 (
 	[id_intento] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Objeto: Table [dbo].[GU_MENU_PERMISO] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  Table [dbo].[GU_MENU_PERMISO]    Script Date: 16/04/2026 3:09:36 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -493,10 +379,10 @@ CREATE TABLE [dbo].[GU_MENU_PERMISO](
 PRIMARY KEY CLUSTERED 
 (
 	[id_menu] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Objeto: Table [dbo].[GU_MENU_PERMISO_ROL] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  Table [dbo].[GU_MENU_PERMISO_ROL]    Script Date: 16/04/2026 3:09:36 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -509,10 +395,10 @@ CREATE TABLE [dbo].[GU_MENU_PERMISO_ROL](
 (
 	[id_rol] ASC,
 	[id_menu] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Objeto: Table [dbo].[GU_PARAMETRIZACION] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  Table [dbo].[GU_PARAMETRIZACION]    Script Date: 16/04/2026 3:09:36 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -528,10 +414,10 @@ CREATE TABLE [dbo].[GU_PARAMETRIZACION](
 PRIMARY KEY CLUSTERED 
 (
 	[id_param] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Objeto: Table [dbo].[GU_PERMISO] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  Table [dbo].[GU_PERMISO]    Script Date: 16/04/2026 3:09:36 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -543,10 +429,10 @@ CREATE TABLE [dbo].[GU_PERMISO](
 PRIMARY KEY CLUSTERED 
 (
 	[id_permiso] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Objeto: Table [dbo].[GU_RECUPERACION_PASSWORD] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  Table [dbo].[GU_RECUPERACION_PASSWORD]    Script Date: 16/04/2026 3:09:36 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -563,10 +449,10 @@ CREATE TABLE [dbo].[GU_RECUPERACION_PASSWORD](
 PRIMARY KEY CLUSTERED 
 (
 	[id_recuperacion] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Objeto: Table [dbo].[GU_ROL] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  Table [dbo].[GU_ROL]    Script Date: 16/04/2026 3:09:36 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -578,10 +464,10 @@ CREATE TABLE [dbo].[GU_ROL](
 PRIMARY KEY CLUSTERED 
 (
 	[id_rol] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Objeto: Table [dbo].[GU_ROL_PERMISO] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  Table [dbo].[GU_ROL_PERMISO]    Script Date: 16/04/2026 3:09:36 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -594,10 +480,10 @@ CREATE TABLE [dbo].[GU_ROL_PERMISO](
 (
 	[id_rol] ASC,
 	[id_permiso] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Objeto: Table [dbo].[GU_Usuario] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  Table [dbo].[GU_Usuario]    Script Date: 16/04/2026 3:09:36 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -612,7 +498,6 @@ CREATE TABLE [dbo].[GU_Usuario](
 	[FECHA_CREACION] [date] NOT NULL,
 	[ACTIVO] [bit] NOT NULL,
 	[ROL] [varchar](50) NULL,
-
 	[TELEFONO] [nvarchar](50) NULL,
 	[DIRECCION] [nvarchar](200) NULL,
 	[FOTO_URL] [nvarchar](500) NULL,
@@ -630,18 +515,14 @@ CREATE TABLE [dbo].[GU_Usuario](
 	[ALERGIAS] [nvarchar](max) NULL,
 	[CONDICIONES_MEDICAS] [nvarchar](max) NULL,
 	[OBSERVACIONES] [nvarchar](max) NULL,
-	[FORZAR_CAMBIO_CLAVE] [bit] NOT NULL DEFAULT ((0)),
-=======
-	[DIRECCION] [varchar](250) NULL,
-	[FOTO_URL] [varchar](500) NULL,
-	[TELEFONO] [varchar](50) NULL,
+	[FORZAR_CAMBIO_CLAVE] [bit] NOT NULL CONSTRAINT [DF_GU_Usuario_ForzarClave] DEFAULT ((0)),
 PRIMARY KEY CLUSTERED 
 (
 	[ID_Usuario] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Objeto: Table [dbo].[GU_USUARIO_ROL] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  Table [dbo].[GU_USUARIO_ROL]    Script Date: 16/04/2026 3:09:36 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -654,10 +535,10 @@ CREATE TABLE [dbo].[GU_USUARIO_ROL](
 (
 	[id_usuario] ASC,
 	[id_rol] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Objeto: Table [dbo].[HORARIO] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  Table [dbo].[HORARIO]    Script Date: 16/04/2026 3:09:36 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -673,10 +554,10 @@ CREATE TABLE [dbo].[HORARIO](
 PRIMARY KEY CLUSTERED 
 (
 	[id_horario] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Objeto: Table [dbo].[INSCRIPCION] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  Table [dbo].[INSCRIPCION]    Script Date: 16/04/2026 3:09:36 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -690,10 +571,10 @@ CREATE TABLE [dbo].[INSCRIPCION](
 PRIMARY KEY CLUSTERED 
 (
 	[id_inscripcion] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Objeto: Table [dbo].[MATERIA] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  Table [dbo].[MATERIA]    Script Date: 16/04/2026 3:09:36 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -708,10 +589,10 @@ CREATE TABLE [dbo].[MATERIA](
 PRIMARY KEY CLUSTERED 
 (
 	[id_materia] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Objeto: Table [dbo].[MATRICULA] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  Table [dbo].[MATRICULA]    Script Date: 16/04/2026 3:09:36 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -727,10 +608,10 @@ CREATE TABLE [dbo].[MATRICULA](
 PRIMARY KEY CLUSTERED 
 (
 	[id_matricula] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Objeto: Table [dbo].[PADRE_TUTOR] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  Table [dbo].[PADRE_TUTOR]    Script Date: 16/04/2026 3:09:36 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -746,10 +627,10 @@ CREATE TABLE [dbo].[PADRE_TUTOR](
 PRIMARY KEY CLUSTERED 
 (
 	[id_padre] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Objeto: Table [dbo].[PERIODO] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  Table [dbo].[PERIODO]    Script Date: 16/04/2026 3:09:36 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -762,10 +643,10 @@ CREATE TABLE [dbo].[PERIODO](
 PRIMARY KEY CLUSTERED 
 (
 	[id_periodo] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Objeto: Table [dbo].[PROFESOR] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  Table [dbo].[PROFESOR]    Script Date: 16/04/2026 3:09:36 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -783,10 +664,10 @@ CREATE TABLE [dbo].[PROFESOR](
 PRIMARY KEY CLUSTERED 
 (
 	[id_profesor] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
-/****** Objeto: Table [dbo].[PROFESOR_MATERIA] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  Table [dbo].[PROFESOR_MATERIA]    Script Date: 16/04/2026 3:09:36 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -801,77 +682,130 @@ CREATE TABLE [dbo].[PROFESOR_MATERIA](
 	[id_profesor] ASC,
 	[id_materia] ASC,
 	[anio_escolar] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
 SET IDENTITY_INSERT [dbo].[AREA] ON 
-
+GO
 INSERT [dbo].[AREA] ([id_area], [nombre_area], [descripcion], [id_departamento]) VALUES (1, N'Matemáticas', N'Álgebra, geometría y cálculo', 1)
+GO
 INSERT [dbo].[AREA] ([id_area], [nombre_area], [descripcion], [id_departamento]) VALUES (2, N'Física', N'Mecánica, termodinámica y óptica', 1)
+GO
 INSERT [dbo].[AREA] ([id_area], [nombre_area], [descripcion], [id_departamento]) VALUES (3, N'Lengua Española', N'Gramática, literatura y redacción', 2)
+GO
 INSERT [dbo].[AREA] ([id_area], [nombre_area], [descripcion], [id_departamento]) VALUES (4, N'Historia Universal', N'Historia antigua, moderna y contemporánea', 2)
+GO
 INSERT [dbo].[AREA] ([id_area], [nombre_area], [descripcion], [id_departamento]) VALUES (5, N'Programación', N'Desarrollo de software y algoritmos', 3)
+GO
 INSERT [dbo].[AREA] ([id_area], [nombre_area], [descripcion], [id_departamento]) VALUES (6, N'Redes', N'Infraestructura y comunicaciones', 3)
+GO
 INSERT [dbo].[AREA] ([id_area], [nombre_area], [descripcion], [id_departamento]) VALUES (7, N'Biología', N'Celular, genética y anatomía', 4)
+GO
 INSERT [dbo].[AREA] ([id_area], [nombre_area], [descripcion], [id_departamento]) VALUES (8, N'Música', N'Teoría musical y práctica instrumental', 5)
+GO
 INSERT [dbo].[AREA] ([id_area], [nombre_area], [descripcion], [id_departamento]) VALUES (9, N'Matemáticas', N'Álgebra, geometría y cálculo', 1)
+GO
 INSERT [dbo].[AREA] ([id_area], [nombre_area], [descripcion], [id_departamento]) VALUES (10, N'Física', N'Mecánica, termodinámica y óptica', 1)
+GO
 INSERT [dbo].[AREA] ([id_area], [nombre_area], [descripcion], [id_departamento]) VALUES (11, N'Lengua Española', N'Gramática, literatura y redacción', 2)
+GO
 INSERT [dbo].[AREA] ([id_area], [nombre_area], [descripcion], [id_departamento]) VALUES (12, N'Historia Universal', N'Historia antigua, moderna y contemporánea', 2)
+GO
 INSERT [dbo].[AREA] ([id_area], [nombre_area], [descripcion], [id_departamento]) VALUES (13, N'Programación', N'Desarrollo de software y algoritmos', 3)
+GO
 INSERT [dbo].[AREA] ([id_area], [nombre_area], [descripcion], [id_departamento]) VALUES (14, N'Redes', N'Infraestructura y comunicaciones', 3)
+GO
 INSERT [dbo].[AREA] ([id_area], [nombre_area], [descripcion], [id_departamento]) VALUES (15, N'Biología', N'Celular, genética y anatomía', 4)
+GO
 INSERT [dbo].[AREA] ([id_area], [nombre_area], [descripcion], [id_departamento]) VALUES (16, N'Música', N'Teoría musical y práctica instrumental', 5)
+GO
 SET IDENTITY_INSERT [dbo].[AREA] OFF
 GO
 SET IDENTITY_INSERT [dbo].[ASISTENCIA] ON 
-
+GO
 INSERT [dbo].[ASISTENCIA] ([id_asistencia], [id_estudiante], [id_horario], [id_profesor], [fecha], [estado], [hora_llegada], [justificacion]) VALUES (1, 1, 1, 1, CAST(N'2024-02-05' AS Date), N'Presente', CAST(N'07:00:00' AS Time), NULL)
+GO
 INSERT [dbo].[ASISTENCIA] ([id_asistencia], [id_estudiante], [id_horario], [id_profesor], [fecha], [estado], [hora_llegada], [justificacion]) VALUES (2, 2, 1, 1, CAST(N'2024-02-05' AS Date), N'Presente', CAST(N'07:02:00' AS Time), NULL)
+GO
 INSERT [dbo].[ASISTENCIA] ([id_asistencia], [id_estudiante], [id_horario], [id_profesor], [fecha], [estado], [hora_llegada], [justificacion]) VALUES (3, 3, 1, 1, CAST(N'2024-02-05' AS Date), N'Tardanza', CAST(N'07:18:00' AS Time), NULL)
+GO
 INSERT [dbo].[ASISTENCIA] ([id_asistencia], [id_estudiante], [id_horario], [id_profesor], [fecha], [estado], [hora_llegada], [justificacion]) VALUES (4, 1, 2, 1, CAST(N'2024-02-07' AS Date), N'Presente', CAST(N'07:00:00' AS Time), NULL)
+GO
 INSERT [dbo].[ASISTENCIA] ([id_asistencia], [id_estudiante], [id_horario], [id_profesor], [fecha], [estado], [hora_llegada], [justificacion]) VALUES (5, 2, 2, 1, CAST(N'2024-02-07' AS Date), N'Ausente', NULL, NULL)
+GO
 INSERT [dbo].[ASISTENCIA] ([id_asistencia], [id_estudiante], [id_horario], [id_profesor], [fecha], [estado], [hora_llegada], [justificacion]) VALUES (6, 4, 3, 2, CAST(N'2024-02-06' AS Date), N'Presente', CAST(N'10:00:00' AS Time), NULL)
+GO
 INSERT [dbo].[ASISTENCIA] ([id_asistencia], [id_estudiante], [id_horario], [id_profesor], [fecha], [estado], [hora_llegada], [justificacion]) VALUES (7, 5, 3, 2, CAST(N'2024-02-06' AS Date), N'Presente', CAST(N'10:05:00' AS Time), NULL)
+GO
 INSERT [dbo].[ASISTENCIA] ([id_asistencia], [id_estudiante], [id_horario], [id_profesor], [fecha], [estado], [hora_llegada], [justificacion]) VALUES (8, 4, 4, 2, CAST(N'2024-02-08' AS Date), N'Justificado', NULL, N'Cita médica presentada oportunamente')
+GO
 INSERT [dbo].[ASISTENCIA] ([id_asistencia], [id_estudiante], [id_horario], [id_profesor], [fecha], [estado], [hora_llegada], [justificacion]) VALUES (9, 6, 5, 3, CAST(N'2024-02-05' AS Date), N'Presente', CAST(N'09:00:00' AS Time), NULL)
+GO
 INSERT [dbo].[ASISTENCIA] ([id_asistencia], [id_estudiante], [id_horario], [id_profesor], [fecha], [estado], [hora_llegada], [justificacion]) VALUES (10, 7, 6, 5, CAST(N'2024-08-05' AS Date), N'Presente', CAST(N'14:00:00' AS Time), NULL)
+GO
 INSERT [dbo].[ASISTENCIA] ([id_asistencia], [id_estudiante], [id_horario], [id_profesor], [fecha], [estado], [hora_llegada], [justificacion]) VALUES (11, 8, 6, 5, CAST(N'2024-08-05' AS Date), N'Tardanza', CAST(N'14:22:00' AS Time), NULL)
+GO
 INSERT [dbo].[ASISTENCIA] ([id_asistencia], [id_estudiante], [id_horario], [id_profesor], [fecha], [estado], [hora_llegada], [justificacion]) VALUES (12, 1, 8, 5, CAST(N'2024-08-06' AS Date), N'Presente', CAST(N'14:00:00' AS Time), NULL)
+GO
 INSERT [dbo].[ASISTENCIA] ([id_asistencia], [id_estudiante], [id_horario], [id_profesor], [fecha], [estado], [hora_llegada], [justificacion]) VALUES (13, 2, 9, 5, CAST(N'2024-08-08' AS Date), N'Ausente', NULL, NULL)
+GO
 INSERT [dbo].[ASISTENCIA] ([id_asistencia], [id_estudiante], [id_horario], [id_profesor], [fecha], [estado], [hora_llegada], [justificacion]) VALUES (14, 9, 13, 6, CAST(N'2025-01-27' AS Date), N'Presente', CAST(N'07:00:00' AS Time), NULL)
+GO
 INSERT [dbo].[ASISTENCIA] ([id_asistencia], [id_estudiante], [id_horario], [id_profesor], [fecha], [estado], [hora_llegada], [justificacion]) VALUES (15, 10, 13, 6, CAST(N'2025-01-27' AS Date), N'Presente', CAST(N'07:10:00' AS Time), NULL)
+GO
 INSERT [dbo].[ASISTENCIA] ([id_asistencia], [id_estudiante], [id_horario], [id_profesor], [fecha], [estado], [hora_llegada], [justificacion]) VALUES (16, 1, 1, 1, CAST(N'2024-02-05' AS Date), N'Presente', CAST(N'07:00:00' AS Time), NULL)
+GO
 INSERT [dbo].[ASISTENCIA] ([id_asistencia], [id_estudiante], [id_horario], [id_profesor], [fecha], [estado], [hora_llegada], [justificacion]) VALUES (17, 2, 1, 1, CAST(N'2024-02-05' AS Date), N'Presente', CAST(N'07:02:00' AS Time), NULL)
+GO
 INSERT [dbo].[ASISTENCIA] ([id_asistencia], [id_estudiante], [id_horario], [id_profesor], [fecha], [estado], [hora_llegada], [justificacion]) VALUES (18, 3, 1, 1, CAST(N'2024-02-05' AS Date), N'Tardanza', CAST(N'07:18:00' AS Time), NULL)
+GO
 INSERT [dbo].[ASISTENCIA] ([id_asistencia], [id_estudiante], [id_horario], [id_profesor], [fecha], [estado], [hora_llegada], [justificacion]) VALUES (19, 1, 2, 1, CAST(N'2024-02-07' AS Date), N'Presente', CAST(N'07:00:00' AS Time), NULL)
+GO
 INSERT [dbo].[ASISTENCIA] ([id_asistencia], [id_estudiante], [id_horario], [id_profesor], [fecha], [estado], [hora_llegada], [justificacion]) VALUES (20, 2, 2, 1, CAST(N'2024-02-07' AS Date), N'Ausente', NULL, NULL)
+GO
 INSERT [dbo].[ASISTENCIA] ([id_asistencia], [id_estudiante], [id_horario], [id_profesor], [fecha], [estado], [hora_llegada], [justificacion]) VALUES (21, 4, 3, 2, CAST(N'2024-02-06' AS Date), N'Presente', CAST(N'10:00:00' AS Time), NULL)
+GO
 INSERT [dbo].[ASISTENCIA] ([id_asistencia], [id_estudiante], [id_horario], [id_profesor], [fecha], [estado], [hora_llegada], [justificacion]) VALUES (22, 5, 3, 2, CAST(N'2024-02-06' AS Date), N'Presente', CAST(N'10:05:00' AS Time), NULL)
+GO
 INSERT [dbo].[ASISTENCIA] ([id_asistencia], [id_estudiante], [id_horario], [id_profesor], [fecha], [estado], [hora_llegada], [justificacion]) VALUES (23, 4, 4, 2, CAST(N'2024-02-08' AS Date), N'Justificado', NULL, N'Cita médica presentada oportunamente')
+GO
 INSERT [dbo].[ASISTENCIA] ([id_asistencia], [id_estudiante], [id_horario], [id_profesor], [fecha], [estado], [hora_llegada], [justificacion]) VALUES (24, 6, 5, 3, CAST(N'2024-02-05' AS Date), N'Presente', CAST(N'09:00:00' AS Time), NULL)
+GO
 INSERT [dbo].[ASISTENCIA] ([id_asistencia], [id_estudiante], [id_horario], [id_profesor], [fecha], [estado], [hora_llegada], [justificacion]) VALUES (25, 7, 6, 5, CAST(N'2024-08-05' AS Date), N'Presente', CAST(N'14:00:00' AS Time), NULL)
+GO
 INSERT [dbo].[ASISTENCIA] ([id_asistencia], [id_estudiante], [id_horario], [id_profesor], [fecha], [estado], [hora_llegada], [justificacion]) VALUES (26, 8, 6, 5, CAST(N'2024-08-05' AS Date), N'Tardanza', CAST(N'14:22:00' AS Time), NULL)
+GO
 INSERT [dbo].[ASISTENCIA] ([id_asistencia], [id_estudiante], [id_horario], [id_profesor], [fecha], [estado], [hora_llegada], [justificacion]) VALUES (27, 1, 8, 5, CAST(N'2024-08-06' AS Date), N'Presente', CAST(N'14:00:00' AS Time), NULL)
+GO
 INSERT [dbo].[ASISTENCIA] ([id_asistencia], [id_estudiante], [id_horario], [id_profesor], [fecha], [estado], [hora_llegada], [justificacion]) VALUES (28, 2, 9, 5, CAST(N'2024-08-08' AS Date), N'Ausente', NULL, NULL)
+GO
 INSERT [dbo].[ASISTENCIA] ([id_asistencia], [id_estudiante], [id_horario], [id_profesor], [fecha], [estado], [hora_llegada], [justificacion]) VALUES (29, 9, 13, 6, CAST(N'2025-01-27' AS Date), N'Presente', CAST(N'07:00:00' AS Time), NULL)
+GO
 INSERT [dbo].[ASISTENCIA] ([id_asistencia], [id_estudiante], [id_horario], [id_profesor], [fecha], [estado], [hora_llegada], [justificacion]) VALUES (30, 10, 13, 6, CAST(N'2025-01-27' AS Date), N'Presente', CAST(N'07:10:00' AS Time), NULL)
+GO
 SET IDENTITY_INSERT [dbo].[ASISTENCIA] OFF
 GO
 SET IDENTITY_INSERT [dbo].[AULA] ON 
-
+GO
 INSERT [dbo].[AULA] ([id_aula], [codigo_aula], [capacidad], [tipo], [ubicacion]) VALUES (1, N'A-101', 30, N'Aula', N'Edificio A, Piso 1')
+GO
 INSERT [dbo].[AULA] ([id_aula], [codigo_aula], [capacidad], [tipo], [ubicacion]) VALUES (2, N'A-102', 30, N'Aula', N'Edificio A, Piso 1')
+GO
 INSERT [dbo].[AULA] ([id_aula], [codigo_aula], [capacidad], [tipo], [ubicacion]) VALUES (3, N'B-201', 40, N'Aula', N'Edificio B, Piso 2')
+GO
 INSERT [dbo].[AULA] ([id_aula], [codigo_aula], [capacidad], [tipo], [ubicacion]) VALUES (4, N'LAB-01', 25, N'Laboratorio', N'Edificio C, Piso 1 — Laboratorio de Física')
+GO
 INSERT [dbo].[AULA] ([id_aula], [codigo_aula], [capacidad], [tipo], [ubicacion]) VALUES (5, N'LAB-02', 20, N'Laboratorio', N'Edificio C, Piso 2 — Laboratorio de Cómputo')
+GO
 INSERT [dbo].[AULA] ([id_aula], [codigo_aula], [capacidad], [tipo], [ubicacion]) VALUES (6, N'AUD-01', 120, N'Auditorio', N'Edificio Central — Auditorio Principal')
+GO
 INSERT [dbo].[AULA] ([id_aula], [codigo_aula], [capacidad], [tipo], [ubicacion]) VALUES (7, N'B-202', 35, N'Aula', N'Edificio B, Piso 2')
+GO
 INSERT [dbo].[AULA] ([id_aula], [codigo_aula], [capacidad], [tipo], [ubicacion]) VALUES (8, N'A-103', 28, N'Aula', N'Edificio A, Piso 1')
+GO
 SET IDENTITY_INSERT [dbo].[AULA] OFF
 GO
 SET IDENTITY_INSERT [dbo].[Calificaciones] ON 
-
 GO
 INSERT [dbo].[Calificaciones] ([ID_Calificacion], [ID_Estudiante], [Materia], [Nota], [Periodo], [FechaRegistro]) VALUES (1, 1, N'Matemáticas', CAST(4.50 AS Decimal(3, 2)), 1, CAST(N'2026-03-28T13:22:38.473' AS DateTime))
 GO
@@ -887,147 +821,109 @@ INSERT [dbo].[Calificaciones] ([ID_Calificacion], [ID_Estudiante], [Materia], [N
 GO
 INSERT [dbo].[Calificaciones] ([ID_Calificacion], [ID_Estudiante], [Materia], [Nota], [Periodo], [FechaRegistro]) VALUES (10, 2, N'Inglés', CAST(3.50 AS Decimal(3, 2)), 1, CAST(N'2026-04-06T17:42:44.263' AS DateTime))
 GO
-=======
-
-INSERT [dbo].[Calificaciones] ([ID_Calificacion], [ID_Estudiante], [Materia], [Nota], [Periodo], [FechaRegistro]) VALUES (1, 6, N'Matemáticas', CAST(4.50 AS Decimal(3, 2)), 1, CAST(N'2026-03-28T13:22:38.473' AS DateTime))
-INSERT [dbo].[Calificaciones] ([ID_Calificacion], [ID_Estudiante], [Materia], [Nota], [Periodo], [FechaRegistro]) VALUES (2, 6, N'Español', CAST(3.80 AS Decimal(3, 2)), 1, CAST(N'2026-03-28T13:22:38.473' AS DateTime))
-INSERT [dbo].[Calificaciones] ([ID_Calificacion], [ID_Estudiante], [Materia], [Nota], [Periodo], [FechaRegistro]) VALUES (6, 6, N'Matemáticas', CAST(3.50 AS Decimal(3, 2)), 1, CAST(N'2026-03-28T13:53:36.587' AS DateTime))
-INSERT [dbo].[Calificaciones] ([ID_Calificacion], [ID_Estudiante], [Materia], [Nota], [Periodo], [FechaRegistro]) VALUES (7, 6, N'Español', CAST(4.20 AS Decimal(3, 2)), 1, CAST(N'2026-03-28T14:02:46.433' AS DateTime))
-INSERT [dbo].[Calificaciones] ([ID_Calificacion], [ID_Estudiante], [Materia], [Nota], [Periodo], [FechaRegistro]) VALUES (8, 12, N'Inglés', CAST(3.50 AS Decimal(3, 2)), 1, CAST(N'2026-03-29T16:39:46.927' AS DateTime))
-INSERT [dbo].[Calificaciones] ([ID_Calificacion], [ID_Estudiante], [Materia], [Nota], [Periodo], [FechaRegistro]) VALUES (9, 12, N'Matemáticas', CAST(4.20 AS Decimal(3, 2)), 1, CAST(N'2026-03-30T12:43:05.713' AS DateTime))
-INSERT [dbo].[Calificaciones] ([ID_Calificacion], [ID_Estudiante], [Materia], [Nota], [Periodo], [FechaRegistro]) VALUES (10, 12, N'Inglés', CAST(3.50 AS Decimal(3, 2)), 1, CAST(N'2026-04-06T17:42:44.263' AS DateTime))
-
 SET IDENTITY_INSERT [dbo].[Calificaciones] OFF
 GO
-SET IDENTITY_INSERT [dbo].[CERTIFICADO] ON 
-
-INSERT [dbo].[CERTIFICADO] ([id_certificado], [id_estudiante], [tipo_certificado], [codigo_verificacion], [hash_contenido], [fecha_emision], [id_usuario_emisor], [estado]) VALUES (1, 6, N'Reporte de calificaciones', N'PAE-FD8D5CAC', N'LVw0GRXQZga4k+eoMgPtdzW1KduIrkgbu6f9W7uh0VQ=', CAST(N'2026-07-24T15:29:29.540' AS DateTime), 1, N'Vigente')
-INSERT [dbo].[CERTIFICADO] ([id_certificado], [id_estudiante], [tipo_certificado], [codigo_verificacion], [hash_contenido], [fecha_emision], [id_usuario_emisor], [estado]) VALUES (2, 6, N'Reporte de calificaciones', N'PAE-60963642', N'heEXnGpjOMovX/8uMOFhBqVLQMx8/GI9ZntczDfD81w=', CAST(N'2026-07-24T15:31:04.583' AS DateTime), 1, N'Vigente')
-INSERT [dbo].[CERTIFICADO] ([id_certificado], [id_estudiante], [tipo_certificado], [codigo_verificacion], [hash_contenido], [fecha_emision], [id_usuario_emisor], [estado]) VALUES (3, 6, N'Reporte de calificaciones', N'PAE-BC516163', N'3O37L7S+youtZeVZNPywCGE+qH67WPoWhepNckmRbOU=', CAST(N'2026-07-24T15:32:37.867' AS DateTime), 1, N'Vigente')
-INSERT [dbo].[CERTIFICADO] ([id_certificado], [id_estudiante], [tipo_certificado], [codigo_verificacion], [hash_contenido], [fecha_emision], [id_usuario_emisor], [estado]) VALUES (4, 6, N'Reporte de calificaciones', N'PAE-036AC961', N'KF9AUUyalQywTY0QAdExdZBPx12lhNw3GPJ0CW/mDq4=', CAST(N'2026-07-24T15:33:39.017' AS DateTime), 1, N'Vigente')
-INSERT [dbo].[CERTIFICADO] ([id_certificado], [id_estudiante], [tipo_certificado], [codigo_verificacion], [hash_contenido], [fecha_emision], [id_usuario_emisor], [estado]) VALUES (5, 6, N'Reporte de calificaciones', N'PAE-EB4297A2', N'7hNu0hMm99HQ/zlRllmPDu+8jo7uYpqTq+w9GNIQIhg=', CAST(N'2026-07-24T15:37:02.737' AS DateTime), 1, N'Vigente')
-INSERT [dbo].[CERTIFICADO] ([id_certificado], [id_estudiante], [tipo_certificado], [codigo_verificacion], [hash_contenido], [fecha_emision], [id_usuario_emisor], [estado]) VALUES (6, 12, N'Reporte de calificaciones', N'PAE-350DE651', N'zwdh5Hf5FEFvAUSXwyV8wqVl4ah8Gd1fF/4ZXe4iBsM=', CAST(N'2026-07-24T15:39:27.817' AS DateTime), 1, N'Vigente')
-INSERT [dbo].[CERTIFICADO] ([id_certificado], [id_estudiante], [tipo_certificado], [codigo_verificacion], [hash_contenido], [fecha_emision], [id_usuario_emisor], [estado]) VALUES (7, 12, N'Reporte de calificaciones', N'PAE-6F2383F1', N'LKJa7P0veB6odlkRln4Jb49QzelwNSn2PEpjDRLzURE=', CAST(N'2026-07-24T15:46:17.597' AS DateTime), 1, N'Vigente')
-INSERT [dbo].[CERTIFICADO] ([id_certificado], [id_estudiante], [tipo_certificado], [codigo_verificacion], [hash_contenido], [fecha_emision], [id_usuario_emisor], [estado]) VALUES (8, 6, N'Reporte de calificaciones', N'PAE-F0F985DE', N'1kO4NBQtpmhygFgNLOE8M+nR/s4Sx9B3d7n1gvnNx9A=', CAST(N'2026-07-24T15:50:48.667' AS DateTime), 1, N'Vigente')
-INSERT [dbo].[CERTIFICADO] ([id_certificado], [id_estudiante], [tipo_certificado], [codigo_verificacion], [hash_contenido], [fecha_emision], [id_usuario_emisor], [estado]) VALUES (9, 6, N'Reporte de calificaciones', N'PAE-341444D0', N'iLJ+yQv1KmIvwapY/6E74L4tZOLIqaIAvrii7tKJawM=', CAST(N'2026-07-24T15:58:48.000' AS DateTime), 1, N'Vigente')
-INSERT [dbo].[CERTIFICADO] ([id_certificado], [id_estudiante], [tipo_certificado], [codigo_verificacion], [hash_contenido], [fecha_emision], [id_usuario_emisor], [estado]) VALUES (10, 12, N'Reporte de calificaciones', N'PAE-EB0E2419', N'p18vgXLIKFTwYul2vYAXrzbwoZzcWnJP2kfqPqOpRBg=', CAST(N'2026-07-27T15:56:02.000' AS DateTime), 1, N'Vigente')
-INSERT [dbo].[CERTIFICADO] ([id_certificado], [id_estudiante], [tipo_certificado], [codigo_verificacion], [hash_contenido], [fecha_emision], [id_usuario_emisor], [estado]) VALUES (11, 6, N'Reporte de calificaciones', N'PAE-366F0B09', N'PxHRpYCshPwKoBsFLnEG1QhiFJZ/rEWG61oocbND9vw=', CAST(N'2026-07-27T16:14:04.000' AS DateTime), 1, N'Vigente')
-INSERT [dbo].[CERTIFICADO] ([id_certificado], [id_estudiante], [tipo_certificado], [codigo_verificacion], [hash_contenido], [fecha_emision], [id_usuario_emisor], [estado]) VALUES (12, 12, N'Reporte de calificaciones', N'PAE-27853638', N'talzqVwagVF4czswDY6H3eegXaXqr37fsT4DOzm/JZc=', CAST(N'2026-07-27T16:17:33.000' AS DateTime), 1, N'Vigente')
-INSERT [dbo].[CERTIFICADO] ([id_certificado], [id_estudiante], [tipo_certificado], [codigo_verificacion], [hash_contenido], [fecha_emision], [id_usuario_emisor], [estado]) VALUES (13, 6, N'Reporte de calificaciones', N'PAE-12187A53', N'SGBVhzVpdhEhj/U6DskFjglIRuKcfHm6GP26sL7jIrA=', CAST(N'2026-07-31T13:00:13.000' AS DateTime), 1, N'Vigente')
-SET IDENTITY_INSERT [dbo].[CERTIFICADO] OFF
+SET IDENTITY_INSERT [dbo].[CITACION] ON 
 GO
-SET IDENTITY_INSERT [dbo].[CERTIFICADO_DETALLE] ON 
-
-INSERT [dbo].[CERTIFICADO_DETALLE] ([id_detalle], [id_certificado], [id_calificacion], [materia], [periodo], [nota_final], [estado_nota]) VALUES (1, 1, 1, N'Matemáticas', N'1', CAST(4.50 AS Decimal(5, 2)), N'Aprobado')
-INSERT [dbo].[CERTIFICADO_DETALLE] ([id_detalle], [id_certificado], [id_calificacion], [materia], [periodo], [nota_final], [estado_nota]) VALUES (2, 1, 2, N'Español', N'1', CAST(3.80 AS Decimal(5, 2)), N'Aprobado')
-INSERT [dbo].[CERTIFICADO_DETALLE] ([id_detalle], [id_certificado], [id_calificacion], [materia], [periodo], [nota_final], [estado_nota]) VALUES (3, 1, 6, N'Matemáticas', N'1', CAST(3.50 AS Decimal(5, 2)), N'Aprobado')
-INSERT [dbo].[CERTIFICADO_DETALLE] ([id_detalle], [id_certificado], [id_calificacion], [materia], [periodo], [nota_final], [estado_nota]) VALUES (4, 1, 7, N'Español', N'1', CAST(4.20 AS Decimal(5, 2)), N'Aprobado')
-INSERT [dbo].[CERTIFICADO_DETALLE] ([id_detalle], [id_certificado], [id_calificacion], [materia], [periodo], [nota_final], [estado_nota]) VALUES (5, 2, 1, N'Matemáticas', N'1', CAST(4.50 AS Decimal(5, 2)), N'Aprobado')
-INSERT [dbo].[CERTIFICADO_DETALLE] ([id_detalle], [id_certificado], [id_calificacion], [materia], [periodo], [nota_final], [estado_nota]) VALUES (6, 2, 2, N'Español', N'1', CAST(3.80 AS Decimal(5, 2)), N'Aprobado')
-INSERT [dbo].[CERTIFICADO_DETALLE] ([id_detalle], [id_certificado], [id_calificacion], [materia], [periodo], [nota_final], [estado_nota]) VALUES (7, 2, 6, N'Matemáticas', N'1', CAST(3.50 AS Decimal(5, 2)), N'Aprobado')
-INSERT [dbo].[CERTIFICADO_DETALLE] ([id_detalle], [id_certificado], [id_calificacion], [materia], [periodo], [nota_final], [estado_nota]) VALUES (8, 2, 7, N'Español', N'1', CAST(4.20 AS Decimal(5, 2)), N'Aprobado')
-INSERT [dbo].[CERTIFICADO_DETALLE] ([id_detalle], [id_certificado], [id_calificacion], [materia], [periodo], [nota_final], [estado_nota]) VALUES (9, 3, 1, N'Matemáticas', N'1', CAST(4.50 AS Decimal(5, 2)), N'Aprobado')
-INSERT [dbo].[CERTIFICADO_DETALLE] ([id_detalle], [id_certificado], [id_calificacion], [materia], [periodo], [nota_final], [estado_nota]) VALUES (10, 3, 2, N'Español', N'1', CAST(3.80 AS Decimal(5, 2)), N'Aprobado')
-INSERT [dbo].[CERTIFICADO_DETALLE] ([id_detalle], [id_certificado], [id_calificacion], [materia], [periodo], [nota_final], [estado_nota]) VALUES (11, 3, 6, N'Matemáticas', N'1', CAST(3.50 AS Decimal(5, 2)), N'Aprobado')
-INSERT [dbo].[CERTIFICADO_DETALLE] ([id_detalle], [id_certificado], [id_calificacion], [materia], [periodo], [nota_final], [estado_nota]) VALUES (12, 3, 7, N'Español', N'1', CAST(4.20 AS Decimal(5, 2)), N'Aprobado')
-INSERT [dbo].[CERTIFICADO_DETALLE] ([id_detalle], [id_certificado], [id_calificacion], [materia], [periodo], [nota_final], [estado_nota]) VALUES (13, 4, 1, N'Matemáticas', N'1', CAST(4.50 AS Decimal(5, 2)), N'Aprobado')
-INSERT [dbo].[CERTIFICADO_DETALLE] ([id_detalle], [id_certificado], [id_calificacion], [materia], [periodo], [nota_final], [estado_nota]) VALUES (14, 4, 2, N'Español', N'1', CAST(3.80 AS Decimal(5, 2)), N'Aprobado')
-INSERT [dbo].[CERTIFICADO_DETALLE] ([id_detalle], [id_certificado], [id_calificacion], [materia], [periodo], [nota_final], [estado_nota]) VALUES (15, 4, 6, N'Matemáticas', N'1', CAST(3.50 AS Decimal(5, 2)), N'Aprobado')
-INSERT [dbo].[CERTIFICADO_DETALLE] ([id_detalle], [id_certificado], [id_calificacion], [materia], [periodo], [nota_final], [estado_nota]) VALUES (16, 4, 7, N'Español', N'1', CAST(4.20 AS Decimal(5, 2)), N'Aprobado')
-INSERT [dbo].[CERTIFICADO_DETALLE] ([id_detalle], [id_certificado], [id_calificacion], [materia], [periodo], [nota_final], [estado_nota]) VALUES (17, 5, 1, N'Matemáticas', N'1', CAST(4.50 AS Decimal(5, 2)), N'Aprobado')
-INSERT [dbo].[CERTIFICADO_DETALLE] ([id_detalle], [id_certificado], [id_calificacion], [materia], [periodo], [nota_final], [estado_nota]) VALUES (18, 5, 2, N'Español', N'1', CAST(3.80 AS Decimal(5, 2)), N'Aprobado')
-INSERT [dbo].[CERTIFICADO_DETALLE] ([id_detalle], [id_certificado], [id_calificacion], [materia], [periodo], [nota_final], [estado_nota]) VALUES (19, 5, 6, N'Matemáticas', N'1', CAST(3.50 AS Decimal(5, 2)), N'Aprobado')
-INSERT [dbo].[CERTIFICADO_DETALLE] ([id_detalle], [id_certificado], [id_calificacion], [materia], [periodo], [nota_final], [estado_nota]) VALUES (20, 5, 7, N'Español', N'1', CAST(4.20 AS Decimal(5, 2)), N'Aprobado')
-INSERT [dbo].[CERTIFICADO_DETALLE] ([id_detalle], [id_certificado], [id_calificacion], [materia], [periodo], [nota_final], [estado_nota]) VALUES (21, 6, 8, N'Inglés', N'1', CAST(3.50 AS Decimal(5, 2)), N'Aprobado')
-INSERT [dbo].[CERTIFICADO_DETALLE] ([id_detalle], [id_certificado], [id_calificacion], [materia], [periodo], [nota_final], [estado_nota]) VALUES (22, 6, 9, N'Matemáticas', N'1', CAST(4.20 AS Decimal(5, 2)), N'Aprobado')
-INSERT [dbo].[CERTIFICADO_DETALLE] ([id_detalle], [id_certificado], [id_calificacion], [materia], [periodo], [nota_final], [estado_nota]) VALUES (23, 6, 10, N'Inglés', N'1', CAST(3.50 AS Decimal(5, 2)), N'Aprobado')
-INSERT [dbo].[CERTIFICADO_DETALLE] ([id_detalle], [id_certificado], [id_calificacion], [materia], [periodo], [nota_final], [estado_nota]) VALUES (24, 7, 8, N'Inglés', N'1', CAST(3.50 AS Decimal(5, 2)), N'Aprobado')
-INSERT [dbo].[CERTIFICADO_DETALLE] ([id_detalle], [id_certificado], [id_calificacion], [materia], [periodo], [nota_final], [estado_nota]) VALUES (25, 7, 9, N'Matemáticas', N'1', CAST(4.20 AS Decimal(5, 2)), N'Aprobado')
-INSERT [dbo].[CERTIFICADO_DETALLE] ([id_detalle], [id_certificado], [id_calificacion], [materia], [periodo], [nota_final], [estado_nota]) VALUES (26, 7, 10, N'Inglés', N'1', CAST(3.50 AS Decimal(5, 2)), N'Aprobado')
-INSERT [dbo].[CERTIFICADO_DETALLE] ([id_detalle], [id_certificado], [id_calificacion], [materia], [periodo], [nota_final], [estado_nota]) VALUES (27, 8, 1, N'Matemáticas', N'1', CAST(4.50 AS Decimal(5, 2)), N'Aprobado')
-INSERT [dbo].[CERTIFICADO_DETALLE] ([id_detalle], [id_certificado], [id_calificacion], [materia], [periodo], [nota_final], [estado_nota]) VALUES (28, 8, 2, N'Español', N'1', CAST(3.80 AS Decimal(5, 2)), N'Aprobado')
-INSERT [dbo].[CERTIFICADO_DETALLE] ([id_detalle], [id_certificado], [id_calificacion], [materia], [periodo], [nota_final], [estado_nota]) VALUES (29, 8, 6, N'Matemáticas', N'1', CAST(3.50 AS Decimal(5, 2)), N'Aprobado')
-INSERT [dbo].[CERTIFICADO_DETALLE] ([id_detalle], [id_certificado], [id_calificacion], [materia], [periodo], [nota_final], [estado_nota]) VALUES (30, 8, 7, N'Español', N'1', CAST(4.20 AS Decimal(5, 2)), N'Aprobado')
-INSERT [dbo].[CERTIFICADO_DETALLE] ([id_detalle], [id_certificado], [id_calificacion], [materia], [periodo], [nota_final], [estado_nota]) VALUES (31, 9, 1, N'Matemáticas', N'1', CAST(4.50 AS Decimal(5, 2)), N'Aprobado')
-INSERT [dbo].[CERTIFICADO_DETALLE] ([id_detalle], [id_certificado], [id_calificacion], [materia], [periodo], [nota_final], [estado_nota]) VALUES (32, 9, 2, N'Español', N'1', CAST(3.80 AS Decimal(5, 2)), N'Aprobado')
-INSERT [dbo].[CERTIFICADO_DETALLE] ([id_detalle], [id_certificado], [id_calificacion], [materia], [periodo], [nota_final], [estado_nota]) VALUES (33, 9, 6, N'Matemáticas', N'1', CAST(3.50 AS Decimal(5, 2)), N'Aprobado')
-INSERT [dbo].[CERTIFICADO_DETALLE] ([id_detalle], [id_certificado], [id_calificacion], [materia], [periodo], [nota_final], [estado_nota]) VALUES (34, 9, 7, N'Español', N'1', CAST(4.20 AS Decimal(5, 2)), N'Aprobado')
-INSERT [dbo].[CERTIFICADO_DETALLE] ([id_detalle], [id_certificado], [id_calificacion], [materia], [periodo], [nota_final], [estado_nota]) VALUES (35, 10, 8, N'Inglés', N'1', CAST(3.50 AS Decimal(5, 2)), N'Aprobado')
-INSERT [dbo].[CERTIFICADO_DETALLE] ([id_detalle], [id_certificado], [id_calificacion], [materia], [periodo], [nota_final], [estado_nota]) VALUES (36, 10, 9, N'Matemáticas', N'1', CAST(4.20 AS Decimal(5, 2)), N'Aprobado')
-INSERT [dbo].[CERTIFICADO_DETALLE] ([id_detalle], [id_certificado], [id_calificacion], [materia], [periodo], [nota_final], [estado_nota]) VALUES (37, 10, 10, N'Inglés', N'1', CAST(3.50 AS Decimal(5, 2)), N'Aprobado')
-INSERT [dbo].[CERTIFICADO_DETALLE] ([id_detalle], [id_certificado], [id_calificacion], [materia], [periodo], [nota_final], [estado_nota]) VALUES (38, 11, 1, N'Matemáticas', N'1', CAST(4.50 AS Decimal(5, 2)), N'Aprobado')
-INSERT [dbo].[CERTIFICADO_DETALLE] ([id_detalle], [id_certificado], [id_calificacion], [materia], [periodo], [nota_final], [estado_nota]) VALUES (39, 11, 2, N'Español', N'1', CAST(3.80 AS Decimal(5, 2)), N'Aprobado')
-INSERT [dbo].[CERTIFICADO_DETALLE] ([id_detalle], [id_certificado], [id_calificacion], [materia], [periodo], [nota_final], [estado_nota]) VALUES (40, 11, 6, N'Matemáticas', N'1', CAST(3.50 AS Decimal(5, 2)), N'Aprobado')
-INSERT [dbo].[CERTIFICADO_DETALLE] ([id_detalle], [id_certificado], [id_calificacion], [materia], [periodo], [nota_final], [estado_nota]) VALUES (41, 11, 7, N'Español', N'1', CAST(4.20 AS Decimal(5, 2)), N'Aprobado')
-INSERT [dbo].[CERTIFICADO_DETALLE] ([id_detalle], [id_certificado], [id_calificacion], [materia], [periodo], [nota_final], [estado_nota]) VALUES (42, 12, 8, N'Inglés', N'1', CAST(3.50 AS Decimal(5, 2)), N'Aprobado')
-INSERT [dbo].[CERTIFICADO_DETALLE] ([id_detalle], [id_certificado], [id_calificacion], [materia], [periodo], [nota_final], [estado_nota]) VALUES (43, 13, 2, N'Español', N'1', CAST(3.80 AS Decimal(5, 2)), N'Aprobado')
-SET IDENTITY_INSERT [dbo].[CERTIFICADO_DETALLE] OFF
-GO
-
 INSERT [dbo].[CITACION] ([id_citacion], [id_estudiante], [remitente], [asunto], [mensaje], [fecha], [leido]) VALUES (1, 1, N'Prof. Carlos Ruiz', N'Dificultades en Matemáticas', N'Se requiere una cita para hablar sobre el desempeño académico del estudiante.', CAST(N'2026-03-26T13:54:03.013' AS DateTime), 0)
 GO
-=======
-SET IDENTITY_INSERT [dbo].[CITACION] ON 
-
-INSERT [dbo].[CITACION] ([id_citacion], [id_estudiante], [remitente], [asunto], [mensaje], [fecha], [leido]) VALUES (1, 6, N'Prof. Carlos Ruiz', N'Dificultades en Matemáticas', N'Se requiere una cita para hablar sobre el desempeño académico del estudiante.', CAST(N'2026-03-26T13:54:03.013' AS DateTime), 0)
-
 SET IDENTITY_INSERT [dbo].[CITACION] OFF
 GO
 SET IDENTITY_INSERT [dbo].[CURSO] ON 
-
+GO
 INSERT [dbo].[CURSO] ([id_curso], [nombre_curso], [ano_escolar], [id_departamento], [id_area], [id_periodo]) VALUES (1, N'Matemáticas Avanzadas 2024-I', 2024, 1, 1, 1)
+GO
 INSERT [dbo].[CURSO] ([id_curso], [nombre_curso], [ano_escolar], [id_departamento], [id_area], [id_periodo]) VALUES (2, N'Física General 2024-I', 2024, 1, 2, 1)
+GO
 INSERT [dbo].[CURSO] ([id_curso], [nombre_curso], [ano_escolar], [id_departamento], [id_area], [id_periodo]) VALUES (3, N'Literatura y Redacción 2024-I', 2024, 2, 3, 1)
+GO
 INSERT [dbo].[CURSO] ([id_curso], [nombre_curso], [ano_escolar], [id_departamento], [id_area], [id_periodo]) VALUES (4, N'Programación I 2024-II', 2024, 3, 5, 2)
+GO
 INSERT [dbo].[CURSO] ([id_curso], [nombre_curso], [ano_escolar], [id_departamento], [id_area], [id_periodo]) VALUES (5, N'Programación II 2024-II', 2024, 3, 5, 2)
+GO
 INSERT [dbo].[CURSO] ([id_curso], [nombre_curso], [ano_escolar], [id_departamento], [id_area], [id_periodo]) VALUES (6, N'Bases de Datos 2024-II', 2024, 3, 5, 2)
+GO
 INSERT [dbo].[CURSO] ([id_curso], [nombre_curso], [ano_escolar], [id_departamento], [id_area], [id_periodo]) VALUES (7, N'Historia Contemporánea 2024-I', 2024, 2, 4, 1)
+GO
 INSERT [dbo].[CURSO] ([id_curso], [nombre_curso], [ano_escolar], [id_departamento], [id_area], [id_periodo]) VALUES (8, N'Biología Celular 2024-II', 2024, 4, 7, 2)
+GO
 INSERT [dbo].[CURSO] ([id_curso], [nombre_curso], [ano_escolar], [id_departamento], [id_area], [id_periodo]) VALUES (9, N'Redes de Computadoras 2025-I', 2025, 3, 6, 3)
+GO
 INSERT [dbo].[CURSO] ([id_curso], [nombre_curso], [ano_escolar], [id_departamento], [id_area], [id_periodo]) VALUES (10, N'Álgebra Lineal 2025-I', 2025, 1, 1, 3)
+GO
 INSERT [dbo].[CURSO] ([id_curso], [nombre_curso], [ano_escolar], [id_departamento], [id_area], [id_periodo]) VALUES (11, N'Matemáticas Avanzadas 2024-I', 2024, 1, 1, 1)
+GO
 INSERT [dbo].[CURSO] ([id_curso], [nombre_curso], [ano_escolar], [id_departamento], [id_area], [id_periodo]) VALUES (12, N'Física General 2024-I', 2024, 1, 2, 1)
+GO
 INSERT [dbo].[CURSO] ([id_curso], [nombre_curso], [ano_escolar], [id_departamento], [id_area], [id_periodo]) VALUES (13, N'Literatura y Redacción 2024-I', 2024, 2, 3, 1)
+GO
 INSERT [dbo].[CURSO] ([id_curso], [nombre_curso], [ano_escolar], [id_departamento], [id_area], [id_periodo]) VALUES (14, N'Programación I 2024-II', 2024, 3, 5, 2)
+GO
 INSERT [dbo].[CURSO] ([id_curso], [nombre_curso], [ano_escolar], [id_departamento], [id_area], [id_periodo]) VALUES (15, N'Programación II 2024-II', 2024, 3, 5, 2)
+GO
 INSERT [dbo].[CURSO] ([id_curso], [nombre_curso], [ano_escolar], [id_departamento], [id_area], [id_periodo]) VALUES (16, N'Bases de Datos 2024-II', 2024, 3, 5, 2)
+GO
 INSERT [dbo].[CURSO] ([id_curso], [nombre_curso], [ano_escolar], [id_departamento], [id_area], [id_periodo]) VALUES (17, N'Historia Contemporánea 2024-I', 2024, 2, 4, 1)
+GO
 INSERT [dbo].[CURSO] ([id_curso], [nombre_curso], [ano_escolar], [id_departamento], [id_area], [id_periodo]) VALUES (18, N'Biología Celular 2024-II', 2024, 4, 7, 2)
+GO
 INSERT [dbo].[CURSO] ([id_curso], [nombre_curso], [ano_escolar], [id_departamento], [id_area], [id_periodo]) VALUES (19, N'Redes de Computadoras 2025-I', 2025, 3, 6, 3)
+GO
 INSERT [dbo].[CURSO] ([id_curso], [nombre_curso], [ano_escolar], [id_departamento], [id_area], [id_periodo]) VALUES (20, N'Álgebra Lineal 2025-I', 2025, 1, 1, 3)
+GO
 SET IDENTITY_INSERT [dbo].[CURSO] OFF
 GO
 INSERT [dbo].[CURSO_MATERIA] ([id_curso], [id_materia], [ano_escolar], [semestre]) VALUES (1, 1, 2024, N'1')
+GO
 INSERT [dbo].[CURSO_MATERIA] ([id_curso], [id_materia], [ano_escolar], [semestre]) VALUES (1, 2, 2024, N'1')
+GO
 INSERT [dbo].[CURSO_MATERIA] ([id_curso], [id_materia], [ano_escolar], [semestre]) VALUES (2, 3, 2024, N'1')
+GO
 INSERT [dbo].[CURSO_MATERIA] ([id_curso], [id_materia], [ano_escolar], [semestre]) VALUES (3, 4, 2024, N'1')
+GO
 INSERT [dbo].[CURSO_MATERIA] ([id_curso], [id_materia], [ano_escolar], [semestre]) VALUES (3, 5, 2024, N'1')
+GO
 INSERT [dbo].[CURSO_MATERIA] ([id_curso], [id_materia], [ano_escolar], [semestre]) VALUES (4, 7, 2024, N'2')
+GO
 INSERT [dbo].[CURSO_MATERIA] ([id_curso], [id_materia], [ano_escolar], [semestre]) VALUES (5, 8, 2024, N'2')
+GO
 INSERT [dbo].[CURSO_MATERIA] ([id_curso], [id_materia], [ano_escolar], [semestre]) VALUES (6, 9, 2024, N'2')
+GO
 INSERT [dbo].[CURSO_MATERIA] ([id_curso], [id_materia], [ano_escolar], [semestre]) VALUES (7, 6, 2024, N'1')
+GO
 INSERT [dbo].[CURSO_MATERIA] ([id_curso], [id_materia], [ano_escolar], [semestre]) VALUES (8, 11, 2024, N'2')
+GO
 INSERT [dbo].[CURSO_MATERIA] ([id_curso], [id_materia], [ano_escolar], [semestre]) VALUES (9, 10, 2025, N'1')
+GO
 INSERT [dbo].[CURSO_MATERIA] ([id_curso], [id_materia], [ano_escolar], [semestre]) VALUES (10, 1, 2025, N'1')
 GO
 SET IDENTITY_INSERT [dbo].[DEPARTAMENTO] ON 
-
+GO
 INSERT [dbo].[DEPARTAMENTO] ([id_departamento], [nombre_departamento], [descripcion]) VALUES (1, N'Ciencias Exactas', N'Departamento de matemáticas, física y química')
+GO
 INSERT [dbo].[DEPARTAMENTO] ([id_departamento], [nombre_departamento], [descripcion]) VALUES (2, N'Humanidades', N'Departamento de lengua, historia y filosofía')
+GO
 INSERT [dbo].[DEPARTAMENTO] ([id_departamento], [nombre_departamento], [descripcion]) VALUES (3, N'Tecnología e Informática', N'Departamento de programación, redes y sistemas')
+GO
 INSERT [dbo].[DEPARTAMENTO] ([id_departamento], [nombre_departamento], [descripcion]) VALUES (4, N'Ciencias Naturales', N'Departamento de biología, ecología y medio ambiente')
+GO
 INSERT [dbo].[DEPARTAMENTO] ([id_departamento], [nombre_departamento], [descripcion]) VALUES (5, N'Artes y Cultura', N'Departamento de música, teatro y artes plásticas')
+GO
 INSERT [dbo].[DEPARTAMENTO] ([id_departamento], [nombre_departamento], [descripcion]) VALUES (6, N'Ciencias Exactas', N'Departamento de matemáticas, física y química')
+GO
 INSERT [dbo].[DEPARTAMENTO] ([id_departamento], [nombre_departamento], [descripcion]) VALUES (7, N'Humanidades', N'Departamento de lengua, historia y filosofía')
+GO
 INSERT [dbo].[DEPARTAMENTO] ([id_departamento], [nombre_departamento], [descripcion]) VALUES (8, N'Tecnología e Informática', N'Departamento de programación, redes y sistemas')
+GO
 INSERT [dbo].[DEPARTAMENTO] ([id_departamento], [nombre_departamento], [descripcion]) VALUES (9, N'Ciencias Naturales', N'Departamento de biología, ecología y medio ambiente')
+GO
 INSERT [dbo].[DEPARTAMENTO] ([id_departamento], [nombre_departamento], [descripcion]) VALUES (10, N'Artes y Cultura', N'Departamento de música, teatro y artes plásticas')
+GO
 SET IDENTITY_INSERT [dbo].[DEPARTAMENTO] OFF
 GO
 SET IDENTITY_INSERT [dbo].[DOCUMENTO] ON 
-
+GO
 INSERT [dbo].[DOCUMENTO] ([id_documento], [titulo], [descripcion], [tipo_documento], [estado_documento], [version], [fecha_subida], [fecha_actualizacion], [id_usuario_autor], [nombre_archivo], [tipo_mime], [tamano_archivo], [archivo_url], [id_curso], [id_materia]) VALUES (1, N'Taller 1 - Álgebra Lineal', N'Ejercicios de vectores y operaciones matriciales para la semana 3', N'tarea', N'publicado', 1, CAST(N'2025-02-10' AS Date), CAST(N'2025-02-10' AS Date), 3, N'taller1_algebra.pdf', N'application/pdf', 204800, N'/archivos/2025/algebra/taller1_algebra.pdf', 10, 1)
-
 GO
 INSERT [dbo].[DOCUMENTO] ([id_documento], [titulo], [descripcion], [tipo_documento], [estado_documento], [version], [fecha_subida], [fecha_actualizacion], [id_usuario_autor], [nombre_archivo], [tipo_mime], [tamano_archivo], [archivo_url], [id_curso], [id_materia]) VALUES (2, N'Proyecto Final - Programación I', N'Especificación del proyecto integrador del semestre 2024-II', N'proyecto', N'publicado', 2, CAST(N'2024-08-01' AS Date), CAST(N'2024-09-15' AS Date), 1, N'proyecto_final_prog1.pdf', N'application/pdf', 512000, N'/archivos/2024-II/prog1/proyecto_final.pdf', 4, 7)
 GO
@@ -1047,59 +943,79 @@ INSERT [dbo].[DOCUMENTO] ([id_documento], [titulo], [descripcion], [tipo_documen
 GO
 INSERT [dbo].[DOCUMENTO] ([id_documento], [titulo], [descripcion], [tipo_documento], [estado_documento], [version], [fecha_subida], [fecha_actualizacion], [id_usuario_autor], [nombre_archivo], [tipo_mime], [tamano_archivo], [archivo_url], [id_curso], [id_materia]) VALUES (10, N'Informe de Investigación - Historia', N'Trabajo escrito sobre la Primera Guerra Mundial por Santiago Pérez', N'tarea', N'publicado', 1, CAST(N'2024-04-20' AS Date), NULL, 2, N'informe_historia_sperez.docx', N'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 153600, N'/archivos/2024-I/historia/informe_historia_sperez.docx', 7, 6)
 GO
-=======
-INSERT [dbo].[DOCUMENTO] ([id_documento], [titulo], [descripcion], [tipo_documento], [estado_documento], [version], [fecha_subida], [fecha_actualizacion], [id_usuario_autor], [nombre_archivo], [tipo_mime], [tamano_archivo], [archivo_url], [id_curso], [id_materia]) VALUES (2, N'Proyecto Final - Programación I', N'Especificación del proyecto integrador del semestre 2024-II', N'proyecto', N'publicado', 2, CAST(N'2024-08-01' AS Date), CAST(N'2024-09-15' AS Date), 5, N'proyecto_final_prog1.pdf', N'application/pdf', 512000, N'/archivos/2024-II/prog1/proyecto_final.pdf', 4, 7)
-INSERT [dbo].[DOCUMENTO] ([id_documento], [titulo], [descripcion], [tipo_documento], [estado_documento], [version], [fecha_subida], [fecha_actualizacion], [id_usuario_autor], [nombre_archivo], [tipo_mime], [tamano_archivo], [archivo_url], [id_curso], [id_materia]) VALUES (3, N'Examen Parcial - Física Mecánica', N'Evaluación parcial de mecánica clásica — capítulos 1 al 5', N'examen', N'archivado', 1, CAST(N'2024-03-05' AS Date), NULL, 4, N'parcial_fisica.pdf', N'application/pdf', 307200, N'/archivos/2024-I/fisica/parcial_fisica.pdf', 2, 3)
-INSERT [dbo].[DOCUMENTO] ([id_documento], [titulo], [descripcion], [tipo_documento], [estado_documento], [version], [fecha_subida], [fecha_actualizacion], [id_usuario_autor], [nombre_archivo], [tipo_mime], [tamano_archivo], [archivo_url], [id_curso], [id_materia]) VALUES (4, N'Material de Apoyo - Bases de Datos', N'Diapositivas del módulo de modelado entidad-relación', N'material', N'publicado', 3, CAST(N'2024-08-20' AS Date), CAST(N'2024-10-05' AS Date), 5, N'erd_slides.pptx', N'application/vnd.openxmlformats-officedocument.presentationml.presentation', 921600, N'/archivos/2024-II/bd/erd_slides.pptx', 6, 9)
-INSERT [dbo].[DOCUMENTO] ([id_documento], [titulo], [descripcion], [tipo_documento], [estado_documento], [version], [fecha_subida], [fecha_actualizacion], [id_usuario_autor], [nombre_archivo], [tipo_mime], [tamano_archivo], [archivo_url], [id_curso], [id_materia]) VALUES (5, N'Informe de Investigación - Historia', N'Trabajo escrito sobre la Primera Guerra Mundial por Santiago Pérez', N'tarea', N'publicado', 1, CAST(N'2024-04-20' AS Date), NULL, 7, N'informe_historia_sperez.docx', N'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 153600, N'/archivos/2024-I/historia/informe_historia_sperez.docx', 7, 6)
-INSERT [dbo].[DOCUMENTO] ([id_documento], [titulo], [descripcion], [tipo_documento], [estado_documento], [version], [fecha_subida], [fecha_actualizacion], [id_usuario_autor], [nombre_archivo], [tipo_mime], [tamano_archivo], [archivo_url], [id_curso], [id_materia]) VALUES (6, N'Taller 1 - Álgebra Lineal', N'Ejercicios de vectores y operaciones matriciales para la semana 3', N'tarea', N'publicado', 1, CAST(N'2025-02-10' AS Date), CAST(N'2025-02-10' AS Date), 3, N'taller1_algebra.pdf', N'application/pdf', 204800, N'/archivos/2025/algebra/taller1_algebra.pdf', 10, 1)
-INSERT [dbo].[DOCUMENTO] ([id_documento], [titulo], [descripcion], [tipo_documento], [estado_documento], [version], [fecha_subida], [fecha_actualizacion], [id_usuario_autor], [nombre_archivo], [tipo_mime], [tamano_archivo], [archivo_url], [id_curso], [id_materia]) VALUES (7, N'Proyecto Final - Programación I', N'Especificación del proyecto integrador del semestre 2024-II', N'proyecto', N'publicado', 2, CAST(N'2024-08-01' AS Date), CAST(N'2024-09-15' AS Date), 5, N'proyecto_final_prog1.pdf', N'application/pdf', 512000, N'/archivos/2024-II/prog1/proyecto_final.pdf', 4, 7)
-INSERT [dbo].[DOCUMENTO] ([id_documento], [titulo], [descripcion], [tipo_documento], [estado_documento], [version], [fecha_subida], [fecha_actualizacion], [id_usuario_autor], [nombre_archivo], [tipo_mime], [tamano_archivo], [archivo_url], [id_curso], [id_materia]) VALUES (8, N'Examen Parcial - Física Mecánica', N'Evaluación parcial de mecánica clásica — capítulos 1 al 5', N'examen', N'archivado', 1, CAST(N'2024-03-05' AS Date), NULL, 4, N'parcial_fisica.pdf', N'application/pdf', 307200, N'/archivos/2024-I/fisica/parcial_fisica.pdf', 2, 3)
-INSERT [dbo].[DOCUMENTO] ([id_documento], [titulo], [descripcion], [tipo_documento], [estado_documento], [version], [fecha_subida], [fecha_actualizacion], [id_usuario_autor], [nombre_archivo], [tipo_mime], [tamano_archivo], [archivo_url], [id_curso], [id_materia]) VALUES (9, N'Material de Apoyo - Bases de Datos', N'Diapositivas del módulo de modelado entidad-relación', N'material', N'publicado', 3, CAST(N'2024-08-20' AS Date), CAST(N'2024-10-05' AS Date), 5, N'erd_slides.pptx', N'application/vnd.openxmlformats-officedocument.presentationml.presentation', 921600, N'/archivos/2024-II/bd/erd_slides.pptx', 6, 9)
-INSERT [dbo].[DOCUMENTO] ([id_documento], [titulo], [descripcion], [tipo_documento], [estado_documento], [version], [fecha_subida], [fecha_actualizacion], [id_usuario_autor], [nombre_archivo], [tipo_mime], [tamano_archivo], [archivo_url], [id_curso], [id_materia]) VALUES (10, N'Informe de Investigación - Historia', N'Trabajo escrito sobre la Primera Guerra Mundial por Santiago Pérez', N'tarea', N'publicado', 1, CAST(N'2024-04-20' AS Date), NULL, 7, N'informe_historia_sperez.docx', N'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 153600, N'/archivos/2024-I/historia/informe_historia_sperez.docx', 7, 6)
-
 INSERT [dbo].[DOCUMENTO] ([id_documento], [titulo], [descripcion], [tipo_documento], [estado_documento], [version], [fecha_subida], [fecha_actualizacion], [id_usuario_autor], [nombre_archivo], [tipo_mime], [tamano_archivo], [archivo_url], [id_curso], [id_materia]) VALUES (11, N'Taller 2 - Álgebra Lineal', N'Ejercicios de transformaciones lineales semana 5', N'tarea', N'borrador', 1, CAST(N'2026-03-26' AS Date), NULL, 3, N'taller2_algebra.pdf', N'application/pdf', 204800, N'/archivos/2025/algebra/taller2_algebra.pdf', 10, 1)
+GO
 INSERT [dbo].[DOCUMENTO] ([id_documento], [titulo], [descripcion], [tipo_documento], [estado_documento], [version], [fecha_subida], [fecha_actualizacion], [id_usuario_autor], [nombre_archivo], [tipo_mime], [tamano_archivo], [archivo_url], [id_curso], [id_materia]) VALUES (12, N'Taller 2 - Álgebra Lineal', N'Ejercicios de transformaciones lineales semana 5', N'tarea', N'borrador', 1, CAST(N'2026-03-26' AS Date), NULL, 3, N'taller2_algebra.pdf', N'application/pdf', 204800, N'/archivos/2025/algebra/taller2_algebra.pdf', 10, 1)
+GO
 SET IDENTITY_INSERT [dbo].[DOCUMENTO] OFF
 GO
 SET IDENTITY_INSERT [dbo].[DOCUMENTO_ETIQUETA] ON 
-
+GO
 INSERT [dbo].[DOCUMENTO_ETIQUETA] ([id_etiqueta], [id_documento], [atiqueta]) VALUES (1, 1, N'álgebra')
+GO
 INSERT [dbo].[DOCUMENTO_ETIQUETA] ([id_etiqueta], [id_documento], [atiqueta]) VALUES (2, 1, N'vectores')
+GO
 INSERT [dbo].[DOCUMENTO_ETIQUETA] ([id_etiqueta], [id_documento], [atiqueta]) VALUES (3, 1, N'matrices')
+GO
 INSERT [dbo].[DOCUMENTO_ETIQUETA] ([id_etiqueta], [id_documento], [atiqueta]) VALUES (4, 2, N'programación')
+GO
 INSERT [dbo].[DOCUMENTO_ETIQUETA] ([id_etiqueta], [id_documento], [atiqueta]) VALUES (5, 2, N'python')
+GO
 INSERT [dbo].[DOCUMENTO_ETIQUETA] ([id_etiqueta], [id_documento], [atiqueta]) VALUES (6, 2, N'proyecto')
+GO
 INSERT [dbo].[DOCUMENTO_ETIQUETA] ([id_etiqueta], [id_documento], [atiqueta]) VALUES (7, 3, N'física')
+GO
 INSERT [dbo].[DOCUMENTO_ETIQUETA] ([id_etiqueta], [id_documento], [atiqueta]) VALUES (8, 3, N'mecánica')
+GO
 INSERT [dbo].[DOCUMENTO_ETIQUETA] ([id_etiqueta], [id_documento], [atiqueta]) VALUES (9, 3, N'examen')
+GO
 INSERT [dbo].[DOCUMENTO_ETIQUETA] ([id_etiqueta], [id_documento], [atiqueta]) VALUES (10, 4, N'bases-datos')
+GO
 INSERT [dbo].[DOCUMENTO_ETIQUETA] ([id_etiqueta], [id_documento], [atiqueta]) VALUES (11, 4, N'SQL')
+GO
 INSERT [dbo].[DOCUMENTO_ETIQUETA] ([id_etiqueta], [id_documento], [atiqueta]) VALUES (12, 4, N'ERD')
+GO
 INSERT [dbo].[DOCUMENTO_ETIQUETA] ([id_etiqueta], [id_documento], [atiqueta]) VALUES (13, 4, N'diapositivas')
+GO
 INSERT [dbo].[DOCUMENTO_ETIQUETA] ([id_etiqueta], [id_documento], [atiqueta]) VALUES (14, 5, N'historia')
+GO
 INSERT [dbo].[DOCUMENTO_ETIQUETA] ([id_etiqueta], [id_documento], [atiqueta]) VALUES (15, 5, N'investigación')
+GO
 INSERT [dbo].[DOCUMENTO_ETIQUETA] ([id_etiqueta], [id_documento], [atiqueta]) VALUES (16, 1, N'álgebra')
+GO
 INSERT [dbo].[DOCUMENTO_ETIQUETA] ([id_etiqueta], [id_documento], [atiqueta]) VALUES (17, 1, N'vectores')
+GO
 INSERT [dbo].[DOCUMENTO_ETIQUETA] ([id_etiqueta], [id_documento], [atiqueta]) VALUES (18, 1, N'matrices')
+GO
 INSERT [dbo].[DOCUMENTO_ETIQUETA] ([id_etiqueta], [id_documento], [atiqueta]) VALUES (19, 2, N'programación')
+GO
 INSERT [dbo].[DOCUMENTO_ETIQUETA] ([id_etiqueta], [id_documento], [atiqueta]) VALUES (20, 2, N'python')
+GO
 INSERT [dbo].[DOCUMENTO_ETIQUETA] ([id_etiqueta], [id_documento], [atiqueta]) VALUES (21, 2, N'proyecto')
+GO
 INSERT [dbo].[DOCUMENTO_ETIQUETA] ([id_etiqueta], [id_documento], [atiqueta]) VALUES (22, 3, N'física')
+GO
 INSERT [dbo].[DOCUMENTO_ETIQUETA] ([id_etiqueta], [id_documento], [atiqueta]) VALUES (23, 3, N'mecánica')
+GO
 INSERT [dbo].[DOCUMENTO_ETIQUETA] ([id_etiqueta], [id_documento], [atiqueta]) VALUES (24, 3, N'examen')
+GO
 INSERT [dbo].[DOCUMENTO_ETIQUETA] ([id_etiqueta], [id_documento], [atiqueta]) VALUES (25, 4, N'bases-datos')
+GO
 INSERT [dbo].[DOCUMENTO_ETIQUETA] ([id_etiqueta], [id_documento], [atiqueta]) VALUES (26, 4, N'SQL')
+GO
 INSERT [dbo].[DOCUMENTO_ETIQUETA] ([id_etiqueta], [id_documento], [atiqueta]) VALUES (27, 4, N'ERD')
+GO
 INSERT [dbo].[DOCUMENTO_ETIQUETA] ([id_etiqueta], [id_documento], [atiqueta]) VALUES (28, 4, N'diapositivas')
+GO
 INSERT [dbo].[DOCUMENTO_ETIQUETA] ([id_etiqueta], [id_documento], [atiqueta]) VALUES (29, 5, N'historia')
+GO
 INSERT [dbo].[DOCUMENTO_ETIQUETA] ([id_etiqueta], [id_documento], [atiqueta]) VALUES (30, 5, N'investigación')
+GO
 SET IDENTITY_INSERT [dbo].[DOCUMENTO_ETIQUETA] OFF
 GO
 SET IDENTITY_INSERT [dbo].[DOCUMENTO_VERSION] ON 
-
+GO
 INSERT [dbo].[DOCUMENTO_VERSION] ([id_version], [id_documento], [numero_version], [archivo_url], [nombre_archivo], [fecha_version], [id_usuario], [notas_version]) VALUES (1, 1, 1, N'/archivos/2025/algebra/taller1_algebra_v1.pdf', N'taller1_algebra_v1.pdf', CAST(N'2025-02-10' AS Date), 3, N'Versión inicial publicada')
-
 GO
 INSERT [dbo].[DOCUMENTO_VERSION] ([id_version], [id_documento], [numero_version], [archivo_url], [nombre_archivo], [fecha_version], [id_usuario], [notas_version]) VALUES (2, 2, 1, N'/archivos/2024-II/prog1/proyecto_final_v1.pdf', N'proyecto_final_prog1_v1.pdf', CAST(N'2024-08-01' AS Date), 1, N'Borrador inicial')
 GO
@@ -1123,110 +1039,169 @@ INSERT [dbo].[DOCUMENTO_VERSION] ([id_version], [id_documento], [numero_version]
 GO
 INSERT [dbo].[DOCUMENTO_VERSION] ([id_version], [id_documento], [numero_version], [archivo_url], [nombre_archivo], [fecha_version], [id_usuario], [notas_version]) VALUES (12, 4, 3, N'/archivos/2024-II/bd/erd_slides_v3.pptx', N'erd_slides_v3.pptx', CAST(N'2024-10-05' AS Date), 1, N'Añadidos ejemplos de normalización')
 GO
-=======
-INSERT [dbo].[DOCUMENTO_VERSION] ([id_version], [id_documento], [numero_version], [archivo_url], [nombre_archivo], [fecha_version], [id_usuario], [notas_version]) VALUES (2, 2, 1, N'/archivos/2024-II/prog1/proyecto_final_v1.pdf', N'proyecto_final_prog1_v1.pdf', CAST(N'2024-08-01' AS Date), 5, N'Borrador inicial')
-INSERT [dbo].[DOCUMENTO_VERSION] ([id_version], [id_documento], [numero_version], [archivo_url], [nombre_archivo], [fecha_version], [id_usuario], [notas_version]) VALUES (3, 2, 2, N'/archivos/2024-II/prog1/proyecto_final_v2.pdf', N'proyecto_final_prog1_v2.pdf', CAST(N'2024-09-15' AS Date), 5, N'Actualización de criterios de evaluación')
-INSERT [dbo].[DOCUMENTO_VERSION] ([id_version], [id_documento], [numero_version], [archivo_url], [nombre_archivo], [fecha_version], [id_usuario], [notas_version]) VALUES (4, 4, 1, N'/archivos/2024-II/bd/erd_slides_v1.pptx', N'erd_slides_v1.pptx', CAST(N'2024-08-20' AS Date), 5, N'Versión inicial')
-INSERT [dbo].[DOCUMENTO_VERSION] ([id_version], [id_documento], [numero_version], [archivo_url], [nombre_archivo], [fecha_version], [id_usuario], [notas_version]) VALUES (5, 4, 2, N'/archivos/2024-II/bd/erd_slides_v2.pptx', N'erd_slides_v2.pptx', CAST(N'2024-09-10' AS Date), 5, N'Corrección de diagramas')
-INSERT [dbo].[DOCUMENTO_VERSION] ([id_version], [id_documento], [numero_version], [archivo_url], [nombre_archivo], [fecha_version], [id_usuario], [notas_version]) VALUES (6, 4, 3, N'/archivos/2024-II/bd/erd_slides_v3.pptx', N'erd_slides_v3.pptx', CAST(N'2024-10-05' AS Date), 5, N'Añadidos ejemplos de normalización')
-INSERT [dbo].[DOCUMENTO_VERSION] ([id_version], [id_documento], [numero_version], [archivo_url], [nombre_archivo], [fecha_version], [id_usuario], [notas_version]) VALUES (7, 1, 1, N'/archivos/2025/algebra/taller1_algebra_v1.pdf', N'taller1_algebra_v1.pdf', CAST(N'2025-02-10' AS Date), 3, N'Versión inicial publicada')
-INSERT [dbo].[DOCUMENTO_VERSION] ([id_version], [id_documento], [numero_version], [archivo_url], [nombre_archivo], [fecha_version], [id_usuario], [notas_version]) VALUES (8, 2, 1, N'/archivos/2024-II/prog1/proyecto_final_v1.pdf', N'proyecto_final_prog1_v1.pdf', CAST(N'2024-08-01' AS Date), 5, N'Borrador inicial')
-INSERT [dbo].[DOCUMENTO_VERSION] ([id_version], [id_documento], [numero_version], [archivo_url], [nombre_archivo], [fecha_version], [id_usuario], [notas_version]) VALUES (9, 2, 2, N'/archivos/2024-II/prog1/proyecto_final_v2.pdf', N'proyecto_final_prog1_v2.pdf', CAST(N'2024-09-15' AS Date), 5, N'Actualización de criterios de evaluación')
-INSERT [dbo].[DOCUMENTO_VERSION] ([id_version], [id_documento], [numero_version], [archivo_url], [nombre_archivo], [fecha_version], [id_usuario], [notas_version]) VALUES (10, 4, 1, N'/archivos/2024-II/bd/erd_slides_v1.pptx', N'erd_slides_v1.pptx', CAST(N'2024-08-20' AS Date), 5, N'Versión inicial')
-INSERT [dbo].[DOCUMENTO_VERSION] ([id_version], [id_documento], [numero_version], [archivo_url], [nombre_archivo], [fecha_version], [id_usuario], [notas_version]) VALUES (11, 4, 2, N'/archivos/2024-II/bd/erd_slides_v2.pptx', N'erd_slides_v2.pptx', CAST(N'2024-09-10' AS Date), 5, N'Corrección de diagramas')
-INSERT [dbo].[DOCUMENTO_VERSION] ([id_version], [id_documento], [numero_version], [archivo_url], [nombre_archivo], [fecha_version], [id_usuario], [notas_version]) VALUES (12, 4, 3, N'/archivos/2024-II/bd/erd_slides_v3.pptx', N'erd_slides_v3.pptx', CAST(N'2024-10-05' AS Date), 5, N'Añadidos ejemplos de normalización')
-
 INSERT [dbo].[DOCUMENTO_VERSION] ([id_version], [id_documento], [numero_version], [archivo_url], [nombre_archivo], [fecha_version], [id_usuario], [notas_version]) VALUES (13, 11, 1, N'/archivos/2025/algebra/taller2_algebra.pdf', N'taller2_algebra.pdf', CAST(N'2026-03-26' AS Date), 3, N'Versión inicial publicada.')
+GO
 INSERT [dbo].[DOCUMENTO_VERSION] ([id_version], [id_documento], [numero_version], [archivo_url], [nombre_archivo], [fecha_version], [id_usuario], [notas_version]) VALUES (14, 12, 1, N'/archivos/2025/algebra/taller2_algebra.pdf', N'taller2_algebra.pdf', CAST(N'2026-03-26' AS Date), 3, N'Versión inicial publicada.')
+GO
 SET IDENTITY_INSERT [dbo].[DOCUMENTO_VERSION] OFF
 GO
 SET IDENTITY_INSERT [dbo].[ESTUDIANTE] ON 
-
+GO
 INSERT [dbo].[ESTUDIANTE] ([id_estudiante], [nombre], [apellido], [fecha_nacimiento], [direccion], [telefono], [email], [fecha_inscripcion], [codigo_estudiante]) VALUES (1, N'Laura', N'Gómez', CAST(N'2005-03-14' AS Date), N'Calle 12 # 8-45, Bogotá', N'3001230001', N'laura.gomez@estudiantil.edu.co', CAST(N'2023-01-16' AS Date), N'EST-2023-001')
+GO
 INSERT [dbo].[ESTUDIANTE] ([id_estudiante], [nombre], [apellido], [fecha_nacimiento], [direccion], [telefono], [email], [fecha_inscripcion], [codigo_estudiante]) VALUES (2, N'Santiago', N'Pérez', CAST(N'2004-07-22' AS Date), N'Cra. 9 # 22-11, Bogotá', N'3001230002', N'santiago.perez@estudiantil.edu.co', CAST(N'2023-01-16' AS Date), N'EST-2023-002')
+GO
 INSERT [dbo].[ESTUDIANTE] ([id_estudiante], [nombre], [apellido], [fecha_nacimiento], [direccion], [telefono], [email], [fecha_inscripcion], [codigo_estudiante]) VALUES (3, N'Valentina', N'López', CAST(N'2005-11-05' AS Date), N'Av. 19 # 30-60, Bogotá', N'3001230003', N'valentina.lopez@estudiantil.edu.co', CAST(N'2023-01-16' AS Date), N'EST-2023-003')
+GO
 INSERT [dbo].[ESTUDIANTE] ([id_estudiante], [nombre], [apellido], [fecha_nacimiento], [direccion], [telefono], [email], [fecha_inscripcion], [codigo_estudiante]) VALUES (4, N'Mateo', N'Hernández', CAST(N'2004-05-18' AS Date), N'Calle 80 # 50-20, Bogotá', N'3001230004', N'mateo.hernandez@estudiantil.edu.co', CAST(N'2023-01-16' AS Date), N'EST-2023-004')
+GO
 INSERT [dbo].[ESTUDIANTE] ([id_estudiante], [nombre], [apellido], [fecha_nacimiento], [direccion], [telefono], [email], [fecha_inscripcion], [codigo_estudiante]) VALUES (5, N'Isabella', N'Martínez', CAST(N'2005-09-30' AS Date), N'Cra. 15 # 10-05, Bogotá', N'3001230005', N'isabella.martinez@estudiantil.edu.co', CAST(N'2023-01-16' AS Date), N'EST-2023-005')
+GO
 INSERT [dbo].[ESTUDIANTE] ([id_estudiante], [nombre], [apellido], [fecha_nacimiento], [direccion], [telefono], [email], [fecha_inscripcion], [codigo_estudiante]) VALUES (6, N'Sebastián', N'García', CAST(N'2004-12-01' AS Date), N'Calle 63 # 12-34, Bogotá', N'3001230006', N'sebastian.garcia@estudiantil.edu.co', CAST(N'2023-01-16' AS Date), N'EST-2023-006')
+GO
 INSERT [dbo].[ESTUDIANTE] ([id_estudiante], [nombre], [apellido], [fecha_nacimiento], [direccion], [telefono], [email], [fecha_inscripcion], [codigo_estudiante]) VALUES (7, N'Camila', N'Rodríguez', CAST(N'2005-02-27' AS Date), N'Transv. 40 # 60-15, Bogotá', N'3001230007', N'camila.rodriguez@estudiantil.edu.co', CAST(N'2023-01-16' AS Date), N'EST-2023-007')
+GO
 INSERT [dbo].[ESTUDIANTE] ([id_estudiante], [nombre], [apellido], [fecha_nacimiento], [direccion], [telefono], [email], [fecha_inscripcion], [codigo_estudiante]) VALUES (8, N'Daniel', N'Ramírez', CAST(N'2004-08-14' AS Date), N'Cra. 7 # 90-50, Bogotá', N'3001230008', N'daniel.ramirez@estudiantil.edu.co', CAST(N'2023-01-16' AS Date), N'EST-2023-008')
+GO
 INSERT [dbo].[ESTUDIANTE] ([id_estudiante], [nombre], [apellido], [fecha_nacimiento], [direccion], [telefono], [email], [fecha_inscripcion], [codigo_estudiante]) VALUES (9, N'Sofía', N'Díaz', CAST(N'2005-04-09' AS Date), N'Calle 26 # 30-40, Bogotá', N'3001230009', N'sofia.diaz@estudiantil.edu.co', CAST(N'2024-01-15' AS Date), N'EST-2024-001')
+GO
 INSERT [dbo].[ESTUDIANTE] ([id_estudiante], [nombre], [apellido], [fecha_nacimiento], [direccion], [telefono], [email], [fecha_inscripcion], [codigo_estudiante]) VALUES (10, N'Felipe', N'Morales', CAST(N'2004-10-23' AS Date), N'Av. Suba # 100-22, Bogotá', N'3001230010', N'felipe.morales@estudiantil.edu.co', CAST(N'2024-01-15' AS Date), N'EST-2024-002')
+GO
 INSERT [dbo].[ESTUDIANTE] ([id_estudiante], [nombre], [apellido], [fecha_nacimiento], [direccion], [telefono], [email], [fecha_inscripcion], [codigo_estudiante]) VALUES (11, N'Mariana', N'Jiménez', CAST(N'2005-06-17' AS Date), N'Calle 170 # 7-60, Bogotá', N'3001230011', N'mariana.jimenez@estudiantil.edu.co', CAST(N'2024-01-15' AS Date), N'EST-2024-003')
+GO
 INSERT [dbo].[ESTUDIANTE] ([id_estudiante], [nombre], [apellido], [fecha_nacimiento], [direccion], [telefono], [email], [fecha_inscripcion], [codigo_estudiante]) VALUES (12, N'Tomás', N'Ruiz', CAST(N'2004-01-11' AS Date), N'Cra. 45 # 20-08, Bogotá', N'3001230012', N'tomas.ruiz@estudiantil.edu.co', CAST(N'2024-01-15' AS Date), N'EST-2024-004')
+GO
 SET IDENTITY_INSERT [dbo].[ESTUDIANTE] OFF
 GO
 INSERT [dbo].[ESTUDIANTE_PADRE] ([id_estudiante], [id_padre], [relacion], [es_principal]) VALUES (1, 1, N'Padre', 1)
+GO
 INSERT [dbo].[ESTUDIANTE_PADRE] ([id_estudiante], [id_padre], [relacion], [es_principal]) VALUES (2, 2, N'Madre', 1)
+GO
 INSERT [dbo].[ESTUDIANTE_PADRE] ([id_estudiante], [id_padre], [relacion], [es_principal]) VALUES (3, 3, N'Madre', 1)
+GO
 INSERT [dbo].[ESTUDIANTE_PADRE] ([id_estudiante], [id_padre], [relacion], [es_principal]) VALUES (4, 4, N'Padre', 1)
+GO
 INSERT [dbo].[ESTUDIANTE_PADRE] ([id_estudiante], [id_padre], [relacion], [es_principal]) VALUES (5, 5, N'Madre', 1)
+GO
 INSERT [dbo].[ESTUDIANTE_PADRE] ([id_estudiante], [id_padre], [relacion], [es_principal]) VALUES (6, 6, N'Padre', 1)
+GO
 INSERT [dbo].[ESTUDIANTE_PADRE] ([id_estudiante], [id_padre], [relacion], [es_principal]) VALUES (6, 9, N'Padre', 1)
+GO
 INSERT [dbo].[ESTUDIANTE_PADRE] ([id_estudiante], [id_padre], [relacion], [es_principal]) VALUES (7, 7, N'Madre', 1)
+GO
 INSERT [dbo].[ESTUDIANTE_PADRE] ([id_estudiante], [id_padre], [relacion], [es_principal]) VALUES (7, 10, N'Madre', 1)
+GO
 INSERT [dbo].[ESTUDIANTE_PADRE] ([id_estudiante], [id_padre], [relacion], [es_principal]) VALUES (8, 8, N'Padre', 1)
+GO
 INSERT [dbo].[ESTUDIANTE_PADRE] ([id_estudiante], [id_padre], [relacion], [es_principal]) VALUES (9, 9, N'Madre', 1)
+GO
 INSERT [dbo].[ESTUDIANTE_PADRE] ([id_estudiante], [id_padre], [relacion], [es_principal]) VALUES (10, 10, N'Padre', 1)
+GO
 INSERT [dbo].[ESTUDIANTE_PADRE] ([id_estudiante], [id_padre], [relacion], [es_principal]) VALUES (11, 11, N'Madre', 1)
+GO
 INSERT [dbo].[ESTUDIANTE_PADRE] ([id_estudiante], [id_padre], [relacion], [es_principal]) VALUES (12, 12, N'Padre', 1)
 GO
 SET IDENTITY_INSERT [dbo].[EVALUACION] ON 
-
+GO
 INSERT [dbo].[EVALUACION] ([id_evaluacion], [id_estudiante], [id_materia], [id_curso], [fecha_evaluacion], [nota], [tipo_evaluacion], [id_calificador]) VALUES (1, 1, 1, 1, CAST(N'2024-03-10' AS Date), CAST(4.20 AS Decimal(5, 2)), N'Parcial', 1)
+GO
 INSERT [dbo].[EVALUACION] ([id_evaluacion], [id_estudiante], [id_materia], [id_curso], [fecha_evaluacion], [nota], [tipo_evaluacion], [id_calificador]) VALUES (2, 2, 1, 1, CAST(N'2024-03-10' AS Date), CAST(3.80 AS Decimal(5, 2)), N'Parcial', 1)
+GO
 INSERT [dbo].[EVALUACION] ([id_evaluacion], [id_estudiante], [id_materia], [id_curso], [fecha_evaluacion], [nota], [tipo_evaluacion], [id_calificador]) VALUES (3, 3, 1, 1, CAST(N'2024-03-10' AS Date), CAST(4.60 AS Decimal(5, 2)), N'Parcial', 1)
+GO
 INSERT [dbo].[EVALUACION] ([id_evaluacion], [id_estudiante], [id_materia], [id_curso], [fecha_evaluacion], [nota], [tipo_evaluacion], [id_calificador]) VALUES (4, 1, 1, 1, CAST(N'2024-05-20' AS Date), CAST(4.00 AS Decimal(5, 2)), N'Final', 1)
+GO
 INSERT [dbo].[EVALUACION] ([id_evaluacion], [id_estudiante], [id_materia], [id_curso], [fecha_evaluacion], [nota], [tipo_evaluacion], [id_calificador]) VALUES (5, 2, 1, 1, CAST(N'2024-05-20' AS Date), CAST(3.50 AS Decimal(5, 2)), N'Final', 1)
+GO
 INSERT [dbo].[EVALUACION] ([id_evaluacion], [id_estudiante], [id_materia], [id_curso], [fecha_evaluacion], [nota], [tipo_evaluacion], [id_calificador]) VALUES (6, 3, 1, 1, CAST(N'2024-05-20' AS Date), CAST(4.80 AS Decimal(5, 2)), N'Final', 1)
+GO
 INSERT [dbo].[EVALUACION] ([id_evaluacion], [id_estudiante], [id_materia], [id_curso], [fecha_evaluacion], [nota], [tipo_evaluacion], [id_calificador]) VALUES (7, 4, 3, 2, CAST(N'2024-03-12' AS Date), CAST(3.70 AS Decimal(5, 2)), N'Parcial', 2)
+GO
 INSERT [dbo].[EVALUACION] ([id_evaluacion], [id_estudiante], [id_materia], [id_curso], [fecha_evaluacion], [nota], [tipo_evaluacion], [id_calificador]) VALUES (8, 5, 3, 2, CAST(N'2024-03-12' AS Date), CAST(4.10 AS Decimal(5, 2)), N'Parcial', 2)
+GO
 INSERT [dbo].[EVALUACION] ([id_evaluacion], [id_estudiante], [id_materia], [id_curso], [fecha_evaluacion], [nota], [tipo_evaluacion], [id_calificador]) VALUES (9, 6, 4, 3, CAST(N'2024-04-08' AS Date), CAST(4.50 AS Decimal(5, 2)), N'Quiz', 3)
+GO
 INSERT [dbo].[EVALUACION] ([id_evaluacion], [id_estudiante], [id_materia], [id_curso], [fecha_evaluacion], [nota], [tipo_evaluacion], [id_calificador]) VALUES (10, 7, 7, 4, CAST(N'2024-09-15' AS Date), CAST(3.90 AS Decimal(5, 2)), N'Parcial', 5)
+GO
 INSERT [dbo].[EVALUACION] ([id_evaluacion], [id_estudiante], [id_materia], [id_curso], [fecha_evaluacion], [nota], [tipo_evaluacion], [id_calificador]) VALUES (11, 8, 7, 4, CAST(N'2024-09-15' AS Date), CAST(4.30 AS Decimal(5, 2)), N'Parcial', 5)
+GO
 INSERT [dbo].[EVALUACION] ([id_evaluacion], [id_estudiante], [id_materia], [id_curso], [fecha_evaluacion], [nota], [tipo_evaluacion], [id_calificador]) VALUES (12, 1, 8, 5, CAST(N'2024-09-16' AS Date), CAST(4.00 AS Decimal(5, 2)), N'Proyecto', 5)
+GO
 INSERT [dbo].[EVALUACION] ([id_evaluacion], [id_estudiante], [id_materia], [id_curso], [fecha_evaluacion], [nota], [tipo_evaluacion], [id_calificador]) VALUES (13, 2, 9, 6, CAST(N'2024-10-10' AS Date), CAST(3.60 AS Decimal(5, 2)), N'Final', 5)
+GO
 INSERT [dbo].[EVALUACION] ([id_evaluacion], [id_estudiante], [id_materia], [id_curso], [fecha_evaluacion], [nota], [tipo_evaluacion], [id_calificador]) VALUES (14, 9, 10, 9, CAST(N'2025-03-05' AS Date), CAST(4.40 AS Decimal(5, 2)), N'Parcial', 6)
+GO
 INSERT [dbo].[EVALUACION] ([id_evaluacion], [id_estudiante], [id_materia], [id_curso], [fecha_evaluacion], [nota], [tipo_evaluacion], [id_calificador]) VALUES (15, 10, 10, 9, CAST(N'2025-03-05' AS Date), CAST(3.80 AS Decimal(5, 2)), N'Parcial', 6)
+GO
 INSERT [dbo].[EVALUACION] ([id_evaluacion], [id_estudiante], [id_materia], [id_curso], [fecha_evaluacion], [nota], [tipo_evaluacion], [id_calificador]) VALUES (16, 1, 1, 1, CAST(N'2024-03-10' AS Date), CAST(4.20 AS Decimal(5, 2)), N'Parcial', 1)
+GO
 INSERT [dbo].[EVALUACION] ([id_evaluacion], [id_estudiante], [id_materia], [id_curso], [fecha_evaluacion], [nota], [tipo_evaluacion], [id_calificador]) VALUES (17, 2, 1, 1, CAST(N'2024-03-10' AS Date), CAST(3.80 AS Decimal(5, 2)), N'Parcial', 1)
+GO
 INSERT [dbo].[EVALUACION] ([id_evaluacion], [id_estudiante], [id_materia], [id_curso], [fecha_evaluacion], [nota], [tipo_evaluacion], [id_calificador]) VALUES (18, 3, 1, 1, CAST(N'2024-03-10' AS Date), CAST(4.60 AS Decimal(5, 2)), N'Parcial', 1)
+GO
 INSERT [dbo].[EVALUACION] ([id_evaluacion], [id_estudiante], [id_materia], [id_curso], [fecha_evaluacion], [nota], [tipo_evaluacion], [id_calificador]) VALUES (19, 1, 1, 1, CAST(N'2024-05-20' AS Date), CAST(4.00 AS Decimal(5, 2)), N'Final', 1)
+GO
 INSERT [dbo].[EVALUACION] ([id_evaluacion], [id_estudiante], [id_materia], [id_curso], [fecha_evaluacion], [nota], [tipo_evaluacion], [id_calificador]) VALUES (20, 2, 1, 1, CAST(N'2024-05-20' AS Date), CAST(3.50 AS Decimal(5, 2)), N'Final', 1)
+GO
 INSERT [dbo].[EVALUACION] ([id_evaluacion], [id_estudiante], [id_materia], [id_curso], [fecha_evaluacion], [nota], [tipo_evaluacion], [id_calificador]) VALUES (21, 3, 1, 1, CAST(N'2024-05-20' AS Date), CAST(4.80 AS Decimal(5, 2)), N'Final', 1)
+GO
 INSERT [dbo].[EVALUACION] ([id_evaluacion], [id_estudiante], [id_materia], [id_curso], [fecha_evaluacion], [nota], [tipo_evaluacion], [id_calificador]) VALUES (22, 4, 3, 2, CAST(N'2024-03-12' AS Date), CAST(3.70 AS Decimal(5, 2)), N'Parcial', 2)
+GO
 INSERT [dbo].[EVALUACION] ([id_evaluacion], [id_estudiante], [id_materia], [id_curso], [fecha_evaluacion], [nota], [tipo_evaluacion], [id_calificador]) VALUES (23, 5, 3, 2, CAST(N'2024-03-12' AS Date), CAST(4.10 AS Decimal(5, 2)), N'Parcial', 2)
+GO
 INSERT [dbo].[EVALUACION] ([id_evaluacion], [id_estudiante], [id_materia], [id_curso], [fecha_evaluacion], [nota], [tipo_evaluacion], [id_calificador]) VALUES (24, 6, 4, 3, CAST(N'2024-04-08' AS Date), CAST(4.50 AS Decimal(5, 2)), N'Quiz', 3)
+GO
 INSERT [dbo].[EVALUACION] ([id_evaluacion], [id_estudiante], [id_materia], [id_curso], [fecha_evaluacion], [nota], [tipo_evaluacion], [id_calificador]) VALUES (25, 7, 7, 4, CAST(N'2024-09-15' AS Date), CAST(3.90 AS Decimal(5, 2)), N'Parcial', 5)
+GO
 INSERT [dbo].[EVALUACION] ([id_evaluacion], [id_estudiante], [id_materia], [id_curso], [fecha_evaluacion], [nota], [tipo_evaluacion], [id_calificador]) VALUES (26, 8, 7, 4, CAST(N'2024-09-15' AS Date), CAST(4.30 AS Decimal(5, 2)), N'Parcial', 5)
+GO
 INSERT [dbo].[EVALUACION] ([id_evaluacion], [id_estudiante], [id_materia], [id_curso], [fecha_evaluacion], [nota], [tipo_evaluacion], [id_calificador]) VALUES (27, 1, 8, 5, CAST(N'2024-09-16' AS Date), CAST(4.00 AS Decimal(5, 2)), N'Proyecto', 5)
+GO
 INSERT [dbo].[EVALUACION] ([id_evaluacion], [id_estudiante], [id_materia], [id_curso], [fecha_evaluacion], [nota], [tipo_evaluacion], [id_calificador]) VALUES (28, 2, 9, 6, CAST(N'2024-10-10' AS Date), CAST(3.60 AS Decimal(5, 2)), N'Final', 5)
+GO
 INSERT [dbo].[EVALUACION] ([id_evaluacion], [id_estudiante], [id_materia], [id_curso], [fecha_evaluacion], [nota], [tipo_evaluacion], [id_calificador]) VALUES (29, 9, 10, 9, CAST(N'2025-03-05' AS Date), CAST(4.40 AS Decimal(5, 2)), N'Parcial', 6)
+GO
 INSERT [dbo].[EVALUACION] ([id_evaluacion], [id_estudiante], [id_materia], [id_curso], [fecha_evaluacion], [nota], [tipo_evaluacion], [id_calificador]) VALUES (30, 10, 10, 9, CAST(N'2025-03-05' AS Date), CAST(3.80 AS Decimal(5, 2)), N'Parcial', 6)
+GO
 INSERT [dbo].[EVALUACION] ([id_evaluacion], [id_estudiante], [id_materia], [id_curso], [fecha_evaluacion], [nota], [tipo_evaluacion], [id_calificador]) VALUES (33, 6, 1, 1, CAST(N'2026-03-26' AS Date), CAST(4.80 AS Decimal(5, 2)), N'Parcial', 1)
+GO
 INSERT [dbo].[EVALUACION] ([id_evaluacion], [id_estudiante], [id_materia], [id_curso], [fecha_evaluacion], [nota], [tipo_evaluacion], [id_calificador]) VALUES (34, 6, 2, 1, CAST(N'2026-03-26' AS Date), CAST(4.20 AS Decimal(5, 2)), N'Talleres', 1)
+GO
 INSERT [dbo].[EVALUACION] ([id_evaluacion], [id_estudiante], [id_materia], [id_curso], [fecha_evaluacion], [nota], [tipo_evaluacion], [id_calificador]) VALUES (35, 6, 3, 1, CAST(N'2026-03-26' AS Date), CAST(4.50 AS Decimal(5, 2)), N'Examen', 1)
+GO
 INSERT [dbo].[EVALUACION] ([id_evaluacion], [id_estudiante], [id_materia], [id_curso], [fecha_evaluacion], [nota], [tipo_evaluacion], [id_calificador]) VALUES (36, 7, 1, 1, CAST(N'2026-03-26' AS Date), CAST(3.80 AS Decimal(5, 2)), N'General', 1)
+GO
 INSERT [dbo].[EVALUACION] ([id_evaluacion], [id_estudiante], [id_materia], [id_curso], [fecha_evaluacion], [nota], [tipo_evaluacion], [id_calificador]) VALUES (37, 11, 1, 10, CAST(N'2026-03-26' AS Date), CAST(0.00 AS Decimal(5, 2)), N'Tarea', 1)
+GO
 INSERT [dbo].[EVALUACION] ([id_evaluacion], [id_estudiante], [id_materia], [id_curso], [fecha_evaluacion], [nota], [tipo_evaluacion], [id_calificador]) VALUES (38, 1, 1, 1, CAST(N'2026-03-26' AS Date), CAST(4.20 AS Decimal(5, 2)), N'Parcial 1', 1)
+GO
 SET IDENTITY_INSERT [dbo].[EVALUACION] OFF
 GO
 SET IDENTITY_INSERT [dbo].[GU_DETALLE_ROL] ON 
-
+GO
 INSERT [dbo].[GU_DETALLE_ROL] ([id_detalle], [id_rol], [descripcion], [fecha_mod], [modificado_por]) VALUES (1, 1, N'Configuración inicial del rol Administrador', CAST(N'2023-01-01' AS Date), 1)
+GO
 INSERT [dbo].[GU_DETALLE_ROL] ([id_detalle], [id_rol], [descripcion], [fecha_mod], [modificado_por]) VALUES (2, 2, N'Configuración inicial del rol Coordinador', CAST(N'2023-01-05' AS Date), 1)
+GO
 INSERT [dbo].[GU_DETALLE_ROL] ([id_detalle], [id_rol], [descripcion], [fecha_mod], [modificado_por]) VALUES (3, 3, N'Configuración inicial del rol Profesor', CAST(N'2023-01-10' AS Date), 1)
+GO
 INSERT [dbo].[GU_DETALLE_ROL] ([id_detalle], [id_rol], [descripcion], [fecha_mod], [modificado_por]) VALUES (4, 4, N'Configuración inicial del rol Estudiante', CAST(N'2023-01-16' AS Date), 1)
+GO
 INSERT [dbo].[GU_DETALLE_ROL] ([id_detalle], [id_rol], [descripcion], [fecha_mod], [modificado_por]) VALUES (5, 5, N'Configuración inicial del rol Padre/Tutor', CAST(N'2023-01-20' AS Date), 1)
+GO
 INSERT [dbo].[GU_DETALLE_ROL] ([id_detalle], [id_rol], [descripcion], [fecha_mod], [modificado_por]) VALUES (6, 1, N'Configuración inicial del rol Administrador', CAST(N'2023-01-01' AS Date), 1)
+GO
 INSERT [dbo].[GU_DETALLE_ROL] ([id_detalle], [id_rol], [descripcion], [fecha_mod], [modificado_por]) VALUES (7, 2, N'Configuración inicial del rol Coordinador', CAST(N'2023-01-05' AS Date), 1)
+GO
 INSERT [dbo].[GU_DETALLE_ROL] ([id_detalle], [id_rol], [descripcion], [fecha_mod], [modificado_por]) VALUES (8, 3, N'Configuración inicial del rol Profesor', CAST(N'2023-01-10' AS Date), 1)
+GO
 INSERT [dbo].[GU_DETALLE_ROL] ([id_detalle], [id_rol], [descripcion], [fecha_mod], [modificado_por]) VALUES (9, 4, N'Configuración inicial del rol Estudiante', CAST(N'2023-01-16' AS Date), 1)
+GO
 INSERT [dbo].[GU_DETALLE_ROL] ([id_detalle], [id_rol], [descripcion], [fecha_mod], [modificado_por]) VALUES (10, 5, N'Configuración inicial del rol Padre/Tutor', CAST(N'2023-01-20' AS Date), 1)
+GO
 SET IDENTITY_INSERT [dbo].[GU_DETALLE_ROL] OFF
 GO
 SET IDENTITY_INSERT [dbo].[GU_HISTORIAL_PASSWORD] ON 
-
 GO
 INSERT [dbo].[GU_HISTORIAL_PASSWORD] ([id_historial], [id_usuario], [contrasena_hash], [fecha_cambio]) VALUES (1, 1, N'$2b$12$OldHash001ForLaura', CAST(N'2023-01-16T08:00:00.000' AS DateTime))
 GO
@@ -1266,153 +1241,207 @@ INSERT [dbo].[GU_INTENTOS_LOGIN] ([id_intento], [id_usuario], [fecha_intento], [
 GO
 INSERT [dbo].[GU_INTENTOS_LOGIN] ([id_intento], [id_usuario], [fecha_intento], [exitoso], [ip_origen], [bloqueado_hasta]) VALUES (11, 1, CAST(N'2025-03-11T08:01:30.000' AS DateTime), 1, N'192.168.1.10', NULL)
 GO
-=======
-
-INSERT [dbo].[GU_HISTORIAL_PASSWORD] ([id_historial], [id_usuario], [contrasena_hash], [fecha_cambio]) VALUES (1, 6, N'$2b$12$OldHash001ForLaura', CAST(N'2023-01-16T08:00:00.000' AS DateTime))
-INSERT [dbo].[GU_HISTORIAL_PASSWORD] ([id_historial], [id_usuario], [contrasena_hash], [fecha_cambio]) VALUES (2, 6, N'$2b$12$NewHash001ForLaura', CAST(N'2024-06-01T09:00:00.000' AS DateTime))
-INSERT [dbo].[GU_HISTORIAL_PASSWORD] ([id_historial], [id_usuario], [contrasena_hash], [fecha_cambio]) VALUES (3, 7, N'$2b$12$OldHash002ForSantiago', CAST(N'2023-01-16T08:00:00.000' AS DateTime))
-INSERT [dbo].[GU_HISTORIAL_PASSWORD] ([id_historial], [id_usuario], [contrasena_hash], [fecha_cambio]) VALUES (4, 6, N'$2b$12$OldHash001ForLaura', CAST(N'2023-01-16T08:00:00.000' AS DateTime))
-INSERT [dbo].[GU_HISTORIAL_PASSWORD] ([id_historial], [id_usuario], [contrasena_hash], [fecha_cambio]) VALUES (5, 6, N'$2b$12$NewHash001ForLaura', CAST(N'2024-06-01T09:00:00.000' AS DateTime))
-INSERT [dbo].[GU_HISTORIAL_PASSWORD] ([id_historial], [id_usuario], [contrasena_hash], [fecha_cambio]) VALUES (6, 7, N'$2b$12$OldHash002ForSantiago', CAST(N'2023-01-16T08:00:00.000' AS DateTime))
-SET IDENTITY_INSERT [dbo].[GU_HISTORIAL_PASSWORD] OFF
-GO
-SET IDENTITY_INSERT [dbo].[GU_INTENTOS_LOGIN] ON 
-
-INSERT [dbo].[GU_INTENTOS_LOGIN] ([id_intento], [id_usuario], [fecha_intento], [exitoso], [ip_origen], [bloqueado_hasta]) VALUES (1, 6, CAST(N'2025-03-10T07:15:00.000' AS DateTime), 1, N'192.168.1.10', NULL)
-INSERT [dbo].[GU_INTENTOS_LOGIN] ([id_intento], [id_usuario], [fecha_intento], [exitoso], [ip_origen], [bloqueado_hasta]) VALUES (2, 7, CAST(N'2025-03-10T07:22:00.000' AS DateTime), 1, N'192.168.1.11', NULL)
-INSERT [dbo].[GU_INTENTOS_LOGIN] ([id_intento], [id_usuario], [fecha_intento], [exitoso], [ip_origen], [bloqueado_hasta]) VALUES (3, 6, CAST(N'2025-03-11T08:00:00.000' AS DateTime), 0, N'192.168.1.10', NULL)
-INSERT [dbo].[GU_INTENTOS_LOGIN] ([id_intento], [id_usuario], [fecha_intento], [exitoso], [ip_origen], [bloqueado_hasta]) VALUES (4, 6, CAST(N'2025-03-11T08:01:00.000' AS DateTime), 0, N'192.168.1.10', NULL)
-INSERT [dbo].[GU_INTENTOS_LOGIN] ([id_intento], [id_usuario], [fecha_intento], [exitoso], [ip_origen], [bloqueado_hasta]) VALUES (5, 6, CAST(N'2025-03-11T08:01:30.000' AS DateTime), 1, N'192.168.1.10', NULL)
-INSERT [dbo].[GU_INTENTOS_LOGIN] ([id_intento], [id_usuario], [fecha_intento], [exitoso], [ip_origen], [bloqueado_hasta]) VALUES (6, 3, CAST(N'2025-03-12T06:55:00.000' AS DateTime), 1, N'190.10.20.30', NULL)
-INSERT [dbo].[GU_INTENTOS_LOGIN] ([id_intento], [id_usuario], [fecha_intento], [exitoso], [ip_origen], [bloqueado_hasta]) VALUES (7, 6, CAST(N'2025-03-10T07:15:00.000' AS DateTime), 1, N'192.168.1.10', NULL)
-INSERT [dbo].[GU_INTENTOS_LOGIN] ([id_intento], [id_usuario], [fecha_intento], [exitoso], [ip_origen], [bloqueado_hasta]) VALUES (8, 7, CAST(N'2025-03-10T07:22:00.000' AS DateTime), 1, N'192.168.1.11', NULL)
-INSERT [dbo].[GU_INTENTOS_LOGIN] ([id_intento], [id_usuario], [fecha_intento], [exitoso], [ip_origen], [bloqueado_hasta]) VALUES (9, 6, CAST(N'2025-03-11T08:00:00.000' AS DateTime), 0, N'192.168.1.10', NULL)
-INSERT [dbo].[GU_INTENTOS_LOGIN] ([id_intento], [id_usuario], [fecha_intento], [exitoso], [ip_origen], [bloqueado_hasta]) VALUES (10, 6, CAST(N'2025-03-11T08:01:00.000' AS DateTime), 0, N'192.168.1.10', NULL)
-INSERT [dbo].[GU_INTENTOS_LOGIN] ([id_intento], [id_usuario], [fecha_intento], [exitoso], [ip_origen], [bloqueado_hasta]) VALUES (11, 6, CAST(N'2025-03-11T08:01:30.000' AS DateTime), 1, N'192.168.1.10', NULL)
-
 INSERT [dbo].[GU_INTENTOS_LOGIN] ([id_intento], [id_usuario], [fecha_intento], [exitoso], [ip_origen], [bloqueado_hasta]) VALUES (12, 3, CAST(N'2025-03-12T06:55:00.000' AS DateTime), 1, N'190.10.20.30', NULL)
+GO
 INSERT [dbo].[GU_INTENTOS_LOGIN] ([id_intento], [id_usuario], [fecha_intento], [exitoso], [ip_origen], [bloqueado_hasta]) VALUES (13, 2, CAST(N'2026-03-26T14:59:23.113' AS DateTime), 0, NULL, NULL)
+GO
 SET IDENTITY_INSERT [dbo].[GU_INTENTOS_LOGIN] OFF
 GO
 SET IDENTITY_INSERT [dbo].[GU_MENU_PERMISO] ON 
-
+GO
 INSERT [dbo].[GU_MENU_PERMISO] ([id_menu], [nombre_menu], [ruta], [icono], [activo]) VALUES (1, N'Dashboard', N'/dashboard', N'fas fa-home', 1)
+GO
 INSERT [dbo].[GU_MENU_PERMISO] ([id_menu], [nombre_menu], [ruta], [icono], [activo]) VALUES (2, N'Estudiantes', N'/estudiantes', N'fas fa-user-graduate', 1)
+GO
 INSERT [dbo].[GU_MENU_PERMISO] ([id_menu], [nombre_menu], [ruta], [icono], [activo]) VALUES (3, N'Profesores', N'/profesores', N'fas fa-chalkboard-teacher', 1)
+GO
 INSERT [dbo].[GU_MENU_PERMISO] ([id_menu], [nombre_menu], [ruta], [icono], [activo]) VALUES (4, N'Cursos', N'/cursos', N'fas fa-book-open', 1)
+GO
 INSERT [dbo].[GU_MENU_PERMISO] ([id_menu], [nombre_menu], [ruta], [icono], [activo]) VALUES (5, N'Evaluaciones', N'/evaluaciones', N'fas fa-clipboard-list', 1)
+GO
 INSERT [dbo].[GU_MENU_PERMISO] ([id_menu], [nombre_menu], [ruta], [icono], [activo]) VALUES (6, N'Asistencias', N'/asistencias', N'fas fa-calendar-check', 1)
+GO
 INSERT [dbo].[GU_MENU_PERMISO] ([id_menu], [nombre_menu], [ruta], [icono], [activo]) VALUES (7, N'Documentos', N'/documentos', N'fas fa-file-alt', 1)
+GO
 INSERT [dbo].[GU_MENU_PERMISO] ([id_menu], [nombre_menu], [ruta], [icono], [activo]) VALUES (8, N'Usuarios', N'/usuarios', N'fas fa-users-cog', 1)
+GO
 INSERT [dbo].[GU_MENU_PERMISO] ([id_menu], [nombre_menu], [ruta], [icono], [activo]) VALUES (9, N'Reportes', N'/reportes', N'fas fa-chart-bar', 1)
+GO
 INSERT [dbo].[GU_MENU_PERMISO] ([id_menu], [nombre_menu], [ruta], [icono], [activo]) VALUES (10, N'Configuración', N'/configuracion', N'fas fa-cog', 1)
+GO
 SET IDENTITY_INSERT [dbo].[GU_MENU_PERMISO] OFF
 GO
 INSERT [dbo].[GU_MENU_PERMISO_ROL] ([id_rol], [id_menu], [fecha_asignacion]) VALUES (1, 1, CAST(N'2023-01-01' AS Date))
+GO
 INSERT [dbo].[GU_MENU_PERMISO_ROL] ([id_rol], [id_menu], [fecha_asignacion]) VALUES (1, 2, CAST(N'2023-01-01' AS Date))
+GO
 INSERT [dbo].[GU_MENU_PERMISO_ROL] ([id_rol], [id_menu], [fecha_asignacion]) VALUES (1, 3, CAST(N'2023-01-01' AS Date))
+GO
 INSERT [dbo].[GU_MENU_PERMISO_ROL] ([id_rol], [id_menu], [fecha_asignacion]) VALUES (1, 4, CAST(N'2023-01-01' AS Date))
+GO
 INSERT [dbo].[GU_MENU_PERMISO_ROL] ([id_rol], [id_menu], [fecha_asignacion]) VALUES (1, 5, CAST(N'2023-01-01' AS Date))
+GO
 INSERT [dbo].[GU_MENU_PERMISO_ROL] ([id_rol], [id_menu], [fecha_asignacion]) VALUES (1, 6, CAST(N'2023-01-01' AS Date))
+GO
 INSERT [dbo].[GU_MENU_PERMISO_ROL] ([id_rol], [id_menu], [fecha_asignacion]) VALUES (1, 7, CAST(N'2023-01-01' AS Date))
+GO
 INSERT [dbo].[GU_MENU_PERMISO_ROL] ([id_rol], [id_menu], [fecha_asignacion]) VALUES (1, 8, CAST(N'2023-01-01' AS Date))
+GO
 INSERT [dbo].[GU_MENU_PERMISO_ROL] ([id_rol], [id_menu], [fecha_asignacion]) VALUES (1, 9, CAST(N'2023-01-01' AS Date))
+GO
 INSERT [dbo].[GU_MENU_PERMISO_ROL] ([id_rol], [id_menu], [fecha_asignacion]) VALUES (1, 10, CAST(N'2023-01-01' AS Date))
+GO
 INSERT [dbo].[GU_MENU_PERMISO_ROL] ([id_rol], [id_menu], [fecha_asignacion]) VALUES (2, 1, CAST(N'2023-01-05' AS Date))
+GO
 INSERT [dbo].[GU_MENU_PERMISO_ROL] ([id_rol], [id_menu], [fecha_asignacion]) VALUES (2, 2, CAST(N'2023-01-05' AS Date))
+GO
 INSERT [dbo].[GU_MENU_PERMISO_ROL] ([id_rol], [id_menu], [fecha_asignacion]) VALUES (2, 4, CAST(N'2023-01-05' AS Date))
+GO
 INSERT [dbo].[GU_MENU_PERMISO_ROL] ([id_rol], [id_menu], [fecha_asignacion]) VALUES (2, 5, CAST(N'2023-01-05' AS Date))
+GO
 INSERT [dbo].[GU_MENU_PERMISO_ROL] ([id_rol], [id_menu], [fecha_asignacion]) VALUES (2, 9, CAST(N'2023-01-05' AS Date))
+GO
 INSERT [dbo].[GU_MENU_PERMISO_ROL] ([id_rol], [id_menu], [fecha_asignacion]) VALUES (3, 1, CAST(N'2023-01-10' AS Date))
+GO
 INSERT [dbo].[GU_MENU_PERMISO_ROL] ([id_rol], [id_menu], [fecha_asignacion]) VALUES (3, 5, CAST(N'2023-01-10' AS Date))
+GO
 INSERT [dbo].[GU_MENU_PERMISO_ROL] ([id_rol], [id_menu], [fecha_asignacion]) VALUES (3, 6, CAST(N'2023-01-10' AS Date))
+GO
 INSERT [dbo].[GU_MENU_PERMISO_ROL] ([id_rol], [id_menu], [fecha_asignacion]) VALUES (3, 7, CAST(N'2023-01-10' AS Date))
+GO
 INSERT [dbo].[GU_MENU_PERMISO_ROL] ([id_rol], [id_menu], [fecha_asignacion]) VALUES (4, 1, CAST(N'2023-01-16' AS Date))
+GO
 INSERT [dbo].[GU_MENU_PERMISO_ROL] ([id_rol], [id_menu], [fecha_asignacion]) VALUES (4, 5, CAST(N'2023-01-16' AS Date))
+GO
 INSERT [dbo].[GU_MENU_PERMISO_ROL] ([id_rol], [id_menu], [fecha_asignacion]) VALUES (4, 7, CAST(N'2023-01-16' AS Date))
+GO
 INSERT [dbo].[GU_MENU_PERMISO_ROL] ([id_rol], [id_menu], [fecha_asignacion]) VALUES (5, 1, CAST(N'2023-01-20' AS Date))
+GO
 INSERT [dbo].[GU_MENU_PERMISO_ROL] ([id_rol], [id_menu], [fecha_asignacion]) VALUES (5, 5, CAST(N'2023-01-20' AS Date))
 GO
 SET IDENTITY_INSERT [dbo].[GU_PARAMETRIZACION] ON 
-
+GO
 INSERT [dbo].[GU_PARAMETRIZACION] ([id_param], [modulo], [clave], [valor], [descripcion], [activo], [fecha_mod]) VALUES (1, N'seguridad', N'max_intentos_login', N'5', N'Máximo de intentos antes de bloqueo', 1, CAST(N'2023-01-01' AS Date))
+GO
 INSERT [dbo].[GU_PARAMETRIZACION] ([id_param], [modulo], [clave], [valor], [descripcion], [activo], [fecha_mod]) VALUES (2, N'seguridad', N'minutos_bloqueo', N'30', N'Minutos de bloqueo tras intentos fallidos', 1, CAST(N'2023-01-01' AS Date))
+GO
 INSERT [dbo].[GU_PARAMETRIZACION] ([id_param], [modulo], [clave], [valor], [descripcion], [activo], [fecha_mod]) VALUES (3, N'seguridad', N'expiracion_token_minutos', N'60', N'Minutos de validez del token de recuperación', 1, CAST(N'2023-01-01' AS Date))
+GO
 INSERT [dbo].[GU_PARAMETRIZACION] ([id_param], [modulo], [clave], [valor], [descripcion], [activo], [fecha_mod]) VALUES (4, N'sistema', N'nombre_institucion', N'Colegio San Agustín', N'Nombre oficial de la institución', 1, CAST(N'2023-01-01' AS Date))
+GO
 INSERT [dbo].[GU_PARAMETRIZACION] ([id_param], [modulo], [clave], [valor], [descripcion], [activo], [fecha_mod]) VALUES (5, N'sistema', N'anio_lectivo_actual', N'2025', N'Año escolar en curso', 1, CAST(N'2025-01-01' AS Date))
+GO
 INSERT [dbo].[GU_PARAMETRIZACION] ([id_param], [modulo], [clave], [valor], [descripcion], [activo], [fecha_mod]) VALUES (6, N'correo', N'smtp_host', N'smtp.colegio.edu.co', N'Servidor SMTP saliente', 1, CAST(N'2023-01-01' AS Date))
+GO
 SET IDENTITY_INSERT [dbo].[GU_PARAMETRIZACION] OFF
 GO
 SET IDENTITY_INSERT [dbo].[GU_PERMISO] ON 
-
+GO
 INSERT [dbo].[GU_PERMISO] ([id_permiso], [nombre_permiso], [modulo]) VALUES (1, N'VER_ESTUDIANTES', N'Académico')
+GO
 INSERT [dbo].[GU_PERMISO] ([id_permiso], [nombre_permiso], [modulo]) VALUES (2, N'CREAR_ESTUDIANTES', N'Académico')
+GO
 INSERT [dbo].[GU_PERMISO] ([id_permiso], [nombre_permiso], [modulo]) VALUES (3, N'EDITAR_ESTUDIANTES', N'Académico')
+GO
 INSERT [dbo].[GU_PERMISO] ([id_permiso], [nombre_permiso], [modulo]) VALUES (4, N'ELIMINAR_ESTUDIANTES', N'Académico')
+GO
 INSERT [dbo].[GU_PERMISO] ([id_permiso], [nombre_permiso], [modulo]) VALUES (5, N'VER_NOTAS', N'Evaluaciones')
+GO
 INSERT [dbo].[GU_PERMISO] ([id_permiso], [nombre_permiso], [modulo]) VALUES (6, N'REGISTRAR_NOTAS', N'Evaluaciones')
+GO
 INSERT [dbo].[GU_PERMISO] ([id_permiso], [nombre_permiso], [modulo]) VALUES (7, N'VER_ASISTENCIAS', N'Asistencias')
+GO
 INSERT [dbo].[GU_PERMISO] ([id_permiso], [nombre_permiso], [modulo]) VALUES (8, N'REGISTRAR_ASISTENCIAS', N'Asistencias')
+GO
 INSERT [dbo].[GU_PERMISO] ([id_permiso], [nombre_permiso], [modulo]) VALUES (9, N'VER_DOCUMENTOS', N'Documental')
+GO
 INSERT [dbo].[GU_PERMISO] ([id_permiso], [nombre_permiso], [modulo]) VALUES (10, N'SUBIR_DOCUMENTOS', N'Documental')
+GO
 INSERT [dbo].[GU_PERMISO] ([id_permiso], [nombre_permiso], [modulo]) VALUES (11, N'ADMINISTRAR_USUARIOS', N'Usuarios')
+GO
 INSERT [dbo].[GU_PERMISO] ([id_permiso], [nombre_permiso], [modulo]) VALUES (12, N'VER_REPORTES', N'Reportes')
+GO
 SET IDENTITY_INSERT [dbo].[GU_PERMISO] OFF
 GO
 SET IDENTITY_INSERT [dbo].[GU_RECUPERACION_PASSWORD] ON 
-
 GO
 INSERT [dbo].[GU_RECUPERACION_PASSWORD] ([id_recuperacion], [id_usuario], [token], [fecha_expiracion], [fecha_solicitud], [fecha_uso], [id_solicitante], [usado]) VALUES (1, 1, N'tok-abc123xyz-unique-2025-001', CAST(N'2025-02-01T10:00:00.000' AS DateTime), CAST(N'2025-02-01T09:00:00.000' AS DateTime), CAST(N'2025-02-01T09:45:00.000' AS DateTime), NULL, 1)
 GO
 INSERT [dbo].[GU_RECUPERACION_PASSWORD] ([id_recuperacion], [id_usuario], [token], [fecha_expiracion], [fecha_solicitud], [fecha_uso], [id_solicitante], [usado]) VALUES (2, 2, N'tok-def456uvw-unique-2025-002', CAST(N'2025-03-05T15:00:00.000' AS DateTime), CAST(N'2025-03-05T14:00:00.000' AS DateTime), NULL, NULL, 0)
 GO
-=======
-
-INSERT [dbo].[GU_RECUPERACION_PASSWORD] ([id_recuperacion], [id_usuario], [token], [fecha_expiracion], [fecha_solicitud], [fecha_uso], [id_solicitante], [usado]) VALUES (1, 7, N'tok-abc123xyz-unique-2025-001', CAST(N'2025-02-01T10:00:00.000' AS DateTime), CAST(N'2025-02-01T09:00:00.000' AS DateTime), CAST(N'2025-02-01T09:45:00.000' AS DateTime), NULL, 1)
-INSERT [dbo].[GU_RECUPERACION_PASSWORD] ([id_recuperacion], [id_usuario], [token], [fecha_expiracion], [fecha_solicitud], [fecha_uso], [id_solicitante], [usado]) VALUES (2, 8, N'tok-def456uvw-unique-2025-002', CAST(N'2025-03-05T15:00:00.000' AS DateTime), CAST(N'2025-03-05T14:00:00.000' AS DateTime), NULL, NULL, 0)
-
 SET IDENTITY_INSERT [dbo].[GU_RECUPERACION_PASSWORD] OFF
 GO
 SET IDENTITY_INSERT [dbo].[GU_ROL] ON 
-
+GO
 INSERT [dbo].[GU_ROL] ([id_rol], [nombre_rol], [descripcion]) VALUES (1, N'Administrador', N'Acceso total al sistema')
+GO
 INSERT [dbo].[GU_ROL] ([id_rol], [nombre_rol], [descripcion]) VALUES (2, N'Coordinador', N'Gestión académica y reportes')
+GO
 INSERT [dbo].[GU_ROL] ([id_rol], [nombre_rol], [descripcion]) VALUES (3, N'Profesor', N'Registro de notas y asistencias')
+GO
 INSERT [dbo].[GU_ROL] ([id_rol], [nombre_rol], [descripcion]) VALUES (4, N'Estudiante', N'Consulta de calificaciones y materiales')
+GO
 INSERT [dbo].[GU_ROL] ([id_rol], [nombre_rol], [descripcion]) VALUES (5, N'Padre_Tutor', N'Consulta del seguimiento de su hijo/a')
+GO
 SET IDENTITY_INSERT [dbo].[GU_ROL] OFF
 GO
 INSERT [dbo].[GU_ROL_PERMISO] ([id_rol], [id_permiso], [fecha_asignacion]) VALUES (1, 1, CAST(N'2023-01-01' AS Date))
+GO
 INSERT [dbo].[GU_ROL_PERMISO] ([id_rol], [id_permiso], [fecha_asignacion]) VALUES (1, 2, CAST(N'2023-01-01' AS Date))
+GO
 INSERT [dbo].[GU_ROL_PERMISO] ([id_rol], [id_permiso], [fecha_asignacion]) VALUES (1, 3, CAST(N'2023-01-01' AS Date))
+GO
 INSERT [dbo].[GU_ROL_PERMISO] ([id_rol], [id_permiso], [fecha_asignacion]) VALUES (1, 4, CAST(N'2023-01-01' AS Date))
+GO
 INSERT [dbo].[GU_ROL_PERMISO] ([id_rol], [id_permiso], [fecha_asignacion]) VALUES (1, 5, CAST(N'2023-01-01' AS Date))
+GO
 INSERT [dbo].[GU_ROL_PERMISO] ([id_rol], [id_permiso], [fecha_asignacion]) VALUES (1, 6, CAST(N'2023-01-01' AS Date))
+GO
 INSERT [dbo].[GU_ROL_PERMISO] ([id_rol], [id_permiso], [fecha_asignacion]) VALUES (1, 7, CAST(N'2023-01-01' AS Date))
+GO
 INSERT [dbo].[GU_ROL_PERMISO] ([id_rol], [id_permiso], [fecha_asignacion]) VALUES (1, 8, CAST(N'2023-01-01' AS Date))
+GO
 INSERT [dbo].[GU_ROL_PERMISO] ([id_rol], [id_permiso], [fecha_asignacion]) VALUES (1, 9, CAST(N'2023-01-01' AS Date))
+GO
 INSERT [dbo].[GU_ROL_PERMISO] ([id_rol], [id_permiso], [fecha_asignacion]) VALUES (1, 10, CAST(N'2023-01-01' AS Date))
+GO
 INSERT [dbo].[GU_ROL_PERMISO] ([id_rol], [id_permiso], [fecha_asignacion]) VALUES (1, 11, CAST(N'2023-01-01' AS Date))
+GO
 INSERT [dbo].[GU_ROL_PERMISO] ([id_rol], [id_permiso], [fecha_asignacion]) VALUES (1, 12, CAST(N'2023-01-01' AS Date))
+GO
 INSERT [dbo].[GU_ROL_PERMISO] ([id_rol], [id_permiso], [fecha_asignacion]) VALUES (2, 1, CAST(N'2023-01-05' AS Date))
+GO
 INSERT [dbo].[GU_ROL_PERMISO] ([id_rol], [id_permiso], [fecha_asignacion]) VALUES (2, 5, CAST(N'2023-01-05' AS Date))
+GO
 INSERT [dbo].[GU_ROL_PERMISO] ([id_rol], [id_permiso], [fecha_asignacion]) VALUES (2, 7, CAST(N'2023-01-05' AS Date))
+GO
 INSERT [dbo].[GU_ROL_PERMISO] ([id_rol], [id_permiso], [fecha_asignacion]) VALUES (2, 9, CAST(N'2023-01-05' AS Date))
+GO
 INSERT [dbo].[GU_ROL_PERMISO] ([id_rol], [id_permiso], [fecha_asignacion]) VALUES (2, 12, CAST(N'2023-01-05' AS Date))
+GO
 INSERT [dbo].[GU_ROL_PERMISO] ([id_rol], [id_permiso], [fecha_asignacion]) VALUES (3, 1, CAST(N'2023-01-10' AS Date))
+GO
 INSERT [dbo].[GU_ROL_PERMISO] ([id_rol], [id_permiso], [fecha_asignacion]) VALUES (3, 5, CAST(N'2023-01-10' AS Date))
+GO
 INSERT [dbo].[GU_ROL_PERMISO] ([id_rol], [id_permiso], [fecha_asignacion]) VALUES (3, 6, CAST(N'2023-01-10' AS Date))
+GO
 INSERT [dbo].[GU_ROL_PERMISO] ([id_rol], [id_permiso], [fecha_asignacion]) VALUES (3, 7, CAST(N'2023-01-10' AS Date))
+GO
 INSERT [dbo].[GU_ROL_PERMISO] ([id_rol], [id_permiso], [fecha_asignacion]) VALUES (3, 8, CAST(N'2023-01-10' AS Date))
+GO
 INSERT [dbo].[GU_ROL_PERMISO] ([id_rol], [id_permiso], [fecha_asignacion]) VALUES (3, 9, CAST(N'2023-01-10' AS Date))
+GO
 INSERT [dbo].[GU_ROL_PERMISO] ([id_rol], [id_permiso], [fecha_asignacion]) VALUES (3, 10, CAST(N'2023-01-10' AS Date))
+GO
 INSERT [dbo].[GU_ROL_PERMISO] ([id_rol], [id_permiso], [fecha_asignacion]) VALUES (4, 5, CAST(N'2023-01-16' AS Date))
+GO
 INSERT [dbo].[GU_ROL_PERMISO] ([id_rol], [id_permiso], [fecha_asignacion]) VALUES (4, 9, CAST(N'2023-01-16' AS Date))
+GO
 INSERT [dbo].[GU_ROL_PERMISO] ([id_rol], [id_permiso], [fecha_asignacion]) VALUES (5, 5, CAST(N'2023-01-20' AS Date))
+GO
 INSERT [dbo].[GU_ROL_PERMISO] ([id_rol], [id_permiso], [fecha_asignacion]) VALUES (5, 7, CAST(N'2023-01-20' AS Date))
 GO
 SET IDENTITY_INSERT [dbo].[GU_Usuario] ON 
-
 GO
 INSERT [dbo].[GU_Usuario] ([ID_Usuario], [NOMBRE_USUARIO], [NOMBRES], [APELLIDOS], [CORREO_ELECTRONICO], [CONTRASEÑA], [FECHA_CREACION], [ACTIVO], [ROL]) VALUES (1, N'admin', N'Administrador', N'Sistema', N'admin@colegio.edu.co', N'admin123', CAST(N'2023-01-01' AS Date), 1, N'admin')
 GO
@@ -1431,432 +1460,439 @@ GO
 INSERT [dbo].[GU_USUARIO_ROL] ([id_usuario], [id_rol], [fecha_asignacion]) VALUES (3, 1, CAST(N'2023-01-10' AS Date))
 GO
 INSERT [dbo].[GU_USUARIO_ROL] ([id_usuario], [id_rol], [fecha_asignacion]) VALUES (4, 1, CAST(N'2023-01-10' AS Date))
-=======
-
-INSERT [dbo].[GU_Usuario] ([ID_Usuario], [NOMBRE_USUARIO], [NOMBRES], [APELLIDOS], [CORREO_ELECTRONICO], [CONTRASEÑA], [FECHA_CREACION], [ACTIVO], [ROL], [DIRECCION], [FOTO_URL], [TELEFONO]) VALUES (1, N'admin', N'Administrador', N'Sistema', N'admin@colegio.edu.co', N'admin123', CAST(N'2023-01-01' AS Date), 1, N'admin', NULL, NULL, NULL)
-INSERT [dbo].[GU_Usuario] ([ID_Usuario], [NOMBRE_USUARIO], [NOMBRES], [APELLIDOS], [CORREO_ELECTRONICO], [CONTRASEÑA], [FECHA_CREACION], [ACTIVO], [ROL], [DIRECCION], [FOTO_URL], [TELEFONO]) VALUES (2, N'coord.academico', N'Juan Pablo', N'Nieto', N'jp.nieto@colegio.edu.co', N'$2b$12$CoordHash001', CAST(N'2023-01-05' AS Date), 1, N'admin', NULL, NULL, NULL)
-INSERT [dbo].[GU_Usuario] ([ID_Usuario], [NOMBRE_USUARIO], [NOMBRES], [APELLIDOS], [CORREO_ELECTRONICO], [CONTRASEÑA], [FECHA_CREACION], [ACTIVO], [ROL], [DIRECCION], [FOTO_URL], [TELEFONO]) VALUES (3, N'prof.mendoza', N'Carlos', N'Mendoza', N'c.mendoza@colegio.edu.co', N'$2b$12$ProfHash001', CAST(N'2023-01-10' AS Date), 1, N'docente', NULL, NULL, NULL)
-INSERT [dbo].[GU_Usuario] ([ID_Usuario], [NOMBRE_USUARIO], [NOMBRES], [APELLIDOS], [CORREO_ELECTRONICO], [CONTRASEÑA], [FECHA_CREACION], [ACTIVO], [ROL], [DIRECCION], [FOTO_URL], [TELEFONO]) VALUES (4, N'prof.rios', N'Adriana', N'Ríos', N'a.rios@colegio.edu.co', N'$2b$12$ProfHash002', CAST(N'2023-01-10' AS Date), 1, N'docente', NULL, NULL, NULL)
-INSERT [dbo].[GU_Usuario] ([ID_Usuario], [NOMBRE_USUARIO], [NOMBRES], [APELLIDOS], [CORREO_ELECTRONICO], [CONTRASEÑA], [FECHA_CREACION], [ACTIVO], [ROL], [DIRECCION], [FOTO_URL], [TELEFONO]) VALUES (5, N'prof.castro', N'Julián', N'Castro', N'j.castro@colegio.edu.co', N'$2b$12$ProfHash003', CAST(N'2023-01-10' AS Date), 1, N'docente', NULL, NULL, NULL)
-INSERT [dbo].[GU_Usuario] ([ID_Usuario], [NOMBRE_USUARIO], [NOMBRES], [APELLIDOS], [CORREO_ELECTRONICO], [CONTRASEÑA], [FECHA_CREACION], [ACTIVO], [ROL], [DIRECCION], [FOTO_URL], [TELEFONO]) VALUES (6, N'est.lgomez', N'Laura', N'Gómez', N'laura.gomez@estudiantil.edu.co', N'$2b$12$EstHash001', CAST(N'2023-01-16' AS Date), 1, N'estudiante', NULL, NULL, NULL)
-INSERT [dbo].[GU_Usuario] ([ID_Usuario], [NOMBRE_USUARIO], [NOMBRES], [APELLIDOS], [CORREO_ELECTRONICO], [CONTRASEÑA], [FECHA_CREACION], [ACTIVO], [ROL], [DIRECCION], [FOTO_URL], [TELEFONO]) VALUES (7, N'est.sperez', N'Santiago', N'Pérez', N'santiago.perez@estudiantil.edu.co', N'$2b$12$EstHash002', CAST(N'2023-01-16' AS Date), 1, N'estudiante', NULL, NULL, NULL)
-INSERT [dbo].[GU_Usuario] ([ID_Usuario], [NOMBRE_USUARIO], [NOMBRES], [APELLIDOS], [CORREO_ELECTRONICO], [CONTRASEÑA], [FECHA_CREACION], [ACTIVO], [ROL], [DIRECCION], [FOTO_URL], [TELEFONO]) VALUES (8, N'est.vlopez', N'Valentina', N'López', N'valentina.lopez@estudiantil.edu.co', N'$2b$12$EstHash003', CAST(N'2023-01-16' AS Date), 1, N'estudiante', NULL, NULL, NULL)
-INSERT [dbo].[GU_Usuario] ([ID_Usuario], [NOMBRE_USUARIO], [NOMBRES], [APELLIDOS], [CORREO_ELECTRONICO], [CONTRASEÑA], [FECHA_CREACION], [ACTIVO], [ROL], [DIRECCION], [FOTO_URL], [TELEFONO]) VALUES (9, N'padre.jgomez', N'Jorge', N'Gómez', N'jorge.gomez@mail.com', N'$2b$12$PadreHash001', CAST(N'2023-01-20' AS Date), 1, N'acudiente', NULL, NULL, NULL)
-INSERT [dbo].[GU_Usuario] ([ID_Usuario], [NOMBRE_USUARIO], [NOMBRES], [APELLIDOS], [CORREO_ELECTRONICO], [CONTRASEÑA], [FECHA_CREACION], [ACTIVO], [ROL], [DIRECCION], [FOTO_URL], [TELEFONO]) VALUES (10, N'padre.pperez', N'Patricia', N'Pérez', N'patricia.perez@mail.com', N'$2b$12$PadreHash002', CAST(N'2023-01-20' AS Date), 1, N'acudiente', NULL, NULL, NULL)
-INSERT [dbo].[GU_Usuario] ([ID_Usuario], [NOMBRE_USUARIO], [NOMBRES], [APELLIDOS], [CORREO_ELECTRONICO], [CONTRASEÑA], [FECHA_CREACION], [ACTIVO], [ROL], [DIRECCION], [FOTO_URL], [TELEFONO]) VALUES (12, N'', N'Jean', N'Pinzon', N'jean.pinzon@estudiantil.edu.co', N'@estudiantil.edu.c4', CAST(N'2026-03-28' AS Date), 1, N'estudiante', NULL, NULL, NULL)
-SET IDENTITY_INSERT [dbo].[GU_Usuario] OFF
-GO
-INSERT [dbo].[GU_USUARIO_ROL] ([id_usuario], [id_rol], [fecha_asignacion]) VALUES (1, 1, CAST(N'2023-01-01' AS Date))
-INSERT [dbo].[GU_USUARIO_ROL] ([id_usuario], [id_rol], [fecha_asignacion]) VALUES (2, 2, CAST(N'2023-01-05' AS Date))
-INSERT [dbo].[GU_USUARIO_ROL] ([id_usuario], [id_rol], [fecha_asignacion]) VALUES (3, 3, CAST(N'2023-01-10' AS Date))
-INSERT [dbo].[GU_USUARIO_ROL] ([id_usuario], [id_rol], [fecha_asignacion]) VALUES (4, 3, CAST(N'2023-01-10' AS Date))
-INSERT [dbo].[GU_USUARIO_ROL] ([id_usuario], [id_rol], [fecha_asignacion]) VALUES (5, 3, CAST(N'2023-01-10' AS Date))
-INSERT [dbo].[GU_USUARIO_ROL] ([id_usuario], [id_rol], [fecha_asignacion]) VALUES (6, 4, CAST(N'2023-01-16' AS Date))
-INSERT [dbo].[GU_USUARIO_ROL] ([id_usuario], [id_rol], [fecha_asignacion]) VALUES (7, 4, CAST(N'2023-01-16' AS Date))
-INSERT [dbo].[GU_USUARIO_ROL] ([id_usuario], [id_rol], [fecha_asignacion]) VALUES (8, 4, CAST(N'2023-01-16' AS Date))
-INSERT [dbo].[GU_USUARIO_ROL] ([id_usuario], [id_rol], [fecha_asignacion]) VALUES (9, 5, CAST(N'2023-01-20' AS Date))
-INSERT [dbo].[GU_USUARIO_ROL] ([id_usuario], [id_rol], [fecha_asignacion]) VALUES (10, 5, CAST(N'2023-01-20' AS Date))
-
 GO
 SET IDENTITY_INSERT [dbo].[HORARIO] ON 
-
+GO
 INSERT [dbo].[HORARIO] ([id_horario], [id_curso], [id_aula], [id_profesor], [dia], [hora_inicio], [hora_fin]) VALUES (1, 1, 1, 1, N'Lunes', CAST(N'07:00:00' AS Time), CAST(N'09:00:00' AS Time))
+GO
 INSERT [dbo].[HORARIO] ([id_horario], [id_curso], [id_aula], [id_profesor], [dia], [hora_inicio], [hora_fin]) VALUES (2, 1, 1, 1, N'Miércoles', CAST(N'07:00:00' AS Time), CAST(N'09:00:00' AS Time))
+GO
 INSERT [dbo].[HORARIO] ([id_horario], [id_curso], [id_aula], [id_profesor], [dia], [hora_inicio], [hora_fin]) VALUES (3, 2, 4, 2, N'Martes', CAST(N'10:00:00' AS Time), CAST(N'11:30:00' AS Time))
+GO
 INSERT [dbo].[HORARIO] ([id_horario], [id_curso], [id_aula], [id_profesor], [dia], [hora_inicio], [hora_fin]) VALUES (4, 2, 4, 2, N'Jueves', CAST(N'10:00:00' AS Time), CAST(N'11:30:00' AS Time))
+GO
 INSERT [dbo].[HORARIO] ([id_horario], [id_curso], [id_aula], [id_profesor], [dia], [hora_inicio], [hora_fin]) VALUES (5, 3, 2, 3, N'Lunes', CAST(N'09:00:00' AS Time), CAST(N'11:00:00' AS Time))
+GO
 INSERT [dbo].[HORARIO] ([id_horario], [id_curso], [id_aula], [id_profesor], [dia], [hora_inicio], [hora_fin]) VALUES (6, 4, 5, 5, N'Lunes', CAST(N'14:00:00' AS Time), CAST(N'16:00:00' AS Time))
+GO
 INSERT [dbo].[HORARIO] ([id_horario], [id_curso], [id_aula], [id_profesor], [dia], [hora_inicio], [hora_fin]) VALUES (7, 4, 5, 5, N'Miércoles', CAST(N'14:00:00' AS Time), CAST(N'16:00:00' AS Time))
+GO
 INSERT [dbo].[HORARIO] ([id_horario], [id_curso], [id_aula], [id_profesor], [dia], [hora_inicio], [hora_fin]) VALUES (8, 5, 5, 5, N'Martes', CAST(N'14:00:00' AS Time), CAST(N'16:00:00' AS Time))
+GO
 INSERT [dbo].[HORARIO] ([id_horario], [id_curso], [id_aula], [id_profesor], [dia], [hora_inicio], [hora_fin]) VALUES (9, 5, 5, 5, N'Jueves', CAST(N'14:00:00' AS Time), CAST(N'16:00:00' AS Time))
+GO
 INSERT [dbo].[HORARIO] ([id_horario], [id_curso], [id_aula], [id_profesor], [dia], [hora_inicio], [hora_fin]) VALUES (10, 6, 5, 5, N'Viernes', CAST(N'08:00:00' AS Time), CAST(N'10:00:00' AS Time))
+GO
 INSERT [dbo].[HORARIO] ([id_horario], [id_curso], [id_aula], [id_profesor], [dia], [hora_inicio], [hora_fin]) VALUES (11, 7, 3, 4, N'Martes', CAST(N'08:00:00' AS Time), CAST(N'10:00:00' AS Time))
+GO
 INSERT [dbo].[HORARIO] ([id_horario], [id_curso], [id_aula], [id_profesor], [dia], [hora_inicio], [hora_fin]) VALUES (12, 8, 4, 7, N'Miércoles', CAST(N'10:00:00' AS Time), CAST(N'11:30:00' AS Time))
+GO
 INSERT [dbo].[HORARIO] ([id_horario], [id_curso], [id_aula], [id_profesor], [dia], [hora_inicio], [hora_fin]) VALUES (13, 9, 6, 6, N'Lunes', CAST(N'07:00:00' AS Time), CAST(N'08:30:00' AS Time))
+GO
 INSERT [dbo].[HORARIO] ([id_horario], [id_curso], [id_aula], [id_profesor], [dia], [hora_inicio], [hora_fin]) VALUES (14, 10, 1, 1, N'Jueves', CAST(N'07:00:00' AS Time), CAST(N'09:00:00' AS Time))
+GO
 INSERT [dbo].[HORARIO] ([id_horario], [id_curso], [id_aula], [id_profesor], [dia], [hora_inicio], [hora_fin]) VALUES (15, 1, 1, 1, N'Lunes', CAST(N'07:00:00' AS Time), CAST(N'09:00:00' AS Time))
+GO
 INSERT [dbo].[HORARIO] ([id_horario], [id_curso], [id_aula], [id_profesor], [dia], [hora_inicio], [hora_fin]) VALUES (16, 1, 1, 1, N'Miércoles', CAST(N'07:00:00' AS Time), CAST(N'09:00:00' AS Time))
+GO
 INSERT [dbo].[HORARIO] ([id_horario], [id_curso], [id_aula], [id_profesor], [dia], [hora_inicio], [hora_fin]) VALUES (17, 2, 4, 2, N'Martes', CAST(N'10:00:00' AS Time), CAST(N'11:30:00' AS Time))
+GO
 INSERT [dbo].[HORARIO] ([id_horario], [id_curso], [id_aula], [id_profesor], [dia], [hora_inicio], [hora_fin]) VALUES (18, 2, 4, 2, N'Jueves', CAST(N'10:00:00' AS Time), CAST(N'11:30:00' AS Time))
+GO
 INSERT [dbo].[HORARIO] ([id_horario], [id_curso], [id_aula], [id_profesor], [dia], [hora_inicio], [hora_fin]) VALUES (19, 3, 2, 3, N'Lunes', CAST(N'09:00:00' AS Time), CAST(N'11:00:00' AS Time))
+GO
 INSERT [dbo].[HORARIO] ([id_horario], [id_curso], [id_aula], [id_profesor], [dia], [hora_inicio], [hora_fin]) VALUES (20, 4, 5, 5, N'Lunes', CAST(N'14:00:00' AS Time), CAST(N'16:00:00' AS Time))
+GO
 INSERT [dbo].[HORARIO] ([id_horario], [id_curso], [id_aula], [id_profesor], [dia], [hora_inicio], [hora_fin]) VALUES (21, 4, 5, 5, N'Miércoles', CAST(N'14:00:00' AS Time), CAST(N'16:00:00' AS Time))
+GO
 INSERT [dbo].[HORARIO] ([id_horario], [id_curso], [id_aula], [id_profesor], [dia], [hora_inicio], [hora_fin]) VALUES (22, 5, 5, 5, N'Martes', CAST(N'14:00:00' AS Time), CAST(N'16:00:00' AS Time))
+GO
 INSERT [dbo].[HORARIO] ([id_horario], [id_curso], [id_aula], [id_profesor], [dia], [hora_inicio], [hora_fin]) VALUES (23, 5, 5, 5, N'Jueves', CAST(N'14:00:00' AS Time), CAST(N'16:00:00' AS Time))
+GO
 INSERT [dbo].[HORARIO] ([id_horario], [id_curso], [id_aula], [id_profesor], [dia], [hora_inicio], [hora_fin]) VALUES (24, 6, 5, 5, N'Viernes', CAST(N'08:00:00' AS Time), CAST(N'10:00:00' AS Time))
+GO
 INSERT [dbo].[HORARIO] ([id_horario], [id_curso], [id_aula], [id_profesor], [dia], [hora_inicio], [hora_fin]) VALUES (25, 7, 3, 4, N'Martes', CAST(N'08:00:00' AS Time), CAST(N'10:00:00' AS Time))
+GO
 INSERT [dbo].[HORARIO] ([id_horario], [id_curso], [id_aula], [id_profesor], [dia], [hora_inicio], [hora_fin]) VALUES (26, 8, 4, 7, N'Miércoles', CAST(N'10:00:00' AS Time), CAST(N'11:30:00' AS Time))
+GO
 INSERT [dbo].[HORARIO] ([id_horario], [id_curso], [id_aula], [id_profesor], [dia], [hora_inicio], [hora_fin]) VALUES (27, 9, 6, 6, N'Lunes', CAST(N'07:00:00' AS Time), CAST(N'08:30:00' AS Time))
+GO
 INSERT [dbo].[HORARIO] ([id_horario], [id_curso], [id_aula], [id_profesor], [dia], [hora_inicio], [hora_fin]) VALUES (28, 10, 1, 1, N'Jueves', CAST(N'07:00:00' AS Time), CAST(N'09:00:00' AS Time))
+GO
 SET IDENTITY_INSERT [dbo].[HORARIO] OFF
 GO
 SET IDENTITY_INSERT [dbo].[INSCRIPCION] ON 
-
+GO
 INSERT [dbo].[INSCRIPCION] ([id_inscripcion], [id_estudiante], [id_curso], [anio], [fecha_inscripcion]) VALUES (1, 1, 1, 2024, CAST(N'2024-01-15' AS Date))
+GO
 INSERT [dbo].[INSCRIPCION] ([id_inscripcion], [id_estudiante], [id_curso], [anio], [fecha_inscripcion]) VALUES (2, 2, 1, 2024, CAST(N'2024-01-15' AS Date))
+GO
 INSERT [dbo].[INSCRIPCION] ([id_inscripcion], [id_estudiante], [id_curso], [anio], [fecha_inscripcion]) VALUES (3, 3, 1, 2024, CAST(N'2024-01-16' AS Date))
+GO
 INSERT [dbo].[INSCRIPCION] ([id_inscripcion], [id_estudiante], [id_curso], [anio], [fecha_inscripcion]) VALUES (4, 4, 2, 2024, CAST(N'2024-01-15' AS Date))
+GO
 INSERT [dbo].[INSCRIPCION] ([id_inscripcion], [id_estudiante], [id_curso], [anio], [fecha_inscripcion]) VALUES (5, 5, 2, 2024, CAST(N'2024-01-16' AS Date))
+GO
 INSERT [dbo].[INSCRIPCION] ([id_inscripcion], [id_estudiante], [id_curso], [anio], [fecha_inscripcion]) VALUES (6, 6, 3, 2024, CAST(N'2024-01-15' AS Date))
+GO
 INSERT [dbo].[INSCRIPCION] ([id_inscripcion], [id_estudiante], [id_curso], [anio], [fecha_inscripcion]) VALUES (7, 7, 4, 2024, CAST(N'2024-07-10' AS Date))
+GO
 INSERT [dbo].[INSCRIPCION] ([id_inscripcion], [id_estudiante], [id_curso], [anio], [fecha_inscripcion]) VALUES (8, 8, 4, 2024, CAST(N'2024-07-11' AS Date))
+GO
 INSERT [dbo].[INSCRIPCION] ([id_inscripcion], [id_estudiante], [id_curso], [anio], [fecha_inscripcion]) VALUES (9, 9, 9, 2025, CAST(N'2025-01-14' AS Date))
+GO
 INSERT [dbo].[INSCRIPCION] ([id_inscripcion], [id_estudiante], [id_curso], [anio], [fecha_inscripcion]) VALUES (10, 10, 9, 2025, CAST(N'2025-01-15' AS Date))
+GO
 INSERT [dbo].[INSCRIPCION] ([id_inscripcion], [id_estudiante], [id_curso], [anio], [fecha_inscripcion]) VALUES (11, 11, 10, 2025, CAST(N'2025-01-14' AS Date))
+GO
 INSERT [dbo].[INSCRIPCION] ([id_inscripcion], [id_estudiante], [id_curso], [anio], [fecha_inscripcion]) VALUES (12, 12, 10, 2025, CAST(N'2025-01-15' AS Date))
+GO
 INSERT [dbo].[INSCRIPCION] ([id_inscripcion], [id_estudiante], [id_curso], [anio], [fecha_inscripcion]) VALUES (13, 1, 1, 2024, CAST(N'2024-01-15' AS Date))
+GO
 INSERT [dbo].[INSCRIPCION] ([id_inscripcion], [id_estudiante], [id_curso], [anio], [fecha_inscripcion]) VALUES (14, 2, 1, 2024, CAST(N'2024-01-15' AS Date))
+GO
 INSERT [dbo].[INSCRIPCION] ([id_inscripcion], [id_estudiante], [id_curso], [anio], [fecha_inscripcion]) VALUES (15, 3, 1, 2024, CAST(N'2024-01-16' AS Date))
+GO
 INSERT [dbo].[INSCRIPCION] ([id_inscripcion], [id_estudiante], [id_curso], [anio], [fecha_inscripcion]) VALUES (16, 4, 2, 2024, CAST(N'2024-01-15' AS Date))
+GO
 INSERT [dbo].[INSCRIPCION] ([id_inscripcion], [id_estudiante], [id_curso], [anio], [fecha_inscripcion]) VALUES (17, 5, 2, 2024, CAST(N'2024-01-16' AS Date))
+GO
 INSERT [dbo].[INSCRIPCION] ([id_inscripcion], [id_estudiante], [id_curso], [anio], [fecha_inscripcion]) VALUES (18, 6, 3, 2024, CAST(N'2024-01-15' AS Date))
+GO
 INSERT [dbo].[INSCRIPCION] ([id_inscripcion], [id_estudiante], [id_curso], [anio], [fecha_inscripcion]) VALUES (19, 7, 4, 2024, CAST(N'2024-07-10' AS Date))
+GO
 INSERT [dbo].[INSCRIPCION] ([id_inscripcion], [id_estudiante], [id_curso], [anio], [fecha_inscripcion]) VALUES (20, 8, 4, 2024, CAST(N'2024-07-11' AS Date))
+GO
 INSERT [dbo].[INSCRIPCION] ([id_inscripcion], [id_estudiante], [id_curso], [anio], [fecha_inscripcion]) VALUES (21, 9, 9, 2025, CAST(N'2025-01-14' AS Date))
+GO
 INSERT [dbo].[INSCRIPCION] ([id_inscripcion], [id_estudiante], [id_curso], [anio], [fecha_inscripcion]) VALUES (22, 10, 9, 2025, CAST(N'2025-01-15' AS Date))
+GO
 INSERT [dbo].[INSCRIPCION] ([id_inscripcion], [id_estudiante], [id_curso], [anio], [fecha_inscripcion]) VALUES (23, 11, 10, 2025, CAST(N'2025-01-14' AS Date))
+GO
 INSERT [dbo].[INSCRIPCION] ([id_inscripcion], [id_estudiante], [id_curso], [anio], [fecha_inscripcion]) VALUES (24, 12, 10, 2025, CAST(N'2025-01-15' AS Date))
+GO
 SET IDENTITY_INSERT [dbo].[INSCRIPCION] OFF
 GO
 SET IDENTITY_INSERT [dbo].[MATERIA] ON 
-
+GO
 INSERT [dbo].[MATERIA] ([id_materia], [nombre_materia], [descripcion], [creditos], [horas_semana], [id_area]) VALUES (1, N'Álgebra Lineal', N'Vectores, matrices y transformaciones lineales', 4, 4, 1)
+GO
 INSERT [dbo].[MATERIA] ([id_materia], [nombre_materia], [descripcion], [creditos], [horas_semana], [id_area]) VALUES (2, N'Cálculo Diferencial', N'Límites, derivadas y aplicaciones', 4, 4, 1)
+GO
 INSERT [dbo].[MATERIA] ([id_materia], [nombre_materia], [descripcion], [creditos], [horas_semana], [id_area]) VALUES (3, N'Física Mecánica', N'Cinemática, dinámica y trabajo-energía', 3, 3, 2)
+GO
 INSERT [dbo].[MATERIA] ([id_materia], [nombre_materia], [descripcion], [creditos], [horas_semana], [id_area]) VALUES (4, N'Literatura Universal', N'Grandes obras de la literatura mundial', 3, 3, 3)
+GO
 INSERT [dbo].[MATERIA] ([id_materia], [nombre_materia], [descripcion], [creditos], [horas_semana], [id_area]) VALUES (5, N'Lengua y Redacción', N'Técnicas de escritura académica', 2, 2, 3)
+GO
 INSERT [dbo].[MATERIA] ([id_materia], [nombre_materia], [descripcion], [creditos], [horas_semana], [id_area]) VALUES (6, N'Historia Contemporánea', N'Siglos XIX y XX en perspectiva global', 3, 3, 4)
+GO
 INSERT [dbo].[MATERIA] ([id_materia], [nombre_materia], [descripcion], [creditos], [horas_semana], [id_area]) VALUES (7, N'Programación I', N'Lógica de programación y Python', 4, 5, 5)
+GO
 INSERT [dbo].[MATERIA] ([id_materia], [nombre_materia], [descripcion], [creditos], [horas_semana], [id_area]) VALUES (8, N'Programación II', N'Estructuras de datos y algoritmos', 4, 5, 5)
+GO
 INSERT [dbo].[MATERIA] ([id_materia], [nombre_materia], [descripcion], [creditos], [horas_semana], [id_area]) VALUES (9, N'Bases de Datos', N'Modelado relacional y SQL', 4, 4, 5)
+GO
 INSERT [dbo].[MATERIA] ([id_materia], [nombre_materia], [descripcion], [creditos], [horas_semana], [id_area]) VALUES (10, N'Redes de Computadoras', N'Modelos OSI/TCP-IP y protocolos', 3, 3, 6)
+GO
 INSERT [dbo].[MATERIA] ([id_materia], [nombre_materia], [descripcion], [creditos], [horas_semana], [id_area]) VALUES (11, N'Biología Celular', N'Estructura y función de la célula', 3, 3, 7)
+GO
 INSERT [dbo].[MATERIA] ([id_materia], [nombre_materia], [descripcion], [creditos], [horas_semana], [id_area]) VALUES (12, N'Teoría Musical', N'Solfeo, armonía y lectoescritura musical', 2, 2, 8)
+GO
 INSERT [dbo].[MATERIA] ([id_materia], [nombre_materia], [descripcion], [creditos], [horas_semana], [id_area]) VALUES (13, N'Álgebra Lineal', N'Vectores, matrices y transformaciones lineales', 4, 4, 1)
+GO
 INSERT [dbo].[MATERIA] ([id_materia], [nombre_materia], [descripcion], [creditos], [horas_semana], [id_area]) VALUES (14, N'Cálculo Diferencial', N'Límites, derivadas y aplicaciones', 4, 4, 1)
+GO
 INSERT [dbo].[MATERIA] ([id_materia], [nombre_materia], [descripcion], [creditos], [horas_semana], [id_area]) VALUES (15, N'Física Mecánica', N'Cinemática, dinámica y trabajo-energía', 3, 3, 2)
+GO
 INSERT [dbo].[MATERIA] ([id_materia], [nombre_materia], [descripcion], [creditos], [horas_semana], [id_area]) VALUES (16, N'Literatura Universal', N'Grandes obras de la literatura mundial', 3, 3, 3)
+GO
 INSERT [dbo].[MATERIA] ([id_materia], [nombre_materia], [descripcion], [creditos], [horas_semana], [id_area]) VALUES (17, N'Lengua y Redacción', N'Técnicas de escritura académica', 2, 2, 3)
+GO
 INSERT [dbo].[MATERIA] ([id_materia], [nombre_materia], [descripcion], [creditos], [horas_semana], [id_area]) VALUES (18, N'Historia Contemporánea', N'Siglos XIX y XX en perspectiva global', 3, 3, 4)
+GO
 INSERT [dbo].[MATERIA] ([id_materia], [nombre_materia], [descripcion], [creditos], [horas_semana], [id_area]) VALUES (19, N'Programación I', N'Lógica de programación y Python', 4, 5, 5)
+GO
 INSERT [dbo].[MATERIA] ([id_materia], [nombre_materia], [descripcion], [creditos], [horas_semana], [id_area]) VALUES (20, N'Programación II', N'Estructuras de datos y algoritmos', 4, 5, 5)
+GO
 INSERT [dbo].[MATERIA] ([id_materia], [nombre_materia], [descripcion], [creditos], [horas_semana], [id_area]) VALUES (21, N'Bases de Datos', N'Modelado relacional y SQL', 4, 4, 5)
+GO
 INSERT [dbo].[MATERIA] ([id_materia], [nombre_materia], [descripcion], [creditos], [horas_semana], [id_area]) VALUES (22, N'Redes de Computadoras', N'Modelos OSI/TCP-IP y protocolos', 3, 3, 6)
+GO
 INSERT [dbo].[MATERIA] ([id_materia], [nombre_materia], [descripcion], [creditos], [horas_semana], [id_area]) VALUES (23, N'Biología Celular', N'Estructura y función de la célula', 3, 3, 7)
+GO
 INSERT [dbo].[MATERIA] ([id_materia], [nombre_materia], [descripcion], [creditos], [horas_semana], [id_area]) VALUES (24, N'Teoría Musical', N'Solfeo, armonía y lectoescritura musical', 2, 2, 8)
+GO
 SET IDENTITY_INSERT [dbo].[MATERIA] OFF
 GO
 SET IDENTITY_INSERT [dbo].[MATRICULA] ON 
-
+GO
 INSERT [dbo].[MATRICULA] ([id_matricula], [id_estudiante], [id_curso], [fecha_matricula], [periodo_academico], [estado], [anio]) VALUES (1, 1, 1, CAST(N'2024-01-19' AS Date), N'2024-I', N'Finalizada', 2024)
+GO
 INSERT [dbo].[MATRICULA] ([id_matricula], [id_estudiante], [id_curso], [fecha_matricula], [periodo_academico], [estado], [anio]) VALUES (2, 2, 1, CAST(N'2024-01-19' AS Date), N'2024-I', N'Finalizada', 2024)
+GO
 INSERT [dbo].[MATRICULA] ([id_matricula], [id_estudiante], [id_curso], [fecha_matricula], [periodo_academico], [estado], [anio]) VALUES (3, 3, 1, CAST(N'2024-01-19' AS Date), N'2024-I', N'Finalizada', 2024)
+GO
 INSERT [dbo].[MATRICULA] ([id_matricula], [id_estudiante], [id_curso], [fecha_matricula], [periodo_academico], [estado], [anio]) VALUES (4, 4, 2, CAST(N'2024-01-19' AS Date), N'2024-I', N'Finalizada', 2024)
+GO
 INSERT [dbo].[MATRICULA] ([id_matricula], [id_estudiante], [id_curso], [fecha_matricula], [periodo_academico], [estado], [anio]) VALUES (5, 5, 2, CAST(N'2024-01-19' AS Date), N'2024-I', N'Finalizada', 2024)
+GO
 INSERT [dbo].[MATRICULA] ([id_matricula], [id_estudiante], [id_curso], [fecha_matricula], [periodo_academico], [estado], [anio]) VALUES (6, 6, 3, CAST(N'2024-01-19' AS Date), N'2024-I', N'Finalizada', 2024)
+GO
 INSERT [dbo].[MATRICULA] ([id_matricula], [id_estudiante], [id_curso], [fecha_matricula], [periodo_academico], [estado], [anio]) VALUES (7, 7, 4, CAST(N'2024-07-12' AS Date), N'2024-II', N'Finalizada', 2024)
+GO
 INSERT [dbo].[MATRICULA] ([id_matricula], [id_estudiante], [id_curso], [fecha_matricula], [periodo_academico], [estado], [anio]) VALUES (8, 8, 4, CAST(N'2024-07-12' AS Date), N'2024-II', N'Finalizada', 2024)
+GO
 INSERT [dbo].[MATRICULA] ([id_matricula], [id_estudiante], [id_curso], [fecha_matricula], [periodo_academico], [estado], [anio]) VALUES (9, 1, 5, CAST(N'2024-07-12' AS Date), N'2024-II', N'Finalizada', 2024)
+GO
 INSERT [dbo].[MATRICULA] ([id_matricula], [id_estudiante], [id_curso], [fecha_matricula], [periodo_academico], [estado], [anio]) VALUES (10, 2, 6, CAST(N'2024-07-12' AS Date), N'2024-II', N'Finalizada', 2024)
+GO
 INSERT [dbo].[MATRICULA] ([id_matricula], [id_estudiante], [id_curso], [fecha_matricula], [periodo_academico], [estado], [anio]) VALUES (11, 9, 9, CAST(N'2025-01-17' AS Date), N'2025-I', N'Activa', 2025)
+GO
 INSERT [dbo].[MATRICULA] ([id_matricula], [id_estudiante], [id_curso], [fecha_matricula], [periodo_academico], [estado], [anio]) VALUES (12, 10, 9, CAST(N'2025-01-17' AS Date), N'2025-I', N'Activa', 2025)
+GO
 INSERT [dbo].[MATRICULA] ([id_matricula], [id_estudiante], [id_curso], [fecha_matricula], [periodo_academico], [estado], [anio]) VALUES (13, 11, 10, CAST(N'2025-01-17' AS Date), N'2025-I', N'Activa', 2025)
+GO
 INSERT [dbo].[MATRICULA] ([id_matricula], [id_estudiante], [id_curso], [fecha_matricula], [periodo_academico], [estado], [anio]) VALUES (14, 12, 10, CAST(N'2025-01-17' AS Date), N'2025-I', N'Activa', 2025)
+GO
 INSERT [dbo].[MATRICULA] ([id_matricula], [id_estudiante], [id_curso], [fecha_matricula], [periodo_academico], [estado], [anio]) VALUES (15, 1, 1, CAST(N'2024-01-19' AS Date), N'2024-I', N'Finalizada', 2024)
+GO
 INSERT [dbo].[MATRICULA] ([id_matricula], [id_estudiante], [id_curso], [fecha_matricula], [periodo_academico], [estado], [anio]) VALUES (16, 2, 1, CAST(N'2024-01-19' AS Date), N'2024-I', N'Finalizada', 2024)
+GO
 INSERT [dbo].[MATRICULA] ([id_matricula], [id_estudiante], [id_curso], [fecha_matricula], [periodo_academico], [estado], [anio]) VALUES (17, 3, 1, CAST(N'2024-01-19' AS Date), N'2024-I', N'Finalizada', 2024)
+GO
 INSERT [dbo].[MATRICULA] ([id_matricula], [id_estudiante], [id_curso], [fecha_matricula], [periodo_academico], [estado], [anio]) VALUES (18, 4, 2, CAST(N'2024-01-19' AS Date), N'2024-I', N'Finalizada', 2024)
+GO
 INSERT [dbo].[MATRICULA] ([id_matricula], [id_estudiante], [id_curso], [fecha_matricula], [periodo_academico], [estado], [anio]) VALUES (19, 5, 2, CAST(N'2024-01-19' AS Date), N'2024-I', N'Finalizada', 2024)
+GO
 INSERT [dbo].[MATRICULA] ([id_matricula], [id_estudiante], [id_curso], [fecha_matricula], [periodo_academico], [estado], [anio]) VALUES (20, 6, 3, CAST(N'2024-01-19' AS Date), N'2024-I', N'Finalizada', 2024)
+GO
 INSERT [dbo].[MATRICULA] ([id_matricula], [id_estudiante], [id_curso], [fecha_matricula], [periodo_academico], [estado], [anio]) VALUES (21, 7, 4, CAST(N'2024-07-12' AS Date), N'2024-II', N'Finalizada', 2024)
+GO
 INSERT [dbo].[MATRICULA] ([id_matricula], [id_estudiante], [id_curso], [fecha_matricula], [periodo_academico], [estado], [anio]) VALUES (22, 8, 4, CAST(N'2024-07-12' AS Date), N'2024-II', N'Finalizada', 2024)
+GO
 INSERT [dbo].[MATRICULA] ([id_matricula], [id_estudiante], [id_curso], [fecha_matricula], [periodo_academico], [estado], [anio]) VALUES (23, 1, 5, CAST(N'2024-07-12' AS Date), N'2024-II', N'Finalizada', 2024)
+GO
 INSERT [dbo].[MATRICULA] ([id_matricula], [id_estudiante], [id_curso], [fecha_matricula], [periodo_academico], [estado], [anio]) VALUES (24, 2, 6, CAST(N'2024-07-12' AS Date), N'2024-II', N'Finalizada', 2024)
+GO
 INSERT [dbo].[MATRICULA] ([id_matricula], [id_estudiante], [id_curso], [fecha_matricula], [periodo_academico], [estado], [anio]) VALUES (25, 9, 9, CAST(N'2025-01-17' AS Date), N'2025-I', N'Activa', 2025)
+GO
 INSERT [dbo].[MATRICULA] ([id_matricula], [id_estudiante], [id_curso], [fecha_matricula], [periodo_academico], [estado], [anio]) VALUES (26, 10, 9, CAST(N'2025-01-17' AS Date), N'2025-I', N'Activa', 2025)
+GO
 INSERT [dbo].[MATRICULA] ([id_matricula], [id_estudiante], [id_curso], [fecha_matricula], [periodo_academico], [estado], [anio]) VALUES (27, 11, 10, CAST(N'2025-01-17' AS Date), N'2025-I', N'Activa', 2025)
+GO
 INSERT [dbo].[MATRICULA] ([id_matricula], [id_estudiante], [id_curso], [fecha_matricula], [periodo_academico], [estado], [anio]) VALUES (28, 12, 10, CAST(N'2025-01-17' AS Date), N'2025-I', N'Activa', 2025)
+GO
 SET IDENTITY_INSERT [dbo].[MATRICULA] OFF
 GO
 SET IDENTITY_INSERT [dbo].[PADRE_TUTOR] ON 
-
+GO
 INSERT [dbo].[PADRE_TUTOR] ([id_padre], [nombre], [apellido], [telefono], [email], [relacion_estudiante]) VALUES (1, N'Jorge', N'Gómez', N'3100000001', N'jorge.gomez@mail.com', N'Padre')
+GO
 INSERT [dbo].[PADRE_TUTOR] ([id_padre], [nombre], [apellido], [telefono], [email], [relacion_estudiante]) VALUES (2, N'Patricia', N'Pérez', N'3100000002', N'patricia.perez@mail.com', N'Madre')
+GO
 INSERT [dbo].[PADRE_TUTOR] ([id_padre], [nombre], [apellido], [telefono], [email], [relacion_estudiante]) VALUES (3, N'Claudia', N'López', N'3100000003', N'claudia.lopez@mail.com', N'Madre')
+GO
 INSERT [dbo].[PADRE_TUTOR] ([id_padre], [nombre], [apellido], [telefono], [email], [relacion_estudiante]) VALUES (4, N'Ricardo', N'Hernández', N'3100000004', N'r.hernandez@mail.com', N'Padre')
+GO
 INSERT [dbo].[PADRE_TUTOR] ([id_padre], [nombre], [apellido], [telefono], [email], [relacion_estudiante]) VALUES (5, N'Martha', N'Martínez', N'3100000005', N'martha.martinez@mail.com', N'Madre')
+GO
 INSERT [dbo].[PADRE_TUTOR] ([id_padre], [nombre], [apellido], [telefono], [email], [relacion_estudiante]) VALUES (6, N'Gustavo', N'García', N'3100000006', N'gustavo.garcia@mail.com', N'Padre')
+GO
 INSERT [dbo].[PADRE_TUTOR] ([id_padre], [nombre], [apellido], [telefono], [email], [relacion_estudiante]) VALUES (7, N'Elena', N'Rodríguez', N'3100000007', N'elena.rodriguez@mail.com', N'Madre')
+GO
 INSERT [dbo].[PADRE_TUTOR] ([id_padre], [nombre], [apellido], [telefono], [email], [relacion_estudiante]) VALUES (8, N'Roberto', N'Ramírez', N'3100000008', N'roberto.ramirez@mail.com', N'Padre')
+GO
 INSERT [dbo].[PADRE_TUTOR] ([id_padre], [nombre], [apellido], [telefono], [email], [relacion_estudiante]) VALUES (9, N'Natalia', N'Díaz', N'3100000009', N'natalia.diaz@mail.com', N'Madre')
+GO
 INSERT [dbo].[PADRE_TUTOR] ([id_padre], [nombre], [apellido], [telefono], [email], [relacion_estudiante]) VALUES (10, N'Ernesto', N'Morales', N'3100000010', N'ernesto.morales@mail.com', N'Padre')
+GO
 INSERT [dbo].[PADRE_TUTOR] ([id_padre], [nombre], [apellido], [telefono], [email], [relacion_estudiante]) VALUES (11, N'Carmen', N'Jiménez', N'3100000011', N'carmen.jimenez@mail.com', N'Madre')
+GO
 INSERT [dbo].[PADRE_TUTOR] ([id_padre], [nombre], [apellido], [telefono], [email], [relacion_estudiante]) VALUES (12, N'Alejandro', N'Ruiz', N'3100000012', N'alejandro.ruiz@mail.com', N'Padre')
+GO
 INSERT [dbo].[PADRE_TUTOR] ([id_padre], [nombre], [apellido], [telefono], [email], [relacion_estudiante]) VALUES (13, N'Jorge', N'Gómez', N'3100000001', N'jorge.gomez@mail.com', N'Padre')
+GO
 INSERT [dbo].[PADRE_TUTOR] ([id_padre], [nombre], [apellido], [telefono], [email], [relacion_estudiante]) VALUES (14, N'Patricia', N'Pérez', N'3100000002', N'patricia.perez@mail.com', N'Madre')
+GO
 INSERT [dbo].[PADRE_TUTOR] ([id_padre], [nombre], [apellido], [telefono], [email], [relacion_estudiante]) VALUES (15, N'Claudia', N'López', N'3100000003', N'claudia.lopez@mail.com', N'Madre')
+GO
 INSERT [dbo].[PADRE_TUTOR] ([id_padre], [nombre], [apellido], [telefono], [email], [relacion_estudiante]) VALUES (16, N'Ricardo', N'Hernández', N'3100000004', N'r.hernandez@mail.com', N'Padre')
+GO
 INSERT [dbo].[PADRE_TUTOR] ([id_padre], [nombre], [apellido], [telefono], [email], [relacion_estudiante]) VALUES (17, N'Martha', N'Martínez', N'3100000005', N'martha.martinez@mail.com', N'Madre')
+GO
 INSERT [dbo].[PADRE_TUTOR] ([id_padre], [nombre], [apellido], [telefono], [email], [relacion_estudiante]) VALUES (18, N'Gustavo', N'García', N'3100000006', N'gustavo.garcia@mail.com', N'Padre')
+GO
 INSERT [dbo].[PADRE_TUTOR] ([id_padre], [nombre], [apellido], [telefono], [email], [relacion_estudiante]) VALUES (19, N'Elena', N'Rodríguez', N'3100000007', N'elena.rodriguez@mail.com', N'Madre')
+GO
 INSERT [dbo].[PADRE_TUTOR] ([id_padre], [nombre], [apellido], [telefono], [email], [relacion_estudiante]) VALUES (20, N'Roberto', N'Ramírez', N'3100000008', N'roberto.ramirez@mail.com', N'Padre')
+GO
 INSERT [dbo].[PADRE_TUTOR] ([id_padre], [nombre], [apellido], [telefono], [email], [relacion_estudiante]) VALUES (21, N'Natalia', N'Díaz', N'3100000009', N'natalia.diaz@mail.com', N'Madre')
+GO
 INSERT [dbo].[PADRE_TUTOR] ([id_padre], [nombre], [apellido], [telefono], [email], [relacion_estudiante]) VALUES (22, N'Ernesto', N'Morales', N'3100000010', N'ernesto.morales@mail.com', N'Padre')
+GO
 INSERT [dbo].[PADRE_TUTOR] ([id_padre], [nombre], [apellido], [telefono], [email], [relacion_estudiante]) VALUES (23, N'Carmen', N'Jiménez', N'3100000011', N'carmen.jimenez@mail.com', N'Madre')
+GO
 INSERT [dbo].[PADRE_TUTOR] ([id_padre], [nombre], [apellido], [telefono], [email], [relacion_estudiante]) VALUES (24, N'Alejandro', N'Ruiz', N'3100000012', N'alejandro.ruiz@mail.com', N'Padre')
+GO
 SET IDENTITY_INSERT [dbo].[PADRE_TUTOR] OFF
 GO
 SET IDENTITY_INSERT [dbo].[PERIODO] ON 
-
+GO
 INSERT [dbo].[PERIODO] ([id_periodo], [nombre], [fecha_inicio], [fecha_fin]) VALUES (1, N'2024-I', CAST(N'2024-01-22' AS Date), CAST(N'2024-06-14' AS Date))
+GO
 INSERT [dbo].[PERIODO] ([id_periodo], [nombre], [fecha_inicio], [fecha_fin]) VALUES (2, N'2024-II', CAST(N'2024-07-15' AS Date), CAST(N'2024-11-29' AS Date))
+GO
 INSERT [dbo].[PERIODO] ([id_periodo], [nombre], [fecha_inicio], [fecha_fin]) VALUES (3, N'2025-I', CAST(N'2025-01-20' AS Date), CAST(N'2025-06-13' AS Date))
+GO
 INSERT [dbo].[PERIODO] ([id_periodo], [nombre], [fecha_inicio], [fecha_fin]) VALUES (4, N'2024-I', CAST(N'2024-01-22' AS Date), CAST(N'2024-06-14' AS Date))
+GO
 INSERT [dbo].[PERIODO] ([id_periodo], [nombre], [fecha_inicio], [fecha_fin]) VALUES (5, N'2024-II', CAST(N'2024-07-15' AS Date), CAST(N'2024-11-29' AS Date))
+GO
 INSERT [dbo].[PERIODO] ([id_periodo], [nombre], [fecha_inicio], [fecha_fin]) VALUES (6, N'2025-I', CAST(N'2025-01-20' AS Date), CAST(N'2025-06-13' AS Date))
+GO
 SET IDENTITY_INSERT [dbo].[PERIODO] OFF
 GO
 SET IDENTITY_INSERT [dbo].[PROFESOR] ON 
-
+GO
 INSERT [dbo].[PROFESOR] ([id_profesor], [nombre], [apellido], [direccion], [telefono], [email], [especialidad], [id_departamento]) VALUES (1, N'Carlos', N'Mendoza', N'Calle 45 # 12-30, Bogotá', N'3001234567', N'c.mendoza@colegio.edu.co', N'Álgebra y Cálculo', 1)
+GO
 INSERT [dbo].[PROFESOR] ([id_profesor], [nombre], [apellido], [direccion], [telefono], [email], [especialidad], [id_departamento]) VALUES (2, N'Adriana', N'Ríos', N'Av. 68 # 23-10, Bogotá', N'3112345678', N'a.rios@colegio.edu.co', N'Física Clásica', 1)
+GO
 INSERT [dbo].[PROFESOR] ([id_profesor], [nombre], [apellido], [direccion], [telefono], [email], [especialidad], [id_departamento]) VALUES (3, N'Hernán', N'Salcedo', N'Cra. 7 # 45-60, Bogotá', N'3209876543', N'h.salcedo@colegio.edu.co', N'Literatura y Lingüística', 2)
+GO
 INSERT [dbo].[PROFESOR] ([id_profesor], [nombre], [apellido], [direccion], [telefono], [email], [especialidad], [id_departamento]) VALUES (4, N'Margarita', N'Torres', N'Calle 100 # 15-20, Bogotá', N'3154321098', N'm.torres@colegio.edu.co', N'Historia', 2)
+GO
 INSERT [dbo].[PROFESOR] ([id_profesor], [nombre], [apellido], [direccion], [telefono], [email], [especialidad], [id_departamento]) VALUES (5, N'Julián', N'Castro', N'Cra. 30 # 80-55, Bogotá', N'3001112233', N'j.castro@colegio.edu.co', N'Ingeniería de Software', 3)
+GO
 INSERT [dbo].[PROFESOR] ([id_profesor], [nombre], [apellido], [direccion], [telefono], [email], [especialidad], [id_departamento]) VALUES (6, N'Paola', N'Vargas', N'Calle 72 # 5-18, Bogotá', N'3204445566', N'p.vargas@colegio.edu.co', N'Redes y Telecomunicaciones', 3)
+GO
 INSERT [dbo].[PROFESOR] ([id_profesor], [nombre], [apellido], [direccion], [telefono], [email], [especialidad], [id_departamento]) VALUES (7, N'Andrés', N'Moreno', N'Transv. 23 # 34-12, Bogotá', N'3107778899', N'a.moreno@colegio.edu.co', N'Biología Molecular', 4)
+GO
 INSERT [dbo].[PROFESOR] ([id_profesor], [nombre], [apellido], [direccion], [telefono], [email], [especialidad], [id_departamento]) VALUES (8, N'Liliana', N'Suárez', N'Calle 53 # 27-08, Bogotá', N'3156667788', N'l.suarez@colegio.edu.co', N'Educación Musical', 5)
+GO
 SET IDENTITY_INSERT [dbo].[PROFESOR] OFF
 GO
 INSERT [dbo].[PROFESOR_MATERIA] ([id_profesor], [id_materia], [anio_escolar], [horas_semana]) VALUES (1, 1, 2024, 4)
+GO
 INSERT [dbo].[PROFESOR_MATERIA] ([id_profesor], [id_materia], [anio_escolar], [horas_semana]) VALUES (1, 1, 2025, 4)
+GO
 INSERT [dbo].[PROFESOR_MATERIA] ([id_profesor], [id_materia], [anio_escolar], [horas_semana]) VALUES (1, 2, 2024, 4)
+GO
 INSERT [dbo].[PROFESOR_MATERIA] ([id_profesor], [id_materia], [anio_escolar], [horas_semana]) VALUES (2, 3, 2024, 3)
+GO
 INSERT [dbo].[PROFESOR_MATERIA] ([id_profesor], [id_materia], [anio_escolar], [horas_semana]) VALUES (3, 4, 2024, 3)
+GO
 INSERT [dbo].[PROFESOR_MATERIA] ([id_profesor], [id_materia], [anio_escolar], [horas_semana]) VALUES (3, 5, 2024, 2)
+GO
 INSERT [dbo].[PROFESOR_MATERIA] ([id_profesor], [id_materia], [anio_escolar], [horas_semana]) VALUES (4, 6, 2024, 3)
+GO
 INSERT [dbo].[PROFESOR_MATERIA] ([id_profesor], [id_materia], [anio_escolar], [horas_semana]) VALUES (5, 7, 2024, 5)
+GO
 INSERT [dbo].[PROFESOR_MATERIA] ([id_profesor], [id_materia], [anio_escolar], [horas_semana]) VALUES (5, 8, 2024, 5)
+GO
 INSERT [dbo].[PROFESOR_MATERIA] ([id_profesor], [id_materia], [anio_escolar], [horas_semana]) VALUES (5, 9, 2024, 4)
+GO
 INSERT [dbo].[PROFESOR_MATERIA] ([id_profesor], [id_materia], [anio_escolar], [horas_semana]) VALUES (6, 10, 2025, 3)
+GO
 INSERT [dbo].[PROFESOR_MATERIA] ([id_profesor], [id_materia], [anio_escolar], [horas_semana]) VALUES (7, 11, 2024, 3)
 GO
 SET ANSI_PADDING ON
 GO
-/****** Objeto: Index [UQ__AULA__4AABD47E0AB92344] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  Index [UQ__AULA__4AABD47EC4CB485A]    Script Date: 16/04/2026 3:09:37 p. m. ******/
 ALTER TABLE [dbo].[AULA] ADD UNIQUE NONCLUSTERED 
 (
 	[codigo_aula] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Objeto: Index [UQ__AULA__4AABD47E14F42BD9] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
-ALTER TABLE [dbo].[AULA] ADD UNIQUE NONCLUSTERED 
-(
-	[codigo_aula] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-GO
-SET ANSI_PADDING ON
-GO
-/****** Objeto: Index [UQ_CERTIFICADO_codigo_verificacion] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
-ALTER TABLE [dbo].[CERTIFICADO] ADD  CONSTRAINT [UQ_CERTIFICADO_codigo_verificacion] UNIQUE NONCLUSTERED 
-(
-	[codigo_verificacion] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-GO
-SET ANSI_PADDING ON
-GO
-/****** Objeto: Index [IX_CERTIFICADO_codigo_verificacion] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
-CREATE NONCLUSTERED INDEX [IX_CERTIFICADO_codigo_verificacion] ON [dbo].[CERTIFICADO]
-(
-	[codigo_verificacion] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-GO
-/****** Objeto: Index [IX_CERTIFICADO_id_estudiante] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
-CREATE NONCLUSTERED INDEX [IX_CERTIFICADO_id_estudiante] ON [dbo].[CERTIFICADO]
-(
-	[id_estudiante] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-GO
-/****** Objeto: Index [IX_DETALLE_id_certificado] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
-CREATE NONCLUSTERED INDEX [IX_DETALLE_id_certificado] ON [dbo].[CERTIFICADO_DETALLE]
-(
-	[id_certificado] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-GO
-SET ANSI_PADDING ON
-GO
-/****** Objeto: Index [UQ__ESTUDIAN__59C16A3C38BF645F] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  Index [UQ__ESTUDIAN__59C16A3C629682E4]    Script Date: 16/04/2026 3:09:37 p. m. ******/
 ALTER TABLE [dbo].[ESTUDIANTE] ADD UNIQUE NONCLUSTERED 
 (
 	[codigo_estudiante] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Objeto: Index [UQ__ESTUDIAN__59C16A3CC10D522E] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
-ALTER TABLE [dbo].[ESTUDIANTE] ADD UNIQUE NONCLUSTERED 
-(
-	[codigo_estudiante] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-GO
-SET ANSI_PADDING ON
-GO
-/****** Objeto: Index [UQ__ESTUDIAN__AB6E616435DD0AD5] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  Index [UQ__ESTUDIAN__AB6E61640EB7A476]    Script Date: 16/04/2026 3:09:37 p. m. ******/
 ALTER TABLE [dbo].[ESTUDIANTE] ADD UNIQUE NONCLUSTERED 
 (
 	[email] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-SET ANSI_PADDING ON
-GO
-/****** Objeto: Index [UQ__ESTUDIAN__AB6E6164A57038E4] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
-ALTER TABLE [dbo].[ESTUDIANTE] ADD UNIQUE NONCLUSTERED 
-(
-	[email] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-GO
-/****** Objeto: Index [UQ_EXINS] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  Index [UQ_EXINS]    Script Date: 16/04/2026 3:09:37 p. m. ******/
 ALTER TABLE [dbo].[EXTRA_INSCRIPCION] ADD  CONSTRAINT [UQ_EXINS] UNIQUE NONCLUSTERED 
 (
 	[id_estudiante] ASC,
 	[id_extra_curso] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Objeto: Index [UQ__GU_MENU___2724294153F914C7] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  Index [UQ__GU_MENU___272429412F6CF36E]    Script Date: 16/04/2026 3:09:37 p. m. ******/
 ALTER TABLE [dbo].[GU_MENU_PERMISO] ADD UNIQUE NONCLUSTERED 
 (
 	[nombre_menu] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Objeto: Index [UQ__GU_MENU___27242941B360C6D4] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
-ALTER TABLE [dbo].[GU_MENU_PERMISO] ADD UNIQUE NONCLUSTERED 
-(
-	[nombre_menu] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-GO
-SET ANSI_PADDING ON
-GO
-/****** Objeto: Index [UQ__GU_PARAM__71DCA3DB1A12299A] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  Index [UQ__GU_PARAM__71DCA3DBA354811B]    Script Date: 16/04/2026 3:09:37 p. m. ******/
 ALTER TABLE [dbo].[GU_PARAMETRIZACION] ADD UNIQUE NONCLUSTERED 
 (
 	[clave] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Objeto: Index [UQ__GU_PARAM__71DCA3DB8C7BEEB4] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
-ALTER TABLE [dbo].[GU_PARAMETRIZACION] ADD UNIQUE NONCLUSTERED 
-(
-	[clave] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-GO
-SET ANSI_PADDING ON
-GO
-/****** Objeto: Index [UQ__GU_PERMI__4FC6D0AC7F03139C] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  Index [UQ__GU_PERMI__4FC6D0AC00BD0AB4]    Script Date: 16/04/2026 3:09:37 p. m. ******/
 ALTER TABLE [dbo].[GU_PERMISO] ADD UNIQUE NONCLUSTERED 
 (
 	[nombre_permiso] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Objeto: Index [UQ__GU_PERMI__4FC6D0ACCA29DC00] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
-ALTER TABLE [dbo].[GU_PERMISO] ADD UNIQUE NONCLUSTERED 
-(
-	[nombre_permiso] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-GO
-SET ANSI_PADDING ON
-GO
-/****** Objeto: Index [UQ__GU_RECUP__CA90DA7A05844828] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  Index [UQ__GU_RECUP__CA90DA7AA0001BE2]    Script Date: 16/04/2026 3:09:37 p. m. ******/
 ALTER TABLE [dbo].[GU_RECUPERACION_PASSWORD] ADD UNIQUE NONCLUSTERED 
 (
 	[token] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Objeto: Index [UQ__GU_RECUP__CA90DA7A55153342] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
-ALTER TABLE [dbo].[GU_RECUPERACION_PASSWORD] ADD UNIQUE NONCLUSTERED 
-(
-	[token] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-GO
-SET ANSI_PADDING ON
-GO
-/****** Objeto: Index [UQ__GU_ROL__673CB435661B0919] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  Index [UQ__GU_ROL__673CB435A3196F8D]    Script Date: 16/04/2026 3:09:37 p. m. ******/
 ALTER TABLE [dbo].[GU_ROL] ADD UNIQUE NONCLUSTERED 
 (
 	[nombre_rol] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Objeto: Index [UQ__GU_ROL__673CB4359F0527E0] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
-ALTER TABLE [dbo].[GU_ROL] ADD UNIQUE NONCLUSTERED 
-(
-	[nombre_rol] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-GO
-SET ANSI_PADDING ON
-GO
-/****** Objeto: Index [UQ__GU_Usuar__1E13990069A18CF1] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  Index [UQ__GU_Usuar__1E139900A9016882]    Script Date: 16/04/2026 3:09:37 p. m. ******/
 ALTER TABLE [dbo].[GU_Usuario] ADD UNIQUE NONCLUSTERED 
 (
 	[NOMBRE_USUARIO] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Objeto: Index [UQ__GU_Usuar__1E139900F5E17DD1] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
-ALTER TABLE [dbo].[GU_Usuario] ADD UNIQUE NONCLUSTERED 
-(
-	[NOMBRE_USUARIO] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-GO
-SET ANSI_PADDING ON
-GO
-/****** Objeto: Index [UQ__GU_Usuar__30D61C6C550CC905] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  Index [UQ__GU_Usuar__30D61C6C49632BD4]    Script Date: 16/04/2026 3:09:37 p. m. ******/
 ALTER TABLE [dbo].[GU_Usuario] ADD UNIQUE NONCLUSTERED 
 (
 	[CORREO_ELECTRONICO] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
 SET ANSI_PADDING ON
 GO
-/****** Objeto: Index [UQ__GU_Usuar__30D61C6C93566949] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
-ALTER TABLE [dbo].[GU_Usuario] ADD UNIQUE NONCLUSTERED 
-(
-	[CORREO_ELECTRONICO] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-GO
-SET ANSI_PADDING ON
-GO
-/****** Objeto: Index [UQ__PROFESOR__AB6E616480C31D5D] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  Index [UQ__PROFESOR__AB6E6164322B5252]    Script Date: 16/04/2026 3:09:37 p. m. ******/
 ALTER TABLE [dbo].[PROFESOR] ADD UNIQUE NONCLUSTERED 
 (
 	[email] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-GO
-SET ANSI_PADDING ON
-GO
-/****** Objeto: Index [UQ__PROFESOR__AB6E6164C9B9C2CB] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
-ALTER TABLE [dbo].[PROFESOR] ADD UNIQUE NONCLUSTERED 
-(
-	[email] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
 ALTER TABLE [dbo].[Calificaciones] ADD  DEFAULT (getdate()) FOR [FechaRegistro]
-GO
-ALTER TABLE [dbo].[CERTIFICADO] ADD  DEFAULT (getdate()) FOR [fecha_emision]
-GO
-ALTER TABLE [dbo].[CERTIFICADO] ADD  DEFAULT ('Vigente') FOR [estado]
 GO
 ALTER TABLE [dbo].[CITACION] ADD  DEFAULT (getdate()) FOR [fecha]
 GO
@@ -1930,30 +1966,6 @@ ALTER TABLE [dbo].[Calificaciones]  WITH CHECK ADD  CONSTRAINT [FK_Estudiante_No
 REFERENCES [dbo].[GU_Usuario] ([ID_Usuario])
 GO
 ALTER TABLE [dbo].[Calificaciones] CHECK CONSTRAINT [FK_Estudiante_Nota]
-GO
-ALTER TABLE [dbo].[CERTIFICADO]  WITH CHECK ADD  CONSTRAINT [FK_CERTIFICADO_ESTUDIANTE] FOREIGN KEY([id_estudiante])
-REFERENCES [dbo].[ESTUDIANTE] ([id_estudiante])
-GO
-ALTER TABLE [dbo].[CERTIFICADO] CHECK CONSTRAINT [FK_CERTIFICADO_ESTUDIANTE]
-GO
-ALTER TABLE [dbo].[CERTIFICADO]  WITH CHECK ADD  CONSTRAINT [FK_CERTIFICADO_USUARIO_EMISOR] FOREIGN KEY([id_usuario_emisor])
-REFERENCES [dbo].[GU_Usuario] ([ID_Usuario])
-GO
-ALTER TABLE [dbo].[CERTIFICADO] CHECK CONSTRAINT [FK_CERTIFICADO_USUARIO_EMISOR]
-GO
-ALTER TABLE [dbo].[CERTIFICADO_DETALLE]  WITH CHECK ADD  CONSTRAINT [FK_DETALLE_CALIFICACION] FOREIGN KEY([id_calificacion])
-REFERENCES [dbo].[Calificaciones] ([ID_Calificacion])
-GO
-ALTER TABLE [dbo].[CERTIFICADO_DETALLE] CHECK CONSTRAINT [FK_DETALLE_CALIFICACION]
-GO
-ALTER TABLE [dbo].[CERTIFICADO_DETALLE]  WITH CHECK ADD  CONSTRAINT [FK_DETALLE_CERTIFICADO] FOREIGN KEY([id_certificado])
-REFERENCES [dbo].[CERTIFICADO] ([id_certificado])
-ON DELETE CASCADE
-GO
-ALTER TABLE [dbo].[CERTIFICADO_DETALLE] CHECK CONSTRAINT [FK_DETALLE_CERTIFICADO]
-GO
-ALTER TABLE [dbo].[CITACION]  WITH CHECK ADD FOREIGN KEY([id_estudiante])
-REFERENCES [dbo].[GU_Usuario] ([ID_Usuario])
 GO
 ALTER TABLE [dbo].[CITACION]  WITH CHECK ADD FOREIGN KEY([id_estudiante])
 REFERENCES [dbo].[GU_Usuario] ([ID_Usuario])
@@ -2195,17 +2207,7 @@ ALTER TABLE [dbo].[PROFESOR_MATERIA] CHECK CONSTRAINT [FK_PM_PROF]
 GO
 ALTER TABLE [dbo].[Calificaciones]  WITH CHECK ADD CHECK  (([Nota]>=(0) AND [Nota]<=(5)))
 GO
-ALTER TABLE [dbo].[Calificaciones]  WITH CHECK ADD CHECK  (([Nota]>=(0) AND [Nota]<=(5)))
-GO
-ALTER TABLE [dbo].[CERTIFICADO]  WITH CHECK ADD  CONSTRAINT [CK_CERTIFICADO_estado] CHECK  (([estado]='Revocado' OR [estado]='Vigente'))
-GO
-ALTER TABLE [dbo].[CERTIFICADO] CHECK CONSTRAINT [CK_CERTIFICADO_estado]
-GO
-ALTER TABLE [dbo].[CERTIFICADO_DETALLE]  WITH CHECK ADD  CONSTRAINT [CK_DETALLE_estado_nota] CHECK  (([estado_nota]='Reprobado' OR [estado_nota]='Aprobado'))
-GO
-ALTER TABLE [dbo].[CERTIFICADO_DETALLE] CHECK CONSTRAINT [CK_DETALLE_estado_nota]
-GO
-/****** Objeto: StoredProcedure [dbo].[sp_AccesoDocumento] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  StoredProcedure [dbo].[sp_AccesoDocumento]    Script Date: 16/04/2026 3:09:37 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2221,7 +2223,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-CREATE   PROCEDURE [dbo].[sp_AccesoDocumento]
+CREATE OR ALTER PROCEDURE [dbo].[sp_AccesoDocumento]
 
 @IdUsuario INT,
 
@@ -2302,7 +2304,7 @@ AS Mensaje, @Url AS ArchivoUrl;
 END;
 
 GO
-/****** Objeto: StoredProcedure [dbo].[sp_AlertaAsistencia] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  StoredProcedure [dbo].[sp_AlertaAsistencia]    Script Date: 16/04/2026 3:09:37 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2318,7 +2320,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-CREATE   PROCEDURE [dbo].[sp_AlertaAsistencia]
+CREATE OR ALTER PROCEDURE [dbo].[sp_AlertaAsistencia]
 
 @IdCurso INT,
 
@@ -2391,7 +2393,7 @@ ORDER BY porcentaje_asistencia ASC;
 END;
 
 GO
-/****** Objeto: StoredProcedure [dbo].[sp_ArchivarPeriodo] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  StoredProcedure [dbo].[sp_ArchivarPeriodo]    Script Date: 16/04/2026 3:09:37 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2407,7 +2409,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-CREATE   PROCEDURE [dbo].[sp_ArchivarPeriodo]
+CREATE OR ALTER PROCEDURE [dbo].[sp_ArchivarPeriodo]
 
 @IdPeriodo INT,
 
@@ -2507,7 +2509,7 @@ END CATCH
 END;
 
 GO
-/****** Objeto: StoredProcedure [dbo].[sp_AsignarNuevoHorario] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  StoredProcedure [dbo].[sp_AsignarNuevoHorario]    Script Date: 16/04/2026 3:09:37 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2523,7 +2525,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-CREATE   PROCEDURE [dbo].[sp_AsignarNuevoHorario]
+CREATE OR ALTER PROCEDURE [dbo].[sp_AsignarNuevoHorario]
 
 @cur_id INT, @aul_id INT, @prof_id INT, @dia NVARCHAR(30), @ini
 TIME, @fin TIME
@@ -2542,7 +2544,7 @@ PRINT 'P2: Horario guardado';
 END;
 
 GO
-/****** Objeto: StoredProcedure [dbo].[sp_AsignarRolUsuario] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  StoredProcedure [dbo].[sp_AsignarRolUsuario]    Script Date: 16/04/2026 3:09:37 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2558,7 +2560,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-CREATE   PROCEDURE [dbo].[sp_AsignarRolUsuario]
+CREATE OR ALTER PROCEDURE [dbo].[sp_AsignarRolUsuario]
 
 @IdUsuario INT,
 
@@ -2700,7 +2702,7 @@ END
 END;
 
 GO
-/****** Objeto: StoredProcedure [dbo].[sp_AuditoriaDocumental] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  StoredProcedure [dbo].[sp_AuditoriaDocumental]    Script Date: 16/04/2026 3:09:37 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2726,7 +2728,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-CREATE   PROCEDURE [dbo].[sp_AuditoriaDocumental]
+CREATE OR ALTER PROCEDURE [dbo].[sp_AuditoriaDocumental]
 
 @IdUsuario INT,
 
@@ -2763,7 +2765,7 @@ GETDATE() AS fecha_hora;
 END;
 
 GO
-/****** Objeto: StoredProcedure [dbo].[sp_AuditoriaSistema] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  StoredProcedure [dbo].[sp_AuditoriaSistema]    Script Date: 16/04/2026 3:09:37 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2779,7 +2781,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-CREATE   PROCEDURE [dbo].[sp_AuditoriaSistema]
+CREATE OR ALTER PROCEDURE [dbo].[sp_AuditoriaSistema]
 
 @FechaDesde DATE = NULL,
 
@@ -2887,7 +2889,7 @@ ORDER BY fecha_hora DESC;
 END;
 
 GO
-/****** Objeto: StoredProcedure [dbo].[sp_BloquearUsuario] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  StoredProcedure [dbo].[sp_BloquearUsuario]    Script Date: 16/04/2026 3:09:37 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -2903,7 +2905,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-CREATE   PROCEDURE [dbo].[sp_BloquearUsuario]
+CREATE OR ALTER PROCEDURE [dbo].[sp_BloquearUsuario]
 
 @IdUsuario INT,
 
@@ -2977,7 +2979,7 @@ END
 END;
 
 GO
-/****** Objeto: StoredProcedure [dbo].[sp_BoletinEstudiante] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  StoredProcedure [dbo].[sp_BoletinEstudiante]    Script Date: 16/04/2026 3:09:37 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3011,7 +3013,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-CREATE   PROCEDURE [dbo].[sp_BoletinEstudiante]
+CREATE OR ALTER PROCEDURE [dbo].[sp_BoletinEstudiante]
 
 @IdEstudiante INT,
 
@@ -3092,7 +3094,7 @@ ORDER BY mat.nombre_materia, ev.fecha_evaluacion;
 END;
 
 GO
-/****** Objeto: StoredProcedure [dbo].[sp_BorrarInscripcion] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  StoredProcedure [dbo].[sp_BorrarInscripcion]    Script Date: 16/04/2026 3:09:37 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3108,7 +3110,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-CREATE   PROCEDURE [dbo].[sp_BorrarInscripcion]
+CREATE OR ALTER PROCEDURE [dbo].[sp_BorrarInscripcion]
 
 @id_ins INT
 
@@ -3123,7 +3125,7 @@ PRINT 'P7: Registro eliminado';
 END;
 
 GO
-/****** Objeto: StoredProcedure [dbo].[sp_BuscarDocumentos] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  StoredProcedure [dbo].[sp_BuscarDocumentos]    Script Date: 16/04/2026 3:09:37 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3139,7 +3141,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-CREATE   PROCEDURE [dbo].[sp_BuscarDocumentos]
+CREATE OR ALTER PROCEDURE [dbo].[sp_BuscarDocumentos]
 
 @Etiqueta NVARCHAR(80) = NULL,
 
@@ -3251,7 +3253,7 @@ ORDER BY d.fecha_subida DESC;
 END;
 
 GO
-/****** Objeto: StoredProcedure [dbo].[sp_CambiarEstadoDoc] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  StoredProcedure [dbo].[sp_CambiarEstadoDoc]    Script Date: 16/04/2026 3:09:37 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3267,7 +3269,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-CREATE   PROCEDURE [dbo].[sp_CambiarEstadoDoc]
+CREATE OR ALTER PROCEDURE [dbo].[sp_CambiarEstadoDoc]
 
 @IdDocumento INT,
 
@@ -3397,7 +3399,7 @@ SELECT 0 AS Codigo,
 END;
 
 GO
-/****** Objeto: StoredProcedure [dbo].[sp_CambiarPassword] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  StoredProcedure [dbo].[sp_CambiarPassword]    Script Date: 16/04/2026 3:09:37 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3413,7 +3415,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-CREATE   PROCEDURE [dbo].[sp_CambiarPassword]
+CREATE OR ALTER PROCEDURE [dbo].[sp_CambiarPassword]
 
 @IdUsuario INT,
 
@@ -3523,7 +3525,7 @@ END CATCH
 END;
 
 GO
-/****** Objeto: StoredProcedure [dbo].[sp_CheckAsistencia] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  StoredProcedure [dbo].[sp_CheckAsistencia]    Script Date: 16/04/2026 3:09:37 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3539,7 +3541,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-CREATE   PROCEDURE [dbo].[sp_CheckAsistencia]
+CREATE OR ALTER PROCEDURE [dbo].[sp_CheckAsistencia]
 
 @est_id INT, @hor_id INT, @prof_id INT, @estado
 NVARCHAR(20)
@@ -3558,7 +3560,7 @@ PRINT 'P4: Asistencia guardada';
 END;
 
 GO
-/****** Objeto: StoredProcedure [dbo].[sp_ConsultarClasesProfe] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  StoredProcedure [dbo].[sp_ConsultarClasesProfe]    Script Date: 16/04/2026 3:09:37 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3574,7 +3576,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-CREATE   PROCEDURE [dbo].[sp_ConsultarClasesProfe]
+CREATE OR ALTER PROCEDURE [dbo].[sp_ConsultarClasesProfe]
 
 @prof_id INT
 
@@ -3589,7 +3591,7 @@ FROM dbo.HORARIO WHERE id_profesor = @prof_id;
 END;
 
 GO
-/****** Objeto: StoredProcedure [dbo].[sp_DashboardEstudiante] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  StoredProcedure [dbo].[sp_DashboardEstudiante]    Script Date: 16/04/2026 3:09:37 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3613,7 +3615,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-CREATE   PROCEDURE [dbo].[sp_DashboardEstudiante]
+CREATE OR ALTER PROCEDURE [dbo].[sp_DashboardEstudiante]
 
 @IdUsuario INT
 
@@ -3728,7 +3730,7 @@ ORDER BY d.fecha_subida DESC;
 END;
 
 GO
-/****** Objeto: StoredProcedure [dbo].[sp_DashboardProfesor] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  StoredProcedure [dbo].[sp_DashboardProfesor]    Script Date: 16/04/2026 3:09:37 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3744,7 +3746,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-CREATE   PROCEDURE [dbo].[sp_DashboardProfesor]
+CREATE OR ALTER PROCEDURE [dbo].[sp_DashboardProfesor]
 
 @IdUsuario INT
 
@@ -3877,7 +3879,7 @@ ORDER BY d.fecha_subida DESC;
 END;
 
 GO
-/****** Objeto: StoredProcedure [dbo].[sp_EntregaTarea] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  StoredProcedure [dbo].[sp_EntregaTarea]    Script Date: 16/04/2026 3:09:37 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -3901,7 +3903,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-CREATE   PROCEDURE [dbo].[sp_EntregaTarea]
+CREATE OR ALTER PROCEDURE [dbo].[sp_EntregaTarea]
 
 @IdDocumento INT,
 
@@ -4004,7 +4006,7 @@ END CATCH
 END;
 
 GO
-/****** Objeto: StoredProcedure [dbo].[sp_EstadisticasCurso] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  StoredProcedure [dbo].[sp_EstadisticasCurso]    Script Date: 16/04/2026 3:09:37 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -4020,7 +4022,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-CREATE   PROCEDURE [dbo].[sp_EstadisticasCurso]
+CREATE OR ALTER PROCEDURE [dbo].[sp_EstadisticasCurso]
 
 @IdCurso INT
 
@@ -4096,7 +4098,7 @@ ORDER BY promedio DESC;
 END;
 
 GO
-/****** Objeto: StoredProcedure [dbo].[sp_InscribirMatricular] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  StoredProcedure [dbo].[sp_InscribirMatricular]    Script Date: 16/04/2026 3:09:37 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -4122,7 +4124,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-CREATE   PROCEDURE [dbo].[sp_InscribirMatricular]
+CREATE OR ALTER PROCEDURE [dbo].[sp_InscribirMatricular]
 
 @est_id INT, @cur_id INT, @anio INT, @periodo NVARCHAR(40)
 
@@ -4162,7 +4164,7 @@ END CATCH
 END;
 
 GO
-/****** Objeto: StoredProcedure [dbo].[sp_InscripcionCompleta] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  StoredProcedure [dbo].[sp_InscripcionCompleta]    Script Date: 16/04/2026 3:09:37 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -4178,7 +4180,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-CREATE   PROCEDURE [dbo].[sp_InscripcionCompleta]
+CREATE OR ALTER PROCEDURE [dbo].[sp_InscripcionCompleta]
 
 @IdEstudiante INT,
 
@@ -4336,7 +4338,7 @@ END CATCH
 END;
 
 GO
-/****** Objeto: StoredProcedure [dbo].[sp_LoginUsuario] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  StoredProcedure [dbo].[sp_LoginUsuario]    Script Date: 16/04/2026 3:09:37 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -4364,7 +4366,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-CREATE   PROCEDURE [dbo].[sp_LoginUsuario]
+CREATE OR ALTER PROCEDURE [dbo].[sp_LoginUsuario]
 
 @NombreUsuario NVARCHAR(50),
 
@@ -4529,7 +4531,7 @@ END
 END;
 
 GO
-/****** Objeto: StoredProcedure [dbo].[sp_MaterialesCurso] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  StoredProcedure [dbo].[sp_MaterialesCurso]    Script Date: 16/04/2026 3:09:37 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -4545,7 +4547,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-CREATE   PROCEDURE [dbo].[sp_MaterialesCurso]
+CREATE OR ALTER PROCEDURE [dbo].[sp_MaterialesCurso]
 
 @IdCurso INT,
 
@@ -4614,7 +4616,7 @@ ORDER BY d.fecha_subida DESC;
 END;
 
 GO
-/****** Objeto: StoredProcedure [dbo].[sp_ModificarEstudiante] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  StoredProcedure [dbo].[sp_ModificarEstudiante]    Script Date: 16/04/2026 3:09:37 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -4630,7 +4632,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-CREATE   PROCEDURE [dbo].[sp_ModificarEstudiante]
+CREATE OR ALTER PROCEDURE [dbo].[sp_ModificarEstudiante]
 
 @id INT, @nombre NVARCHAR(100)
 
@@ -4646,7 +4648,7 @@ PRINT 'P6: Alumno actualizado';
 END;
 
 GO
-/****** Objeto: StoredProcedure [dbo].[sp_NuevaVersionDoc] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  StoredProcedure [dbo].[sp_NuevaVersionDoc]    Script Date: 16/04/2026 3:09:37 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -4662,7 +4664,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-CREATE   PROCEDURE [dbo].[sp_NuevaVersionDoc]
+CREATE OR ALTER PROCEDURE [dbo].[sp_NuevaVersionDoc]
 
 @IdDocumento INT,
 
@@ -4797,7 +4799,7 @@ END CATCH
 END;
 
 GO
-/****** Objeto: StoredProcedure [dbo].[sp_RecuperarPassword] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  StoredProcedure [dbo].[sp_RecuperarPassword]    Script Date: 16/04/2026 3:09:37 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -4813,7 +4815,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-CREATE   PROCEDURE [dbo].[sp_RecuperarPassword]
+CREATE OR ALTER PROCEDURE [dbo].[sp_RecuperarPassword]
 
 @IdUsuario INT,
 
@@ -4888,7 +4890,7 @@ SELECT 'OK' AS Codigo,
 END;
 
 GO
-/****** Objeto: StoredProcedure [dbo].[sp_SubirDocConPermiso] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  StoredProcedure [dbo].[sp_SubirDocConPermiso]    Script Date: 16/04/2026 3:09:37 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -4904,7 +4906,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-CREATE   PROCEDURE [dbo].[sp_SubirDocConPermiso]
+CREATE OR ALTER PROCEDURE [dbo].[sp_SubirDocConPermiso]
 
 @IdUsuarioSolicitante INT,
 
@@ -4992,7 +4994,7 @@ EXEC sp_SubirDocumento
 END;
 
 GO
-/****** Objeto: StoredProcedure [dbo].[sp_SubirDocumento] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  StoredProcedure [dbo].[sp_SubirDocumento]    Script Date: 16/04/2026 3:09:37 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -5020,7 +5022,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-CREATE   PROCEDURE [dbo].[sp_SubirDocumento]
+CREATE OR ALTER PROCEDURE [dbo].[sp_SubirDocumento]
 
 @Titulo NVARCHAR(200),
 
@@ -5177,7 +5179,7 @@ END CATCH
 END;
 
 GO
-/****** Objeto: StoredProcedure [dbo].[sp_SubirNota] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  StoredProcedure [dbo].[sp_SubirNota]    Script Date: 16/04/2026 3:09:37 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -5193,7 +5195,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-CREATE   PROCEDURE [dbo].[sp_SubirNota]
+CREATE OR ALTER PROCEDURE [dbo].[sp_SubirNota]
 
 @est_id INT, @cur_id INT, @mat_id INT, @tipo NVARCHAR(50), @nota
 DECIMAL(3,2), @calif_id INT
@@ -5221,7 +5223,7 @@ ELSE PRINT 'Error P3: Nota fuera de rango';
 END;
 
 GO
-/****** Objeto: StoredProcedure [dbo].[sp_ValidarSolapamiento] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  StoredProcedure [dbo].[sp_ValidarSolapamiento]    Script Date: 16/04/2026 3:09:37 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -5237,7 +5239,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-CREATE   PROCEDURE [dbo].[sp_ValidarSolapamiento]
+CREATE OR ALTER PROCEDURE [dbo].[sp_ValidarSolapamiento]
 
 @IdCurso INT,
 
@@ -5348,7 +5350,7 @@ TipoConflicto, @Detalle AS Detalle;
 END;
 
 GO
-/****** Objeto: StoredProcedure [dbo].[sp_VerificarPermiso] Fecha de script: 31/07/2026 1:51:15 p. m. ******/
+/****** Object:  StoredProcedure [dbo].[sp_VerificarPermiso]    Script Date: 16/04/2026 3:09:37 p. m. ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -5364,7 +5366,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-CREATE   PROCEDURE [dbo].[sp_VerificarPermiso]
+CREATE OR ALTER PROCEDURE [dbo].[sp_VerificarPermiso]
 
 @IdUsuario INT,
 
@@ -5642,119 +5644,3 @@ USE [master]
 GO
 ALTER DATABASE [GestionAcademica] SET  READ_WRITE 
 GO
--- ============================================================
--- ACTUALIZACIÓN DE ESQUEMA: Registro extendido de usuarios
--- Agregar este bloque al final del script original.
--- Seguro de re-ejecutar: cada cambio revisa si ya existe antes de aplicarlo.
--- IMPORTANTE: cada bloque termina en GO para forzar que SQL Server
--- ejecute y confirme los ALTER TABLE antes de compilar el siguiente bloque
--- (evita el error "Invalid column name" al crear el índice).
--- ============================================================
- 
--- ── 1. Ampliación de GU_Usuario ────────────────────────────
-IF COL_LENGTH('GU_Usuario', 'TIPO_DOCUMENTO') IS NULL
-    ALTER TABLE GU_Usuario ADD TIPO_DOCUMENTO VARCHAR(5) NULL;
-GO
- 
-IF COL_LENGTH('GU_Usuario', 'NUM_DOCUMENTO') IS NULL
-    ALTER TABLE GU_Usuario ADD NUM_DOCUMENTO VARCHAR(20) NULL;
-GO
- 
-IF COL_LENGTH('GU_Usuario', 'FECHA_NACIMIENTO') IS NULL
-    ALTER TABLE GU_Usuario ADD FECHA_NACIMIENTO DATE NULL;
-GO
- 
-IF COL_LENGTH('GU_Usuario', 'GENERO') IS NULL
-    ALTER TABLE GU_Usuario ADD GENERO CHAR(1) NULL;
-GO
- 
-IF COL_LENGTH('GU_Usuario', 'LUGAR_NACIMIENTO') IS NULL
-    ALTER TABLE GU_Usuario ADD LUGAR_NACIMIENTO VARCHAR(100) NULL;
-GO
- 
-IF COL_LENGTH('GU_Usuario', 'CIUDAD') IS NULL
-    ALTER TABLE GU_Usuario ADD CIUDAD VARCHAR(100) NULL;
-GO
- 
-IF COL_LENGTH('GU_Usuario', 'BARRIO') IS NULL
-    ALTER TABLE GU_Usuario ADD BARRIO VARCHAR(100) NULL;
-GO
- 
-IF COL_LENGTH('GU_Usuario', 'AREA_ASIGNATURA') IS NULL
-    ALTER TABLE GU_Usuario ADD AREA_ASIGNATURA VARCHAR(100) NULL;
-GO
- 
-IF COL_LENGTH('GU_Usuario', 'COLEGIO_PROCEDENCIA') IS NULL
-    ALTER TABLE GU_Usuario ADD COLEGIO_PROCEDENCIA VARCHAR(150) NULL;
-GO
- 
-IF COL_LENGTH('GU_Usuario', 'TIPO_SANGRE') IS NULL
-    ALTER TABLE GU_Usuario ADD TIPO_SANGRE VARCHAR(4) NULL;
-GO
- 
-IF COL_LENGTH('GU_Usuario', 'EPS') IS NULL
-    ALTER TABLE GU_Usuario ADD EPS VARCHAR(100) NULL;
-GO
- 
-IF COL_LENGTH('GU_Usuario', 'ALERGIAS') IS NULL
-    ALTER TABLE GU_Usuario ADD ALERGIAS VARCHAR(255) NULL;
-GO
- 
-IF COL_LENGTH('GU_Usuario', 'CONDICIONES_MEDICAS') IS NULL
-    ALTER TABLE GU_Usuario ADD CONDICIONES_MEDICAS TEXT NULL;
-GO
- 
-IF COL_LENGTH('GU_Usuario', 'OBSERVACIONES') IS NULL
-    ALTER TABLE GU_Usuario ADD OBSERVACIONES TEXT NULL;
-GO
- 
-IF COL_LENGTH('GU_Usuario', 'FORZAR_CAMBIO_CLAVE') IS NULL
-    ALTER TABLE GU_Usuario ADD FORZAR_CAMBIO_CLAVE BIT NOT NULL DEFAULT 1;
-GO
- 
--- Evita documentos duplicados entre usuarios
--- (va en su propio bloque, después de que TIPO_DOCUMENTO y NUM_DOCUMENTO
---  ya se hayan creado y confirmado arriba)
-IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'UX_GU_Usuario_Documento')
-    CREATE UNIQUE INDEX UX_GU_Usuario_Documento
-        ON GU_Usuario (TIPO_DOCUMENTO, NUM_DOCUMENTO)
-        WHERE TIPO_DOCUMENTO IS NOT NULL AND NUM_DOCUMENTO IS NOT NULL;
-GO
- 
- 
--- ── 2. Enlace de ESTUDIANTE (legacy) hacia GU_Usuario ──────
-IF COL_LENGTH('ESTUDIANTE', 'id_usuario') IS NULL
-    ALTER TABLE ESTUDIANTE ADD id_usuario INT NULL;
-GO
- 
-IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_Estudiante_Usuario')
-    ALTER TABLE ESTUDIANTE ADD CONSTRAINT FK_Estudiante_Usuario
-        FOREIGN KEY (id_usuario) REFERENCES GU_Usuario(ID_Usuario);
-GO
- 
- 
--- ── 3. Enlace de PADRE_TUTOR (legacy) hacia GU_Usuario ─────
-IF COL_LENGTH('PADRE_TUTOR', 'id_usuario') IS NULL
-    ALTER TABLE PADRE_TUTOR ADD id_usuario INT NULL;
-GO
- 
-IF NOT EXISTS (SELECT 1 FROM sys.foreign_keys WHERE name = 'FK_PadreTutor_Usuario')
-    ALTER TABLE PADRE_TUTOR ADD CONSTRAINT FK_PadreTutor_Usuario
-        FOREIGN KEY (id_usuario) REFERENCES GU_Usuario(ID_Usuario);
-GO
- 
--- ============================================================
--- FIN de la actualización de esquema.
--- Notas de referencia (no requieren cambios, documentado para futuras consultas):
---   - MATRICULA.anio: columna sin ñ, ya existía correctamente.
---   - ESTUDIANTE_PADRE: no tiene PK propia (clave compuesta id_padre + id_estudiante).
---     id_estudiante -> ESTUDIANTE.id_estudiante (FK_EP_EST)
---     id_padre      -> PADRE_TUTOR.id_padre     (FK_EP_PADRE)
--- ============================================================
- 
--- ── Verificación rápida: confirma que las columnas ya existen ──
-SELECT COLUMN_NAME, DATA_TYPE
-FROM INFORMATION_SCHEMA.COLUMNS
-WHERE TABLE_NAME = 'GU_Usuario'
-  AND COLUMN_NAME IN ('TIPO_DOCUMENTO', 'NUM_DOCUMENTO', 'FECHA_NACIMIENTO', 'GENERO');
- 
