@@ -64,110 +64,65 @@
             <h2 class="mb-4" style="color: #e67e22;"><i class="bi bi-gear-fill me-2"></i>Gestión Administrativa</h2>
 
 
-            <div class="row">
-                <div class="col-md-4 mb-4" onclick="verMatricula()" style="cursor: pointer;">
-                    <div class="card p-4 text-center border-0 shadow-sm h-100 card-admin">
-                        <i class="bi bi-clipboard-check fs-2 mb-2" style="color: #e67e22;"></i>
-                        <h5 class="text-dark">Matrículas</h5>
-                        <p class="small text-muted">Consulta y gestiona las matrículas registradas.</p>
-                        <button class="btn btn-sm btn-outline-warning mt-auto w-100">Ver Matrículas</button>
-                    </div>
-                </div>
-
-                <div class="col-md-4 mb-4" onclick="location.href='@Url.Action("Usuarios", "Admin")'" style="cursor: pointer;">
-                    <div class="card p-4 text-center border-0 shadow-sm h-100 card-admin">
-                        <i class="bi bi-people-fill fs-2 mb-2" style="color: #e67e22;"></i>
-                        <h5 class="text-dark">Gestión de Usuarios</h5>
-                        <p class="small text-muted">Administra estudiantes, docentes y acudientes.</p>
-                        <button class="btn btn-sm btn-outline-warning mt-auto w-100">Ver Usuarios</button>
-                    </div>
-                </div>
-
-                <div class="col-md-4 mb-4" onclick="verCertificados()" style="cursor: pointer;">
-                    <div class="card p-4 text-center border-0 shadow-sm h-100 card-admin">
-                        <i class="bi bi-file-earmark-pdf-fill fs-2 mb-2" style="color: #e67e22;"></i>
-                        <h5 class="text-dark">Certificados</h5>
-                        <p class="small text-muted">Genera y descarga certificados oficiales.</p>
-                        <button class="btn btn-sm btn-outline-warning mt-auto w-100">Ver Certificados</button>
-                    </div>
-                </div>
-
-                <div class="col-md-4 mb-4" onclick="verNotificaciones()" style="cursor: pointer;">
-                    <div class="card p-4 text-center border-0 shadow-sm h-100 card-admin">
-                        <i class="bi bi-megaphone-fill fs-2 mb-2" style="color: #e67e22;"></i>
-                        <h5 class="text-dark">Notificaciones</h5>
-                        <p class="small text-muted">Envía comunicados a toda la institución.</p>
-                        <button class="btn btn-sm btn-outline-warning mt-auto w-100">Ver Notificaciones</button>
-=======
             <div class="row g-3 mb-3">
                 <div class="col-md-3">
                     <div class="card p-3 shadow-sm border-0 h-100 text-center card-hover card-admin" onclick="verMatricula()" style="cursor: pointer;">
                         <i class="bi bi-clipboard-check fs-2 mb-2" style="color: #e67e22;"></i>
                         <h6>Matrículas</h6>
+                        <p class="small text-muted mb-2">Consulta y gestiona las matrículas registradas.</p>
+                        <button class="btn btn-sm btn-outline-warning mt-auto w-100">Ver Matrículas</button>
                     </div>
                 </div>
 
                 <div class="col-md-3">
-                    <a href="/Admin/Usuarios" class="text-decoration-none h-100">
-                        <div class="card p-3 shadow-sm border-0 h-100 text-center card-hover card-admin">
-                            <i class="bi bi-people fs-2 mb-2" style="color: #e67e22;"></i>
-                            <h6 class="text-dark">Usuarios y Roles</h6>
-                        </div>
-                    </a>
+                    <div class="card p-3 shadow-sm border-0 h-100 text-center card-hover card-admin" onclick="location.href='@Url.Action("Usuarios", "Admin")'" style="cursor: pointer;">
+                        <i class="bi bi-people-fill fs-2 mb-2" style="color: #e67e22;"></i>
+                        <h6>Gestión de Usuarios</h6>
+                        <p class="small text-muted mb-2">Administra estudiantes, docentes y acudientes.</p>
+                        <button class="btn btn-sm btn-outline-warning mt-auto w-100">Ver Usuarios</button>
+                    </div>
                 </div>
 
                 <div class="col-md-3">
                     <div class="card p-3 shadow-sm border-0 h-100 text-center card-hover card-admin" onclick="verCertificados()" style="cursor: pointer;">
-                        <i class="bi bi-file-earmark-pdf fs-2 mb-2" style="color: #e67e22;"></i>
+                        <i class="bi bi-file-earmark-pdf-fill fs-2 mb-2" style="color: #e67e22;"></i>
                         <h6>Certificados</h6>
+                        <p class="small text-muted mb-2">Genera y descarga certificados oficiales.</p>
+                        <button class="btn btn-sm btn-outline-warning mt-auto w-100">Ver Certificados</button>
                     </div>
                 </div>
 
                 <div class="col-md-3">
                     <div class="card p-3 shadow-sm border-0 h-100 text-center card-hover card-admin" onclick="verNotificaciones()" style="cursor: pointer;">
-                        <i class="bi bi-megaphone fs-2 mb-2" style="color: #e67e22;"></i>
+                        <i class="bi bi-megaphone-fill fs-2 mb-2" style="color: #e67e22;"></i>
                         <h6>Notificaciones</h6>
-
+                        <p class="small text-muted mb-2">Envía comunicados a toda la institución.</p>
+                        <button class="btn btn-sm btn-outline-warning mt-auto w-100">Ver Notificaciones</button>
                     </div>
                 </div>
             </div>
 
-
-                <div class="col-md-4 mb-4" onclick="verAsignacion()" style="cursor: pointer;">
-                    <div class="card p-4 text-center border-0 shadow-sm h-100 card-admin">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="card p-3 shadow-sm border-0 h-100 text-center card-hover card-admin" onclick="verAsignacion()" style="cursor: pointer;">
                         <i class="bi bi-diagram-3-fill fs-2 mb-2" style="color: #e67e22;"></i>
-                        <h5 class="text-dark">Asignación Académica</h5>
-                        <p class="small text-muted">Asigna materias y grupos a los docentes.</p>
+                        <h6>Asignación Académica</h6>
+                        <p class="small text-muted mb-2">Asigna materias y grupos a los docentes.</p>
                         <button class="btn btn-sm btn-outline-warning mt-auto w-100">Ver Asignación</button>
                     </div>
                 </div>
 
-                <div class="col-md-4 mb-4" onclick="verReportes()" style="cursor: pointer;">
-                    <div class="card p-4 text-center border-0 shadow-sm h-100 card-admin">
+                <div class="col-md-4">
+                    <div class="card p-3 shadow-sm border-0 h-100 text-center card-hover card-admin" onclick="verReportes()" style="cursor: pointer;">
                         <i class="bi bi-graph-up-arrow fs-2 mb-2" style="color: #e67e22;"></i>
-                        <h5 class="text-dark">Reportes Pro</h5>
-                        <p class="small text-muted">Estadísticas generales de la institución.</p>
+                        <h6>Reportes Pro</h6>
+                        <p class="small text-muted mb-2">Estadísticas generales de la institución.</p>
                         <button class="btn btn-sm btn-outline-warning mt-auto w-100">Ver Reportes</button>
                     </div>
-=======
-            <div class="row g-3">
-                <div class="col-md-3">
-                    <div class="card p-3 shadow-sm border-0 h-100 text-center card-hover card-admin" onclick="verAsignacion()" style="cursor: pointer;">
-                        <i class="bi bi-diagram-3 fs-2 mb-2" style="color: #e67e22;"></i>
-                        <h6>Asignación Académica</h6>
-                    </div>
-                </div>
-
-                <div class="col-md-3">
-                    <a href="@Url.Action("ListaEstudiantes", "Admin")" class="text-decoration-none">
-                        <div class="card p-3 shadow-sm border-0 h-100 text-center card-hover card-admin">
-                            <i class="bi bi-people-fill fs-2 mb-2" style="color: #e67e22;"></i>
-                            <h6 class="text-dark">Gestionar Reportes</h6>
-                        </div>
-                    </a>
                 </div>
             </div>
         </div>
+
         <div id="admin-matricula" class="d-none">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h3 style="color: #e67e22;"><i class="bi bi-clipboard-check me-2"></i>Matrículas</h3>
@@ -209,8 +164,6 @@
                         <div>
                             <label class="form-label small mb-1">Filtrar por Grado</label>
 
-                            <select class="form-select form-select-sm">
-=======
                             <select id="filtroGrado" class="form-select form-select-sm" onchange="filtrarMatriculas()">
 
                                 <option>Todos los Grados</option>
@@ -225,8 +178,6 @@
                         <div>
                             <label class="form-label small mb-1">Estado</label>
 
-                            <select class="form-select form-select-sm">
-=======
                             <select id="filtroEstado" class="form-select form-select-sm" onchange="filtrarMatriculas()">
 
                                 <option>Cualquier Estado</option>
@@ -266,8 +217,6 @@
                                     var iniciales = string.Join("", mat.NombreEstudiante.Split(' ').Take(2).Select(p => p.Length > 0 ? p[0].ToString().ToUpper() : ""));
 
 
-                                    <tr>
-=======
                                     <tr data-grado="@mat.Grado" data-estado="@mat.Estado">
 
                                         <td class="px-3 py-3">
@@ -300,14 +249,6 @@
                         </tbody>
                     </table>
                 </div>
-
-=======
-
-                <div class="card-footer bg-white d-flex align-items-center justify-content-between">
-                    <p class="text-muted small mb-0">Mostrando las últimas @(listaMatriculas?.Count ?? 0) matrículas</p>
-                </div>
-            </div>
-        </div>
 
                 <div class="card-footer bg-white d-flex align-items-center justify-content-between">
                     <p class="text-muted small mb-0">Mostrando las últimas @(listaMatriculas?.Count ?? 0) matrículas</p>
@@ -390,9 +331,9 @@
 
     <div id="panel-docente" class="role-panel d-none">
 
-        <!-- ========================================== -->
+        <!--  -->
         <!-- 1. MENÚ PRINCIPAL DE TARJETA (DOCENTE MAIN) -->
-        <!-- ========================================== -->
+        <!--  -->
         <div id="docente-main">
             <h2 class="mb-4" style="color: #2980b9;"><i class="bi bi-person-badge-fill me-2"></i>Panel del Docente</h2>
 
@@ -448,9 +389,9 @@
                 </div>
             </div>
         </div>
-        <!-- ========================================== -->
+        <!--  -->
         <!-- 2. MÓDULOS INDEPENDIENTES Y COMPONENTES OCULTOS -->
-        <!-- ========================================== -->
+        <!--  -->
         <!-- Módulo Oculto de Acciones de Mejora (Docente) -->
         <div id="docente-mejoras" class="d-none">
             <div class="d-flex justify-content-between align-items-center mb-4">
@@ -639,68 +580,6 @@
         </div>
 
     </div> <!-- Cierre definitivo del panel-docente general -->
-
-    <div id="panel-acudiente" class="role-panel d-none">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 style="color: #27ae60;"><i class="bi bi-person-heart me-2"></i>Panel de Padres</h2>
-
-            <div class="d-flex align-items-center bg-success text-white px-3 py-1 rounded-pill shadow-sm">
-                <span class="small me-2 fw-bold">Hijo(a):</span>
-                <select id="selectHijo" class="form-select form-select-sm border-0 bg-transparent text-white p-0 fw-bold" style="box-shadow: none; cursor: pointer; min-width: 150px;">
-                    @if (ViewBag.ListaHijos != null)
-                    {
-                        foreach (var hijo in ViewBag.ListaHijos)
-                        {
-                            <option value="@hijo.ID_Usuario" class="text-dark">
-                                @hijo.NOMBRES @hijo.APELLIDOS
-                            </option>
-                        }
-                    }
-                    else
-                    {
-                        <option class="text-dark">Cargando estudiantes...</option>
-                    }
-                </select>
-            </div>
-        </div>
-
-        <div class="row g-3">
-            <div class="col-md-4">
-                <div class="card p-4 text-center border-0 shadow-sm card-hover" style="border-top: 4px solid #27ae60 !important;">
-                    <i class="bi bi-journal-text fs-2 mb-2" style="color: #27ae60;"></i>
-                    <h5>Ver Calificaciones</h5>
-                    <p class="small text-muted">Promedio actual: <strong class="text-success">@ViewBag.PromedioRapido</strong></p>
-                    <a id="btnVerNotas" href="#" class="btn btn-sm btn-outline-success">
-                        Ver Reporte
-                    </a>
-                </div>
-            </div>
-
-            <div class="col-md-4">
-                <div class="card p-4 text-center border-0 shadow-sm card-hover" style="border-top: 4px solid #27ae60 !important;">
-                    <i class="bi bi-calendar-check fs-2 mb-2" style="color: #27ae60;"></i>
-                    <h5>Asistencia</h5>
-                    <p class="small text-muted">Fallas registradas: <strong class="text-danger">@ViewBag.FallasRapidas</strong></p>
-                    <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#modalAsistencia">
-                        Ver Detalle
-                    </button>
-                </div>
-            </div>
-
-            <div class="col-md-4">
-                <div class="card p-4 text-center border-0 shadow-sm card-hover" style="border-top: 4px solid #27ae60 !important;">
-                    <i class="bi bi-chat-left-dots fs-2 mb-2" style="color: #27ae60;"></i>
-                    <h5>Citaciones</h5>
-                    <p class="small text-muted">Mensajes directos de los docentes.</p>
-                    <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#modalCitaciones">
-                        Ir a Mensajes
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-
 
     <div id="panel-acudiente" class="role-panel d-none">
         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -1132,36 +1011,6 @@
         </div>
     </div>
 
-
-    <div class="modal fade" id="modalCalificaciones" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header bg-success text-white">
-                    <h5 class="modal-title"><i class="bi bi-journal-text me-2"></i>Boletín de Calificaciones</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Materia/Asignatura</th>
-                                    <th>Tipo</th>
-                                    <th>Fecha</th>
-                                    <th class="text-center">Nota</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tablaNotasBody">
-                                <tr>
-                                    <td colspan="4" class="text-center text-muted">Cargando información...</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <div class="modal fade" id="modalCalificaciones" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg">
