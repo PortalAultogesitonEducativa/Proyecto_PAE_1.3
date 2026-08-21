@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using ProyectoPAE.Models;
 using ProyectoPAE.Servicios;
 using QRCoder;
+using Rotativa.AspNetCore;
 
 namespace ProyectoPAE.Controllers
 {
@@ -63,6 +64,40 @@ namespace ProyectoPAE.Controllers
             return RedirectToAction(nameof(Confirmacion), new { id = certificado.IdCertificado });
         }
 
+        // GET: /Certificado/GenerarMatricula?numeroDocumento=1122334455
+        [HttpGet]
+        public async Task<IActionResult> GenerarMatricula(string numeroDocumento)
+        {
+            if (string.IsNullOrWhiteSpace(numeroDocumento))
+            {
+                TempData["ErrorMatricula"] = "Debes ingresar el número de documento del estudiante.";
+                return RedirectToAction("Dashboard", "Home", new { rol = "admin" });
+            }
+
+            var usuario = await _context.Usuarios.FirstOrDefaultAsync(u =>
+                u.NUM_DOCUMENTO == numeroDocumento.Trim() &&
+                u.ROL != null && u.ROL.Trim().ToLower() == "estudiante");
+
+            if (usuario == null)
+            {
+                TempData["ErrorMatricula"] = $"No se encontró ningún estudiante matriculado con el número de documento '{numeroDocumento}'.";
+                return RedirectToAction("Dashboard", "Home", new { rol = "admin" });
+            }
+
+            var idUsuarioEmisor = HttpContext.Session.GetInt32("UserId") ?? 1;
+
+            try
+            {
+                var certificado = await _certificadoService.GenerarCertificadoMatriculaAsync(usuario.ID_Usuario, idUsuarioEmisor);
+                return RedirectToAction(nameof(Confirmacion), new { id = certificado.IdCertificado });
+            }
+            catch (InvalidOperationException ex)
+            {
+                TempData["ErrorMatricula"] = ex.Message;
+                return RedirectToAction("Dashboard", "Home", new { rol = "admin" });
+            }
+        }
+
         // GET: /Certificado/Confirmacion/3
         [HttpGet]
         public async Task<IActionResult> Confirmacion(int id)
@@ -84,6 +119,39 @@ namespace ProyectoPAE.Controllers
             ViewBag.UrlVerificacion = urlVerificacion;
 
             return View(certificado);
+        }
+
+        // GET: /Certificado/DescargarPdf/3
+        // Genera el mismo certificado que Confirmacion, pero como PDF descargable.
+        [HttpGet]
+        public async Task<IActionResult> DescargarPdf(int id)
+        {
+            var certificado = await _context.Certificados
+                .Include(c => c.Estudiante)
+                .Include(c => c.Detalles)
+                .FirstOrDefaultAsync(c => c.IdCertificado == id);
+
+            if (certificado == null) return NotFound();
+
+            string urlVerificacion = Url.Action(
+                nameof(VerificarCodigo), "Certificado",
+                new { codigo = certificado.CodigoVerificacion },
+                protocol: Request.Scheme);
+
+            ViewBag.UrlVerificacion = urlVerificacion;
+            ViewBag.QrBase64 = GenerarQRBase64(urlVerificacion);
+
+            string nombreArchivo = certificado.TipoCertificado == "Matricula"
+                ? $"ConstanciaMatricula_{certificado.IdCertificado}.pdf"
+                : $"Certificado_{certificado.IdCertificado}.pdf";
+
+            return new ViewAsPdf("DescargarPdf", certificado)
+            {
+                FileName = nombreArchivo,
+                PageOrientation = Rotativa.AspNetCore.Options.Orientation.Portrait,
+                PageSize = Rotativa.AspNetCore.Options.Size.A4,
+                CustomSwitches = "--allow ./"
+            };
         }
 
         /// <summary>

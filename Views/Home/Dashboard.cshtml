@@ -63,6 +63,42 @@
         <div id="admin-main">
             <h2 class="mb-4" style="color: #e67e22;"><i class="bi bi-gear-fill me-2"></i>Gestión Administrativa</h2>
 
+
+            <div class="row">
+                <div class="col-md-4 mb-4" onclick="verMatricula()" style="cursor: pointer;">
+                    <div class="card p-4 text-center border-0 shadow-sm h-100 card-admin">
+                        <i class="bi bi-clipboard-check fs-2 mb-2" style="color: #e67e22;"></i>
+                        <h5 class="text-dark">Matrículas</h5>
+                        <p class="small text-muted">Consulta y gestiona las matrículas registradas.</p>
+                        <button class="btn btn-sm btn-outline-warning mt-auto w-100">Ver Matrículas</button>
+                    </div>
+                </div>
+
+                <div class="col-md-4 mb-4" onclick="location.href='@Url.Action("Usuarios", "Admin")'" style="cursor: pointer;">
+                    <div class="card p-4 text-center border-0 shadow-sm h-100 card-admin">
+                        <i class="bi bi-people-fill fs-2 mb-2" style="color: #e67e22;"></i>
+                        <h5 class="text-dark">Gestión de Usuarios</h5>
+                        <p class="small text-muted">Administra estudiantes, docentes y acudientes.</p>
+                        <button class="btn btn-sm btn-outline-warning mt-auto w-100">Ver Usuarios</button>
+                    </div>
+                </div>
+
+                <div class="col-md-4 mb-4" onclick="verCertificados()" style="cursor: pointer;">
+                    <div class="card p-4 text-center border-0 shadow-sm h-100 card-admin">
+                        <i class="bi bi-file-earmark-pdf-fill fs-2 mb-2" style="color: #e67e22;"></i>
+                        <h5 class="text-dark">Certificados</h5>
+                        <p class="small text-muted">Genera y descarga certificados oficiales.</p>
+                        <button class="btn btn-sm btn-outline-warning mt-auto w-100">Ver Certificados</button>
+                    </div>
+                </div>
+
+                <div class="col-md-4 mb-4" onclick="verNotificaciones()" style="cursor: pointer;">
+                    <div class="card p-4 text-center border-0 shadow-sm h-100 card-admin">
+                        <i class="bi bi-megaphone-fill fs-2 mb-2" style="color: #e67e22;"></i>
+                        <h5 class="text-dark">Notificaciones</h5>
+                        <p class="small text-muted">Envía comunicados a toda la institución.</p>
+                        <button class="btn btn-sm btn-outline-warning mt-auto w-100">Ver Notificaciones</button>
+=======
             <div class="row g-3 mb-3">
                 <div class="col-md-3">
                     <div class="card p-3 shadow-sm border-0 h-100 text-center card-hover card-admin" onclick="verMatricula()" style="cursor: pointer;">
@@ -91,10 +127,29 @@
                     <div class="card p-3 shadow-sm border-0 h-100 text-center card-hover card-admin" onclick="verNotificaciones()" style="cursor: pointer;">
                         <i class="bi bi-megaphone fs-2 mb-2" style="color: #e67e22;"></i>
                         <h6>Notificaciones</h6>
+
                     </div>
                 </div>
             </div>
 
+
+                <div class="col-md-4 mb-4" onclick="verAsignacion()" style="cursor: pointer;">
+                    <div class="card p-4 text-center border-0 shadow-sm h-100 card-admin">
+                        <i class="bi bi-diagram-3-fill fs-2 mb-2" style="color: #e67e22;"></i>
+                        <h5 class="text-dark">Asignación Académica</h5>
+                        <p class="small text-muted">Asigna materias y grupos a los docentes.</p>
+                        <button class="btn btn-sm btn-outline-warning mt-auto w-100">Ver Asignación</button>
+                    </div>
+                </div>
+
+                <div class="col-md-4 mb-4" onclick="verReportes()" style="cursor: pointer;">
+                    <div class="card p-4 text-center border-0 shadow-sm h-100 card-admin">
+                        <i class="bi bi-graph-up-arrow fs-2 mb-2" style="color: #e67e22;"></i>
+                        <h5 class="text-dark">Reportes Pro</h5>
+                        <p class="small text-muted">Estadísticas generales de la institución.</p>
+                        <button class="btn btn-sm btn-outline-warning mt-auto w-100">Ver Reportes</button>
+                    </div>
+=======
             <div class="row g-3">
                 <div class="col-md-3">
                     <div class="card p-3 shadow-sm border-0 h-100 text-center card-hover card-admin" onclick="verAsignacion()" style="cursor: pointer;">
@@ -153,7 +208,11 @@
                     <div class="d-flex gap-3">
                         <div>
                             <label class="form-label small mb-1">Filtrar por Grado</label>
+
+                            <select class="form-select form-select-sm">
+=======
                             <select id="filtroGrado" class="form-select form-select-sm" onchange="filtrarMatriculas()">
+
                                 <option>Todos los Grados</option>
                                 <option>6</option>
                                 <option>7</option>
@@ -165,7 +224,11 @@
                         </div>
                         <div>
                             <label class="form-label small mb-1">Estado</label>
+
+                            <select class="form-select form-select-sm">
+=======
                             <select id="filtroEstado" class="form-select form-select-sm" onchange="filtrarMatriculas()">
+
                                 <option>Cualquier Estado</option>
                                 <option>Activa</option>
                                 <option>Finalizada</option>
@@ -202,7 +265,11 @@
                                     string colorTexto = mat.Estado == "Activa" ? "#0d2a4a" : "#6c757d";
                                     var iniciales = string.Join("", mat.NombreEstudiante.Split(' ').Take(2).Select(p => p.Length > 0 ? p[0].ToString().ToUpper() : ""));
 
+
+                                    <tr>
+=======
                                     <tr data-grado="@mat.Grado" data-estado="@mat.Estado">
+
                                         <td class="px-3 py-3">
                                             <div class="d-flex align-items-center gap-2">
                                                 <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width:40px;height:40px;background:@colorFondo;color:@colorTexto;">@iniciales</div>
@@ -234,21 +301,18 @@
                     </table>
                 </div>
 
+=======
+
                 <div class="card-footer bg-white d-flex align-items-center justify-content-between">
                     <p class="text-muted small mb-0">Mostrando las últimas @(listaMatriculas?.Count ?? 0) matrículas</p>
                 </div>
             </div>
         </div>
 
-        <div id="admin-usuarios" class="d-none">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h3 style="color: #e67e22;"><i class="bi bi-people-fill me-2"></i>Gestión de Usuarios</h3>
-                <button class="btn btn-outline-secondary btn-sm" onclick="volverAdmin()">Volver</button>
+                <div class="card-footer bg-white d-flex align-items-center justify-content-between">
+                    <p class="text-muted small mb-0">Mostrando las últimas @(listaMatriculas?.Count ?? 0) matrículas</p>
+                </div>
             </div>
-            <table class="table table-hover bg-white shadow-sm rounded">
-                <thead class="table-light"><tr><th>Usuario</th><th>Rol</th><th>Acciones</th></tr></thead>
-                <tbody><tr><td>admin_pae</td><td><span class="badge bg-warning">Admin</span></td><td><button class="btn btn-sm btn-light border">Editar</button></td></tr></tbody>
-            </table>
         </div>
 
         <div id="admin-certificados" class="d-none">
@@ -256,11 +320,28 @@
                 <h3 style="color: #e67e22;"><i class="bi bi-file-earmark-pdf-fill me-2"></i>Certificados</h3>
                 <button class="btn btn-outline-secondary btn-sm" onclick="volverAdmin()">Volver</button>
             </div>
-            <div class="card border-0 shadow-sm p-4">
-                <input type="text" class="form-control mb-3" placeholder="Buscar por documento...">
-                <div class="list-group">
-                    <button class="list-group-item list-group-item-action d-flex justify-content-between">Certificado de Matrícula <i class="bi bi-download text-danger"></i></button>
+
+            @if (TempData["ErrorMatricula"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    @TempData["ErrorMatricula"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
+            }
+
+            <div class="card border-0 shadow-sm p-4">
+                <h5 class="mb-3">Constancia de Matrícula</h5>
+                <form action="@Url.Action("GenerarMatricula", "Certificado")" method="get" class="row g-3 align-items-end">
+                    <div class="col-md-6">
+                        <label class="form-label small">Número de documento del estudiante (TI / CC)</label>
+                        <input type="text" name="numeroDocumento" class="form-control" placeholder="Ej: 1122334455" required />
+                    </div>
+                    <div class="col-md-6">
+                        <button type="submit" class="btn btn-warning text-white w-100">
+                            <i class="bi bi-file-earmark-pdf me-2"></i>Generar Constancia
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
 
@@ -293,7 +374,19 @@
                 <div class="col-md-6"><div class="card p-4 border-0 shadow-sm text-center"><h1 class="text-warning">4.1</h1><p>Promedio Institucional</p></div></div>
             </div>
         </div>
+
     </div>
+
+    @if (TempData.Peek("ErrorMatricula") != null)
+    {
+        <script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    mostrarAdminSub('admin-certificados');
+                });
+        </script>
+    }
+
+
 
     <div id="panel-docente" class="role-panel d-none">
 

@@ -339,6 +339,7 @@ CREATE TABLE [dbo].[ESTUDIANTE](
 	[email] [nvarchar](150) NOT NULL,
 	[fecha_inscripcion] [date] NOT NULL,
 	[codigo_estudiante] [nvarchar](20) NULL,
+	[id_usuario] [int] NULL,
 PRIMARY KEY CLUSTERED 
 (
 	[id_estudiante] ASC
@@ -611,6 +612,26 @@ CREATE TABLE [dbo].[GU_Usuario](
 	[FECHA_CREACION] [date] NOT NULL,
 	[ACTIVO] [bit] NOT NULL,
 	[ROL] [varchar](50) NULL,
+
+	[TELEFONO] [nvarchar](50) NULL,
+	[DIRECCION] [nvarchar](200) NULL,
+	[FOTO_URL] [nvarchar](500) NULL,
+	[TIPO_DOCUMENTO] [nvarchar](20) NULL,
+	[NUM_DOCUMENTO] [nvarchar](50) NULL,
+	[FECHA_NACIMIENTO] [date] NULL,
+	[GENERO] [nvarchar](20) NULL,
+	[LUGAR_NACIMIENTO] [nvarchar](100) NULL,
+	[CIUDAD] [nvarchar](100) NULL,
+	[BARRIO] [nvarchar](100) NULL,
+	[AREA_ASIGNATURA] [nvarchar](100) NULL,
+	[COLEGIO_PROCEDENCIA] [nvarchar](150) NULL,
+	[TIPO_SANGRE] [nvarchar](10) NULL,
+	[EPS] [nvarchar](100) NULL,
+	[ALERGIAS] [nvarchar](max) NULL,
+	[CONDICIONES_MEDICAS] [nvarchar](max) NULL,
+	[OBSERVACIONES] [nvarchar](max) NULL,
+	[FORZAR_CAMBIO_CLAVE] [bit] NOT NULL DEFAULT ((0)),
+=======
 	[DIRECCION] [varchar](250) NULL,
 	[FOTO_URL] [varchar](500) NULL,
 	[TELEFONO] [varchar](50) NULL,
@@ -721,6 +742,7 @@ CREATE TABLE [dbo].[PADRE_TUTOR](
 	[telefono] [nvarchar](20) NULL,
 	[email] [nvarchar](150) NULL,
 	[relacion_estudiante] [nvarchar](50) NOT NULL,
+	[id_usuario] [int] NULL,
 PRIMARY KEY CLUSTERED 
 (
 	[id_padre] ASC
@@ -757,6 +779,7 @@ CREATE TABLE [dbo].[PROFESOR](
 	[email] [nvarchar](150) NOT NULL,
 	[especialidad] [nvarchar](100) NULL,
 	[id_departamento] [int] NOT NULL,
+	[id_usuario] [int] NULL,
 PRIMARY KEY CLUSTERED 
 (
 	[id_profesor] ASC
@@ -849,6 +872,23 @@ SET IDENTITY_INSERT [dbo].[AULA] OFF
 GO
 SET IDENTITY_INSERT [dbo].[Calificaciones] ON 
 
+GO
+INSERT [dbo].[Calificaciones] ([ID_Calificacion], [ID_Estudiante], [Materia], [Nota], [Periodo], [FechaRegistro]) VALUES (1, 1, N'Matemáticas', CAST(4.50 AS Decimal(3, 2)), 1, CAST(N'2026-03-28T13:22:38.473' AS DateTime))
+GO
+INSERT [dbo].[Calificaciones] ([ID_Calificacion], [ID_Estudiante], [Materia], [Nota], [Periodo], [FechaRegistro]) VALUES (2, 1, N'Español', CAST(3.80 AS Decimal(3, 2)), 1, CAST(N'2026-03-28T13:22:38.473' AS DateTime))
+GO
+INSERT [dbo].[Calificaciones] ([ID_Calificacion], [ID_Estudiante], [Materia], [Nota], [Periodo], [FechaRegistro]) VALUES (6, 1, N'Matemáticas', CAST(3.50 AS Decimal(3, 2)), 1, CAST(N'2026-03-28T13:53:36.587' AS DateTime))
+GO
+INSERT [dbo].[Calificaciones] ([ID_Calificacion], [ID_Estudiante], [Materia], [Nota], [Periodo], [FechaRegistro]) VALUES (7, 1, N'Español', CAST(4.20 AS Decimal(3, 2)), 1, CAST(N'2026-03-28T14:02:46.433' AS DateTime))
+GO
+INSERT [dbo].[Calificaciones] ([ID_Calificacion], [ID_Estudiante], [Materia], [Nota], [Periodo], [FechaRegistro]) VALUES (8, 2, N'Inglés', CAST(3.50 AS Decimal(3, 2)), 1, CAST(N'2026-03-29T16:39:46.927' AS DateTime))
+GO
+INSERT [dbo].[Calificaciones] ([ID_Calificacion], [ID_Estudiante], [Materia], [Nota], [Periodo], [FechaRegistro]) VALUES (9, 2, N'Matemáticas', CAST(4.20 AS Decimal(3, 2)), 1, CAST(N'2026-03-30T12:43:05.713' AS DateTime))
+GO
+INSERT [dbo].[Calificaciones] ([ID_Calificacion], [ID_Estudiante], [Materia], [Nota], [Periodo], [FechaRegistro]) VALUES (10, 2, N'Inglés', CAST(3.50 AS Decimal(3, 2)), 1, CAST(N'2026-04-06T17:42:44.263' AS DateTime))
+GO
+=======
+
 INSERT [dbo].[Calificaciones] ([ID_Calificacion], [ID_Estudiante], [Materia], [Nota], [Periodo], [FechaRegistro]) VALUES (1, 6, N'Matemáticas', CAST(4.50 AS Decimal(3, 2)), 1, CAST(N'2026-03-28T13:22:38.473' AS DateTime))
 INSERT [dbo].[Calificaciones] ([ID_Calificacion], [ID_Estudiante], [Materia], [Nota], [Periodo], [FechaRegistro]) VALUES (2, 6, N'Español', CAST(3.80 AS Decimal(3, 2)), 1, CAST(N'2026-03-28T13:22:38.473' AS DateTime))
 INSERT [dbo].[Calificaciones] ([ID_Calificacion], [ID_Estudiante], [Materia], [Nota], [Periodo], [FechaRegistro]) VALUES (6, 6, N'Matemáticas', CAST(3.50 AS Decimal(3, 2)), 1, CAST(N'2026-03-28T13:53:36.587' AS DateTime))
@@ -856,6 +896,7 @@ INSERT [dbo].[Calificaciones] ([ID_Calificacion], [ID_Estudiante], [Materia], [N
 INSERT [dbo].[Calificaciones] ([ID_Calificacion], [ID_Estudiante], [Materia], [Nota], [Periodo], [FechaRegistro]) VALUES (8, 12, N'Inglés', CAST(3.50 AS Decimal(3, 2)), 1, CAST(N'2026-03-29T16:39:46.927' AS DateTime))
 INSERT [dbo].[Calificaciones] ([ID_Calificacion], [ID_Estudiante], [Materia], [Nota], [Periodo], [FechaRegistro]) VALUES (9, 12, N'Matemáticas', CAST(4.20 AS Decimal(3, 2)), 1, CAST(N'2026-03-30T12:43:05.713' AS DateTime))
 INSERT [dbo].[Calificaciones] ([ID_Calificacion], [ID_Estudiante], [Materia], [Nota], [Periodo], [FechaRegistro]) VALUES (10, 12, N'Inglés', CAST(3.50 AS Decimal(3, 2)), 1, CAST(N'2026-04-06T17:42:44.263' AS DateTime))
+
 SET IDENTITY_INSERT [dbo].[Calificaciones] OFF
 GO
 SET IDENTITY_INSERT [dbo].[CERTIFICADO] ON 
@@ -922,9 +963,14 @@ INSERT [dbo].[CERTIFICADO_DETALLE] ([id_detalle], [id_certificado], [id_califica
 INSERT [dbo].[CERTIFICADO_DETALLE] ([id_detalle], [id_certificado], [id_calificacion], [materia], [periodo], [nota_final], [estado_nota]) VALUES (43, 13, 2, N'Español', N'1', CAST(3.80 AS Decimal(5, 2)), N'Aprobado')
 SET IDENTITY_INSERT [dbo].[CERTIFICADO_DETALLE] OFF
 GO
+
+INSERT [dbo].[CITACION] ([id_citacion], [id_estudiante], [remitente], [asunto], [mensaje], [fecha], [leido]) VALUES (1, 1, N'Prof. Carlos Ruiz', N'Dificultades en Matemáticas', N'Se requiere una cita para hablar sobre el desempeño académico del estudiante.', CAST(N'2026-03-26T13:54:03.013' AS DateTime), 0)
+GO
+=======
 SET IDENTITY_INSERT [dbo].[CITACION] ON 
 
 INSERT [dbo].[CITACION] ([id_citacion], [id_estudiante], [remitente], [asunto], [mensaje], [fecha], [leido]) VALUES (1, 6, N'Prof. Carlos Ruiz', N'Dificultades en Matemáticas', N'Se requiere una cita para hablar sobre el desempeño académico del estudiante.', CAST(N'2026-03-26T13:54:03.013' AS DateTime), 0)
+
 SET IDENTITY_INSERT [dbo].[CITACION] OFF
 GO
 SET IDENTITY_INSERT [dbo].[CURSO] ON 
@@ -981,6 +1027,27 @@ GO
 SET IDENTITY_INSERT [dbo].[DOCUMENTO] ON 
 
 INSERT [dbo].[DOCUMENTO] ([id_documento], [titulo], [descripcion], [tipo_documento], [estado_documento], [version], [fecha_subida], [fecha_actualizacion], [id_usuario_autor], [nombre_archivo], [tipo_mime], [tamano_archivo], [archivo_url], [id_curso], [id_materia]) VALUES (1, N'Taller 1 - Álgebra Lineal', N'Ejercicios de vectores y operaciones matriciales para la semana 3', N'tarea', N'publicado', 1, CAST(N'2025-02-10' AS Date), CAST(N'2025-02-10' AS Date), 3, N'taller1_algebra.pdf', N'application/pdf', 204800, N'/archivos/2025/algebra/taller1_algebra.pdf', 10, 1)
+
+GO
+INSERT [dbo].[DOCUMENTO] ([id_documento], [titulo], [descripcion], [tipo_documento], [estado_documento], [version], [fecha_subida], [fecha_actualizacion], [id_usuario_autor], [nombre_archivo], [tipo_mime], [tamano_archivo], [archivo_url], [id_curso], [id_materia]) VALUES (2, N'Proyecto Final - Programación I', N'Especificación del proyecto integrador del semestre 2024-II', N'proyecto', N'publicado', 2, CAST(N'2024-08-01' AS Date), CAST(N'2024-09-15' AS Date), 1, N'proyecto_final_prog1.pdf', N'application/pdf', 512000, N'/archivos/2024-II/prog1/proyecto_final.pdf', 4, 7)
+GO
+INSERT [dbo].[DOCUMENTO] ([id_documento], [titulo], [descripcion], [tipo_documento], [estado_documento], [version], [fecha_subida], [fecha_actualizacion], [id_usuario_autor], [nombre_archivo], [tipo_mime], [tamano_archivo], [archivo_url], [id_curso], [id_materia]) VALUES (3, N'Examen Parcial - Física Mecánica', N'Evaluación parcial de mecánica clásica — capítulos 1 al 5', N'examen', N'archivado', 1, CAST(N'2024-03-05' AS Date), NULL, 4, N'parcial_fisica.pdf', N'application/pdf', 307200, N'/archivos/2024-I/fisica/parcial_fisica.pdf', 2, 3)
+GO
+INSERT [dbo].[DOCUMENTO] ([id_documento], [titulo], [descripcion], [tipo_documento], [estado_documento], [version], [fecha_subida], [fecha_actualizacion], [id_usuario_autor], [nombre_archivo], [tipo_mime], [tamano_archivo], [archivo_url], [id_curso], [id_materia]) VALUES (4, N'Material de Apoyo - Bases de Datos', N'Diapositivas del módulo de modelado entidad-relación', N'material', N'publicado', 3, CAST(N'2024-08-20' AS Date), CAST(N'2024-10-05' AS Date), 1, N'erd_slides.pptx', N'application/vnd.openxmlformats-officedocument.presentationml.presentation', 921600, N'/archivos/2024-II/bd/erd_slides.pptx', 6, 9)
+GO
+INSERT [dbo].[DOCUMENTO] ([id_documento], [titulo], [descripcion], [tipo_documento], [estado_documento], [version], [fecha_subida], [fecha_actualizacion], [id_usuario_autor], [nombre_archivo], [tipo_mime], [tamano_archivo], [archivo_url], [id_curso], [id_materia]) VALUES (5, N'Informe de Investigación - Historia', N'Trabajo escrito sobre la Primera Guerra Mundial por Santiago Pérez', N'tarea', N'publicado', 1, CAST(N'2024-04-20' AS Date), NULL, 2, N'informe_historia_sperez.docx', N'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 153600, N'/archivos/2024-I/historia/informe_historia_sperez.docx', 7, 6)
+GO
+INSERT [dbo].[DOCUMENTO] ([id_documento], [titulo], [descripcion], [tipo_documento], [estado_documento], [version], [fecha_subida], [fecha_actualizacion], [id_usuario_autor], [nombre_archivo], [tipo_mime], [tamano_archivo], [archivo_url], [id_curso], [id_materia]) VALUES (6, N'Taller 1 - Álgebra Lineal', N'Ejercicios de vectores y operaciones matriciales para la semana 3', N'tarea', N'publicado', 1, CAST(N'2025-02-10' AS Date), CAST(N'2025-02-10' AS Date), 3, N'taller1_algebra.pdf', N'application/pdf', 204800, N'/archivos/2025/algebra/taller1_algebra.pdf', 10, 1)
+GO
+INSERT [dbo].[DOCUMENTO] ([id_documento], [titulo], [descripcion], [tipo_documento], [estado_documento], [version], [fecha_subida], [fecha_actualizacion], [id_usuario_autor], [nombre_archivo], [tipo_mime], [tamano_archivo], [archivo_url], [id_curso], [id_materia]) VALUES (7, N'Proyecto Final - Programación I', N'Especificación del proyecto integrador del semestre 2024-II', N'proyecto', N'publicado', 2, CAST(N'2024-08-01' AS Date), CAST(N'2024-09-15' AS Date), 1, N'proyecto_final_prog1.pdf', N'application/pdf', 512000, N'/archivos/2024-II/prog1/proyecto_final.pdf', 4, 7)
+GO
+INSERT [dbo].[DOCUMENTO] ([id_documento], [titulo], [descripcion], [tipo_documento], [estado_documento], [version], [fecha_subida], [fecha_actualizacion], [id_usuario_autor], [nombre_archivo], [tipo_mime], [tamano_archivo], [archivo_url], [id_curso], [id_materia]) VALUES (8, N'Examen Parcial - Física Mecánica', N'Evaluación parcial de mecánica clásica — capítulos 1 al 5', N'examen', N'archivado', 1, CAST(N'2024-03-05' AS Date), NULL, 4, N'parcial_fisica.pdf', N'application/pdf', 307200, N'/archivos/2024-I/fisica/parcial_fisica.pdf', 2, 3)
+GO
+INSERT [dbo].[DOCUMENTO] ([id_documento], [titulo], [descripcion], [tipo_documento], [estado_documento], [version], [fecha_subida], [fecha_actualizacion], [id_usuario_autor], [nombre_archivo], [tipo_mime], [tamano_archivo], [archivo_url], [id_curso], [id_materia]) VALUES (9, N'Material de Apoyo - Bases de Datos', N'Diapositivas del módulo de modelado entidad-relación', N'material', N'publicado', 3, CAST(N'2024-08-20' AS Date), CAST(N'2024-10-05' AS Date), 1, N'erd_slides.pptx', N'application/vnd.openxmlformats-officedocument.presentationml.presentation', 921600, N'/archivos/2024-II/bd/erd_slides.pptx', 6, 9)
+GO
+INSERT [dbo].[DOCUMENTO] ([id_documento], [titulo], [descripcion], [tipo_documento], [estado_documento], [version], [fecha_subida], [fecha_actualizacion], [id_usuario_autor], [nombre_archivo], [tipo_mime], [tamano_archivo], [archivo_url], [id_curso], [id_materia]) VALUES (10, N'Informe de Investigación - Historia', N'Trabajo escrito sobre la Primera Guerra Mundial por Santiago Pérez', N'tarea', N'publicado', 1, CAST(N'2024-04-20' AS Date), NULL, 2, N'informe_historia_sperez.docx', N'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 153600, N'/archivos/2024-I/historia/informe_historia_sperez.docx', 7, 6)
+GO
+=======
 INSERT [dbo].[DOCUMENTO] ([id_documento], [titulo], [descripcion], [tipo_documento], [estado_documento], [version], [fecha_subida], [fecha_actualizacion], [id_usuario_autor], [nombre_archivo], [tipo_mime], [tamano_archivo], [archivo_url], [id_curso], [id_materia]) VALUES (2, N'Proyecto Final - Programación I', N'Especificación del proyecto integrador del semestre 2024-II', N'proyecto', N'publicado', 2, CAST(N'2024-08-01' AS Date), CAST(N'2024-09-15' AS Date), 5, N'proyecto_final_prog1.pdf', N'application/pdf', 512000, N'/archivos/2024-II/prog1/proyecto_final.pdf', 4, 7)
 INSERT [dbo].[DOCUMENTO] ([id_documento], [titulo], [descripcion], [tipo_documento], [estado_documento], [version], [fecha_subida], [fecha_actualizacion], [id_usuario_autor], [nombre_archivo], [tipo_mime], [tamano_archivo], [archivo_url], [id_curso], [id_materia]) VALUES (3, N'Examen Parcial - Física Mecánica', N'Evaluación parcial de mecánica clásica — capítulos 1 al 5', N'examen', N'archivado', 1, CAST(N'2024-03-05' AS Date), NULL, 4, N'parcial_fisica.pdf', N'application/pdf', 307200, N'/archivos/2024-I/fisica/parcial_fisica.pdf', 2, 3)
 INSERT [dbo].[DOCUMENTO] ([id_documento], [titulo], [descripcion], [tipo_documento], [estado_documento], [version], [fecha_subida], [fecha_actualizacion], [id_usuario_autor], [nombre_archivo], [tipo_mime], [tamano_archivo], [archivo_url], [id_curso], [id_materia]) VALUES (4, N'Material de Apoyo - Bases de Datos', N'Diapositivas del módulo de modelado entidad-relación', N'material', N'publicado', 3, CAST(N'2024-08-20' AS Date), CAST(N'2024-10-05' AS Date), 5, N'erd_slides.pptx', N'application/vnd.openxmlformats-officedocument.presentationml.presentation', 921600, N'/archivos/2024-II/bd/erd_slides.pptx', 6, 9)
@@ -990,6 +1057,7 @@ INSERT [dbo].[DOCUMENTO] ([id_documento], [titulo], [descripcion], [tipo_documen
 INSERT [dbo].[DOCUMENTO] ([id_documento], [titulo], [descripcion], [tipo_documento], [estado_documento], [version], [fecha_subida], [fecha_actualizacion], [id_usuario_autor], [nombre_archivo], [tipo_mime], [tamano_archivo], [archivo_url], [id_curso], [id_materia]) VALUES (8, N'Examen Parcial - Física Mecánica', N'Evaluación parcial de mecánica clásica — capítulos 1 al 5', N'examen', N'archivado', 1, CAST(N'2024-03-05' AS Date), NULL, 4, N'parcial_fisica.pdf', N'application/pdf', 307200, N'/archivos/2024-I/fisica/parcial_fisica.pdf', 2, 3)
 INSERT [dbo].[DOCUMENTO] ([id_documento], [titulo], [descripcion], [tipo_documento], [estado_documento], [version], [fecha_subida], [fecha_actualizacion], [id_usuario_autor], [nombre_archivo], [tipo_mime], [tamano_archivo], [archivo_url], [id_curso], [id_materia]) VALUES (9, N'Material de Apoyo - Bases de Datos', N'Diapositivas del módulo de modelado entidad-relación', N'material', N'publicado', 3, CAST(N'2024-08-20' AS Date), CAST(N'2024-10-05' AS Date), 5, N'erd_slides.pptx', N'application/vnd.openxmlformats-officedocument.presentationml.presentation', 921600, N'/archivos/2024-II/bd/erd_slides.pptx', 6, 9)
 INSERT [dbo].[DOCUMENTO] ([id_documento], [titulo], [descripcion], [tipo_documento], [estado_documento], [version], [fecha_subida], [fecha_actualizacion], [id_usuario_autor], [nombre_archivo], [tipo_mime], [tamano_archivo], [archivo_url], [id_curso], [id_materia]) VALUES (10, N'Informe de Investigación - Historia', N'Trabajo escrito sobre la Primera Guerra Mundial por Santiago Pérez', N'tarea', N'publicado', 1, CAST(N'2024-04-20' AS Date), NULL, 7, N'informe_historia_sperez.docx', N'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 153600, N'/archivos/2024-I/historia/informe_historia_sperez.docx', 7, 6)
+
 INSERT [dbo].[DOCUMENTO] ([id_documento], [titulo], [descripcion], [tipo_documento], [estado_documento], [version], [fecha_subida], [fecha_actualizacion], [id_usuario_autor], [nombre_archivo], [tipo_mime], [tamano_archivo], [archivo_url], [id_curso], [id_materia]) VALUES (11, N'Taller 2 - Álgebra Lineal', N'Ejercicios de transformaciones lineales semana 5', N'tarea', N'borrador', 1, CAST(N'2026-03-26' AS Date), NULL, 3, N'taller2_algebra.pdf', N'application/pdf', 204800, N'/archivos/2025/algebra/taller2_algebra.pdf', 10, 1)
 INSERT [dbo].[DOCUMENTO] ([id_documento], [titulo], [descripcion], [tipo_documento], [estado_documento], [version], [fecha_subida], [fecha_actualizacion], [id_usuario_autor], [nombre_archivo], [tipo_mime], [tamano_archivo], [archivo_url], [id_curso], [id_materia]) VALUES (12, N'Taller 2 - Álgebra Lineal', N'Ejercicios de transformaciones lineales semana 5', N'tarea', N'borrador', 1, CAST(N'2026-03-26' AS Date), NULL, 3, N'taller2_algebra.pdf', N'application/pdf', 204800, N'/archivos/2025/algebra/taller2_algebra.pdf', 10, 1)
 SET IDENTITY_INSERT [dbo].[DOCUMENTO] OFF
@@ -1031,6 +1099,31 @@ GO
 SET IDENTITY_INSERT [dbo].[DOCUMENTO_VERSION] ON 
 
 INSERT [dbo].[DOCUMENTO_VERSION] ([id_version], [id_documento], [numero_version], [archivo_url], [nombre_archivo], [fecha_version], [id_usuario], [notas_version]) VALUES (1, 1, 1, N'/archivos/2025/algebra/taller1_algebra_v1.pdf', N'taller1_algebra_v1.pdf', CAST(N'2025-02-10' AS Date), 3, N'Versión inicial publicada')
+
+GO
+INSERT [dbo].[DOCUMENTO_VERSION] ([id_version], [id_documento], [numero_version], [archivo_url], [nombre_archivo], [fecha_version], [id_usuario], [notas_version]) VALUES (2, 2, 1, N'/archivos/2024-II/prog1/proyecto_final_v1.pdf', N'proyecto_final_prog1_v1.pdf', CAST(N'2024-08-01' AS Date), 1, N'Borrador inicial')
+GO
+INSERT [dbo].[DOCUMENTO_VERSION] ([id_version], [id_documento], [numero_version], [archivo_url], [nombre_archivo], [fecha_version], [id_usuario], [notas_version]) VALUES (3, 2, 2, N'/archivos/2024-II/prog1/proyecto_final_v2.pdf', N'proyecto_final_prog1_v2.pdf', CAST(N'2024-09-15' AS Date), 1, N'Actualización de criterios de evaluación')
+GO
+INSERT [dbo].[DOCUMENTO_VERSION] ([id_version], [id_documento], [numero_version], [archivo_url], [nombre_archivo], [fecha_version], [id_usuario], [notas_version]) VALUES (4, 4, 1, N'/archivos/2024-II/bd/erd_slides_v1.pptx', N'erd_slides_v1.pptx', CAST(N'2024-08-20' AS Date), 1, N'Versión inicial')
+GO
+INSERT [dbo].[DOCUMENTO_VERSION] ([id_version], [id_documento], [numero_version], [archivo_url], [nombre_archivo], [fecha_version], [id_usuario], [notas_version]) VALUES (5, 4, 2, N'/archivos/2024-II/bd/erd_slides_v2.pptx', N'erd_slides_v2.pptx', CAST(N'2024-09-10' AS Date), 1, N'Corrección de diagramas')
+GO
+INSERT [dbo].[DOCUMENTO_VERSION] ([id_version], [id_documento], [numero_version], [archivo_url], [nombre_archivo], [fecha_version], [id_usuario], [notas_version]) VALUES (6, 4, 3, N'/archivos/2024-II/bd/erd_slides_v3.pptx', N'erd_slides_v3.pptx', CAST(N'2024-10-05' AS Date), 1, N'Añadidos ejemplos de normalización')
+GO
+INSERT [dbo].[DOCUMENTO_VERSION] ([id_version], [id_documento], [numero_version], [archivo_url], [nombre_archivo], [fecha_version], [id_usuario], [notas_version]) VALUES (7, 1, 1, N'/archivos/2025/algebra/taller1_algebra_v1.pdf', N'taller1_algebra_v1.pdf', CAST(N'2025-02-10' AS Date), 3, N'Versión inicial publicada')
+GO
+INSERT [dbo].[DOCUMENTO_VERSION] ([id_version], [id_documento], [numero_version], [archivo_url], [nombre_archivo], [fecha_version], [id_usuario], [notas_version]) VALUES (8, 2, 1, N'/archivos/2024-II/prog1/proyecto_final_v1.pdf', N'proyecto_final_prog1_v1.pdf', CAST(N'2024-08-01' AS Date), 1, N'Borrador inicial')
+GO
+INSERT [dbo].[DOCUMENTO_VERSION] ([id_version], [id_documento], [numero_version], [archivo_url], [nombre_archivo], [fecha_version], [id_usuario], [notas_version]) VALUES (9, 2, 2, N'/archivos/2024-II/prog1/proyecto_final_v2.pdf', N'proyecto_final_prog1_v2.pdf', CAST(N'2024-09-15' AS Date), 1, N'Actualización de criterios de evaluación')
+GO
+INSERT [dbo].[DOCUMENTO_VERSION] ([id_version], [id_documento], [numero_version], [archivo_url], [nombre_archivo], [fecha_version], [id_usuario], [notas_version]) VALUES (10, 4, 1, N'/archivos/2024-II/bd/erd_slides_v1.pptx', N'erd_slides_v1.pptx', CAST(N'2024-08-20' AS Date), 1, N'Versión inicial')
+GO
+INSERT [dbo].[DOCUMENTO_VERSION] ([id_version], [id_documento], [numero_version], [archivo_url], [nombre_archivo], [fecha_version], [id_usuario], [notas_version]) VALUES (11, 4, 2, N'/archivos/2024-II/bd/erd_slides_v2.pptx', N'erd_slides_v2.pptx', CAST(N'2024-09-10' AS Date), 1, N'Corrección de diagramas')
+GO
+INSERT [dbo].[DOCUMENTO_VERSION] ([id_version], [id_documento], [numero_version], [archivo_url], [nombre_archivo], [fecha_version], [id_usuario], [notas_version]) VALUES (12, 4, 3, N'/archivos/2024-II/bd/erd_slides_v3.pptx', N'erd_slides_v3.pptx', CAST(N'2024-10-05' AS Date), 1, N'Añadidos ejemplos de normalización')
+GO
+=======
 INSERT [dbo].[DOCUMENTO_VERSION] ([id_version], [id_documento], [numero_version], [archivo_url], [nombre_archivo], [fecha_version], [id_usuario], [notas_version]) VALUES (2, 2, 1, N'/archivos/2024-II/prog1/proyecto_final_v1.pdf', N'proyecto_final_prog1_v1.pdf', CAST(N'2024-08-01' AS Date), 5, N'Borrador inicial')
 INSERT [dbo].[DOCUMENTO_VERSION] ([id_version], [id_documento], [numero_version], [archivo_url], [nombre_archivo], [fecha_version], [id_usuario], [notas_version]) VALUES (3, 2, 2, N'/archivos/2024-II/prog1/proyecto_final_v2.pdf', N'proyecto_final_prog1_v2.pdf', CAST(N'2024-09-15' AS Date), 5, N'Actualización de criterios de evaluación')
 INSERT [dbo].[DOCUMENTO_VERSION] ([id_version], [id_documento], [numero_version], [archivo_url], [nombre_archivo], [fecha_version], [id_usuario], [notas_version]) VALUES (4, 4, 1, N'/archivos/2024-II/bd/erd_slides_v1.pptx', N'erd_slides_v1.pptx', CAST(N'2024-08-20' AS Date), 5, N'Versión inicial')
@@ -1042,6 +1135,7 @@ INSERT [dbo].[DOCUMENTO_VERSION] ([id_version], [id_documento], [numero_version]
 INSERT [dbo].[DOCUMENTO_VERSION] ([id_version], [id_documento], [numero_version], [archivo_url], [nombre_archivo], [fecha_version], [id_usuario], [notas_version]) VALUES (10, 4, 1, N'/archivos/2024-II/bd/erd_slides_v1.pptx', N'erd_slides_v1.pptx', CAST(N'2024-08-20' AS Date), 5, N'Versión inicial')
 INSERT [dbo].[DOCUMENTO_VERSION] ([id_version], [id_documento], [numero_version], [archivo_url], [nombre_archivo], [fecha_version], [id_usuario], [notas_version]) VALUES (11, 4, 2, N'/archivos/2024-II/bd/erd_slides_v2.pptx', N'erd_slides_v2.pptx', CAST(N'2024-09-10' AS Date), 5, N'Corrección de diagramas')
 INSERT [dbo].[DOCUMENTO_VERSION] ([id_version], [id_documento], [numero_version], [archivo_url], [nombre_archivo], [fecha_version], [id_usuario], [notas_version]) VALUES (12, 4, 3, N'/archivos/2024-II/bd/erd_slides_v3.pptx', N'erd_slides_v3.pptx', CAST(N'2024-10-05' AS Date), 5, N'Añadidos ejemplos de normalización')
+
 INSERT [dbo].[DOCUMENTO_VERSION] ([id_version], [id_documento], [numero_version], [archivo_url], [nombre_archivo], [fecha_version], [id_usuario], [notas_version]) VALUES (13, 11, 1, N'/archivos/2025/algebra/taller2_algebra.pdf', N'taller2_algebra.pdf', CAST(N'2026-03-26' AS Date), 3, N'Versión inicial publicada.')
 INSERT [dbo].[DOCUMENTO_VERSION] ([id_version], [id_documento], [numero_version], [archivo_url], [nombre_archivo], [fecha_version], [id_usuario], [notas_version]) VALUES (14, 12, 1, N'/archivos/2025/algebra/taller2_algebra.pdf', N'taller2_algebra.pdf', CAST(N'2026-03-26' AS Date), 3, N'Versión inicial publicada.')
 SET IDENTITY_INSERT [dbo].[DOCUMENTO_VERSION] OFF
@@ -1133,6 +1227,47 @@ SET IDENTITY_INSERT [dbo].[GU_DETALLE_ROL] OFF
 GO
 SET IDENTITY_INSERT [dbo].[GU_HISTORIAL_PASSWORD] ON 
 
+GO
+INSERT [dbo].[GU_HISTORIAL_PASSWORD] ([id_historial], [id_usuario], [contrasena_hash], [fecha_cambio]) VALUES (1, 1, N'$2b$12$OldHash001ForLaura', CAST(N'2023-01-16T08:00:00.000' AS DateTime))
+GO
+INSERT [dbo].[GU_HISTORIAL_PASSWORD] ([id_historial], [id_usuario], [contrasena_hash], [fecha_cambio]) VALUES (2, 1, N'$2b$12$NewHash001ForLaura', CAST(N'2024-06-01T09:00:00.000' AS DateTime))
+GO
+INSERT [dbo].[GU_HISTORIAL_PASSWORD] ([id_historial], [id_usuario], [contrasena_hash], [fecha_cambio]) VALUES (3, 2, N'$2b$12$OldHash002ForSantiago', CAST(N'2023-01-16T08:00:00.000' AS DateTime))
+GO
+INSERT [dbo].[GU_HISTORIAL_PASSWORD] ([id_historial], [id_usuario], [contrasena_hash], [fecha_cambio]) VALUES (4, 1, N'$2b$12$OldHash001ForLaura', CAST(N'2023-01-16T08:00:00.000' AS DateTime))
+GO
+INSERT [dbo].[GU_HISTORIAL_PASSWORD] ([id_historial], [id_usuario], [contrasena_hash], [fecha_cambio]) VALUES (5, 1, N'$2b$12$NewHash001ForLaura', CAST(N'2024-06-01T09:00:00.000' AS DateTime))
+GO
+INSERT [dbo].[GU_HISTORIAL_PASSWORD] ([id_historial], [id_usuario], [contrasena_hash], [fecha_cambio]) VALUES (6, 2, N'$2b$12$OldHash002ForSantiago', CAST(N'2023-01-16T08:00:00.000' AS DateTime))
+GO
+SET IDENTITY_INSERT [dbo].[GU_HISTORIAL_PASSWORD] OFF
+GO
+SET IDENTITY_INSERT [dbo].[GU_INTENTOS_LOGIN] ON 
+GO
+INSERT [dbo].[GU_INTENTOS_LOGIN] ([id_intento], [id_usuario], [fecha_intento], [exitoso], [ip_origen], [bloqueado_hasta]) VALUES (1, 1, CAST(N'2025-03-10T07:15:00.000' AS DateTime), 1, N'192.168.1.10', NULL)
+GO
+INSERT [dbo].[GU_INTENTOS_LOGIN] ([id_intento], [id_usuario], [fecha_intento], [exitoso], [ip_origen], [bloqueado_hasta]) VALUES (2, 2, CAST(N'2025-03-10T07:22:00.000' AS DateTime), 1, N'192.168.1.11', NULL)
+GO
+INSERT [dbo].[GU_INTENTOS_LOGIN] ([id_intento], [id_usuario], [fecha_intento], [exitoso], [ip_origen], [bloqueado_hasta]) VALUES (3, 1, CAST(N'2025-03-11T08:00:00.000' AS DateTime), 0, N'192.168.1.10', NULL)
+GO
+INSERT [dbo].[GU_INTENTOS_LOGIN] ([id_intento], [id_usuario], [fecha_intento], [exitoso], [ip_origen], [bloqueado_hasta]) VALUES (4, 1, CAST(N'2025-03-11T08:01:00.000' AS DateTime), 0, N'192.168.1.10', NULL)
+GO
+INSERT [dbo].[GU_INTENTOS_LOGIN] ([id_intento], [id_usuario], [fecha_intento], [exitoso], [ip_origen], [bloqueado_hasta]) VALUES (5, 1, CAST(N'2025-03-11T08:01:30.000' AS DateTime), 1, N'192.168.1.10', NULL)
+GO
+INSERT [dbo].[GU_INTENTOS_LOGIN] ([id_intento], [id_usuario], [fecha_intento], [exitoso], [ip_origen], [bloqueado_hasta]) VALUES (6, 3, CAST(N'2025-03-12T06:55:00.000' AS DateTime), 1, N'190.10.20.30', NULL)
+GO
+INSERT [dbo].[GU_INTENTOS_LOGIN] ([id_intento], [id_usuario], [fecha_intento], [exitoso], [ip_origen], [bloqueado_hasta]) VALUES (7, 1, CAST(N'2025-03-10T07:15:00.000' AS DateTime), 1, N'192.168.1.10', NULL)
+GO
+INSERT [dbo].[GU_INTENTOS_LOGIN] ([id_intento], [id_usuario], [fecha_intento], [exitoso], [ip_origen], [bloqueado_hasta]) VALUES (8, 2, CAST(N'2025-03-10T07:22:00.000' AS DateTime), 1, N'192.168.1.11', NULL)
+GO
+INSERT [dbo].[GU_INTENTOS_LOGIN] ([id_intento], [id_usuario], [fecha_intento], [exitoso], [ip_origen], [bloqueado_hasta]) VALUES (9, 1, CAST(N'2025-03-11T08:00:00.000' AS DateTime), 0, N'192.168.1.10', NULL)
+GO
+INSERT [dbo].[GU_INTENTOS_LOGIN] ([id_intento], [id_usuario], [fecha_intento], [exitoso], [ip_origen], [bloqueado_hasta]) VALUES (10, 1, CAST(N'2025-03-11T08:01:00.000' AS DateTime), 0, N'192.168.1.10', NULL)
+GO
+INSERT [dbo].[GU_INTENTOS_LOGIN] ([id_intento], [id_usuario], [fecha_intento], [exitoso], [ip_origen], [bloqueado_hasta]) VALUES (11, 1, CAST(N'2025-03-11T08:01:30.000' AS DateTime), 1, N'192.168.1.10', NULL)
+GO
+=======
+
 INSERT [dbo].[GU_HISTORIAL_PASSWORD] ([id_historial], [id_usuario], [contrasena_hash], [fecha_cambio]) VALUES (1, 6, N'$2b$12$OldHash001ForLaura', CAST(N'2023-01-16T08:00:00.000' AS DateTime))
 INSERT [dbo].[GU_HISTORIAL_PASSWORD] ([id_historial], [id_usuario], [contrasena_hash], [fecha_cambio]) VALUES (2, 6, N'$2b$12$NewHash001ForLaura', CAST(N'2024-06-01T09:00:00.000' AS DateTime))
 INSERT [dbo].[GU_HISTORIAL_PASSWORD] ([id_historial], [id_usuario], [contrasena_hash], [fecha_cambio]) VALUES (3, 7, N'$2b$12$OldHash002ForSantiago', CAST(N'2023-01-16T08:00:00.000' AS DateTime))
@@ -1154,6 +1289,7 @@ INSERT [dbo].[GU_INTENTOS_LOGIN] ([id_intento], [id_usuario], [fecha_intento], [
 INSERT [dbo].[GU_INTENTOS_LOGIN] ([id_intento], [id_usuario], [fecha_intento], [exitoso], [ip_origen], [bloqueado_hasta]) VALUES (9, 6, CAST(N'2025-03-11T08:00:00.000' AS DateTime), 0, N'192.168.1.10', NULL)
 INSERT [dbo].[GU_INTENTOS_LOGIN] ([id_intento], [id_usuario], [fecha_intento], [exitoso], [ip_origen], [bloqueado_hasta]) VALUES (10, 6, CAST(N'2025-03-11T08:01:00.000' AS DateTime), 0, N'192.168.1.10', NULL)
 INSERT [dbo].[GU_INTENTOS_LOGIN] ([id_intento], [id_usuario], [fecha_intento], [exitoso], [ip_origen], [bloqueado_hasta]) VALUES (11, 6, CAST(N'2025-03-11T08:01:30.000' AS DateTime), 1, N'192.168.1.10', NULL)
+
 INSERT [dbo].[GU_INTENTOS_LOGIN] ([id_intento], [id_usuario], [fecha_intento], [exitoso], [ip_origen], [bloqueado_hasta]) VALUES (12, 3, CAST(N'2025-03-12T06:55:00.000' AS DateTime), 1, N'190.10.20.30', NULL)
 INSERT [dbo].[GU_INTENTOS_LOGIN] ([id_intento], [id_usuario], [fecha_intento], [exitoso], [ip_origen], [bloqueado_hasta]) VALUES (13, 2, CAST(N'2026-03-26T14:59:23.113' AS DateTime), 0, NULL, NULL)
 SET IDENTITY_INSERT [dbo].[GU_INTENTOS_LOGIN] OFF
@@ -1225,8 +1361,16 @@ SET IDENTITY_INSERT [dbo].[GU_PERMISO] OFF
 GO
 SET IDENTITY_INSERT [dbo].[GU_RECUPERACION_PASSWORD] ON 
 
+GO
+INSERT [dbo].[GU_RECUPERACION_PASSWORD] ([id_recuperacion], [id_usuario], [token], [fecha_expiracion], [fecha_solicitud], [fecha_uso], [id_solicitante], [usado]) VALUES (1, 1, N'tok-abc123xyz-unique-2025-001', CAST(N'2025-02-01T10:00:00.000' AS DateTime), CAST(N'2025-02-01T09:00:00.000' AS DateTime), CAST(N'2025-02-01T09:45:00.000' AS DateTime), NULL, 1)
+GO
+INSERT [dbo].[GU_RECUPERACION_PASSWORD] ([id_recuperacion], [id_usuario], [token], [fecha_expiracion], [fecha_solicitud], [fecha_uso], [id_solicitante], [usado]) VALUES (2, 2, N'tok-def456uvw-unique-2025-002', CAST(N'2025-03-05T15:00:00.000' AS DateTime), CAST(N'2025-03-05T14:00:00.000' AS DateTime), NULL, NULL, 0)
+GO
+=======
+
 INSERT [dbo].[GU_RECUPERACION_PASSWORD] ([id_recuperacion], [id_usuario], [token], [fecha_expiracion], [fecha_solicitud], [fecha_uso], [id_solicitante], [usado]) VALUES (1, 7, N'tok-abc123xyz-unique-2025-001', CAST(N'2025-02-01T10:00:00.000' AS DateTime), CAST(N'2025-02-01T09:00:00.000' AS DateTime), CAST(N'2025-02-01T09:45:00.000' AS DateTime), NULL, 1)
 INSERT [dbo].[GU_RECUPERACION_PASSWORD] ([id_recuperacion], [id_usuario], [token], [fecha_expiracion], [fecha_solicitud], [fecha_uso], [id_solicitante], [usado]) VALUES (2, 8, N'tok-def456uvw-unique-2025-002', CAST(N'2025-03-05T15:00:00.000' AS DateTime), CAST(N'2025-03-05T14:00:00.000' AS DateTime), NULL, NULL, 0)
+
 SET IDENTITY_INSERT [dbo].[GU_RECUPERACION_PASSWORD] OFF
 GO
 SET IDENTITY_INSERT [dbo].[GU_ROL] ON 
@@ -1269,6 +1413,26 @@ INSERT [dbo].[GU_ROL_PERMISO] ([id_rol], [id_permiso], [fecha_asignacion]) VALUE
 GO
 SET IDENTITY_INSERT [dbo].[GU_Usuario] ON 
 
+GO
+INSERT [dbo].[GU_Usuario] ([ID_Usuario], [NOMBRE_USUARIO], [NOMBRES], [APELLIDOS], [CORREO_ELECTRONICO], [CONTRASEÑA], [FECHA_CREACION], [ACTIVO], [ROL]) VALUES (1, N'admin', N'Administrador', N'Sistema', N'admin@colegio.edu.co', N'admin123', CAST(N'2023-01-01' AS Date), 1, N'admin')
+GO
+INSERT [dbo].[GU_Usuario] ([ID_Usuario], [NOMBRE_USUARIO], [NOMBRES], [APELLIDOS], [CORREO_ELECTRONICO], [CONTRASEÑA], [FECHA_CREACION], [ACTIVO], [ROL]) VALUES (2, N'coord.academico', N'Juan Pablo', N'Nieto', N'jp.nieto@colegio.edu.co', N'$2b$12$CoordHash001', CAST(N'2023-01-05' AS Date), 1, N'admin')
+GO
+INSERT [dbo].[GU_Usuario] ([ID_Usuario], [NOMBRE_USUARIO], [NOMBRES], [APELLIDOS], [CORREO_ELECTRONICO], [CONTRASEÑA], [FECHA_CREACION], [ACTIVO], [ROL]) VALUES (3, N'admin.mendoza', N'Carlos', N'Mendoza', N'c.mendoza@colegio.edu.co', N'$2b$12$ProfHash001', CAST(N'2023-01-10' AS Date), 1, N'admin')
+GO
+INSERT [dbo].[GU_Usuario] ([ID_Usuario], [NOMBRE_USUARIO], [NOMBRES], [APELLIDOS], [CORREO_ELECTRONICO], [CONTRASEÑA], [FECHA_CREACION], [ACTIVO], [ROL]) VALUES (4, N'admin.rios', N'Adriana', N'Ríos', N'a.rios@colegio.edu.co', N'$2b$12$ProfHash002', CAST(N'2023-01-10' AS Date), 1, N'admin')
+GO
+SET IDENTITY_INSERT [dbo].[GU_Usuario] OFF
+GO
+INSERT [dbo].[GU_USUARIO_ROL] ([id_usuario], [id_rol], [fecha_asignacion]) VALUES (1, 1, CAST(N'2023-01-01' AS Date))
+GO
+INSERT [dbo].[GU_USUARIO_ROL] ([id_usuario], [id_rol], [fecha_asignacion]) VALUES (2, 1, CAST(N'2023-01-05' AS Date))
+GO
+INSERT [dbo].[GU_USUARIO_ROL] ([id_usuario], [id_rol], [fecha_asignacion]) VALUES (3, 1, CAST(N'2023-01-10' AS Date))
+GO
+INSERT [dbo].[GU_USUARIO_ROL] ([id_usuario], [id_rol], [fecha_asignacion]) VALUES (4, 1, CAST(N'2023-01-10' AS Date))
+=======
+
 INSERT [dbo].[GU_Usuario] ([ID_Usuario], [NOMBRE_USUARIO], [NOMBRES], [APELLIDOS], [CORREO_ELECTRONICO], [CONTRASEÑA], [FECHA_CREACION], [ACTIVO], [ROL], [DIRECCION], [FOTO_URL], [TELEFONO]) VALUES (1, N'admin', N'Administrador', N'Sistema', N'admin@colegio.edu.co', N'admin123', CAST(N'2023-01-01' AS Date), 1, N'admin', NULL, NULL, NULL)
 INSERT [dbo].[GU_Usuario] ([ID_Usuario], [NOMBRE_USUARIO], [NOMBRES], [APELLIDOS], [CORREO_ELECTRONICO], [CONTRASEÑA], [FECHA_CREACION], [ACTIVO], [ROL], [DIRECCION], [FOTO_URL], [TELEFONO]) VALUES (2, N'coord.academico', N'Juan Pablo', N'Nieto', N'jp.nieto@colegio.edu.co', N'$2b$12$CoordHash001', CAST(N'2023-01-05' AS Date), 1, N'admin', NULL, NULL, NULL)
 INSERT [dbo].[GU_Usuario] ([ID_Usuario], [NOMBRE_USUARIO], [NOMBRES], [APELLIDOS], [CORREO_ELECTRONICO], [CONTRASEÑA], [FECHA_CREACION], [ACTIVO], [ROL], [DIRECCION], [FOTO_URL], [TELEFONO]) VALUES (3, N'prof.mendoza', N'Carlos', N'Mendoza', N'c.mendoza@colegio.edu.co', N'$2b$12$ProfHash001', CAST(N'2023-01-10' AS Date), 1, N'docente', NULL, NULL, NULL)
@@ -1292,6 +1456,7 @@ INSERT [dbo].[GU_USUARIO_ROL] ([id_usuario], [id_rol], [fecha_asignacion]) VALUE
 INSERT [dbo].[GU_USUARIO_ROL] ([id_usuario], [id_rol], [fecha_asignacion]) VALUES (8, 4, CAST(N'2023-01-16' AS Date))
 INSERT [dbo].[GU_USUARIO_ROL] ([id_usuario], [id_rol], [fecha_asignacion]) VALUES (9, 5, CAST(N'2023-01-20' AS Date))
 INSERT [dbo].[GU_USUARIO_ROL] ([id_usuario], [id_rol], [fecha_asignacion]) VALUES (10, 5, CAST(N'2023-01-20' AS Date))
+
 GO
 SET IDENTITY_INSERT [dbo].[HORARIO] ON 
 
@@ -5256,7 +5421,223 @@ TieneMenu;
 
 END;
 
+-- ============================================================================
+-- MIGRACIÓN / ACTUALIZACIÓN: Columnas adicionales para GU_Usuario
+-- ============================================================================
+IF EXISTS (SELECT * FROM sys.tables WHERE name = 'GU_Usuario')
+BEGIN
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('GU_Usuario') AND name = 'TELEFONO')
+        ALTER TABLE [dbo].[GU_Usuario] ADD [TELEFONO] [nvarchar](50) NULL;
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('GU_Usuario') AND name = 'DIRECCION')
+        ALTER TABLE [dbo].[GU_Usuario] ADD [DIRECCION] [nvarchar](200) NULL;
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('GU_Usuario') AND name = 'FOTO_URL')
+        ALTER TABLE [dbo].[GU_Usuario] ADD [FOTO_URL] [nvarchar](500) NULL;
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('GU_Usuario') AND name = 'TIPO_DOCUMENTO')
+        ALTER TABLE [dbo].[GU_Usuario] ADD [TIPO_DOCUMENTO] [nvarchar](20) NULL;
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('GU_Usuario') AND name = 'NUM_DOCUMENTO')
+        ALTER TABLE [dbo].[GU_Usuario] ADD [NUM_DOCUMENTO] [nvarchar](50) NULL;
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('GU_Usuario') AND name = 'FECHA_NACIMIENTO')
+        ALTER TABLE [dbo].[GU_Usuario] ADD [FECHA_NACIMIENTO] [date] NULL;
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('GU_Usuario') AND name = 'GENERO')
+        ALTER TABLE [dbo].[GU_Usuario] ADD [GENERO] [nvarchar](20) NULL;
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('GU_Usuario') AND name = 'LUGAR_NACIMIENTO')
+        ALTER TABLE [dbo].[GU_Usuario] ADD [LUGAR_NACIMIENTO] [nvarchar](100) NULL;
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('GU_Usuario') AND name = 'CIUDAD')
+        ALTER TABLE [dbo].[GU_Usuario] ADD [CIUDAD] [nvarchar](100) NULL;
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('GU_Usuario') AND name = 'BARRIO')
+        ALTER TABLE [dbo].[GU_Usuario] ADD [BARRIO] [nvarchar](100) NULL;
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('GU_Usuario') AND name = 'AREA_ASIGNATURA')
+        ALTER TABLE [dbo].[GU_Usuario] ADD [AREA_ASIGNATURA] [nvarchar](100) NULL;
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('GU_Usuario') AND name = 'COLEGIO_PROCEDENCIA')
+        ALTER TABLE [dbo].[GU_Usuario] ADD [COLEGIO_PROCEDENCIA] [nvarchar](150) NULL;
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('GU_Usuario') AND name = 'TIPO_SANGRE')
+        ALTER TABLE [dbo].[GU_Usuario] ADD [TIPO_SANGRE] [nvarchar](10) NULL;
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('GU_Usuario') AND name = 'EPS')
+        ALTER TABLE [dbo].[GU_Usuario] ADD [EPS] [nvarchar](100) NULL;
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('GU_Usuario') AND name = 'ALERGIAS')
+        ALTER TABLE [dbo].[GU_Usuario] ADD [ALERGIAS] [nvarchar](max) NULL;
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('GU_Usuario') AND name = 'CONDICIONES_MEDICAS')
+        ALTER TABLE [dbo].[GU_Usuario] ADD [CONDICIONES_MEDICAS] [nvarchar](max) NULL;
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('GU_Usuario') AND name = 'OBSERVACIONES')
+        ALTER TABLE [dbo].[GU_Usuario] ADD [OBSERVACIONES] [nvarchar](max) NULL;
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('GU_Usuario') AND name = 'FORZAR_CAMBIO_CLAVE')
+        ALTER TABLE [dbo].[GU_Usuario] ADD [FORZAR_CAMBIO_CLAVE] [bit] NOT NULL DEFAULT ((0));
+END
 GO
+
+IF EXISTS (SELECT * FROM sys.tables WHERE name = 'ESTUDIANTE')
+BEGIN
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('ESTUDIANTE') AND name = 'id_usuario')
+        ALTER TABLE [dbo].[ESTUDIANTE] ADD [id_usuario] [int] NULL;
+END
+GO
+
+IF EXISTS (SELECT * FROM sys.tables WHERE name = 'PADRE_TUTOR')
+BEGIN
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('PADRE_TUTOR') AND name = 'id_usuario')
+        ALTER TABLE [dbo].[PADRE_TUTOR] ADD [id_usuario] [int] NULL;
+END
+GO
+
+IF EXISTS (SELECT * FROM sys.tables WHERE name = 'PROFESOR')
+BEGIN
+    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('PROFESOR') AND name = 'id_usuario')
+        ALTER TABLE [dbo].[PROFESOR] ADD [id_usuario] [int] NULL;
+END
+GO
+
+-- ============================================================================
+-- AUTOMÁTICO: SINCRONIZAR ESTUDIANTES, PADRES Y PROFESORES A GU_Usuario
+-- ============================================================================
+
+-- 1. Sincronizar PROFESORES existentes con GU_Usuario
+IF EXISTS (SELECT * FROM sys.tables WHERE name = 'PROFESOR')
+BEGIN
+    DECLARE @id_profesor INT, @nombre_doc NVARCHAR(80), @apellido_doc NVARCHAR(80), @email_doc NVARCHAR(150), @telefono_doc NVARCHAR(20), @direccion_doc NVARCHAR(200), @especialidad_doc NVARCHAR(100);
+    DECLARE @id_usuario_doc INT;
+
+    DECLARE curProf CURSOR FOR
+        SELECT id_profesor, nombre, apellido, email, telefono, direccion, especialidad
+        FROM [dbo].[PROFESOR]
+        WHERE id_usuario IS NULL OR NOT EXISTS (SELECT 1 FROM GU_Usuario WHERE ID_Usuario = id_usuario);
+
+    OPEN curProf;
+    FETCH NEXT FROM curProf INTO @id_profesor, @nombre_doc, @apellido_doc, @email_doc, @telefono_doc, @direccion_doc, @especialidad_doc;
+
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+        SET @id_usuario_doc = NULL;
+        SELECT @id_usuario_doc = ID_Usuario FROM GU_Usuario WHERE CORREO_ELECTRONICO = @email_doc;
+        
+        IF @id_usuario_doc IS NULL
+        BEGIN
+            INSERT INTO GU_Usuario (
+                NOMBRE_USUARIO, CONTRASEÑA, NOMBRES, APELLIDOS, CORREO_ELECTRONICO,
+                FECHA_CREACION, ACTIVO, ROL, TELEFONO, DIRECCION, AREA_ASIGNATURA, FORZAR_CAMBIO_CLAVE
+            )
+            VALUES (
+                @email_doc,
+                '$2b$12$123456789012345678901uDefaultHashForDocente',
+                @nombre_doc, @apellido_doc, @email_doc,
+                GETDATE(), 1, 'docente', @telefono_doc, @direccion_doc, @especialidad_doc, 1
+            );
+            SET @id_usuario_doc = SCOPE_IDENTITY();
+        END
+        ELSE
+        BEGIN
+            UPDATE GU_Usuario 
+            SET ROL = 'docente' 
+            WHERE ID_Usuario = @id_usuario_doc AND (ROL IS NULL OR ROL = '');
+        END
+
+        UPDATE [dbo].[PROFESOR]
+        SET id_usuario = @id_usuario_doc
+        WHERE id_profesor = @id_profesor;
+
+        FETCH NEXT FROM curProf INTO @id_profesor, @nombre_doc, @apellido_doc, @email_doc, @telefono_doc, @direccion_doc, @especialidad_doc;
+    END;
+
+    CLOSE curProf;
+    DEALLOCATE curProf;
+END
+GO
+
+-- 2. Sincronizar ESTUDIANTES existentes con GU_Usuario
+IF EXISTS (SELECT * FROM sys.tables WHERE name = 'ESTUDIANTE')
+BEGIN
+    DECLARE @id_estudiante INT, @nombre_est NVARCHAR(80), @apellido_est NVARCHAR(80), @email_est NVARCHAR(150), @telefono_est NVARCHAR(20), @direccion_est NVARCHAR(200), @fecha_nac_est DATE;
+    DECLARE @id_usuario_est INT;
+
+    DECLARE curEstudiantes CURSOR FOR
+        SELECT id_estudiante, nombre, apellido, email, telefono, direccion, fecha_nacimiento
+        FROM [dbo].[ESTUDIANTE]
+        WHERE id_usuario IS NULL OR NOT EXISTS (SELECT 1 FROM GU_Usuario WHERE ID_Usuario = id_usuario);
+
+    OPEN curEstudiantes;
+    FETCH NEXT FROM curEstudiantes INTO @id_estudiante, @nombre_est, @apellido_est, @email_est, @telefono_est, @direccion_est, @fecha_nac_est;
+
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+        SET @id_usuario_est = NULL;
+        SELECT @id_usuario_est = ID_Usuario FROM GU_Usuario WHERE CORREO_ELECTRONICO = @email_est;
+        
+        IF @id_usuario_est IS NULL
+        BEGIN
+            INSERT INTO GU_Usuario (
+                NOMBRE_USUARIO, CONTRASEÑA, NOMBRES, APELLIDOS, CORREO_ELECTRONICO,
+                FECHA_CREACION, ACTIVO, ROL, TELEFONO, DIRECCION, FECHA_NACIMIENTO, FORZAR_CAMBIO_CLAVE
+            )
+            VALUES (
+                @email_est,
+                '$2b$12$123456789012345678901uDefaultHashForEstudiante',
+                @nombre_est, @apellido_est, @email_est,
+                GETDATE(), 1, 'estudiante', @telefono_est, @direccion_est, @fecha_nac_est, 1
+            );
+            SET @id_usuario_est = SCOPE_IDENTITY();
+        END
+
+        UPDATE [dbo].[ESTUDIANTE]
+        SET id_usuario = @id_usuario_est
+        WHERE id_estudiante = @id_estudiante;
+
+        FETCH NEXT FROM curEstudiantes INTO @id_estudiante, @nombre_est, @apellido_est, @email_est, @telefono_est, @direccion_est, @fecha_nac_est;
+    END;
+
+    CLOSE curEstudiantes;
+    DEALLOCATE curEstudiantes;
+END
+GO
+
+-- 3. Sincronizar PADRES/ACUDIENTES existentes con GU_Usuario
+IF EXISTS (SELECT * FROM sys.tables WHERE name = 'PADRE_TUTOR')
+BEGIN
+    DECLARE @id_padre INT, @nombre_p NVARCHAR(80), @apellido_p NVARCHAR(80), @email_p NVARCHAR(150), @telefono_p NVARCHAR(20);
+    DECLARE @id_usuario_padre INT;
+
+    DECLARE curPadres CURSOR FOR
+        SELECT id_padre, nombre, apellido, email, telefono
+        FROM [dbo].[PADRE_TUTOR]
+        WHERE id_usuario IS NULL OR NOT EXISTS (SELECT 1 FROM GU_Usuario WHERE ID_Usuario = id_usuario);
+
+    OPEN curPadres;
+    FETCH NEXT FROM curPadres INTO @id_padre, @nombre_p, @apellido_p, @email_p, @telefono_p;
+
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+        SET @id_usuario_padre = NULL;
+        IF @email_p IS NOT NULL AND @email_p <> ''
+            SELECT @id_usuario_padre = ID_Usuario FROM GU_Usuario WHERE CORREO_ELECTRONICO = @email_p;
+        
+        IF @id_usuario_padre IS NULL
+        BEGIN
+            DECLARE @username_p NVARCHAR(150) = ISNULL(NULLIF(@email_p, ''), LOWER(REPLACE(@nombre_p, ' ', '')) + '.' + LOWER(REPLACE(@apellido_p, ' ', '')) + CAST(@id_padre AS NVARCHAR(10)) + '@colegio.edu.co');
+            DECLARE @correo_p NVARCHAR(150) = ISNULL(NULLIF(@email_p, ''), @username_p);
+
+            INSERT INTO GU_Usuario (
+                NOMBRE_USUARIO, CONTRASEÑA, NOMBRES, APELLIDOS, CORREO_ELECTRONICO,
+                FECHA_CREACION, ACTIVO, ROL, TELEFONO, FORZAR_CAMBIO_CLAVE
+            )
+            VALUES (
+                @username_p,
+                '$2b$12$123456789012345678901uDefaultHashForAcudiente',
+                @nombre_p, @apellido_p, @correo_p,
+                GETDATE(), 1, 'acudiente', @telefono_p, 1
+            );
+            SET @id_usuario_padre = SCOPE_IDENTITY();
+        END
+
+        UPDATE [dbo].[PADRE_TUTOR]
+        SET id_usuario = @id_usuario_padre
+        WHERE id_padre = @id_padre;
+
+        FETCH NEXT FROM curPadres INTO @id_padre, @nombre_p, @apellido_p, @email_p, @telefono_p;
+    END;
+
+    CLOSE curPadres;
+    DEALLOCATE curPadres;
+END
+GO
+
 USE [master]
 GO
 ALTER DATABASE [GestionAcademica] SET  READ_WRITE 
