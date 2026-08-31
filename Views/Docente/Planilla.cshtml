@@ -1,86 +1,161 @@
 @model List<ProyectoPAE.Models.Usuario>
 @{
-    ViewData["Title"] = "Planilla de Notas";
+    ViewData["Title"] = "Planilla de Calificaciones";
 }
 
 <div class="p-4" style="max-width:1200px;margin:0 auto;">
 
-    <!-- Encabezado / Banner superior -->
-    <div class="rounded-3 mb-4 p-4 d-flex justify-content-between align-items-center" style="background-color:#0d2a4a;">
-        <div>
-            <h1 class="text-white fw-bold mb-1">Planilla de Calificaciones</h1>
-            <p class="text-white mb-0" style="opacity:0.8;">Gestiona las notas de tus estudiantes en tiempo real.</p>
-        </div>
-        <a href="@Url.Action("Dashboard", "Home")" class="btn btn-outline-light btn-sm">
-            <i class="bi bi-arrow-left me-1"></i> Volver al Dashboard
+    <!-- 1. Encabezado con Título e Icono + Botón Volver -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 style="color: #2980b9;" class="fw-bold mb-0">
+            <i class="bi bi-pencil-square me-2"></i>Planilla de Calificaciones
+        </h3>
+        <a href="@Url.Action("Dashboard", "Home")" class="btn btn-outline-secondary btn-sm">
+            Volver
         </a>
     </div>
 
-    <!-- Tabla de Calificaciones -->
-    <div class="bg-white rounded-3 shadow-sm border overflow-hidden">
-        <div class="p-3 border-bottom d-flex align-items-center justify-content-between" style="background-color:#f8f9fa;">
+    <!-- 2. Banners de Notificación de Éxito o Error -->
+    @if (TempData["MensajeNota"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show mb-4 shadow-sm" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["MensajeNota"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["ErrorNota"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show mb-4 shadow-sm" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["ErrorNota"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- 3. Filtros de Asignatura y Periodo -->
+    <div class="card border-0 shadow-sm p-4 mb-4">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label fw-bold text-dark">Asignatura</label>
+                <select class="form-select" id="selectAsignatura" name="selectAsignatura">
+                    <option value="Matemáticas - 6°A">Matemáticas - 6°A</option>
+                    <option value="Español - 6°A">Español - 6°A</option>
+                    <option value="Ciencias - 6°A">Ciencias - 6°A</option>
+                    <option value="Inglés - 6°A">Inglés - 6°A</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label fw-bold text-dark">Periodo</label>
+                <select class="form-select" id="selectPeriodo" name="selectPeriodo">
+                    <option value="1">Primer Periodo</option>
+                    <option value="2">Segundo Periodo</option>
+                    <option value="3">Tercer Periodo</option>
+                    <option value="4">Cuarto Periodo</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Tabla de Calificaciones y Botón Agregar Nota -->
+    <div class="card border-0 shadow-sm overflow-hidden mb-4">
+        <div class="p-3 border-bottom d-flex align-items-center justify-content-between bg-light">
             <h5 class="fw-bold mb-0 text-dark">Estudiantes Inscritos (@(Model?.Count ?? 0))</h5>
-        </div>
-
-        <div class="table-responsive">
-            <table class="table align-middle mb-0 table-hover" id="tablaPlanilla">
-                <thead class="table-dark">
-                    <tr>
-                        <th class="ps-3">Estudiante</th>
-                        <th class="text-center" style="width: 150px;">Tarea 1</th>
-                        <th class="text-center" style="width: 150px;">Examen</th>
-                        <th class="text-center" style="width: 150px;">Actitudinal</th>
-                        <th class="text-center" style="width: 130px;">Definitiva</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @if (Model != null && Model.Any())
-                    {
-                        foreach (var estudiante in Model)
-                        {
-                            <tr>
-                                <td class="ps-3 fw-bold">@estudiante.NOMBRES @estudiante.APELLIDOS</td>
-                                <td>
-                                    <input type="number" class="form-control form-control-sm text-center nota-input" value="0.0" step="0.1" min="0" max="5">
-                                </td>
-                                <td>
-                                    <input type="number" class="form-control form-control-sm text-center nota-input" value="0.0" step="0.1" min="0" max="5">
-                                </td>
-                                <td>
-                                    <input type="number" class="form-control form-control-sm text-center nota-input" value="0.0" step="0.1" min="0" max="5">
-                                </td>
-                                <td class="text-center">
-                                    <span class="badge bg-danger fs-6 nota-definitiva">0.0</span>
-                                </td>
-                            </tr>
-                        }
-                    }
-                    else
-                    {
-                        <tr>
-                            <td colspan="5" class="text-center text-muted py-4">No hay estudiantes registrados.</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-
-        <div class="p-3 bg-light text-end border-top">
-            <button class="btn btn-primary fw-bold" style="background-color:#0d2a4a; border:none;">
-                <i class="bi bi-save me-2"></i>Guardar Calificaciones
+            <button type="button" class="btn btn-sm btn-success fw-bold" id="btnAgregarNota">
+                <i class="bi bi-plus-circle me-1"></i> Agregar Nota
             </button>
         </div>
+
+        <form action="@Url.Action("GuardarNota", "Docente")" method="post">
+            @Html.AntiForgeryToken()
+            <div class="table-responsive">
+                <table class="table align-middle mb-0 table-hover" id="tablaPlanilla">
+                    <thead class="table-dark">
+                        <tr>
+                            <th class="ps-3">Estudiante</th>
+                            <th class="text-center" style="width: 170px;">
+                                <span class="titulo-col">Tarea 1</span>
+                                <button type="button" class="btn btn-sm btn-outline-warning text-white p-0 px-1 ms-1 btn-editar-col" title="Renombrar nota">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-danger text-white p-0 px-1 ms-1 btn-eliminar-col" title="Eliminar nota">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </th>
+                            <th class="text-center" style="width: 170px;">
+                                <span class="titulo-col">Examen</span>
+                                <button type="button" class="btn btn-sm btn-outline-warning text-white p-0 px-1 ms-1 btn-editar-col" title="Renombrar nota">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-danger text-white p-0 px-1 ms-1 btn-eliminar-col" title="Eliminar nota">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </th>
+                            <th class="text-center" style="width: 170px;">
+                                <span class="titulo-col">Actitudinal</span>
+                                <button type="button" class="btn btn-sm btn-outline-warning text-white p-0 px-1 ms-1 btn-editar-col" title="Renombrar nota">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-danger text-white p-0 px-1 ms-1 btn-eliminar-col" title="Eliminar nota">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </th>
+                            <th class="text-center" style="width: 130px;">Definitiva</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            foreach (var estudiante in Model)
+                            {
+                                <tr>
+                                    <td class="ps-3 fw-bold">
+                                        <input type="hidden" name="estudiante_id" value="@estudiante.ID_Usuario" />
+                                        @estudiante.NOMBRES @estudiante.APELLIDOS
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control form-control-sm text-center nota-input" value="0.0" step="0.1" min="0" max="5">
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control form-control-sm text-center nota-input" value="0.0" step="0.1" min="0" max="5">
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control form-control-sm text-center nota-input" value="0.0" step="0.1" min="0" max="5">
+                                    </td>
+                                    <td class="text-center">
+                                        <input type="hidden" name="nota_valor" class="input-nota-valor" value="0.0" />
+                                        <span class="badge bg-danger fs-6 nota-definitiva">0.0</span>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">No hay estudiantes registrados.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Botón Guardar Calificaciones (CRUD) -->
+            <div class="p-3 bg-light text-end border-top">
+                <button type="submit" class="btn btn-primary fw-bold">
+                    <i class="bi bi-save me-2"></i>Guardar Calificaciones
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 
-<!-- Script de cálculo automático de notas definitivas -->
+<!-- Lógica interactiva en JavaScript -->
 <script>
     document.addEventListener("DOMContentLoaded", function () {
 
-        // Función que calcula el promedio de notas para la fila de un estudiante
+        // 1. Calcular promedio con validación de 0.0 a 5.0
         function calcularDefinitiva(fila) {
             const inputs = fila.querySelectorAll('.nota-input');
             const badgeDefinitiva = fila.querySelector('.nota-definitiva');
+            const hiddenValor = fila.querySelector('.input-nota-valor');
             
             if (!inputs.length || !badgeDefinitiva) return;
 
@@ -88,8 +163,12 @@
             let cantidad = 0;
 
             inputs.forEach(input => {
-                // Convierte la nota a decimal soportando coma y punto ("4,5" o "4.5")
-                const val = parseFloat(input.value.toString().replace(',', '.'));
+                let val = parseFloat(input.value.toString().replace(',', '.'));
+                
+                // Rango máximo 5.0 y mínimo 0.0
+                if (val > 5.0) { val = 5.0; input.value = "5.0"; }
+                if (val < 0.0) { val = 0.0; input.value = "0.0"; }
+
                 if (!isNaN(val)) {
                     suma += val;
                     cantidad++;
@@ -97,11 +176,13 @@
             });
 
             if (cantidad > 0) {
-                // Calcula el promedio a 1 decimal
                 const promedio = (suma / cantidad).toFixed(1);
                 badgeDefinitiva.textContent = promedio;
 
-                // Asigna verde si aprueba (>= 3.0) o rojo si reprueba (< 3.0)
+                if (hiddenValor) {
+                    hiddenValor.value = promedio;
+                }
+
                 badgeDefinitiva.className = parseFloat(promedio) >= 3.0 
                     ? "badge bg-success fs-6 nota-definitiva" 
                     : "badge bg-danger fs-6 nota-definitiva";
@@ -110,10 +191,8 @@
 
         const tabla = document.getElementById('tablaPlanilla');
         if (tabla) {
-            // 1. Calcula las definitivas al cargar la pantalla
             tabla.querySelectorAll('tbody tr').forEach(fila => calcularDefinitiva(fila));
 
-            // 2. Recalcula automáticamente al escribir (input) o usar las flechas del mouse (change)
             ['input', 'change'].forEach(evento => {
                 tabla.addEventListener(evento, function (e) {
                     if (e.target.classList.contains('nota-input')) {
@@ -122,5 +201,87 @@
                 });
             });
         }
+
+        // 2. AGREGAR COLUMNA CON TÍTULO PERSONALIZADO Y BOTONES EDITAR / ELIMINAR
+        let contadorNotas = 2;
+        const btnAgregar = document.getElementById('btnAgregarNota');
+
+        if (btnAgregar) {
+            btnAgregar.addEventListener('click', function () {
+                const nombreCalificacion = prompt("Escriba el nombre de la nueva calificación:", `Nota ${contadorNotas}`);
+                if (nombreCalificacion === null) return;
+
+                const tituloFinal = nombreCalificacion.trim() || `Nota ${contadorNotas}`;
+                contadorNotas++;
+
+                const trHeader = document.querySelector('#tablaPlanilla thead tr');
+                const thDefinitiva = trHeader.lastElementChild;
+                
+                const nuevoTh = document.createElement('th');
+                nuevoTh.className = 'text-center';
+                nuevoTh.style.width = '170px';
+                nuevoTh.innerHTML = `
+                    <span class="titulo-col">${tituloFinal}</span>
+                    <button type="button" class="btn btn-sm btn-outline-warning text-white p-0 px-1 ms-1 btn-editar-col" title="Renombrar nota">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-danger text-white p-0 px-1 ms-1 btn-eliminar-col" title="Eliminar nota">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                `;
+                
+                trHeader.insertBefore(nuevoTh, thDefinitiva);
+
+                const filasBody = document.querySelectorAll('#tablaPlanilla tbody tr');
+                filasBody.forEach(fila => {
+                    const tdDefinitiva = fila.lastElementChild;
+                    
+                    const nuevoTd = document.createElement('td');
+                    nuevoTd.innerHTML = `<input type="number" class="form-control form-control-sm text-center nota-input" value="0.0" step="0.1" min="0" max="5">`;
+                    
+                    fila.insertBefore(nuevoTd, tdDefinitiva);
+                    calcularDefinitiva(fila);
+                });
+            });
+        }
+
+        // 3. EDITAR / RENOMBRAR TÍTULO DE NOTA
+        document.addEventListener('click', function (e) {
+            const btnEditar = e.target.closest('.btn-editar-col');
+            if (btnEditar) {
+                const th = btnEditar.closest('th');
+                const spanTitulo = th.querySelector('.titulo-col');
+                const tituloActual = spanTitulo ? spanTitulo.textContent.trim() : 'Nota';
+
+                const nuevoNombre = prompt("Escriba el nuevo nombre para esta calificación:", tituloActual);
+                if (nuevoNombre !== null && nuevoNombre.trim() !== "") {
+                    if (spanTitulo) {
+                        spanTitulo.textContent = nuevoNombre.trim();
+                    }
+                }
+            }
+        });
+
+        // 4. ELIMINAR COLUMNA DE NOTA CON BOTÓN DE BASURA
+        document.addEventListener('click', function (e) {
+            const btnEliminar = e.target.closest('.btn-eliminar-col');
+            if (btnEliminar) {
+                const th = btnEliminar.closest('th');
+                const spanTitulo = th.querySelector('.titulo-col');
+                const nombreCol = spanTitulo ? spanTitulo.textContent.trim() : 'esta nota';
+                const colIndex = th.cellIndex;
+
+                if (confirm(`¿Desea eliminar la columna "${nombreCol}"?`)) {
+                    th.remove();
+
+                    document.querySelectorAll('#tablaPlanilla tbody tr').forEach(fila => {
+                        if (fila.cells[colIndex]) {
+                            fila.cells[colIndex].remove();
+                            calcularDefinitiva(fila);
+                        }
+                    });
+                }
+            }
+        });
     });
 </script>

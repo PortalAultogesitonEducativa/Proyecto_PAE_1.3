@@ -517,7 +517,7 @@
 
             <div class="row">
                 <!-- Tarjeta: Planilla de Notas (Actualizado para usar la vista interna) -->
-                <div class="col-md-4 mb-4" onclick="verPlanilla()" style="cursor: pointer;">
+                <div class="col-md-4 mb-4" onclick="location.href='@Url.Action("Planilla", "Docente")'" style="cursor: pointer;">
                     <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover" style="border-top: 4px solid #2980b9 !important;">
                         <i class="bi bi-clipboard-check fs-2 mb-2" style="color: #2980b9;"></i>
                         <h5 class="text-dark">Planilla de Notas</h5>
@@ -669,19 +669,20 @@
                         </tr>
                     </thead>
                     <tbody>
+                        <!-- (David) Se agregan las clases nota-input y nota-definitiva -->
                         <tr>
                             <td class="ps-3 fw-bold">Ospina Juan Pablo</td>
-                            <td><input type="number" class="form-control form-control-sm text-center" value="4.5" step="0.1"></td>
-                            <td><input type="number" class="form-control form-control-sm text-center" value="3.8" step="0.1"></td>
-                            <td><input type="number" class="form-control form-control-sm text-center" value="5.0" step="0.1"></td>
-                            <td class="text-center"><span class="badge bg-success fs-6">4.2</span></td>
+                            <td><input type="number" class="form-control form-control-sm text-center nota-input" value="4.5" step="0.1"></td>
+                            <td><input type="number" class="form-control form-control-sm text-center nota-input" value="3.8" step="0.1"></td>
+                            <td><input type="number" class="form-control form-control-sm text-center nota-input" value="5.0" step="0.1"></td>
+                            <td class="text-center"><span class="badge bg-success fs-6 nota-definitiva">4.4</span></td>
                         </tr>
                         <tr>
                             <td class="ps-3 fw-bold">García María</td>
-                            <td><input type="number" class="form-control form-control-sm text-center" value="3.0" step="0.1"></td>
-                            <td><input type="number" class="form-control form-control-sm text-center" value="2.5" step="0.1"></td>
-                            <td><input type="number" class="form-control form-control-sm text-center" value="4.0" step="0.1"></td>
-                            <td class="text-center"><span class="badge bg-danger fs-6">2.9</span></td>
+                            <td><input type="number" class="form-control form-control-sm text-center nota-input" value="3.0" step="0.1"></td>
+                            <td><input type="number" class="form-control form-control-sm text-center nota-input" value="2.5" step="0.1"></td>
+                            <td><input type="number" class="form-control form-control-sm text-center nota-input" value="4.0" step="0.1"></td>
+                            <td class="text-center"><span class="badge bg-danger fs-6 nota-definitiva">3.2</span></td>
                         </tr>
                     </tbody>
                 </table>
@@ -1195,6 +1196,43 @@
             actualizarEnlace();
             selectHijo.addEventListener("change", actualizarEnlace);
         }
+
+        // --- (David) CÁLCULO AUTOMÁTICO DE NOTA DEFINITIVA EN TIEMPO REAL ---
+        function calcularDefinitiva(fila) {
+            const inputs = fila.querySelectorAll('.nota-input');
+            const badgeDefinitiva = fila.querySelector('.nota-definitiva');
+            if (!inputs.length || !badgeDefinitiva) return;
+
+            let suma = 0, cantidad = 0;
+            inputs.forEach(input => {
+                const val = parseFloat(input.value.toString().replace(',', '.'));
+                if (!isNaN(val)) { suma += val; cantidad++; }
+            });
+
+            if (cantidad > 0) {
+                const promedio = (suma / cantidad).toFixed(1);
+                badgeDefinitiva.textContent = promedio;
+                badgeDefinitiva.className = parseFloat(promedio) >= 3.0 
+                    ? "badge bg-success fs-6 nota-definitiva" 
+                    : "badge bg-danger fs-6 nota-definitiva";
+            }
+        }
+
+        // (David) Recalcular automáticamente al iniciar la pantalla
+        document.querySelectorAll('tr').forEach(fila => {
+            if (fila.querySelector('.nota-input')) {
+                calcularDefinitiva(fila);
+            }
+        });
+
+        // (David) Escuchar cambios al escribir o usar flechas del mouse
+        ['input', 'change'].forEach(evento => {
+            document.addEventListener(evento, function (e) {
+                if (e.target.classList.contains('nota-input')) {
+                    calcularDefinitiva(e.target.closest('tr'));
+                }
+            });
+        });
     });
 </script>
 
