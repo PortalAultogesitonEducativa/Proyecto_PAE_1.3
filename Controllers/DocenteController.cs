@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using ProyectoPAE.Models;
 using Microsoft.EntityFrameworkCore;
 using Rotativa.AspNetCore;
@@ -23,25 +23,81 @@ namespace ProyectoPAE.Controllers
         }
 
         [HttpPost]
-        public IActionResult GuardarNota(int ID_Estudiante, string Materia, string Nota, int Periodo)
+        public IActionResult GuardarNota(int? ID_Estudiante, string Materia, string Nota, int? Periodo)
         {
-            // 1. Convertimos el texto de la nota a decimal usando el formato universal (punto)
-            decimal notaDecimal = decimal.Parse(Nota.Replace(",", "."), System.Globalization.CultureInfo.InvariantCulture);
-
-            var nuevaNota = new Calificacion
+            try
             {
-                ID_Estudiante = ID_Estudiante,
-                Materia = Materia,
-                Nota = notaDecimal, // Usamos el valor ya convertido
-                Periodo = Periodo,
-                FechaRegistro = DateTime.Now
-            };
+                // --- (David) GUARDADO Y PROCESAMIENTO DE CALIFICACIONES CON NOTIFICACIONES ---
+                string materiaSel = !string.IsNullOrEmpty(Materia) ? Materia : Request.Form["selectAsignatura"].ToString();
+                if (string.IsNullOrEmpty(materiaSel)) materiaSel = "Matemáticas - 6°A";
 
-            _context.Calificaciones.Add(nuevaNota);
-            _context.SaveChanges();
+                int periodoVal = Periodo ?? 1;
+                if (Request.Form.ContainsKey("selectPeriodo") && int.TryParse(Request.Form["selectPeriodo"], out int pParsed))
+                {
+                    periodoVal = pParsed;
+                }
+
+                // 1. Si se envía una nota individual
+                if (ID_Estudiante.HasValue && !string.IsNullOrEmpty(Nota))
+                {
+                    decimal notaDecimal = decimal.Parse(Nota.Replace(",", "."), System.Globalization.CultureInfo.InvariantCulture);
+                    if (notaDecimal >= 0 && notaDecimal <= 5)
+                    {
+                        var nuevaNota = new Calificacion
+                        {
+                            ID_Estudiante = ID_Estudiante.Value,
+                            Materia = materiaSel,
+                            Nota = notaDecimal,
+                            Periodo = periodoVal,
+                            FechaRegistro = DateTime.Now
+                        };
+                        _context.Calificaciones.Add(nuevaNota);
+                    }
+                }
+                // 2. Si se envía el formulario desde la planilla
+                else
+                {
+                    var estudianteIds = Request.Form["estudiante_id"];
+                    var notasDefinitivas = Request.Form["nota_valor"];
+
+                    if (estudianteIds.Count > 0)
+                    {
+                        for (int i = 0; i < estudianteIds.Count; i++)
+                        {
+                            if (int.TryParse(estudianteIds[i], out int estId))
+                            {
+                                string strNota = (notasDefinitivas.Count > i) ? notasDefinitivas[i] : "0.0";
+                                if (decimal.TryParse(strNota.Replace(",", "."), System.Globalization.CultureInfo.InvariantCulture, out decimal dNota))
+                                {
+                                    var calif = new Calificacion
+                                    {
+                                        ID_Estudiante = estId,
+                                        Materia = materiaSel,
+                                        Nota = dNota,
+                                        Periodo = periodoVal,
+                                        FechaRegistro = DateTime.Now
+                                    };
+                                    _context.Calificaciones.Add(calif);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                _context.SaveChanges();
+
+                // --- (David) NOTIFICACIÓN DE ÉXITO AL GUARDAR ---
+                TempData["MensajeNota"] = "¡Las calificaciones han sido guardadas exitosamente!";
+            }
+            catch (Exception ex)
+            {
+                // --- (David) NOTIFICACIÓN EN CASO DE ERROR ---
+                TempData["ErrorNota"] = "Ocurrió un error al guardar las calificaciones: " + ex.Message;
+            }
 
             return RedirectToAction("Planilla");
         }
+
         public IActionResult ReporteGrupal(string materia, int? cursoId)
         {
             // Consultamos las notas incluyendo los datos del estudiante
@@ -66,6 +122,7 @@ namespace ProyectoPAE.Controllers
 
             return View(reporte);
         }
+
         public IActionResult DescargarObservadorPdf()
         {
             // Aquí posteriormente buscaremos los datos reales de la tabla 'Observador' con SQL
@@ -80,4 +137,3 @@ namespace ProyectoPAE.Controllers
         }
     }
 }
-
