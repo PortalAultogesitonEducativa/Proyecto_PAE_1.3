@@ -1,6 +1,16 @@
-﻿@model ProyectoPAE.Models.Usuario
+@model ProyectoPAE.Models.Usuario
 
-<div class="container mt-5">
+<div class="container mt-4">
+    <!-- CABECERA CON BOTÓN VOLVER (aporte de Andrés) -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold m-0" style="color: #0d2a4a;">
+            <i class="bi bi-person-badge-fill me-2"></i>Perfil de Usuario
+        </h2>
+        <button onclick="history.back()" class="btn text-white px-3 shadow-sm" style="background-color: #0d2a4a; border-radius: 8px;">
+            <i class="bi bi-arrow-left me-1"></i> Volver
+        </button>
+    </div>
+
     <div class="row justify-content-center">
         <div class="col-md-6">
             <div class="card shadow-lg border-0">
@@ -58,6 +68,25 @@
                         </a>
                     </div>
 
+                    <!-- BOTÓN VISTOSO DE NOTIFICACIONES INSTITUCIONALES -->
+                    @{
+                        var notifsPerfil = ViewBag.NotificacionesPerfil as List<ProyectoPAE.Models.Notificacion>;
+                        int cantNotifs = notifsPerfil != null ? notifsPerfil.Count : 0;
+                    }
+
+                    <div class="d-grid mt-3">
+                        <button type="button" class="btn text-white fw-bold position-relative shadow-sm py-2.5 rounded-3 btn-notif-perfil"
+                                data-bs-toggle="modal" data-bs-target="#modalNotificacionesPerfil">
+                            <i class="bi bi-bell-fill me-2 fs-5"></i> Mis Notificaciones y Comunicados
+                            @if (cantNotifs > 0)
+                            {
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-light fs-6">
+                                    @cantNotifs
+                                </span>
+                            }
+                        </button>
+                    </div>
+
                     <hr class="mt-4" />
 
                     <div class="d-grid">
@@ -76,7 +105,70 @@
     </div>
 </div>
 
-<!-- ─── MODAL CAMBIAR CONTRASEÑA ─────────────────────────── -->
+<!-- ─── MODAL NOTIFICACIONES INSTITUCIONALES ─────────────────────────── -->
+<div class="modal fade" id="modalNotificacionesPerfil" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header text-white" style="background: linear-gradient(135deg, #1b2a47 0%, #2c3e50 100%);">
+                <h5 class="modal-title fw-bold">
+                    <i class="bi bi-bell-fill me-2" style="color: #e67e22;"></i> Comunicados y Avisos Institucionales
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4" style="background-color: #f8f9fa;">
+                @if (notifsPerfil == null || !notifsPerfil.Any())
+                {
+                    <div class="text-center py-5 text-muted">
+                        <i class="bi bi-bell-slash fs-1 d-block mb-2 text-secondary opacity-50"></i>
+                        <p class="fs-6 mb-0">No tienes comunicados o notificaciones pendientes por el momento.</p>
+                    </div>
+                }
+                else
+                {
+                    <div class="vstack gap-3">
+                        @foreach (var notif in notifsPerfil)
+                        {
+                            <div class="card border-0 shadow-sm rounded-3" style="border-left: 5px solid #e67e22 !important;">
+                                <div class="card-body p-3">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h6 class="fw-bold mb-0" style="color: #1b2a47;">@notif.Titulo</h6>
+                                        <span class="badge bg-light text-dark border px-2 py-1 small">
+                                            <i class="bi bi-clock me-1" style="color: #e67e22;"></i> @notif.FechaCreacion.ToString("dd/MM/yyyy hh:mm tt")
+                                        </span>
+                                    </div>
+                                    <p class="card-text text-secondary small mb-2" style="white-space: pre-line;">@notif.Mensaje</p>
+                                    <div class="text-end text-muted small border-top pt-2" style="font-size: 0.75rem;">
+                                        <span><i class="bi bi-person-fill me-1"></i> Publicado por: @(notif.Emisor != null ? notif.Emisor.NOMBRES + " " + notif.Emisor.APELLIDOS : "Administración PAE")</span>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+            <div class="modal-footer justify-content-center bg-white border-0 py-3">
+                <button type="button" class="btn text-white px-4 rounded-pill" style="background-color: #1b2a47;" data-bs-dismiss="modal">
+                    Entendido / Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .btn-notif-perfil {
+        background: linear-gradient(135deg, #e67e22 0%, #d35400 100%) !important;
+        border: none !important;
+        transition: all 0.3s ease;
+    }
+
+    .btn-notif-perfil:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(230, 126, 34, 0.4) !important;
+    }
+</style>
+
+<!-- ─── MODAL CAMBIAR CONTRASEÑA (dos pasos, aporte de Andrés) ─────────────────────────── -->
 <div class="modal fade" id="modalCambiarPassword" tabindex="-1" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow">
@@ -84,7 +176,7 @@
             @if (ViewBag.ExitoPassword != null)
             {
                 <!-- Vista de ÉXITO: solo mensaje y botón cerrar -->
-                <div class="modal-header" style="background-color:#0d2a4a ;">
+                <div class="modal-header" style="background-color:#0d2a4a;">
                     <h5 class="modal-title text-white">
                         <i class="bi bi-check-circle me-2"></i>Contraseña actualizada
                     </h5>
@@ -101,41 +193,95 @@
             }
             else
             {
-                <!-- Vista NORMAL: formulario -->
-                <div class="modal-header" style="background-color: #0d2a4a;">
-                    <h5 class="modal-title text-white">
-                        <i class="bi bi-shield-lock me-2"></i>Cambiar contraseña
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body p-4">
-                    @if (ViewBag.ErrorPassword != null)
-                    {
-                        <div class="alert alert-danger">@ViewBag.ErrorPassword</div>
-                    }
-                    <form method="post" action="/Home/CambiarContrasena">
-                        <div class="mb-3">
-                            <label class="text-muted small">Contraseña actual</label>
-                            <input type="password" name="contrasenaActual"
-                                   class="form-control" required />
+                <form method="post" action="/Home/CambiarContrasena" id="formNuevaContrasena">
+                    <div class="modal-header" style="background-color: #0d2a4a;">
+                        <h5 class="modal-title text-white">
+                            <i class="bi bi-shield-lock me-2"></i>Cambiar contraseña
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body p-4">
+
+                        @if (ViewBag.ErrorPassword != null)
+                        {
+                            <div class="alert alert-danger">@ViewBag.ErrorPassword</div>
+                        }
+
+                        <!-- PASO 1: verificar contraseña actual vía AJAX -->
+                        <div id="paso1">
+                            <p class="text-muted small mb-3">
+                                Primero verifica tu identidad ingresando tu contraseña actual.
+                            </p>
+                            <div class="mb-3">
+                                <label class="text-muted small">Contraseña actual</label>
+                                <div class="input-group">
+                                    <input type="password" id="inputContrasenaActual"
+                                           class="form-control" placeholder="Ingresa tu contraseña actual" />
+                                    <button class="btn btn-light border" type="button"
+                                            onclick="toggleVisibilidad('inputContrasenaActual', 'iconoPaso1')">
+                                        <i id="iconoPaso1" class="bi bi-eye"></i>
+                                    </button>
+                                </div>
+                                <div id="errorPaso1" class="text-danger small mt-1" style="display:none;">
+                                    Contraseña incorrecta. Intenta de nuevo.
+                                </div>
+                            </div>
+                            <div class="d-grid">
+                                <button type="button" onclick="validarPaso1()" class="btn btn-primary">
+                                    <i class="bi bi-arrow-right me-1"></i> Continuar
+                                </button>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label class="text-muted small">Nueva contraseña</label>
-                            <input type="password" name="nuevaContrasena"
-                                   class="form-control" minlength="8" required />
+
+                        <!-- PASO 2: nueva contraseña, solo visible tras verificar el paso 1 -->
+                        <div id="paso2" style="display:none;">
+                            <div class="alert alert-success py-2 small">
+                                <i class="bi bi-check-circle me-1"></i>
+                                Identidad verificada. Ahora ingresa tu nueva contraseña.
+                            </div>
+                            <div id="errorPaso2" class="alert alert-danger py-2 small" style="display:none;"></div>
+
+                            <input type="hidden" id="campoContrasenaActual" name="contrasenaActual" />
+                            <div class="mb-3">
+                                <label class="text-muted small">Nueva contraseña</label>
+                                <div class="input-group">
+                                    <input type="password" id="inputNuevaContrasena"
+                                           name="nuevaContrasena"
+                                           class="form-control"
+                                           placeholder="Ej: Sena1234!"
+                                           minlength="8" required />
+                                    <button class="btn btn-light border" type="button"
+                                            onclick="toggleVisibilidad('inputNuevaContrasena', 'iconoPaso2a')">
+                                        <i id="iconoPaso2a" class="bi bi-eye"></i>
+                                    </button>
+                                </div>
+                                <small class="text-muted">
+                                    Debe tener mínimo 8 caracteres, mayúscula, minúscula, número y carácter especial.
+                                </small>
+                            </div>
+                            <div class="mb-3">
+                                <label class="text-muted small">Confirmar nueva contraseña</label>
+                                <div class="input-group">
+                                    <input type="password" id="inputConfirmar"
+                                           name="confirmar"
+                                           class="form-control"
+                                           placeholder="Repite la nueva contraseña"
+                                           minlength="8" required />
+                                    <button class="btn btn-light border" type="button"
+                                            onclick="toggleVisibilidad('inputConfirmar', 'iconoPaso2b')">
+                                        <i id="iconoPaso2b" class="bi bi-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-key me-2"></i>Guardar nueva contraseña
+                                </button>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label class="text-muted small">Confirmar nueva contraseña</label>
-                            <input type="password" name="confirmar"
-                                   class="form-control" minlength="8" required />
-                        </div>
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-key me-2"></i>Guardar nueva contraseña
-                            </button>
-                        </div>
-                    </form>
-                </div>
+
+                    </div>
+                </form>
             }
 
         </div>
@@ -146,8 +292,106 @@
 {
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            var modal = new bootstrap.Modal(document.getElementById('modalCambiarPassword'));
-            modal.show();
+            var modalElement = document.getElementById('modalCambiarPassword');
+            if (modalElement) {
+                var modal = new bootstrap.Modal(modalElement);
+                modal.show();
+            }
         });
     </script>
 }
+
+<script>
+    function toggleVisibilidad(inputId, iconId) {
+        var input = document.getElementById(inputId);
+        var icon = document.getElementById(iconId);
+        if (input && icon) {
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('bi-eye', 'bi-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('bi-eye-slash', 'bi-eye');
+            }
+        }
+    }
+
+    function validarPaso1() {
+        var contrasenaInput = document.getElementById('inputContrasenaActual');
+        var errorDiv = document.getElementById('errorPaso1');
+        var contrasena = contrasenaInput ? contrasenaInput.value : '';
+
+        if (!contrasena) {
+            if (errorDiv) {
+                errorDiv.textContent = 'Por favor ingresa tu contraseña actual.';
+                errorDiv.style.display = 'block';
+            }
+            return;
+        }
+
+        var payload = { contrasenaActual: contrasena };
+
+        fetch('/Home/ValidarContrasenaActual', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+            .then(function (response) { return response.json(); })
+            .then(function (data) {
+                if (data.valido) {
+                    document.getElementById('campoContrasenaActual').value = contrasena;
+                    document.getElementById('paso1').style.display = 'none';
+                    document.getElementById('paso2').style.display = 'block';
+                    if (errorDiv) errorDiv.style.display = 'none';
+                } else {
+                    if (errorDiv) {
+                        errorDiv.textContent = 'Contraseña incorrecta. Intenta de nuevo.';
+                        errorDiv.style.display = 'block';
+                    }
+                    if (contrasenaInput) contrasenaInput.value = '';
+                }
+            })
+            .catch(function () {
+                if (errorDiv) {
+                    errorDiv.textContent = 'Error al verificar. Intenta de nuevo.';
+                    errorDiv.style.display = 'block';
+                }
+            });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        var form = document.getElementById('formNuevaContrasena');
+        if (form) {
+            form.addEventListener('submit', function (e) {
+                var nueva = document.getElementById('inputNuevaContrasena').value;
+                var confirmar = document.getElementById('inputConfirmar').value;
+                var errorDiv = document.getElementById('errorPaso2');
+
+                var tieneMinimo = nueva.length >= 8;
+                var tieneMayuscula = /[A-Z]/.test(nueva);
+                var tieneMinuscula = /[a-z]/.test(nueva);
+                var tieneNumero = /[0-9]/.test(nueva);
+                var tieneEspecial = /[!@@#$%^&*()_\-=[\]{}|;':",./<>?]/.test(nueva);
+
+                var mensaje = '';
+
+                if (!tieneMinimo) mensaje = 'La contraseña debe tener al menos 8 caracteres.';
+                else if (!tieneMayuscula) mensaje = 'Debe contener al menos una letra mayúscula.';
+                else if (!tieneMinuscula) mensaje = 'Debe contener al menos una letra minúscula.';
+                else if (!tieneNumero) mensaje = 'Debe contener al menos un número.';
+                else if (!tieneEspecial) mensaje = 'Debe contener al menos un carácter especial.';
+                else if (nueva !== confirmar) mensaje = 'Las contraseñas no coinciden.';
+
+                if (mensaje) {
+                    e.preventDefault();
+                    if (errorDiv) {
+                        errorDiv.textContent = mensaje;
+                        errorDiv.style.display = 'block';
+                    }
+                } else {
+                    if (errorDiv) errorDiv.style.display = 'none';
+                }
+            });
+        }
+    });
+</script>

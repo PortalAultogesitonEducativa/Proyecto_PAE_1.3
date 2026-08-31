@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
     <head>
         <meta charset="utf-8" />
@@ -40,8 +40,44 @@
                         </ul>
                         <div class="d-flex align-items-center">
                             @using Microsoft.AspNetCore.Http
-                                                @if (Context.Session.GetString("NombreUsuario") != null)
+                            @if (Context.Session.GetString("NombreUsuario") != null)
                             {
+                                string userRolLayout = (Context.Session.GetString("UserRol") ?? "").Trim().ToLower();
+
+                                @* Campana de notificaciones — sólo para roles que reciben notifs (no admin) *@
+                                if (userRolLayout != "admin")
+                                {
+                                    <div class="dropdown me-3 position-relative" id="campanaDropdown">
+                                        <button type="button" id="btnCampana"
+                                                class="btn position-relative p-2 rounded-circle"
+                                                style="background-color: transparent; border: 2px solid #e67e22; color: #e67e22; width: 40px; height: 40px; display:flex; align-items:center; justify-content:center;"
+                                                data-bs-toggle="dropdown" aria-expanded="false" title="Notificaciones">
+                                            <i class="bi bi-bell-fill fs-5"></i>
+                                            <span id="badgeCampana"
+                                                  class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                                                  style="font-size: 0.65rem; display:none;">0</span>
+                                        </button>
+
+                                        <div class="dropdown-menu dropdown-menu-end shadow border-0 rounded-4 p-0"
+                                             id="panelCampana"
+                                             style="width: 360px; max-height: 480px; overflow-y: auto;">
+                                            <div class="d-flex justify-content-between align-items-center px-4 py-3 rounded-top-4"
+                                                 style="background: linear-gradient(135deg, #1b2a47 0%, #2c3e50 100%);">
+                                                <h6 class="mb-0 fw-bold text-white">
+                                                    <i class="bi bi-bell-fill me-2" style="color:#e67e22;"></i>Comunicados
+                                                </h6>
+                                                <span id="badgePanelCount" class="badge rounded-pill" style="background-color:#e67e22;">0</span>
+                                            </div>
+                                            <div id="listaCampana" class="p-3">
+                                                <div class="text-center text-muted py-4 small">
+                                                    <i class="bi bi-inbox fs-3 d-block mb-2 opacity-50"></i>
+                                                    Sin comunicados nuevos
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+
                                 <div class="dropdown me-2">
                                     <button class="btn btn-link text-decoration-none dropdown-toggle d-flex align-items-center fw-bold"
                                             type="button" id="dropdownMenuPerfil" data-bs-toggle="dropdown" aria-expanded="false"
@@ -200,5 +236,92 @@
                 </script>
             </text>
         }
+
+        @* Script de la campana de notificaciones — sólo si el elemento existe en el DOM *@
+        <script>
+            (function () {
+                const btnCampana = document.getElementById('btnCampana');
+                if (!btnCampana) return; // solo aplica a roles no-admin
+
+                const badge = document.getElementById('badgeCampana');
+                const badgeCount = document.getElementById('badgePanelCount');
+                const lista = document.getElementById('listaCampana');
+
+                function renderNotif(notif) {
+                    const iconos = {
+                        'todos': '🌐',
+                        'estudiante': '🎓',
+                        'docente': '👨‍🏫',
+                        'acudiente': '👨‍👩‍👧'
+                    };
+                    const icono = iconos[notif.rolDestino] || '📢';
+                    return `<div class="card border-0 mb-2 shadow-sm rounded-3" style="border-left:4px solid #e67e22 !important;">
+                        <div class="card-body py-2 px-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <h6 class="mb-0 fw-bold small" style="color:#1b2a47;">${icono} ${escHtml(notif.titulo)}</h6>
+                                <small class="text-muted ms-2 text-nowrap">${escHtml(notif.fecha)}</small>
+                            </div>
+                            <p class="mb-0 text-secondary" style="font-size:0.78rem; white-space:pre-line;">${escHtml(notif.mensaje)}</p>
+                        </div>
+                    </div>`;
+                }
+
+                function escHtml(str) {
+                    return String(str)
+                        .replace(/&/g, '&amp;')
+                        .replace(/</g, '&lt;')
+                        .replace(/>/g, '&gt;')
+                        .replace(/"/g, '&quot;');
+                }
+
+                function cargarNotificaciones() {
+                    fetch('/Home/GetNotificacionesCampana')
+                        .then(r => r.json())
+                        .then(data => {
+                            // Badge en el botón
+                            if (data.count > 0) {
+                                badge.textContent = data.count > 9 ? '9+' : data.count;
+                                badge.style.display = '';
+                                badgeCount.textContent = data.count;
+                                btnCampana.style.backgroundColor = '#fff3e0';
+                                btnCampana.style.borderColor = '#e67e22';
+                                btnCampana.style.animation = 'bellShake 0.6s ease';
+                            } else {
+                                badge.style.display = 'none';
+                                badgeCount.textContent = '0';
+                                btnCampana.style.backgroundColor = 'transparent';
+                                btnCampana.style.animation = '';
+                            }
+
+                            // Contenido del panel
+                            if (data.items && data.items.length > 0) {
+                                lista.innerHTML = data.items.map(renderNotif).join('');
+                            } else {
+                                lista.innerHTML = '<div class="text-center text-muted py-4 small"><i class="bi bi-inbox fs-3 d-block mb-2 opacity-50"></i>Sin comunicados nuevos</div>';
+                            }
+                        })
+                        .catch(() => {});
+                }
+
+                // Carga inicial y polling cada 60 seg
+                cargarNotificaciones();
+                setInterval(cargarNotificaciones, 60000);
+            })();
+        </script>
+
+        <style>
+            @@keyframes bellShake {
+                0%, 100% { transform: rotate(0deg); }
+                20%       { transform: rotate(-15deg); }
+                40%       { transform: rotate(15deg); }
+                60%       { transform: rotate(-10deg); }
+                80%       { transform: rotate(10deg); }
+            }
+            #btnCampana { transition: background-color 0.3s, box-shadow 0.3s; }
+            #btnCampana:hover {
+                background-color: #fff3e0 !important;
+                box-shadow: 0 0 0 4px rgba(230,126,34,0.2) !important;
+            }
+        </style>
     </body>
 </html>

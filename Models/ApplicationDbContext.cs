@@ -20,6 +20,9 @@ namespace ProyectoPAE.Models
         public DbSet<PadreTutor> PADRE_TUTOR { get; set; }
         public DbSet<Profesor> PROFESOR { get; set; }
         public DbSet<Materia> MATERIA { get; set; }
+        public DbSet<Horario> HORARIOS { get; set; }
+        public DbSet<Aula> AULA { get; set; }
+        public DbSet<ProfesorMateria> PROFESOR_MATERIA { get; set; }
 
         // ── Recuperación de contraseña ──
         public DbSet<GU_RECUPERACION_PASSWORD> RecuperacionesPassword { get; set; }
@@ -28,6 +31,9 @@ namespace ProyectoPAE.Models
         // --- FIRMA DE CERTIFICADOS ---
         public DbSet<Certificado> Certificados { get; set; }
         public DbSet<CertificadoDetalle> CertificadosDetalle { get; set; }
+
+        // --- NOTIFICACIONES Y ANUNCIOS GLOBALES ---
+        public DbSet<Notificacion> Notificaciones { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

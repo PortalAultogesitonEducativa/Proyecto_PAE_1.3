@@ -26,7 +26,11 @@ namespace ProyectoPAE.Controllers
             {
                 if (rol == "admin") return RedirectToAction("Usuarios", "Admin");
                 if (rol == "docente") return RedirectToAction("Planilla", "Docente");
-                if (rol == "estudiante") return RedirectToAction("MisNotas", "Estudiante");
+                // Dentro del método de validación de LoginController.cs
+                if (rol == "estudiante")
+                {
+                    return RedirectToAction("Dashboard", "Home");
+                }
             }
             return View();
         }
@@ -34,18 +38,35 @@ namespace ProyectoPAE.Controllers
         [HttpPost]
         public IActionResult Ingresar(string correo, string password)
         {
-            // Comparación directa en texto plano
+            // 1. Buscamos el usuario en GU_Usuario únicamente por su correo
             var user = _context.Usuarios
-                .FirstOrDefault(u => u.CORREO_ELECTRONICO == correo && u.CONTRASEÑA == password);
+                .FirstOrDefault(u => u.CORREO_ELECTRONICO == correo && u.ACTIVO);
 
-            if (user != null)
+            // 2. Validamos la clave si el usuario fue encontrado
+            if (user != null && !string.IsNullOrEmpty(user.CONTRASEÑA))
             {
-                HttpContext.Session.SetInt32("UserId", user.ID_Usuario);
-                HttpContext.Session.SetString("UserIdStr", user.ID_Usuario.ToString());
-                HttpContext.Session.SetString("NombreUsuario", user.NOMBRES);
-                HttpContext.Session.SetString("UserRol", user.ROL.ToLower().Trim());
+                bool claveValida = false;
 
-                return RedirectToAction("Dashboard", "Home");
+                try
+                {
+                    // Verificación para contraseñas encriptadas con BCrypt
+                    claveValida = BCrypt.Net.BCrypt.Verify(password, user.CONTRASEÑA);
+                }
+                catch
+                {
+                    // Compatibilidad secundaria si la clave está guardada en texto plano
+                    claveValida = (user.CONTRASEÑA == password);
+                }
+
+                if (claveValida)
+                {
+                    HttpContext.Session.SetInt32("UserId", user.ID_Usuario);
+                    HttpContext.Session.SetString("UserIdStr", user.ID_Usuario.ToString());
+                    HttpContext.Session.SetString("NombreUsuario", user.NOMBRES ?? user.NOMBRE_USUARIO);
+                    HttpContext.Session.SetString("UserRol", user.ROL.ToLower().Trim());
+
+                    return RedirectToAction("Dashboard", "Home");
+                }
             }
 
             ViewBag.Error = "Correo o contraseña incorrectos";
@@ -190,3 +211,5 @@ namespace ProyectoPAE.Controllers
         }
     }
 }
+
+

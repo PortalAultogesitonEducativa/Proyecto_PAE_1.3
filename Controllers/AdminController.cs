@@ -46,7 +46,7 @@ namespace ProyectoPAE.Controllers
         [HttpPost]
         public IActionResult RegistrarEstudiante(Usuario nuevoEstudiante, int CursoSeleccionado)
         {
-            // 1. Verificar si el correo ya existe
+            // 1. Comprobar si el correo ya existe
             var existe = _context.Usuarios.Any(u => u.CORREO_ELECTRONICO == nuevoEstudiante.CORREO_ELECTRONICO);
             if (existe)
             {
@@ -54,41 +54,74 @@ namespace ProyectoPAE.Controllers
                 return RedirectToAction("Usuarios");
             }
 
-            nuevoEstudiante.NOMBRE_USUARIO = nuevoEstudiante.CORREO_ELECTRONICO;
-            nuevoEstudiante.ROL = "estudiante";
-            nuevoEstudiante.ACTIVO = true;
-            nuevoEstudiante.FECHA_CREACION = DateTime.Now;
-
             if (ModelState.IsValid)
             {
+                using var transaction = _context.Database.BeginTransaction();
                 try
                 {
+                    // 2. Insertar en GU_Usuario
+                    nuevoEstudiante.NOMBRE_USUARIO = nuevoEstudiante.CORREO_ELECTRONICO;
+                    nuevoEstudiante.CONTRASEÑA = BCrypt.Net.BCrypt.HashPassword(nuevoEstudiante.CONTRASEÑA ?? "123456");
+                    nuevoEstudiante.ROL = "estudiante";
+                    nuevoEstudiante.ACTIVO = true;
+                    nuevoEstudiante.FECHA_CREACION = DateTime.Now;
+
                     _context.Usuarios.Add(nuevoEstudiante);
-                    _context.SaveChanges(); // Aquí ya no debería saltar el error
+                    _context.SaveChanges(); // Genera nuevoEstudiante.ID_Usuario
+
+                    // 3. Insertar en la tabla ESTUDIANTE vinculando id_usuario
+                    var anioActual = DateTime.Now.Year;
+                    var consecutivo = _context.ESTUDIANTE
+                        .Count(e => e.codigo_estudiante.StartsWith($"EST-{anioActual}")) + 1;
+                    var codigoEstudiante = $"EST-{anioActual}-{consecutivo:D3}";
+
+                    var entidadEstudiante = new Estudiante
+                    {
+                        nombre = nuevoEstudiante.NOMBRES ?? "",
+                        apellido = nuevoEstudiante.APELLIDOS ?? "",
+                        email = nuevoEstudiante.CORREO_ELECTRONICO ?? "",
+                        codigo_estudiante = codigoEstudiante,
+                        fecha_inscripcion = DateTime.Now,
+                        id_usuario = nuevoEstudiante.ID_Usuario // Se vincula con GU_Usuario
+                    };
+
+                    _context.ESTUDIANTE.Add(entidadEstudiante);
+                    _context.SaveChanges(); // Genera entidadEstudiante.id_estudiante
+
+                    // 4. Crear el registro en MATRICULA asociando id_estudiante
+                    var hoy = DateTime.Now;
+                    var semestre = hoy.Month <= 6 ? "I" : "II";
 
                     var nuevaMatricula = new Matricula
                     {
-                        id_estudiante = nuevoEstudiante.ID_Usuario,
+                        id_estudiante = entidadEstudiante.id_estudiante, // ID proveniente de ESTUDIANTE
                         id_curso = CursoSeleccionado,
-                        fecha_matricula = DateTime.Now,
-                        periodo_academico = "2026-I",
+                        fecha_matricula = hoy,
+                        periodo_academico = $"{hoy.Year}-{semestre}",
                         estado = "Activa",
-                        ano = 2026
+                        ano = hoy.Year
                     };
 
                     _context.Matriculas.Add(nuevaMatricula);
                     _context.SaveChanges();
 
+                    transaction.Commit();
+
+                    TempData["Mensaje"] = "Estudiante registrado y matriculado con éxito.";
                     return RedirectToAction("Usuarios");
                 }
                 catch (Exception ex)
                 {
-                    // Si algo falla, esto te ayudará a ver qué pasó sin que se cierre la app
-                    ModelState.AddModelError("", "Error al guardar: " + ex.Message);
+                    transaction.Rollback();
+                    var detalle = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+                    TempData["Error"] = "Error al guardar el estudiante: " + detalle;
                 }
             }
+
             return View("Usuarios", _context.Usuarios.ToList());
         }
+
+
 
         [HttpPost]
         public async Task<IActionResult> RegistrarUsuario(RegistroUsuarioViewModel model)
@@ -421,5 +454,154 @@ namespace ProyectoPAE.Controllers
                 CustomSwitches = "--allow ./" // Ayuda a cargar imágenes locales
             };
         }
+
+        // --- GESTIÓN DE NOTIFICACIONES / COMUNICADOS POR ROL ---
+        [HttpGet]
+        public async Task<IActionResult> Notificaciones()
+        {
+            var rol = HttpContext.Session.GetString("UserRol");
+            if (string.IsNullOrEmpty(rol) || rol.ToLower() != "admin")
+            {
+                return RedirectToAction("Dashboard", "Home");
+            }
+
+            var lista = await _context.Notificaciones
+                .Include(n => n.Emisor)
+                .OrderByDescending(n => n.FechaCreacion)
+                .ToListAsync();
+
+            return View(lista);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CrearNotificacion(string titulo, string mensaje, string rolDestino)
+        {
+            var rol = HttpContext.Session.GetString("UserRol");
+            if (string.IsNullOrEmpty(rol) || rol.ToLower() != "admin")
+            {
+                return RedirectToAction("Dashboard", "Home");
+            }
+
+            int? idUsuarioSession = HttpContext.Session.GetInt32("UserId");
+            if (!idUsuarioSession.HasValue)
+            {
+                return RedirectToAction("Index", "Login");
+            }
+
+            if (string.IsNullOrWhiteSpace(titulo) || string.IsNullOrWhiteSpace(mensaje) || string.IsNullOrWhiteSpace(rolDestino))
+            {
+                TempData["Error"] = "Todos los campos son obligatorios para publicar un comunicado.";
+                return RedirectToAction("Notificaciones");
+            }
+
+            var nuevaNotificacion = new Notificacion
+            {
+                Titulo = titulo.Trim(),
+                Mensaje = mensaje.Trim(),
+                RolDestino = rolDestino.Trim().ToLower(),
+                FechaCreacion = DateTime.Now,
+                ID_UsuarioEmisor = idUsuarioSession.Value,
+                Activa = true
+            };
+
+            _context.Notificaciones.Add(nuevaNotificacion);
+            await _context.SaveChangesAsync();
+
+            TempData["Exito"] = "Notificación publicada y enviada exitosamente.";
+            return RedirectToAction("Notificaciones");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EliminarNotificacion(int id)
+        {
+            var rol = HttpContext.Session.GetString("UserRol");
+            if (string.IsNullOrEmpty(rol) || rol.ToLower() != "admin")
+            {
+                return RedirectToAction("Dashboard", "Home");
+            }
+
+            var notificacion = await _context.Notificaciones.FindAsync(id);
+            if (notificacion != null)
+            {
+                _context.Notificaciones.Remove(notificacion);
+                await _context.SaveChangesAsync();
+                TempData["Exito"] = "La notificación fue eliminada.";
+            }
+
+            return RedirectToAction("Notificaciones");
+        }
+
+        // =====================================================
+        // CRUD DE MATRÍCULAS
+        // =====================================================
+
+        /// <summary>Actualiza el grado y el estado de una matrícula existente.</summary>
+        [HttpPost]
+        public async Task<IActionResult> EditarMatricula(int idMatricula, int idCurso, string estado)
+        {
+            var rol = HttpContext.Session.GetString("UserRol");
+            if (rol != "admin")
+                return RedirectToAction("Dashboard", "Home");
+
+            var matricula = await _context.Matriculas.FindAsync(idMatricula);
+            if (matricula == null)
+            {
+                TempData["ErrorMatriculas"] = "No se encontró la matrícula indicada.";
+                return RedirectToAction("Dashboard", "Home", new { rol = "admin" });
+            }
+
+            matricula.id_curso = idCurso;
+            matricula.estado = estado;
+            await _context.SaveChangesAsync();
+
+            TempData["MensajeMatriculas"] = "Matrícula actualizada correctamente.";
+            return RedirectToAction("Dashboard", "Home", new { rol = "admin" });
+        }
+
+        /// <summary>Cambia únicamente el estado de una matrícula.</summary>
+        [HttpPost]
+        public async Task<IActionResult> CambiarEstadoMatricula(int idMatricula, string nuevoEstado)
+        {
+            var rol = HttpContext.Session.GetString("UserRol");
+            if (rol != "admin")
+                return RedirectToAction("Dashboard", "Home");
+
+            var matricula = await _context.Matriculas.FindAsync(idMatricula);
+            if (matricula != null)
+            {
+                matricula.estado = nuevoEstado;
+                await _context.SaveChangesAsync();
+                TempData["MensajeMatriculas"] = $"Estado cambiado a '{nuevoEstado}' correctamente.";
+            }
+            else
+            {
+                TempData["ErrorMatriculas"] = "No se encontró la matrícula indicada.";
+            }
+
+            return RedirectToAction("Dashboard", "Home", new { rol = "admin" });
+        }
+
+        /// <summary>Elimina permanentemente una matrícula de la base de datos.</summary>
+        [HttpPost]
+        public async Task<IActionResult> EliminarMatricula(int idMatricula)
+        {
+            var rol = HttpContext.Session.GetString("UserRol");
+            if (rol != "admin")
+                return RedirectToAction("Dashboard", "Home");
+
+            var matricula = await _context.Matriculas.FindAsync(idMatricula);
+            if (matricula != null)
+            {
+                _context.Matriculas.Remove(matricula);
+                await _context.SaveChangesAsync();
+                TempData["MensajeMatriculas"] = "Matrícula eliminada correctamente.";
+            }
+            else
+            {
+                TempData["ErrorMatriculas"] = "No se encontró la matrícula a eliminar.";
+            }
+
+            return RedirectToAction("Dashboard", "Home", new { rol = "admin" });
+        }
     }
-}
+}
