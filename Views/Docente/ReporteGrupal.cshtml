@@ -1,4 +1,4 @@
-﻿@model IEnumerable<dynamic>
+@model IEnumerable<dynamic>
 
 @{
     var idsMostrados = new HashSet<int>();
@@ -77,6 +77,9 @@
     const ctx = document.getElementById('graficaNotas');
 
     // Extraemos los datos de C# a JavaScript
+    const nombres = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Select(m => (string)m.NombreEstudiante)));
+    const notas = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Select(m => (double)m.Nota)));
+
     const colores = notas.map(n => n >= 3.0 ? 'rgba(39, 174, 96, 0.5)' : 'rgba(231, 76, 60, 0.5)');
     const bordes = notas.map(n => n >= 3.0 ? 'rgba(39, 174, 96, 1)' : 'rgba(231, 76, 60, 1)');
 

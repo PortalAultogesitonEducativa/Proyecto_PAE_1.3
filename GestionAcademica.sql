@@ -685,6 +685,62 @@ CREATE TABLE [dbo].[PROFESOR_MATERIA](
 ) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'CERTIFICADO')
+BEGIN
+CREATE TABLE [dbo].[CERTIFICADO](
+	[id_certificado] [int] IDENTITY(1,1) NOT NULL,
+	[id_estudiante] [int] NOT NULL,
+	[tipo_certificado] [nvarchar](50) NOT NULL,
+	[codigo_verificacion] [nvarchar](20) NOT NULL,
+	[hash_contenido] [nvarchar](100) NOT NULL,
+	[fecha_emision] [datetime] NOT NULL,
+	[id_usuario_emisor] [int] NOT NULL,
+	[estado] [nvarchar](20) NOT NULL DEFAULT 'Vigente',
+ CONSTRAINT [PK_CERTIFICADO] PRIMARY KEY CLUSTERED 
+(
+	[id_certificado] ASC
+) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+END
+GO
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'CERTIFICADO_DETALLE')
+BEGIN
+CREATE TABLE [dbo].[CERTIFICADO_DETALLE](
+	[id_detalle] [int] IDENTITY(1,1) NOT NULL,
+	[id_certificado] [int] NOT NULL,
+	[id_calificacion] [int] NOT NULL,
+	[materia] [nvarchar](80) NOT NULL,
+	[periodo] [nvarchar](20) NOT NULL,
+	[nota_final] [decimal](5, 2) NOT NULL,
+	[estado_nota] [nvarchar](20) NOT NULL,
+ CONSTRAINT [PK_CERTIFICADO_DETALLE] PRIMARY KEY CLUSTERED 
+(
+	[id_detalle] ASC
+) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+END
+GO
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'GU_NOTIFICACION')
+BEGIN
+CREATE TABLE [dbo].[GU_NOTIFICACION](
+	[ID_Notificacion] [int] IDENTITY(1,1) NOT NULL,
+	[Titulo] [nvarchar](150) NOT NULL,
+	[Mensaje] [nvarchar](max) NOT NULL,
+	[RolDestino] [nvarchar](50) NOT NULL,
+	[FechaCreacion] [datetime] NOT NULL DEFAULT GETDATE(),
+	[ID_UsuarioEmisor] [int] NOT NULL,
+	[Activa] [bit] NOT NULL DEFAULT 1,
+ CONSTRAINT [PK_GU_NOTIFICACION] PRIMARY KEY CLUSTERED 
+(
+	[ID_Notificacion] ASC
+) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+END
+GO
 SET IDENTITY_INSERT [dbo].[AREA] ON 
 GO
 INSERT [dbo].[AREA] ([id_area], [nombre_area], [descripcion], [id_departamento]) VALUES (1, N'Matemáticas', N'Álgebra, geometría y cálculo', 1)

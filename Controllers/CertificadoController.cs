@@ -33,7 +33,7 @@ namespace ProyectoPAE.Controllers
         public async Task<IActionResult> Generar(int idEstudiante)
         {
             var estudiante = await _context.Usuarios.FindAsync(idEstudiante);
-            if (estudiante == null || estudiante.ROL != "estudiante") return NotFound();
+            if (estudiante == null) return NotFound();
 
             var calificaciones = await _context.Calificaciones
                 .Where(c => c.ID_Estudiante == idEstudiante)
@@ -54,9 +54,7 @@ namespace ProyectoPAE.Controllers
                 return RedirectToAction(nameof(Generar), new { idEstudiante });
             }
 
-            // TODO: reemplaza este valor fijo por el id del usuario autenticado
-            // (ej. int idUsuarioEmisor = HttpContext.Session.GetInt32("IdUsuario").Value;)
-            int idUsuarioEmisor = 1;
+            int idUsuarioEmisor = HttpContext.Session.GetInt32("UserId") ?? 1;
 
             var certificado = await _certificadoService.GenerarCertificadoAsync(
                 idEstudiante, tipoCertificado ?? "Reporte de calificaciones", idsCalificacion, idUsuarioEmisor);
@@ -118,6 +116,11 @@ namespace ProyectoPAE.Controllers
             ViewBag.QrBase64 = GenerarQRBase64(urlVerificacion);
             ViewBag.UrlVerificacion = urlVerificacion;
 
+            // Nombre de quien emitió el certificado, para la línea de firma
+            var emisor = await _context.Usuarios.FindAsync(certificado.IdUsuarioEmisor);
+            ViewBag.NombreEmisor = emisor != null ? $"{emisor.NOMBRES} {emisor.APELLIDOS}" : "Rectoría";
+            ViewBag.NombreColegio = await ObtenerNombreInstitucionAsync();
+
             return View(certificado);
         }
 
@@ -140,6 +143,11 @@ namespace ProyectoPAE.Controllers
 
             ViewBag.UrlVerificacion = urlVerificacion;
             ViewBag.QrBase64 = GenerarQRBase64(urlVerificacion);
+
+            // Nombre de quien emitió el certificado, para la línea de firma del PDF
+            var emisor = await _context.Usuarios.FindAsync(certificado.IdUsuarioEmisor);
+            ViewBag.NombreEmisor = emisor != null ? $"{emisor.NOMBRES} {emisor.APELLIDOS}" : "Rectoría";
+            ViewBag.NombreColegio = await ObtenerNombreInstitucionAsync();
 
             string nombreArchivo = certificado.TipoCertificado == "Matricula"
                 ? $"ConstanciaMatricula_{certificado.IdCertificado}.pdf"
@@ -190,7 +198,34 @@ namespace ProyectoPAE.Controllers
             }
 
             var resultado = await _certificadoService.VerificarAsync(codigo.Trim());
+            if (resultado.Certificado != null)
+            {
+                var emisor = await _context.Usuarios.FindAsync(resultado.Certificado.IdUsuarioEmisor);
+                ViewBag.NombreEmisor = emisor != null ? $"{emisor.NOMBRES} {emisor.APELLIDOS}" : "Rectoría";
+                ViewBag.NombreColegio = await ObtenerNombreInstitucionAsync();
+            }
             return View("Verificar", resultado);
+        }
+
+        /// <summary>
+        /// Lee el nombre de la institución desde GU_PARAMETRIZACION (aporte de Andrés).
+        /// Pensado para el futuro multi-colegio: hoy es un único valor global, pero
+        /// deja el punto de extensión listo para cuando cada colegio tenga su propia fila.
+        /// </summary>
+        private async Task<string> ObtenerNombreInstitucionAsync()
+        {
+            try
+            {
+                using var command = _context.Database.GetDbConnection().CreateCommand();
+                command.CommandText = "SELECT valor FROM GU_PARAMETRIZACION WHERE clave = 'nombre_institucion' AND activo = 1";
+                _context.Database.OpenConnection();
+                var result = await command.ExecuteScalarAsync();
+                return result?.ToString() ?? "Colegio San Agustín";
+            }
+            catch
+            {
+                return "Colegio San Agustín";
+            }
         }
     }
 }

@@ -107,7 +107,7 @@ namespace ProyectoPAE.Servicios
                 throw new InvalidOperationException("El usuario indicado no existe o no tiene rol de estudiante.");
 
             var estudianteLegacy = await _context.ESTUDIANTE
-                .FirstOrDefaultAsync(e => e.id_usuario == idEstudianteUsuario);
+                .FirstOrDefaultAsync(e => e.id_usuario == idEstudianteUsuario || (usuario.CORREO_ELECTRONICO != null && e.email == usuario.CORREO_ELECTRONICO));
 
             if (estudianteLegacy == null)
                 throw new InvalidOperationException("No se encontró el registro académico del estudiante.");

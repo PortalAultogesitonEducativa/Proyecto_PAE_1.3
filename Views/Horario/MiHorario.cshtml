@@ -1,0 +1,122 @@
+﻿@model IEnumerable<ProyectoPAE.Models.HorarioDetalleViewModel>
+
+@{
+    ViewData["Title"] = "Mi Horario de Clases";
+
+    var diasSemana = new[] { "Lunes", "Martes", "Miércoles", "Jueves", "Viernes" };
+
+    var franjasHorarias = Model != null && Model.Any()
+        ? Model.Select(h => new { h.HoraInicio, h.HoraFin, h.EsDescanso })
+               .Distinct()
+               .OrderBy(h => h.HoraInicio)
+               .ToList()
+        : new[] {
+            new { HoraInicio = new TimeSpan(6, 0, 0), HoraFin = new TimeSpan(7, 30, 0), EsDescanso = false },
+            new { HoraInicio = new TimeSpan(7, 30, 0), HoraFin = new TimeSpan(9, 0, 0), EsDescanso = false },
+            new { HoraInicio = new TimeSpan(9, 0, 0), HoraFin = new TimeSpan(9, 30, 0), EsDescanso = true },
+            new { HoraInicio = new TimeSpan(9, 30, 0), HoraFin = new TimeSpan(10, 45, 0), EsDescanso = false },
+            new { HoraInicio = new TimeSpan(10, 45, 0), HoraFin = new TimeSpan(12, 0, 0), EsDescanso = false }
+          }.ToList();
+}
+
+<div class="container-fluid mt-4">
+    <div class="card shadow-sm border-0 rounded-3">
+        <!-- Cabecera en Azul Marino Institucional (#0f2a4a) -->
+        <div class="card-header text-white d-flex justify-content-between align-items-center py-3" style="background-color: #0f2a4a;">
+            <div class="invisible" style="width: 90px;"></div>
+            <h4 class="mb-0 fw-bold text-center flex-grow-1">
+                <i class="bi bi-calendar-week me-2"></i>Horario de Clases
+            </h4>
+            <a href="@Url.Action("Dashboard", "Home")" class="btn btn-outline-light btn-sm fw-bold px-3 shadow-sm" style="border-width: 2px;">
+                <i class="bi bi-arrow-left me-1"></i> Volver
+            </a>
+        </div>
+
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle text-center mb-0" style="min-width: 900px;">
+                    <thead class="table-light text-uppercase small fw-bold">
+                        <tr>
+                            <th style="width: 15%; background-color: #f8f9fa;">Hora</th>
+                            @foreach (var dia in diasSemana)
+                            {
+                                <th style="width: 17%;">@dia</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model != null && Model.Any())
+                        {
+                            @foreach (var franja in franjasHorarias)
+                            {
+                                <tr>
+                                    <!-- Columna de rango de horas -->
+                                    <td class="fw-bold text-muted bg-light">
+                                        <i class="bi bi-clock me-1"></i>
+                                        @franja.HoraInicio.ToString(@"hh\:mm") - @franja.HoraFin.ToString(@"hh\:mm")
+                                    </td>
+
+                                    @if (franja.EsDescanso)
+                                    {
+                                        <!-- Fila de Receso estilizada en Naranja (#fff8f0 fondo / #fd7e14 acento) -->
+                                        <td colspan="5" class="py-3 align-middle" style="background-color: #fff8f0 !important; border-top: 2px solid #ffe8cc; border-bottom: 2px solid #ffe8cc;">
+                                            <span class="fw-bold text-uppercase" style="color: #d97706; letter-spacing: 2px;">
+                                                <i class="bi bi-cup-hot-fill me-2 fs-5" style="color: #fd7e14;"></i> Receso / Descanso
+                                            </span>
+                                        </td>
+                                    }
+                                    else
+                                    {
+                                        <!-- Celdas para clases por día -->
+                                        @foreach (var dia in diasSemana)
+                                        {
+                                            var clase = Model.FirstOrDefault(h =>
+                                                h.DiaSemana.Equals(dia, StringComparison.OrdinalIgnoreCase) &&
+                                                h.HoraInicio == franja.HoraInicio &&
+                                                !h.EsDescanso);
+
+                                            <td class="p-2" style="height: 105px; vertical-align: top;">
+                                                @if (clase != null)
+                                                {
+                                                    <div class="card h-100 p-2 text-start border-start border-4 shadow-sm"
+                                                         style="border-left-color: #0f2a4a !important; background-color: #f8fafc;">
+
+                                                        <!-- Nombre de la Materia -->
+                                                        <span class="fw-bold text-dark d-block mb-1" style="font-size: 0.85rem;">
+                                                            <i class="bi bi-journal-bookmark-fill me-1" style="color: #0f2a4a;"></i>@clase.NombreMateria
+                                                        </span>
+
+                                                        <!-- Profesor -->
+                                                        <span class="text-muted small d-block mb-1" style="font-size: 0.78rem;">
+                                                            <i class="bi bi-person-badge me-1"></i>@clase.NombreProfesor
+                                                        </span>
+
+                                                        <!-- Salón / Aula -->
+                                                        <span class="text-secondary small d-block" style="font-size: 0.78rem;">
+                                                            <i class="bi bi-geo-alt-fill me-1 text-danger"></i>@clase.NombreSalon
+                                                        </span>
+                                                    </div>
+                                                }
+                                            </td>
+                                        }
+                                    }
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="6" class="py-5 text-muted">
+                                    <i class="bi bi-calendar-x fs-1 d-block mb-2"></i>
+                                    No hay clases programadas para este periodo.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
