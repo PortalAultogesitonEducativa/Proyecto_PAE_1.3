@@ -1,0 +1,227 @@
+@model IEnumerable<ProyectoPAE.Models.Notificacion>
+@{
+    ViewData["Title"] = "Gestión de Notificaciones y Comunicados";
+}
+
+<div class="container py-4">
+    <!-- Encabezado con paleta Azul Marino y Naranja -->
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+            <h2 class="fw-bold mb-1" style="color: #1b2a47;">
+                <i class="bi bi-bell-fill me-2" style="color: #e67e22;"></i>Gestión de Notificaciones
+            </h2>
+            <p class="text-muted small mb-0">Publica avisos institucionales con filtros por rol de usuario.</p>
+        </div>
+        <a asp-controller="Home" asp-action="Dashboard" class="btn btn-outline-secondary rounded-pill px-4">
+            <i class="bi bi-arrow-left me-1"></i> Volver al Dashboard
+        </a>
+    </div>
+
+    @if (TempData["Exito"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4" role="alert" style="background-color: #d4edda; color: #155724;">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["Exito"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="row g-4">
+        <!-- Formulario de publicación -->
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-header text-white py-3 rounded-top-4" style="background: linear-gradient(135deg, #1b2a47 0%, #2c3e50 100%);">
+                    <h5 class="card-title mb-0 fw-semibold">
+                        <i class="bi bi-send-fill me-2" style="color: #e67e22;"></i> Publicar Nuevo Comunicado
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="CrearNotificacion" method="post">
+                        <div class="mb-3">
+                            <label class="form-label fw-medium text-secondary">Título del Comunicado</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-fonts"></i></span>
+                                <input type="text" id="txtTitulo" name="titulo" class="form-control border-start-0" placeholder="Ej: Suspensión de actividades" maxlength="100" required oninput="actualizarContadoresNotif()" />
+                            </div>
+                            <div class="d-flex justify-content-between text-muted small mt-1">
+                                <span>Máximo 100 caracteres</span>
+                                <span id="lblContadorTitulo">0 / 100</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-medium text-secondary">Destinatarios (Filtro por Rol)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-people-fill"></i></span>
+                                <select name="rolDestino" class="form-select border-start-0" required>
+                                    <option value="todos">🌐 Todos los Usuarios</option>
+                                    <option value="estudiante">🎓 Únicamente Estudiantes</option>
+                                    <option value="docente">👨‍🏫 Únicamente Docentes / Profesores</option>
+                                    <option value="acudiente">👨‍👩‍👧 Únicamente Acudientes / Padres</option>
+                                </select>
+                            </div>
+                            <small class="form-text text-muted">La notificación se mostrará en el perfil y dashboard del rol seleccionado.</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-medium text-secondary">Prioridad</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-shield-exclamation"></i></span>
+                                <select name="prioridad" class="form-select border-start-0" required>
+                                    <option value="leve">🟢 Leve (Avisos / El usuario puede marcarla como leída)</option>
+                                    <option value="alta">🔴 Alta (Importante / No se puede dar a leída por usuarios)</option>
+                                </select>
+                            </div>
+                            <small class="form-text text-muted">Prioridad Alta: los usuarios no le podrán dar a leído.</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-medium text-secondary">Fecha de Expiración (Opcional)</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-calendar-event"></i></span>
+                                <input type="datetime-local" name="fechaExpiracion" class="form-control border-start-0" />
+                            </div>
+                            <small class="form-text text-muted">Fecha y hora en la que la notificación desaparecerá automáticamente.</small>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-medium text-secondary">Mensaje / Contenido</label>
+                            <textarea id="txtMensaje" name="mensaje" class="form-control" rows="4" placeholder="Escribe aquí los detalles del anuncio..." maxlength="500" required oninput="actualizarContadoresNotif()"></textarea>
+                            <div class="d-flex justify-content-between text-muted small mt-1">
+                                <span>Máximo 500 caracteres</span>
+                                <span id="lblContadorMensaje">0 / 500</span>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn text-white w-100 py-2.5 rounded-3 fw-semibold shadow-sm btn-naranja">
+                            <i class="bi bi-megaphone-fill me-2"></i> Publicar Comunicado
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Historial de comunicados -->
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm rounded-4 h-100">
+                <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0 fw-semibold" style="color: #1b2a47;">
+                        <i class="bi bi-journal-text me-2" style="color: #e67e22;"></i> Historial de Comunicados
+                    </h5>
+                    <span class="badge text-white px-3 py-2 rounded-pill" style="background-color: #1b2a47;">
+                        Total: @Model.Count()
+                    </span>
+                </div>
+                <div class="card-body p-3">
+                    @if (!Model.Any())
+                    {
+                        <div class="text-center py-5 text-muted">
+                            <i class="bi bi-inbox fs-1 d-block mb-2 text-secondary opacity-50"></i>
+                            <p class="mb-0">No se han emitido comunicados globales aún.</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="vstack gap-3">
+                            @foreach (var item in Model)
+                            {
+                                string badgeBg = item.RolDestino switch
+                                {
+                                    "estudiante" => "background-color: #6f42c1; color: white;",
+                                    "docente" => "background-color: #2980b9; color: white;",
+                                    "acudiente" => "background-color: #e67e22; color: white;",
+                                    _ => "background-color: #1b2a47; color: white;"
+                                };
+
+                                string badgeLabel = item.RolDestino switch
+                                {
+                                    "estudiante" => "Estudiantes",
+                                    "docente" => "Docentes",
+                                    "acudiente" => "Acudientes",
+                                    _ => "Todos"
+                                };
+
+                                string badgeIcon = item.RolDestino switch
+                                {
+                                    "estudiante" => "bi-mortarboard-fill",
+                                    "docente" => "bi-person-badge-fill",
+                                    "acudiente" => "bi-people-fill",
+                                    _ => "bi-globe"
+                                };
+
+                                bool esPrioAlta = ((item.Prioridad ?? "").Trim().ToLower() == "alta");
+
+                                <div class="card border border-light-subtle shadow-sm rounded-3" style="word-break: break-word; overflow-wrap: anywhere;">
+                                    <div class="card-body p-3">
+                                        <div class="d-flex justify-content-between align-items-start mb-2 gap-2">
+                                            <div style="min-width: 0; flex: 1;">
+                                                <span class="badge px-2.5 py-1 mb-2 shadow-sm" style="@badgeBg">
+                                                    <i class="bi @badgeIcon me-1"></i> @badgeLabel
+                                                </span>
+                                                @if (esPrioAlta)
+                                                {
+                                                    <span class="badge bg-danger px-2.5 py-1 mb-2 ms-1 shadow-sm">
+                                                        <i class="bi bi-exclamation-triangle-fill me-1"></i> Alta (No descartable)
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-success-subtle text-success border border-success-subtle px-2.5 py-1 mb-2 ms-1">
+                                                        <i class="bi bi-info-circle me-1"></i> Leve
+                                                    </span>
+                                                }
+                                                <h6 class="fw-bold mb-1" style="color: #1b2a47; word-break: break-word; overflow-wrap: anywhere;">@item.Titulo</h6>
+                                            </div>
+                                            <form asp-action="EliminarNotificacion" method="post" onsubmit="return confirm('¿Seguro que deseas eliminar este comunicado?');">
+                                                <input type="hidden" name="id" value="@item.ID_Notificacion" />
+                                                <button type="submit" class="btn btn-outline-danger btn-sm rounded-circle p-1" title="Eliminar comunicado">
+                                                    <i class="bi bi-trash-fill"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                        <p class="card-text text-secondary mb-2 small" style="white-space: pre-line; word-break: break-word; overflow-wrap: anywhere;">@item.Mensaje</p>
+                                        @if (item.FechaExpiracion.HasValue)
+                                        {
+                                            <div class="mb-2 small text-warning-emphasis">
+                                                <i class="bi bi-hourglass-split text-warning me-1"></i> Expira: @item.FechaExpiracion.Value.ToString("dd/MM/yyyy hh:mm tt")
+                                            </div>
+                                        }
+                                        <div class="d-flex justify-content-between align-items-center text-muted border-top pt-2 small">
+                                            <span>
+                                                <i class="bi bi-clock me-1" style="color: #e67e22;"></i> @item.FechaCreacion.ToString("dd/MM/yyyy hh:mm tt")
+                                            </span>
+                                            <span>
+                                                <i class="bi bi-person-circle me-1"></i> Emisor: @(item.Emisor != null ? item.Emisor.NOMBRES + " " + item.Emisor.APELLIDOS : "Admin")
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .btn-naranja {
+        background-color: #e67e22 !important;
+        border: none !important;
+        transition: all 0.3s ease;
+    }
+
+    .btn-naranja:hover {
+        background-color: #d35400 !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(230, 126, 34, 0.3) !important;
+    }
+</style>
