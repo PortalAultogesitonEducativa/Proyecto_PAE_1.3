@@ -4,42 +4,67 @@
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>@ViewData["Title"] - PAE</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap-reboot.css" />
+        <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap-reboot.css" />
         <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
         <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11">
+            (function () {
+                var f = localStorage.getItem('pae_filtro_daltonismo');
+                if (f && f !== 'normal') {
+                    document.documentElement.classList.add('filtro-' + f);
+                }
+            })();
+        </script>
     </head>
     <body>
         <header>
             <nav class="navbar navbar-expand-md navbar-light border-bottom box-shadow mb-3" style="background-color: #ffffff;">
                 <div class="container">
-                    <a class="navbar-brand d-flex align-items-center" asp-controller="Home" asp-action="Index">
-                        <img src="~/images/logo.png" alt="PAE Logo" style="height: 45px;" class="me-2">
-                        <span class="fw-bold" style="color: #0d2a4a; font-size: 1.2rem;">Portal de Autogestión Educativa</span>
-                    </a>
+                    @using Microsoft.AspNetCore.Http
+                    @if (Context.Session.GetString("NombreUsuario") != null)
+                    {
+                        <a class="navbar-brand d-flex align-items-center" id="navbarBrandLink" href="#" data-bs-toggle="modal" data-bs-target="#modalConfirmarSalida">
+                            <img src="~/images/logo.png" alt="PAE Logo" style="height: 45px;" class="me-2">
+                            <span class="fw-bold" style="color: #0d2a4a; font-size: 1.2rem;">Portal de Autogestión Educativa</span>
+                        </a>
+                    }
+                    else
+                    {
+                        <a class="navbar-brand d-flex align-items-center" id="navbarBrandLink" asp-controller="Home" asp-action="Index">
+                            <img src="~/images/logo.png" alt="PAE Logo" style="height: 45px;" class="me-2">
+                            <span class="fw-bold" style="color: #0d2a4a; font-size: 1.2rem;">Portal de Autogestión Educativa</span>
+                        </a>
+                    }
                     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse">
                         <span class="navbar-toggler-icon"></span>
                     </button>
                     <div class="navbar-collapse collapse d-sm-inline-flex">
-                        <ul class="navbar-nav flex-grow-1 justify-content-center">
-                            <li class="nav-item">
-                                <a class="nav-link text-dark mx-2" asp-controller="Home" asp-action="Index">Inicio</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark mx-2" asp-controller="Home" asp-action="Nosotros">Nosotros</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark mx-2" asp-controller="Home" asp-action="Cursos">Módulos</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark px-3" asp-controller="Home" asp-action="Blog">Blog</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark mx-2" asp-controller="Home" asp-action="Contacto">Contacto</a>
-                            </li>
-                        </ul>
+                        @if (Context.Session.GetString("NombreUsuario") == null)
+                        {
+                            <ul class="navbar-nav flex-grow-1 justify-content-center">
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark mx-2" asp-controller="Home" asp-action="Index">Inicio</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark mx-2" asp-controller="Home" asp-action="Nosotros">Nosotros</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark mx-2" asp-controller="Home" asp-action="Cursos">Módulos</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark px-3" asp-controller="Home" asp-action="Blog">Blog</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark mx-2" asp-controller="Home" asp-action="Contacto">Contacto</a>
+                                </li>
+                            </ul>
+                        }
+                        else
+                        {
+                            <div class="flex-grow-1"></div>
+                        }
                         <div class="d-flex align-items-center">
-                            @using Microsoft.AspNetCore.Http
                             @if (Context.Session.GetString("NombreUsuario") != null)
                             {
                                 string userRolLayout = (Context.Session.GetString("UserRol") ?? "").Trim().ToLower();
@@ -60,11 +85,11 @@
 
                                         <div class="dropdown-menu dropdown-menu-end shadow border-0 rounded-4 p-0"
                                              id="panelCampana"
-                                             style="width: 360px; max-height: 480px; overflow-y: auto;">
+                                             style="width: 360px; max-height: 480px; overflow-y: auto; overflow-x: hidden; word-break: break-word; overflow-wrap: anywhere;">
                                             <div class="d-flex justify-content-between align-items-center px-4 py-3 rounded-top-4"
                                                  style="background: linear-gradient(135deg, #1b2a47 0%, #2c3e50 100%);">
                                                 <h6 class="mb-0 fw-bold text-white">
-                                                    <i class="bi bi-bell-fill me-2" style="color:#e67e22;"></i>Comunicados
+                                                    <i class="bi bi-bell-fill me-2" style="color:#e67e22;"></i>Notificaciones y Comunicados
                                                 </h6>
                                                 <span id="badgePanelCount" class="badge rounded-pill" style="background-color:#e67e22;">0</span>
                                             </div>
@@ -93,7 +118,7 @@
                                         </li>
                                         <li><hr class="dropdown-divider"></li>
                                         <li>
-                                            <a class="dropdown-item text-danger py-2" asp-controller="Login" asp-action="Logout">
+                                            <a class="dropdown-item text-danger py-2" href="#" data-bs-toggle="modal" data-bs-target="#modalConfirmarSalida">
                                                 <i class="bi bi-box-arrow-right me-2"></i> Cerrar Sesión
                                             </a>
                                         </li>
@@ -112,7 +137,7 @@
             </nav>
         </header>
 
-        <div class="container-fluid p-0">
+        <div class="main-wrapper container-fluid p-0">
             <main role="main">
                 @RenderBody()
             </main>
@@ -148,7 +173,7 @@
         @if (Context.Session.GetString("NombreUsuario") != null)
         {
             <text>
-                <!-- Modal de advertencia -->
+                <!-- Modal de advertencia de expiración de sesión -->
                 <div class="modal fade" id="modalSesion" tabindex="-1" data-bs-backdrop="static">
                     <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content border-0 shadow">
@@ -174,6 +199,40 @@
                     </div>
                 </div>
 
+                <!-- Modal de confirmación al salir del sistema / ir al inicio -->
+                <div class="modal fade" id="modalConfirmarSalida" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered" style="max-width: 480px;">
+                        <div class="modal-content border-0 shadow-lg overflow-hidden" style="border-radius: 8px;">
+                            <!-- Encabezado Azul Oscuro -->
+                            <div class="modal-header px-4 py-3 border-0" style="background-color: #0b2b48;">
+                                <h5 class="modal-title text-white fw-bold d-flex align-items-center mb-0" style="font-size: 1.25rem;">
+                                    <i class="bi bi-exclamation-triangle-fill me-2 fs-4 text-white"></i>
+                                    ¿Salir del sistema?
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <!-- Cuerpo del Modal -->
+                            <div class="modal-body text-center py-4 px-4 bg-white">
+                                <p class="fs-5 fw-medium mb-1" style="color: #1b2a47; line-height: 1.4;">
+                                    Si continúas, se cerrará tu sesión actual
+                                </p>
+                                <p class="fs-5 fw-medium mb-0" style="color: #1b2a47; line-height: 1.4;">
+                                    y tendrás que iniciar sesión de nuevo. ¿Deseas continuar?
+                                </p>
+                            </div>
+                            <!-- Botones del Modal -->
+                            <div class="modal-footer justify-content-center border-top border-light-subtle bg-white pt-3 pb-4 px-4 gap-3">
+                                <button type="button" class="btn btn-outline-secondary px-4 py-2 fw-medium rounded-3" data-bs-dismiss="modal" style="min-width: 120px; border-color: #ced4da; color: #555555;">
+                                    Cancelar
+                                </button>
+                                <a href="/Login/Logout" class="btn text-white px-4 py-2 fw-medium rounded-3" style="background-color: #e53935; border: none; min-width: 160px;">
+                                    <i class="bi bi-box-arrow-right me-1"></i> Sí, cerrar sesión
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <script>
                             // Tiempo total de sesión en segundos (debe coincidir con Program.cs)
                             const TIEMPO_SESION = 15 * 60; // 15 minutos
@@ -182,9 +241,11 @@
                             let tiempoRestante = TIEMPO_SESION;
                             let intervalo;
                             let modalMostrado = false;
-                            let modal = new bootstrap.Modal(document.getElementById('modalSesion'));
+                            const elemSesion = document.getElementById('modalSesion');
+                            let modal = elemSesion ? new bootstrap.Modal(elemSesion) : null;
 
                             function iniciarTemporizador() {
+                                if (!modal) return;
                                 intervalo = setInterval(() => {
                                     tiempoRestante--;
 
@@ -205,11 +266,12 @@
 
                             function iniciarCuentaRegresiva() {
                                 let segundos = AVISO_ANTES;
-                                document.getElementById('cuentaRegresiva').textContent = segundos;
+                                const cuentaRegElem = document.getElementById('cuentaRegresiva');
+                                if (cuentaRegElem) cuentaRegElem.textContent = segundos;
 
                                 let cuentaIntervalo = setInterval(() => {
                                     segundos--;
-                                    document.getElementById('cuentaRegresiva').textContent = segundos;
+                                    if (cuentaRegElem) cuentaRegElem.textContent = segundos;
                                     if (segundos <= 0) clearInterval(cuentaIntervalo);
                                 }, 1000);
                             }
@@ -220,7 +282,7 @@
                                     .then(() => {
                                         tiempoRestante = TIEMPO_SESION;
                                         modalMostrado  = false;
-                                        modal.hide();
+                                        if (modal) modal.hide();
                                     });
                             }
 
@@ -252,21 +314,54 @@
                         'todos': '🌐',
                         'estudiante': '🎓',
                         'docente': '👨‍🏫',
-                        'acudiente': '👨‍👩‍👧'
+                        'acudiente': '👨‍👩‍👧',
+                        'admin': '⚙️'
                     };
-                    const icono = iconos[notif.rolDestino] || '📢';
-                    return `<div class="card border-0 mb-2 shadow-sm rounded-3" style="border-left:4px solid #e67e22 !important;">
+                    let icono = iconos[notif.rolDestino] || '📢';
+                    if (notif.rolDestino && notif.rolDestino.startsWith('user_')) {
+                        if (notif.titulo && notif.titulo.toLowerCase().includes('contraseña')) {
+                            icono = '🔑';
+                        } else {
+                            icono = '👤';
+                        }
+                    }
+
+                    const esAlta = (notif.prioridad === 'alta');
+                    const badgePrioridad = esAlta
+                        ? `<span class="badge bg-danger rounded-pill px-2 py-0.5 ms-1" style="font-size: 0.65rem;"><i class="bi bi-exclamation-triangle-fill me-1"></i>Alta</span>`
+                        : `<span class="badge bg-success-subtle text-success rounded-pill px-2 py-0.5 ms-1" style="font-size: 0.65rem;">Leve</span>`;
+
+                    const btnDescartar = esAlta
+                        ? `<span class="text-muted small" title="Notificación de alta prioridad (Obligatoria)" style="font-size: 0.7rem;"><i class="bi bi-lock-fill text-danger me-1"></i>Fija</span>`
+                        : `<button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2 rounded-pill btn-marcar-leida" onclick="marcarNotifLeida(event, ${notif.iD_Notificacion})" title="Marcar como leída / Descartar" style="font-size: 0.7rem;">
+                            <i class="bi bi-check2-all text-success me-1"></i>Leída
+                          </button>`;
+
+                    const fechaExpHtml = notif.fechaExpiracion
+                        ? `<div class="mt-1 text-muted" style="font-size:0.68rem;"><i class="bi bi-hourglass-split me-1 text-warning"></i>Expira: ${escHtml(notif.fechaExpiracion)}</div>`
+                        : '';
+
+                    const borderColor = esAlta ? '#dc3545' : '#e67e22';
+
+                    return `<div class="card border-0 mb-2 shadow-sm rounded-3 notif-item-${notif.iD_Notificacion}" style="border-left:4px solid ${borderColor} !important; word-break: break-word; overflow-wrap: anywhere;">
                         <div class="card-body py-2 px-3">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <h6 class="mb-0 fw-bold small" style="color:#1b2a47;">${icono} ${escHtml(notif.titulo)}</h6>
-                                <small class="text-muted ms-2 text-nowrap">${escHtml(notif.fecha)}</small>
+                            <div class="d-flex justify-content-between align-items-start mb-1 gap-2">
+                                <h6 class="mb-0 fw-bold small text-wrap" style="color:#1b2a47; word-break: break-word; overflow-wrap: anywhere;">
+                                    ${icono} ${escHtml(notif.titulo)} ${badgePrioridad}
+                                </h6>
+                                <small class="text-muted text-nowrap" style="font-size: 0.7rem;">${escHtml(notif.fecha)}</small>
                             </div>
-                            <p class="mb-0 text-secondary" style="font-size:0.78rem; white-space:pre-line;">${escHtml(notif.mensaje)}</p>
+                            <p class="mb-1 text-secondary small" style="font-size:0.78rem; white-space:pre-line; word-break: break-word; overflow-wrap: anywhere;">${escHtml(notif.mensaje)}</p>
+                            ${fechaExpHtml}
+                            <div class="d-flex justify-content-end align-items-center mt-1">
+                                ${btnDescartar}
+                            </div>
                         </div>
                     </div>`;
                 }
 
                 function escHtml(str) {
+                    if (!str) return '';
                     return String(str)
                         .replace(/&/g, '&amp;')
                         .replace(/</g, '&lt;')
@@ -274,13 +369,32 @@
                         .replace(/"/g, '&quot;');
                 }
 
+                window.marcarNotifLeida = function(event, idNotificacion) {
+                    if (event) event.stopPropagation();
+
+                    fetch('/Home/MarcarNotificacionLeida', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ idNotificacion: idNotificacion })
+                    })
+                    .then(r => r.json())
+                    .then(res => {
+                        if (res.success) {
+                            cargarNotificaciones();
+                        } else if (res.message) {
+                            alert(res.message);
+                        }
+                    })
+                    .catch(() => {});
+                };
+
                 function cargarNotificaciones() {
                     fetch('/Home/GetNotificacionesCampana')
                         .then(r => r.json())
                         .then(data => {
                             // Badge en el botón
                             if (data.count > 0) {
-                                badge.textContent = data.count > 9 ? '9+' : data.count;
+                                badge.textContent = data.count > 20 ? '20+' : data.count;
                                 badge.style.display = '';
                                 badgeCount.textContent = data.count;
                                 btnCampana.style.backgroundColor = '#fff3e0';
@@ -323,5 +437,117 @@
                 box-shadow: 0 0 0 4px rgba(230,126,34,0.2) !important;
             }
         </style>
+
+        <!-- FILTROS SVG DE ACCESIBILIDAD PARA DALTONISMO -->
+        <svg style="display: none; width: 0; height: 0;" aria-hidden="true">
+            <defs>
+                <!-- Protanopía (Rojo-Ciego) -->
+                <filter id="protanopia-filter">
+                    <feColorMatrix type="matrix" values="
+                        0.56667 0.43333 0.00000 0 0
+                        0.55833 0.44167 0.00000 0 0
+                        0.00000 0.24167 0.75833 0 0
+                        0       0       0       1 0"/>
+                </filter>
+                <!-- Deuteranopía (Verde-Ciego) -->
+                <filter id="deuteranopia-filter">
+                    <feColorMatrix type="matrix" values="
+                        0.625 0.375 0.000 0 0
+                        0.700 0.300 0.000 0 0
+                        0.000 0.300 0.700 0 0
+                        0     0     0     1 0"/>
+                </filter>
+                <!-- Tritanopía (Azul-Ciego) -->
+                <filter id="tritanopia-filter">
+                    <feColorMatrix type="matrix" values="
+                        0.950 0.050 0.000 0 0
+                        0.000 0.433 0.567 0 0
+                        0.000 0.475 0.525 0 0
+                        0     0     0     1 0"/>
+                </filter>
+            </defs>
+        </svg>
+
+        <!-- WIDGET FLOTANTE DE ACCESIBILIDAD (DALTONISMO) -->
+        <div class="accesibilidad-widget dropdown dropup">
+            <button type="button" class="accesibilidad-btn" data-bs-toggle="dropdown" aria-expanded="false" title="Filtros de Accesibilidad Visual (Daltonismo)">
+                <i class="bi bi-universal-access"></i>
+            </button>
+            <div class="dropdown-menu accesibilidad-menu p-3 border-0 shadow-lg rounded-4 mb-2">
+                <div class="d-flex align-items-center mb-2 pb-2 border-bottom">
+                    <i class="bi bi-eye-fill me-2 fs-5" style="color: #e67e22;"></i>
+                    <div>
+                        <h6 class="mb-0 fw-bold" style="color: #1b2a47;">Accesibilidad Visual</h6>
+                        <small class="text-muted" style="font-size: 0.72rem;">Filtros para Daltonismo</small>
+                    </div>
+                </div>
+                <div class="vstack gap-1" id="opcionesDaltonismo">
+                    <div class="accesibilidad-item d-flex align-items-center justify-content-between" onclick="aplicarFiltroDaltonismo('normal')" data-filtro="normal">
+                        <span>👁️ Visión Normal</span>
+                        <i class="bi bi-check-circle-fill text-success d-none check-filtro"></i>
+                    </div>
+                    <div class="accesibilidad-item d-flex align-items-center justify-content-between" onclick="aplicarFiltroDaltonismo('deuteranopia')" data-filtro="deuteranopia">
+                        <div>
+                            <span class="fw-medium">🟢 Deuteranopía</span>
+                            <small class="text-muted d-block" style="font-size: 0.7rem;">Dificultad verde/rojo (Más común)</small>
+                        </div>
+                        <i class="bi bi-check-circle-fill text-success d-none check-filtro"></i>
+                    </div>
+                    <div class="accesibilidad-item d-flex align-items-center justify-content-between" onclick="aplicarFiltroDaltonismo('protanopia')" data-filtro="protanopia">
+                        <div>
+                            <span class="fw-medium">🔴 Protanopía</span>
+                            <small class="text-muted d-block" style="font-size: 0.7rem;">Dificultad tono rojo</small>
+                        </div>
+                        <i class="bi bi-check-circle-fill text-success d-none check-filtro"></i>
+                    </div>
+                    <div class="accesibilidad-item d-flex align-items-center justify-content-between" onclick="aplicarFiltroDaltonismo('tritanopia')" data-filtro="tritanopia">
+                        <div>
+                            <span class="fw-medium">🔵 Tritanopía</span>
+                            <small class="text-muted d-block" style="font-size: 0.7rem;">Dificultad azul/amarillo</small>
+                        </div>
+                        <i class="bi bi-check-circle-fill text-success d-none check-filtro"></i>
+                    </div>
+                    <div class="accesibilidad-item d-flex align-items-center justify-content-between" onclick="aplicarFiltroDaltonismo('acromatopsia')" data-filtro="acromatopsia">
+                        <div>
+                            <span class="fw-medium">⚪ Acromatopsia</span>
+                            <small class="text-muted d-block" style="font-size: 0.7rem;">Escala de grises completa</small>
+                        </div>
+                        <i class="bi bi-check-circle-fill text-success d-none check-filtro"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function aplicarFiltroDaltonismo(tipo) {
+                const root = document.documentElement;
+                root.classList.remove('filtro-normal', 'filtro-protanopia', 'filtro-deuteranopia', 'filtro-tritanopia', 'filtro-acromatopsia');
+
+                if (tipo && tipo !== 'normal') {
+                    root.classList.add('filtro-' + tipo);
+                    localStorage.setItem('pae_filtro_daltonismo', tipo);
+                } else {
+                    localStorage.setItem('pae_filtro_daltonismo', 'normal');
+                }
+                actualizarUIFiltros();
+            }
+
+            function actualizarUIFiltros() {
+                const actual = localStorage.getItem('pae_filtro_daltonismo') || 'normal';
+                document.querySelectorAll('#opcionesDaltonismo .accesibilidad-item').forEach(item => {
+                    const f = item.getAttribute('data-filtro');
+                    const check = item.querySelector('.check-filtro');
+                    if (f === actual) {
+                        item.classList.add('active');
+                        if (check) check.classList.remove('d-none');
+                    } else {
+                        item.classList.remove('active');
+                        if (check) check.classList.add('d-none');
+                    }
+                });
+            }
+
+            document.addEventListener('DOMContentLoaded', actualizarUIFiltros);
+        </script>
     </body>
 </html>

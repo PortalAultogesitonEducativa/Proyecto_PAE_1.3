@@ -28,12 +28,14 @@ namespace ProyectoPAE.Models
         public DbSet<GU_RECUPERACION_PASSWORD> RecuperacionesPassword { get; set; }
         public DbSet<GU_HISTORIAL_PASSWORD> HistorialPasswords { get; set; }
 
+        public DbSet<GU_IntentosLogin> IntentosLogin { get; set; }
         // --- FIRMA DE CERTIFICADOS ---
         public DbSet<Certificado> Certificados { get; set; }
         public DbSet<CertificadoDetalle> CertificadosDetalle { get; set; }
 
         // --- NOTIFICACIONES Y ANUNCIOS GLOBALES ---
         public DbSet<Notificacion> Notificaciones { get; set; }
+        public DbSet<NotificacionLeida> NotificacionesLeidas { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -59,6 +61,35 @@ namespace ProyectoPAE.Models
                 .WithMany()
                 .HasForeignKey(ep => ep.ID_ESTUDIANTE)
                 .OnDelete(DeleteBehavior.Restrict);
+        }
+
+        public void AsegurarEsquemaNotificaciones()
+        {
+            try
+            {
+                Database.ExecuteSqlRaw(@"
+                    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[GU_NOTIFICACION]') AND name = 'Prioridad')
+                    BEGIN
+                        ALTER TABLE [dbo].[GU_NOTIFICACION] ADD [Prioridad] NVARCHAR(20) NOT NULL DEFAULT 'leve';
+                    END
+
+                    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[GU_NOTIFICACION]') AND name = 'FechaExpiracion')
+                    BEGIN
+                        ALTER TABLE [dbo].[GU_NOTIFICACION] ADD [FechaExpiracion] DATETIME NULL;
+                    END
+
+                    IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'GU_NOTIFICACION_LEIDA')
+                    BEGIN
+                        CREATE TABLE [dbo].[GU_NOTIFICACION_LEIDA](
+                            [ID_NotificacionLeida] [int] IDENTITY(1,1) NOT NULL PRIMARY KEY,
+                            [ID_Notificacion] [int] NOT NULL,
+                            [ID_Usuario] [int] NOT NULL,
+                            [FechaLeido] [datetime] NOT NULL DEFAULT GETDATE()
+                        );
+                    END
+                ");
+            }
+            catch { }
         }
     }
 }
