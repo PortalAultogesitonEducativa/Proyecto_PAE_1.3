@@ -59,6 +59,19 @@ namespace ProyectoPAE.Controllers
             var certificado = await _certificadoService.GenerarCertificadoAsync(
                 idEstudiante, tipoCertificado ?? "Reporte de calificaciones", idsCalificacion, idUsuarioEmisor);
 
+            // Notificación del sistema
+            _context.Notificaciones.Add(new Notificacion
+            {
+                Titulo = "Certificado Emitido",
+                Mensaje = $"Se ha generado un nuevo certificado: {tipoCertificado ?? "Reporte de calificaciones"}.",
+                RolDestino = $"user_{idEstudiante}",
+                FechaCreacion = DateTime.Now,
+                ID_UsuarioEmisor = idUsuarioEmisor,
+                Activa = true,
+                Prioridad = "leve"
+            });
+            await _context.SaveChangesAsync();
+
             return RedirectToAction(nameof(Confirmacion), new { id = certificado.IdCertificado });
         }
 
@@ -87,6 +100,20 @@ namespace ProyectoPAE.Controllers
             try
             {
                 var certificado = await _certificadoService.GenerarCertificadoMatriculaAsync(usuario.ID_Usuario, idUsuarioEmisor);
+
+                // Notificación del sistema
+                _context.Notificaciones.Add(new Notificacion
+                {
+                    Titulo = "Certificado de Matrícula Emitido",
+                    Mensaje = "Se ha generado un nuevo certificado oficial de matrícula académica.",
+                    RolDestino = $"user_{usuario.ID_Usuario}",
+                    FechaCreacion = DateTime.Now,
+                    ID_UsuarioEmisor = idUsuarioEmisor,
+                    Activa = true,
+                    Prioridad = "leve"
+                });
+                await _context.SaveChangesAsync();
+
                 return RedirectToAction(nameof(Confirmacion), new { id = certificado.IdCertificado });
             }
             catch (InvalidOperationException ex)

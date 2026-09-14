@@ -34,6 +34,13 @@ namespace ProyectoPAE.Models
         [Column("Activa")]
         public bool Activa { get; set; } = true;
 
+        [MaxLength(20)]
+        [Column("Prioridad")]
+        public string Prioridad { get; set; } = "leve"; // "leve" o "alta"
+
+        [Column("FechaExpiracion")]
+        public DateTime? FechaExpiracion { get; set; }
+
         [ForeignKey("ID_UsuarioEmisor")]
         public virtual Usuario Emisor { get; set; }
     }

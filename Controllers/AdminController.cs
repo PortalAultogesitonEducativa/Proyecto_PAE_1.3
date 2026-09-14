@@ -1,11 +1,12 @@
-using Microsoft.AspNetCore.Mvc;
-using ProyectoPAE.Models;
-using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using ProyectoPAE.Models;
 using Rotativa.AspNetCore;
+
 
 namespace ProyectoPAE.Controllers
 {
@@ -13,10 +14,12 @@ namespace ProyectoPAE.Controllers
     {
         private readonly ApplicationDbContext _context;
 
+
         public AdminController(ApplicationDbContext context)
         {
             _context = context;
         }
+
 
         // RF 1.4: Buscar y visualizar usuarios
         public IActionResult Usuarios(string buscar)
@@ -24,13 +27,16 @@ namespace ProyectoPAE.Controllers
             // Seguridad: Solo si es admin puede entrar
             var rol = HttpContext.Session.GetString("UserRol");
 
+
             if (rol != "admin")
             {
                 return RedirectToAction("Dashboard", "Home");
             }
 
+
             // Traemos todos los usuarios
             var lista = _context.Usuarios.AsQueryable();
+
 
             // Si hay algo en el buscador, filtramos por nombre, apellido o rol
             if (!string.IsNullOrEmpty(buscar))
@@ -40,8 +46,10 @@ namespace ProyectoPAE.Controllers
                                          u.ROL.Contains(buscar));
             }
 
+
             return View(lista.ToList());
         }
+
 
         [HttpPost]
         public IActionResult RegistrarEstudiante(Usuario nuevoEstudiante, int CursoSeleccionado)
@@ -53,6 +61,7 @@ namespace ProyectoPAE.Controllers
                 TempData["Error"] = "Este correo ya está registrado.";
                 return RedirectToAction("Usuarios");
             }
+
 
             if (ModelState.IsValid)
             {
@@ -66,14 +75,17 @@ namespace ProyectoPAE.Controllers
                     nuevoEstudiante.ACTIVO = true;
                     nuevoEstudiante.FECHA_CREACION = DateTime.Now;
 
+
                     _context.Usuarios.Add(nuevoEstudiante);
                     _context.SaveChanges(); // Genera nuevoEstudiante.ID_Usuario
+
 
                     // 3. Insertar en la tabla ESTUDIANTE vinculando id_usuario
                     var anioActual = DateTime.Now.Year;
                     var consecutivo = _context.ESTUDIANTE
                         .Count(e => e.codigo_estudiante.StartsWith($"EST-{anioActual}")) + 1;
                     var codigoEstudiante = $"EST-{anioActual}-{consecutivo:D3}";
+
 
                     var entidadEstudiante = new Estudiante
                     {
@@ -85,12 +97,15 @@ namespace ProyectoPAE.Controllers
                         id_usuario = nuevoEstudiante.ID_Usuario // Se vincula con GU_Usuario
                     };
 
+
                     _context.ESTUDIANTE.Add(entidadEstudiante);
                     _context.SaveChanges(); // Genera entidadEstudiante.id_estudiante
+
 
                     // 4. Crear el registro en MATRICULA asociando id_estudiante
                     var hoy = DateTime.Now;
                     var semestre = hoy.Month <= 6 ? "I" : "II";
+
 
                     var nuevaMatricula = new Matricula
                     {
@@ -102,10 +117,13 @@ namespace ProyectoPAE.Controllers
                         ano = hoy.Year
                     };
 
+
                     _context.Matriculas.Add(nuevaMatricula);
                     _context.SaveChanges();
 
+
                     transaction.Commit();
+
 
                     TempData["Mensaje"] = "Estudiante registrado y matriculado con éxito.";
                     return RedirectToAction("Usuarios");
@@ -118,8 +136,12 @@ namespace ProyectoPAE.Controllers
                 }
             }
 
+
             return View("Usuarios", _context.Usuarios.ToList());
         }
+
+
+
 
 
 
@@ -129,17 +151,21 @@ namespace ProyectoPAE.Controllers
             if (model.ROL == "Estudiante" && model.CursoSeleccionado == null)
                 ModelState.AddModelError("CursoSeleccionado", "Debe seleccionar un grado para el estudiante.");
 
+
             if (model.ROL == "Estudiante" && (model.Acudientes == null || !model.Acudientes.Any(a => !string.IsNullOrWhiteSpace(a.NOMBRES))))
                 ModelState.AddModelError("Acudientes", "Debe registrar al menos un acudiente.");
 
+
             if (model.ROL == "Docente" && string.IsNullOrWhiteSpace(model.AREA_ASIGNATURA))
                 ModelState.AddModelError("AREA_ASIGNATURA", "Debe indicar el área o asignatura del docente.");
+
 
             if (!ModelState.IsValid)
             {
                 TempData["Error"] = "Revisa los campos del formulario, hay datos obligatorios sin diligenciar.";
                 return RedirectToAction("Usuarios");
             }
+
 
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
@@ -173,8 +199,10 @@ namespace ProyectoPAE.Controllers
                     FORZAR_CAMBIO_CLAVE = model.FORZAR_CAMBIO_CLAVE
                 };
 
+
                 _context.Usuarios.Add(nuevoUsuario);
                 await _context.SaveChangesAsync();
+
 
                 if (model.ROL == "Estudiante" && model.CursoSeleccionado.HasValue)
                 {
@@ -182,6 +210,7 @@ namespace ProyectoPAE.Controllers
                     var consecutivo = await _context.ESTUDIANTE
                         .CountAsync(e => e.codigo_estudiante.StartsWith($"EST-{anioActual}")) + 1;
                     var codigoEstudiante = $"EST-{anioActual}-{consecutivo:D3}";
+
 
                     var nuevoEstudiante = new Estudiante
                     {
@@ -195,8 +224,10 @@ namespace ProyectoPAE.Controllers
                     _context.ESTUDIANTE.Add(nuevoEstudiante);
                     await _context.SaveChangesAsync();
 
+
                     var hoy = DateTime.Now;
                     var semestre = hoy.Month <= 6 ? "I" : "II";
+
 
                     _context.Matriculas.Add(new Matricula
                     {
@@ -208,15 +239,18 @@ namespace ProyectoPAE.Controllers
                         ano = hoy.Year
                     });
 
+
                     if (model.Acudientes != null)
                     {
                         foreach (var acu in model.Acudientes.Where(a => !string.IsNullOrWhiteSpace(a.NOMBRES)))
                         {
                             var acudienteExistente = await BuscarAcudienteExistente(acu.DOCUMENTO, acu.CORREO);
 
+
                             var partesNombre = acu.NOMBRES!.Trim().Split(' ', 2);
                             var nombreAcudiente = partesNombre[0];
                             var apellidoAcudiente = partesNombre.Length > 1 ? partesNombre[1] : "-";
+
 
                             Usuario usuarioAcudiente;
                             if (acudienteExistente != null)
@@ -243,9 +277,11 @@ namespace ProyectoPAE.Controllers
                                 await _context.SaveChangesAsync();
                             }
 
+
                             // Buscar o crear el registro legacy en PADRE_TUTOR, enlazado por id_usuario
                             var padreTutor = await _context.PADRE_TUTOR
                                 .FirstOrDefaultAsync(p => p.id_usuario == usuarioAcudiente.ID_Usuario);
+
 
                             if (padreTutor == null)
                             {
@@ -262,6 +298,7 @@ namespace ProyectoPAE.Controllers
                                 await _context.SaveChangesAsync();
                             }
 
+
                             _context.ESTUDIANTE_PADRE.Add(new EstudiantePadre
                             {
                                 ID_PADRE = padreTutor.id_padre,
@@ -273,10 +310,12 @@ namespace ProyectoPAE.Controllers
                     }
                 }
 
+
                 if (string.Equals(model.ROL, "Docente", StringComparison.OrdinalIgnoreCase))
                 {
                     var profeExistente = await _context.PROFESOR
                         .FirstOrDefaultAsync(p => p.email == model.CORREO_ELECTRONICO);
+
 
                     if (profeExistente != null)
                     {
@@ -303,8 +342,10 @@ namespace ProyectoPAE.Controllers
                     await _context.SaveChangesAsync();
                 }
 
+
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
+
 
                 TempData["Mensaje"] = "Usuario registrado correctamente.";
                 return RedirectToAction("Usuarios");
@@ -318,6 +359,7 @@ namespace ProyectoPAE.Controllers
             }
         }
 
+
         private async Task<Usuario?> BuscarAcudienteExistente(string? documento, string? correo)
         {
             if (!string.IsNullOrWhiteSpace(documento))
@@ -327,14 +369,17 @@ namespace ProyectoPAE.Controllers
                 if (porDocumento != null) return porDocumento;
             }
 
+
             if (!string.IsNullOrWhiteSpace(correo))
             {
                 return await _context.Usuarios
                     .FirstOrDefaultAsync(u => u.ROL == "acudiente" && u.CORREO_ELECTRONICO == correo);
             }
 
+
             return null;
         }
+
 
         private async Task<string> GenerarNombreUsuario(string nombres, string apellidos)
         {
@@ -344,8 +389,10 @@ namespace ProyectoPAE.Controllers
                 ? $"{inicial}.{nombres.Trim().ToLower()}"
                 : $"{inicial}.{apellido}";
 
+
             var nombreUsuario = baseNombre;
             var contador = 1;
+
 
             while (await _context.Usuarios.AnyAsync(u => u.NOMBRE_USUARIO == nombreUsuario))
             {
@@ -353,13 +400,16 @@ namespace ProyectoPAE.Controllers
                 nombreUsuario = $"{baseNombre}{contador}";
             }
 
+
             return nombreUsuario;
         }
+
 
         private string GenerarClaveTemporal()
         {
             return Guid.NewGuid().ToString("N").Substring(0, 10);
         }
+
 
         [HttpPost]
         public IActionResult RenovarMatricula(int idEstudiante)
@@ -369,6 +419,7 @@ namespace ProyectoPAE.Controllers
                 .Where(m => m.id_estudiante == idEstudiante)
                 .OrderByDescending(m => m.ano)
                 .FirstOrDefault();
+
 
             if (ultimaMatricula != null)
             {
@@ -382,9 +433,11 @@ namespace ProyectoPAE.Controllers
                     ano = 2026 // Año de renovación
                 };
 
+
                 _context.Matriculas.Add(nuevaMatricula);
                 _context.SaveChanges();
             }
+
 
             return RedirectToAction("Usuarios");
         }
@@ -393,10 +446,12 @@ namespace ProyectoPAE.Controllers
         {
             var usuario = _context.Usuarios.Find(idUsuario);
 
+
             // REGLAS DE ORO:
             // 1. No se puede editar al Admin Principal (ID 1).
             // 2. El nuevo rol no puede ser 'admin'.
             // 3. Solo permitimos cambiar a quienes son docentes o coordinadores.
+
 
             if (usuario != null && usuario.ID_Usuario != 1 && nuevoRol != "admin")
             {
@@ -406,6 +461,7 @@ namespace ProyectoPAE.Controllers
                     _context.SaveChanges();
                 }
             }
+
 
             return RedirectToAction("Usuarios");
         }
@@ -421,12 +477,14 @@ namespace ProyectoPAE.Controllers
             var estudiante = _context.ESTUDIANTE.FirstOrDefault(e => e.id_estudiante == id);
             if (estudiante == null) return NotFound();
 
+
             var modelo = new ReporteEstudianteViewModel
             {
                 IdEstudiante = estudiante.id_estudiante,
                 NombreCompleto = $"{estudiante.nombre} {estudiante.apellido}",
                 Codigo = estudiante.codigo_estudiante
             };
+
 
             // 2. Consulta ajustada a tu tabla real
             var notasAgrupadas = _context.Calificaciones
@@ -443,7 +501,9 @@ namespace ProyectoPAE.Controllers
                     Periodo4 = (double)(grupo.FirstOrDefault(x => x.Periodo == 4)?.Nota ?? 0)
                 }).ToList();
 
+
             modelo.NotasPorMateria = notasAgrupadas;
+
 
             // 3. Generación del PDF sin tildes en el nombre para evitar errores
             return new ViewAsPdf("VistaReportePDF", modelo)
@@ -455,6 +515,7 @@ namespace ProyectoPAE.Controllers
             };
         }
 
+
         // --- GESTIÓN DE NOTIFICACIONES / COMUNICADOS POR ROL ---
         [HttpGet]
         public async Task<IActionResult> Notificaciones()
@@ -465,13 +526,16 @@ namespace ProyectoPAE.Controllers
                 return RedirectToAction("Dashboard", "Home");
             }
 
+
             var lista = await _context.Notificaciones
                 .Include(n => n.Emisor)
                 .OrderByDescending(n => n.FechaCreacion)
                 .ToListAsync();
 
+
             return View(lista);
         }
+
 
         [HttpPost]
         public async Task<IActionResult> CrearNotificacion(string titulo, string mensaje, string rolDestino)
@@ -482,17 +546,20 @@ namespace ProyectoPAE.Controllers
                 return RedirectToAction("Dashboard", "Home");
             }
 
+
             int? idUsuarioSession = HttpContext.Session.GetInt32("UserId");
             if (!idUsuarioSession.HasValue)
             {
                 return RedirectToAction("Index", "Login");
             }
 
+
             if (string.IsNullOrWhiteSpace(titulo) || string.IsNullOrWhiteSpace(mensaje) || string.IsNullOrWhiteSpace(rolDestino))
             {
                 TempData["Error"] = "Todos los campos son obligatorios para publicar un comunicado.";
                 return RedirectToAction("Notificaciones");
             }
+
 
             var nuevaNotificacion = new Notificacion
             {
@@ -504,12 +571,15 @@ namespace ProyectoPAE.Controllers
                 Activa = true
             };
 
+
             _context.Notificaciones.Add(nuevaNotificacion);
             await _context.SaveChangesAsync();
+
 
             TempData["Exito"] = "Notificación publicada y enviada exitosamente.";
             return RedirectToAction("Notificaciones");
         }
+
 
         [HttpPost]
         public async Task<IActionResult> EliminarNotificacion(int id)
@@ -520,6 +590,7 @@ namespace ProyectoPAE.Controllers
                 return RedirectToAction("Dashboard", "Home");
             }
 
+
             var notificacion = await _context.Notificaciones.FindAsync(id);
             if (notificacion != null)
             {
@@ -528,12 +599,15 @@ namespace ProyectoPAE.Controllers
                 TempData["Exito"] = "La notificación fue eliminada.";
             }
 
+
             return RedirectToAction("Notificaciones");
         }
+
 
         // =====================================================
         // CRUD DE MATRÍCULAS
         // =====================================================
+
 
         /// <summary>Actualiza el grado y el estado de una matrícula existente.</summary>
         [HttpPost]
@@ -543,6 +617,7 @@ namespace ProyectoPAE.Controllers
             if (rol != "admin")
                 return RedirectToAction("Dashboard", "Home");
 
+
             var matricula = await _context.Matriculas.FindAsync(idMatricula);
             if (matricula == null)
             {
@@ -550,13 +625,16 @@ namespace ProyectoPAE.Controllers
                 return RedirectToAction("Dashboard", "Home", new { rol = "admin" });
             }
 
+
             matricula.id_curso = idCurso;
             matricula.estado = estado;
             await _context.SaveChangesAsync();
 
+
             TempData["MensajeMatriculas"] = "Matrícula actualizada correctamente.";
             return RedirectToAction("Dashboard", "Home", new { rol = "admin" });
         }
+
 
         /// <summary>Cambia únicamente el estado de una matrícula.</summary>
         [HttpPost]
@@ -565,6 +643,7 @@ namespace ProyectoPAE.Controllers
             var rol = HttpContext.Session.GetString("UserRol");
             if (rol != "admin")
                 return RedirectToAction("Dashboard", "Home");
+
 
             var matricula = await _context.Matriculas.FindAsync(idMatricula);
             if (matricula != null)
@@ -578,8 +657,10 @@ namespace ProyectoPAE.Controllers
                 TempData["ErrorMatriculas"] = "No se encontró la matrícula indicada.";
             }
 
+
             return RedirectToAction("Dashboard", "Home", new { rol = "admin" });
         }
+
 
         /// <summary>Elimina permanentemente una matrícula de la base de datos.</summary>
         [HttpPost]
@@ -588,6 +669,7 @@ namespace ProyectoPAE.Controllers
             var rol = HttpContext.Session.GetString("UserRol");
             if (rol != "admin")
                 return RedirectToAction("Dashboard", "Home");
+
 
             var matricula = await _context.Matriculas.FindAsync(idMatricula);
             if (matricula != null)
@@ -601,7 +683,8 @@ namespace ProyectoPAE.Controllers
                 TempData["ErrorMatriculas"] = "No se encontró la matrícula a eliminar.";
             }
 
+
             return RedirectToAction("Dashboard", "Home", new { rol = "admin" });
         }
     }
-}
+}

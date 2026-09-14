@@ -1,55 +1,150 @@
 @model List<ProyectoPAE.Models.Usuario>
+
+@*
+    ===================================================================
+    VISTA: Planilla.cshtml
+    PROPÓSITO: Planilla interactiva para el registro, edición y guardado de
+               calificaciones de los estudiantes por asignatura y periodo.
+    CARACTERÍSTICAS:
+    - Selección dinámica de Grado, Asignatura y Periodo.
+    - Notificaciones emergentes (Toasts) mediante SweetAlert2.
+    - Cálculo automático de definitivas y estado de aprobación.
+    ===================================================================
+*@
+
 @{
     ViewData["Title"] = "Planilla de Calificaciones";
 }
 
-<div class="p-4" style="max-width:1200px;margin:0 auto;">
+<div class="container-fluid mt-4 px-4 pb-5" style="max-width: 1300px; margin: 0 auto;">
 
-    <!-- 1. Encabezado con Título e Icono + Botón Volver -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3 style="color: #2980b9;" class="fw-bold mb-0">
-            <i class="bi bi-pencil-square me-2"></i>Planilla de Calificaciones
-        </h3>
-        <a href="@Url.Action("Dashboard", "Home")" class="btn btn-outline-secondary btn-sm">
-            Volver
-        </a>
+    <!-- 1. Encabezado Institucional con Degradado Azul -->
+    <div class="card border-0 shadow-sm mb-4 rounded-3 overflow-hidden">
+        <div class="d-flex flex-wrap justify-content-between align-items-center px-4 py-3 text-white"
+             style="background: linear-gradient(135deg, #0d2a4a 0%, #2980b9 100%);">
+            <div class="d-flex align-items-center gap-3">
+                <div class="rounded-circle d-flex align-items-center justify-content-center"
+                     style="width:48px;height:48px;background:rgba(255,255,255,0.15);">
+                    <i class="bi bi-pencil-square fs-4 text-white"></i>
+                </div>
+                <div>
+                    <h4 class="mb-0 fw-bold">Planilla de Calificaciones</h4>
+                    <span class="badge bg-light text-dark fw-bold mt-1 px-3 py-1" style="font-size:0.85rem;">
+                        <i class="bi bi-person-badge-fill me-1 text-primary"></i> Registro, Edición y Control de Notas
+                    </span>
+                </div>
+            </div>
+            <a href="@Url.Action("Dashboard", "Home")" class="btn btn-outline-light btn-sm rounded-pill px-3 shadow-sm mt-2 mt-sm-0">
+                <i class="bi bi-arrow-left me-1"></i> Volver al Dashboard
+            </a>
+        </div>
     </div>
 
-    <!-- 2. Banners de Notificación de Éxito o Error -->
+    <!-- 2. Banners de Notificación de Éxito o Error (Toast estilo Notificación) -->
     @if (TempData["MensajeNota"] != null)
     {
-        <div class="alert alert-success alert-dismissible fade show mb-4 shadow-sm" role="alert">
-            <i class="bi bi-check-circle-fill me-2"></i>@TempData["MensajeNota"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    }
-    @if (TempData["ErrorNota"] != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show mb-4 shadow-sm" role="alert">
-            <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["ErrorNota"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
+        <script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'success',
+                        title: '@TempData["MensajeNota"]',
+                        showConfirmButton: false,
+                        timer: 3500,
+                        timerProgressBar: true
+                    });
+                });
+        </script>
     }
 
-    <!-- 3. Filtros de Asignatura y Periodo -->
+    @if (TempData["ErrorNota"] != null)
+    {
+        <script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'error',
+                        title: '@TempData["ErrorNota"]',
+                        showConfirmButton: false,
+                        timer: 4000,
+                        timerProgressBar: true
+                    });
+                });
+        </script>
+    }
+
+    <!-- 3. Filtros de Grado, Asignatura y Jornada -->
     <div class="card border-0 shadow-sm p-4 mb-4">
-        <div class="row g-3">
-            <div class="col-md-6">
-                <label class="form-label fw-bold text-dark">Asignatura</label>
-                <select class="form-select" id="selectAsignatura" name="selectAsignatura">
-                    <option value="Matemáticas - 6°A">Matemáticas - 6°A</option>
-                    <option value="Español - 6°A">Español - 6°A</option>
-                    <option value="Ciencias - 6°A">Ciencias - 6°A</option>
-                    <option value="Inglés - 6°A">Inglés - 6°A</option>
+        <div class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label fw-bold text-dark mb-1">
+                    <i class="bi bi-mortarboard me-1 text-primary"></i>Grado
+                </label>
+                <select class="form-select" id="selectGrado" name="selectGrado">
+                    @if (ViewBag.Grados != null && ((IEnumerable<string>)ViewBag.Grados).Any())
+                    {
+                        foreach (var grado in ViewBag.Grados)
+                        {
+                            <option value="@grado">@grado</option>
+                        }
+                    }
+                    else
+                    {
+                        <option value="601">601</option>
+                        <option value="602">602</option>
+                        <option value="603">603</option>
+                        <option value="701">701</option>
+                        <option value="702">702</option>
+                        <option value="703">703</option>
+                        <option value="801">801</option>
+                        <option value="802">802</option>
+                        <option value="803">803</option>
+                        <option value="901">901</option>
+                        <option value="902">902</option>
+                        <option value="903">903</option>
+                        <option value="1001">1001</option>
+                        <option value="1002">1002</option>
+                        <option value="1003">1003</option>
+                        <option value="1101">1101</option>
+                        <option value="1102">1102</option>
+                        <option value="1103">1103</option>
+                    }
                 </select>
             </div>
-            <div class="col-md-6">
-                <label class="form-label fw-bold text-dark">Periodo</label>
-                <select class="form-select" id="selectPeriodo" name="selectPeriodo">
-                    <option value="1">Primer Periodo</option>
-                    <option value="2">Segundo Periodo</option>
-                    <option value="3">Tercer Periodo</option>
-                    <option value="4">Cuarto Periodo</option>
+            <div class="col-md-4">
+                <label class="form-label fw-bold text-dark mb-1">
+                    <i class="bi bi-book me-1 text-primary"></i>Asignatura
+                </label>
+                <select class="form-select" id="selectAsignatura" name="selectAsignatura">
+                    @if (ViewBag.Asignaturas != null && ((IEnumerable<string>)ViewBag.Asignaturas).Any())
+                    {
+                        foreach (var nombre in ViewBag.Asignaturas)
+                        {
+                            <option value="@nombre">@nombre</option>
+                        }
+                    }
+                    else if (ViewBag.Cursos != null)
+                    {
+                        foreach (var nombre in ViewBag.Cursos)
+                        {
+                            <option value="@nombre">@nombre</option>
+                        }
+                    }
+                    else
+                    {
+                        <option value="">Sin asignaturas disponibles</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-bold text-dark mb-1">
+                    <i class="bi bi-clock-history me-1 text-primary"></i>Jornada
+                </label>
+                <select class="form-select" id="selectJornada" name="selectJornada">
+                    <option value="Mañana">Mañana</option>
+                    <option value="Tarde">Tarde</option>
                 </select>
             </div>
         </div>
@@ -99,6 +194,7 @@
                                 </button>
                             </th>
                             <th class="text-center" style="width: 130px;">Definitiva</th>
+                            <th class="text-center" style="width: 140px;">Desempeño</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -112,17 +208,38 @@
                                         @estudiante.NOMBRES @estudiante.APELLIDOS
                                     </td>
                                     <td>
-                                        <input type="number" class="form-control form-control-sm text-center nota-input" value="0.0" step="0.1" min="0" max="5">
+                                        <div class="input-group input-group-sm nota-group mx-auto" style="width: 95px;">
+                                            <input type="text" inputmode="decimal" class="form-control form-control-sm text-center nota-input px-1" value="0.0" maxlength="3" placeholder="0.0">
+                                            <div class="input-group-text p-0 d-flex flex-column justify-content-center bg-light border-start-0" style="width: 18px; cursor: pointer;">
+                                                <i class="bi bi-chevron-up btn-step-up text-secondary" style="font-size: 8px; line-height: 8px; padding: 2px 0;" title="Aumentar 0.1"></i>
+                                                <i class="bi bi-chevron-down btn-step-down text-secondary" style="font-size: 8px; line-height: 8px; padding: 2px 0;" title="Disminuir 0.1"></i>
+                                            </div>
+                                        </div>
                                     </td>
                                     <td>
-                                        <input type="number" class="form-control form-control-sm text-center nota-input" value="0.0" step="0.1" min="0" max="5">
+                                        <div class="input-group input-group-sm nota-group mx-auto" style="width: 95px;">
+                                            <input type="text" inputmode="decimal" class="form-control form-control-sm text-center nota-input px-1" value="0.0" maxlength="3" placeholder="0.0">
+                                            <div class="input-group-text p-0 d-flex flex-column justify-content-center bg-light border-start-0" style="width: 18px; cursor: pointer;">
+                                                <i class="bi bi-chevron-up btn-step-up text-secondary" style="font-size: 8px; line-height: 8px; padding: 2px 0;" title="Aumentar 0.1"></i>
+                                                <i class="bi bi-chevron-down btn-step-down text-secondary" style="font-size: 8px; line-height: 8px; padding: 2px 0;" title="Disminuir 0.1"></i>
+                                            </div>
+                                        </div>
                                     </td>
                                     <td>
-                                        <input type="number" class="form-control form-control-sm text-center nota-input" value="0.0" step="0.1" min="0" max="5">
+                                        <div class="input-group input-group-sm nota-group mx-auto" style="width: 95px;">
+                                            <input type="text" inputmode="decimal" class="form-control form-control-sm text-center nota-input px-1" value="0.0" maxlength="3" placeholder="0.0">
+                                            <div class="input-group-text p-0 d-flex flex-column justify-content-center bg-light border-start-0" style="width: 18px; cursor: pointer;">
+                                                <i class="bi bi-chevron-up btn-step-up text-secondary" style="font-size: 8px; line-height: 8px; padding: 2px 0;" title="Aumentar 0.1"></i>
+                                                <i class="bi bi-chevron-down btn-step-down text-secondary" style="font-size: 8px; line-height: 8px; padding: 2px 0;" title="Disminuir 0.1"></i>
+                                            </div>
+                                        </div>
                                     </td>
                                     <td class="text-center">
                                         <input type="hidden" name="nota_valor" class="input-nota-valor" value="0.0" />
                                         <span class="badge bg-danger fs-6 nota-definitiva">0.0</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-danger fs-6 badge-desempeno">Bajo</span>
                                     </td>
                                 </tr>
                             }
@@ -130,7 +247,7 @@
                         else
                         {
                             <tr>
-                                <td colspan="5" class="text-center text-muted py-4">No hay estudiantes registrados.</td>
+                                <td colspan="6" class="text-center text-muted py-4">No hay estudiantes registrados.</td>
                             </tr>
                         }
                     </tbody>
@@ -139,7 +256,7 @@
 
             <!-- Botón Guardar Calificaciones (CRUD) -->
             <div class="p-3 bg-light text-end border-top">
-                <button type="submit" class="btn btn-primary fw-bold">
+                <button type="submit" class="btn text-white fw-bold rounded-pill px-4 shadow-sm" style="background-color: #2980b9;" id="btnSubmitPlanilla">
                     <i class="bi bi-save me-2"></i>Guardar Calificaciones
                 </button>
             </div>
@@ -147,27 +264,227 @@
     </div>
 </div>
 
-<!-- Lógica interactiva en JavaScript -->
+<!-- Lógica interactiva en JavaScript con Confirmación y Caché -->
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
+    document.addEventListener("DOMContentLoaded", function() {
 
-        // 1. Calcular promedio con validación de 0.0 a 5.0
+        const selectGrado = document.getElementById('selectGrado');
+        const selectAsignatura = document.getElementById('selectAsignatura');
+        const selectJornada = document.getElementById('selectJornada');
+        const tabla = document.getElementById('tablaPlanilla');
+        const formPlanilla = document.querySelector('form[action*="GuardarNota"]');
+
+        // --- PARSEO Y VALIDACIÓN DE NOTAS (0.0 a 5.0, MÁX 3 CARACTERES) ---
+        function parsearNota(valStr) {
+            if (valStr === null || valStr === undefined) return NaN;
+            let str = valStr.toString().trim().replace(',', '.');
+            if (str === '') return NaN;
+            return parseFloat(str);
+        }
+
+        function validarYFormatearInput(input, mostrarAlerta = true) {
+            let rawVal = input.value ? input.value.trim() : '';
+            if (rawVal === '') {
+                input.value = "0.0";
+                return true;
+            }
+
+            // Truncar si excede los 3 caracteres
+            if (rawVal.length > 3) {
+                rawVal = rawVal.substring(0, 3);
+                input.value = rawVal;
+            }
+
+            let num = parsearNota(rawVal);
+
+            // Rechazar valores NaN, menores a 0.0 (negativos) o mayores a 5.0
+            if (isNaN(num) || num < 0.0 || num > 5.0) {
+                if (mostrarAlerta) {
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'error',
+                        title: '¡Nota inválida!',
+                        text: 'La calificación debe estar entre 0.0 y 5.0 (máximo 3 caracteres).',
+                        showConfirmButton: false,
+                        timer: 3500,
+                        timerProgressBar: true
+                    });
+                }
+                input.value = "0.0";
+                return false;
+            } else {
+                // Formato decimal con punto (ej. 3.5, 5.0)
+                input.value = (Math.round(num * 10) / 10).toFixed(1);
+                return true;
+            }
+        }
+
+        // --- A. GESTIÓN DE CACHÉ (LocalStorage) ---
+        function obtenerClaveCache() {
+            const g = selectGrado ? selectGrado.value : '6A';
+            const a = selectAsignatura ? selectAsignatura.value : 'Matematicas';
+            const j = selectJornada ? selectJornada.value : 'Manana';
+            return `planilla_cache_${g}_${a}_${j}`;
+        }
+
+        function guardarEnCache() {
+            if (!tabla) return;
+            const clave = obtenerClaveCache();
+
+            // 1. Guardar los nombres de las columnas de evaluación
+            const columnas = [];
+            tabla.querySelectorAll('thead tr th').forEach(th => {
+                const span = th.querySelector('.titulo-col');
+                if (span) {
+                    columnas.push(span.textContent.trim());
+                }
+            });
+
+            // 2. Guardar las notas por estudiante
+            const notasEstudiantes = {};
+            tabla.querySelectorAll('tbody tr').forEach(fila => {
+                const estIdInput = fila.querySelector('input[name="estudiante_id"]');
+                if (!estIdInput) return;
+                const estId = estIdInput.value;
+
+                const valores = [];
+                fila.querySelectorAll('.nota-input').forEach(input => {
+                    valores.push(input.value);
+                });
+                notasEstudiantes[estId] = valores;
+            });
+
+            const datosCache = {
+                columnas: columnas,
+                notas: notasEstudiantes
+            };
+
+            localStorage.setItem(clave, JSON.stringify(datosCache));
+        }
+
+        function crearHTMLThNota(titulo) {
+            const th = document.createElement('th');
+            th.className = 'text-center';
+            th.style.width = '170px';
+            th.innerHTML = `
+                    <span class="titulo-col">${titulo}</span>
+                    <button type="button" class="btn btn-sm btn-outline-warning text-white p-0 px-1 ms-1 btn-editar-col" title="Renombrar nota">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-danger text-white p-0 px-1 ms-1 btn-eliminar-col" title="Eliminar nota">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                `;
+            return th;
+        }
+
+        function crearHTMLTdNota(valor = "0.0") {
+            const td = document.createElement('td');
+            td.innerHTML = `
+                    <div class="input-group input-group-sm nota-group mx-auto" style="width: 95px;">
+                        <input type="text" inputmode="decimal" class="form-control form-control-sm text-center nota-input px-1" value="${valor}" maxlength="3" placeholder="0.0">
+                        <div class="input-group-text p-0 d-flex flex-column justify-content-center bg-light border-start-0" style="width: 18px; cursor: pointer;">
+                            <i class="bi bi-chevron-up btn-step-up text-secondary" style="font-size: 8px; line-height: 8px; padding: 2px 0;" title="Aumentar 0.1"></i>
+                            <i class="bi bi-chevron-down btn-step-down text-secondary" style="font-size: 8px; line-height: 8px; padding: 2px 0;" title="Disminuir 0.1"></i>
+                        </div>
+                    </div>
+                `;
+            return td;
+        }
+
+        function cargarDesdeCache() {
+            if (!tabla) return;
+            const clave = obtenerClaveCache();
+            const cache = localStorage.getItem(clave);
+            if (!cache) return;
+
+            try {
+                const datosCache = JSON.parse(cache);
+                if (!datosCache) return;
+
+                const columnasGuardadas = datosCache.columnas || [];
+                const notasEstudiantes = datosCache.notas || (typeof datosCache === 'object' && !datosCache.columnas ? datosCache : {});
+
+                // Reconstruir columnas del Header si existen en el caché
+                if (columnasGuardadas.length > 0) {
+                    const trHeader = tabla.querySelector('thead tr');
+                    if (trHeader) {
+                        const thsActuales = Array.from(trHeader.querySelectorAll('th'));
+                        thsActuales.forEach(th => {
+                            if (th.querySelector('.titulo-col')) {
+                                th.remove();
+                            }
+                        });
+
+                        const thDefinitiva = Array.from(trHeader.children).find(th => th.textContent.trim().includes('Definitiva')) || trHeader.lastElementChild;
+
+                        columnasGuardadas.forEach(titulo => {
+                            const nuevoTh = crearHTMLThNota(titulo);
+                            trHeader.insertBefore(nuevoTh, thDefinitiva);
+                        });
+                    }
+
+                    // Reconstruir celdas de nota en cada fila de estudiante
+                    tabla.querySelectorAll('tbody tr').forEach(fila => {
+                        const tdsActuales = Array.from(fila.children);
+                        tdsActuales.forEach(td => {
+                            if (td.querySelector('.nota-input')) {
+                                td.remove();
+                            }
+                        });
+
+                        const tdDefinitiva = Array.from(fila.children).find(td => td.querySelector('.nota-definitiva')) || fila.lastElementChild;
+
+                        columnasGuardadas.forEach(() => {
+                            const nuevoTd = crearHTMLTdNota("0.0");
+                            fila.insertBefore(nuevoTd, tdDefinitiva);
+                        });
+                    });
+                }
+
+                // Cargar valores de notas guardados
+                tabla.querySelectorAll('tbody tr').forEach(fila => {
+                    const estIdInput = fila.querySelector('input[name="estudiante_id"]');
+                    if (!estIdInput) return;
+                    const estId = estIdInput.value;
+
+                    if (notasEstudiantes[estId]) {
+                        const inputs = fila.querySelectorAll('.nota-input');
+                        notasEstudiantes[estId].forEach((val, idx) => {
+                            if (inputs[idx]) {
+                                let cleanVal = val ? val.toString().replace(',', '.') : "0.0";
+                                let num = parseFloat(cleanVal);
+                                if (isNaN(num) || num < 0.0 || num > 5.0) {
+                                    cleanVal = "0.0";
+                                } else {
+                                    cleanVal = (Math.round(num * 10) / 10).toFixed(1);
+                                }
+                                inputs[idx].value = cleanVal;
+                            }
+                        });
+                    }
+                    calcularDefinitiva(fila);
+                });
+            } catch (e) {
+                console.error("Error al cargar caché de notas:", e);
+            }
+        }
+
+        // --- B. CÁLCULO DE DEFINITIVA Y DESEMPEÑO ---
         function calcularDefinitiva(fila) {
             const inputs = fila.querySelectorAll('.nota-input');
             const badgeDefinitiva = fila.querySelector('.nota-definitiva');
+            const badgeDesempeno = fila.querySelector('.badge-desempeno');
             const hiddenValor = fila.querySelector('.input-nota-valor');
-            
+
             if (!inputs.length || !badgeDefinitiva) return;
 
             let suma = 0;
             let cantidad = 0;
 
             inputs.forEach(input => {
-                let val = parseFloat(input.value.toString().replace(',', '.'));
-                
-                // Rango máximo 5.0 y mínimo 0.0
-                if (val > 5.0) { val = 5.0; input.value = "5.0"; }
-                if (val < 0.0) { val = 0.0; input.value = "0.0"; }
+                let val = parsearNota(input.value);
 
                 if (!isNaN(val)) {
                     suma += val;
@@ -176,94 +493,360 @@
             });
 
             if (cantidad > 0) {
-                const promedio = (suma / cantidad).toFixed(1);
-                badgeDefinitiva.textContent = promedio;
+                const promedio = suma / cantidad;
+                const promedioStr = promedio.toFixed(1);
+                badgeDefinitiva.textContent = promedioStr;
 
                 if (hiddenValor) {
-                    hiddenValor.value = promedio;
+                    hiddenValor.value = promedioStr;
                 }
 
-                badgeDefinitiva.className = parseFloat(promedio) >= 3.0 
-                    ? "badge bg-success fs-6 nota-definitiva" 
+                badgeDefinitiva.className = promedio >= 3.0
+                    ? "badge bg-success fs-6 nota-definitiva"
                     : "badge bg-danger fs-6 nota-definitiva";
+
+                // --- DESEMPEÑO (No modificable) ---
+                if (badgeDesempeno) {
+                    const promRedondeado = Math.round(promedio * 10) / 10;
+
+                    if (promRedondeado >= 5.0) {
+                        badgeDesempeno.textContent = "Superior";
+                        badgeDesempeno.className = "badge bg-success fs-6 badge-desempeno";
+                    } else if (promRedondeado >= 4.0) {
+                        badgeDesempeno.textContent = "Alto";
+                        badgeDesempeno.className = "badge bg-primary fs-6 badge-desempeno";
+                    } else if (promRedondeado >= 3.0) {
+                        badgeDesempeno.textContent = "Básico";
+                        badgeDesempeno.className = "badge bg-warning text-dark fs-6 badge-desempeno";
+                    } else {
+                        badgeDesempeno.textContent = "Bajo";
+                        badgeDesempeno.className = "badge bg-danger fs-6 badge-desempeno";
+                    }
+                }
             }
         }
 
-        const tabla = document.getElementById('tablaPlanilla');
+        // Inicializar tabla y cargar caché existente
         if (tabla) {
-            tabla.querySelectorAll('tbody tr').forEach(fila => calcularDefinitiva(fila));
+            cargarDesdeCache();
+            tabla.querySelectorAll('tbody tr').forEach(fila => {
+                fila.querySelectorAll('.nota-input').forEach(input => {
+                    validarYFormatearInput(input, false);
+                });
+                calcularDefinitiva(fila);
+            });
 
-            ['input', 'change'].forEach(evento => {
-                tabla.addEventListener(evento, function (e) {
-                    if (e.target.classList.contains('nota-input')) {
-                        calcularDefinitiva(e.target.closest('tr'));
+            // Auto-selección completa del texto al enfocar o hacer clic
+            // Permite al docente escribir directamente la nota reemplazando el "0.0" sin tener que borrarlo manualmente
+            tabla.addEventListener('focusin', function(e) {
+                if (e.target.classList.contains('nota-input')) {
+                    setTimeout(function() {
+                        e.target.select();
+                    }, 20);
+                }
+            });
+
+            tabla.addEventListener('click', function(e) {
+                if (e.target.classList.contains('nota-input')) {
+                    e.target.select();
+                }
+            });
+
+            // Formatear y validar al salir del campo (blur), restaurando "0.0" si la casilla queda vacía
+            tabla.addEventListener('blur', function(e) {
+                if (e.target.classList.contains('nota-input')) {
+                    validarYFormatearInput(e.target, true);
+                    const fila = e.target.closest('tr');
+                    calcularDefinitiva(fila);
+                    guardarEnCache();
+                }
+            }, true);
+
+            // Control de flechitas de incremento y decremento (▲ y ▼)
+            tabla.addEventListener('click', function(e) {
+                const btnUp = e.target.closest('.btn-step-up');
+                const btnDown = e.target.closest('.btn-step-down');
+
+                if (btnUp || btnDown) {
+                    const group = e.target.closest('.nota-group');
+                    if (!group) return;
+                    const input = group.querySelector('.nota-input');
+                    if (!input) return;
+
+                    let val = parseFloat(input.value.replace(',', '.')) || 0.0;
+                    if (btnUp) {
+                        val = Math.min(5.0, Math.round((val + 0.1) * 10) / 10);
+                    } else if (btnDown) {
+                        val = Math.max(0.0, Math.round((val - 0.1) * 10) / 10);
+                    }
+                    input.value = val.toFixed(1);
+                    const fila = input.closest('tr');
+                    calcularDefinitiva(fila);
+                    guardarEnCache();
+                }
+            });
+
+            // Control de teclas de navegación (flecha arriba / abajo en teclado)
+            tabla.addEventListener('keydown', function(e) {
+                if (e.target.classList.contains('nota-input')) {
+                    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        let val = parseFloat(e.target.value.replace(',', '.')) || 0.0;
+                        if (e.key === 'ArrowUp') {
+                            val = Math.min(5.0, Math.round((val + 0.1) * 10) / 10);
+                        } else {
+                            val = Math.max(0.0, Math.round((val - 0.1) * 10) / 10);
+                        }
+                        e.target.value = val.toFixed(1);
+                        const fila = e.target.closest('tr');
+                        calcularDefinitiva(fila);
+                        guardarEnCache();
+                    }
+                }
+            });
+
+            tabla.addEventListener('change', function(e) {
+                if (e.target.classList.contains('nota-input')) {
+                    validarYFormatearInput(e.target, true);
+                    const fila = e.target.closest('tr');
+                    calcularDefinitiva(fila);
+                    guardarEnCache();
+                }
+            });
+
+            // Validación inmediata MIENTRAS el docente escribe
+            tabla.addEventListener('input', function(e) {
+                if (e.target.classList.contains('nota-input')) {
+                    let valStr = e.target.value.replace(',', '.');
+
+                    if (valStr.length > 3) {
+                        valStr = valStr.substring(0, 3);
+                        e.target.value = valStr;
+                    }
+
+                    let num = parseFloat(valStr);
+
+                    if (!isNaN(num) && (num > 5.0 || num < 0.0)) {
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: 'error',
+                            title: '¡Nota fuera de rango!',
+                            text: 'La calificación no puede ser mayor a 5.0 ni menor a 0.0.',
+                            showConfirmButton: false,
+                            timer: 2500,
+                            timerProgressBar: true
+                        });
+                        e.target.value = "0.0";
+                    }
+
+                    const fila = e.target.closest('tr');
+                    calcularDefinitiva(fila);
+                }
+            });
+        }
+
+        // Filtrado dinámico de Grados según la Jornada (Mañana -> M / Tarde -> T)
+        function filtrarGradosPorJornada() {
+            if (!selectGrado || !selectJornada) return;
+
+            const jornada = selectJornada.value || '';
+            const esManana = jornada.toLowerCase().includes('mañana') || jornada.toLowerCase().includes('manana') || jornada.toLowerCase().startsWith('m');
+            const esTarde = jornada.toLowerCase().includes('tarde') || jornada.toLowerCase().startsWith('t');
+
+            let seleccionadoVisible = false;
+
+            Array.from(selectGrado.options).forEach(opt => {
+                const txt = opt.text.trim();
+                const val = opt.value.trim();
+                let mostrar = true;
+
+                if (esManana) {
+                    mostrar = txt.endsWith('M') || txt.includes(' M') || val.endsWith('M');
+                } else if (esTarde) {
+                    mostrar = txt.endsWith('T') || txt.includes(' T') || val.endsWith('T');
+                }
+
+                opt.hidden = !mostrar;
+                opt.disabled = !mostrar;
+                opt.style.display = mostrar ? '' : 'none';
+
+                if (mostrar && opt.selected) {
+                    seleccionadoVisible = true;
+                }
+            });
+
+            if (!seleccionadoVisible) {
+                const primerVisible = Array.from(selectGrado.options).find(opt => !opt.hidden && !opt.disabled);
+                if (primerVisible) {
+                    selectGrado.value = primerVisible.value;
+                }
+            }
+        }
+
+        if (selectJornada) {
+            selectJornada.addEventListener('change', function() {
+                filtrarGradosPorJornada();
+                cargarDesdeCache();
+            });
+        }
+
+        // Recargar caché cuando cambie el Grado o la Asignatura
+        [selectGrado, selectAsignatura].forEach(select => {
+            if (select) {
+                select.addEventListener('change', cargarDesdeCache);
+            }
+        });
+
+        // Ejecutar filtrado inicial al cargar la vista
+        filtrarGradosPorJornada();
+
+        // --- C. CONFIRMACIÓN ANTES DE GUARDAR FORMULARIO ---
+        if (formPlanilla) {
+            formPlanilla.addEventListener('submit', function(e) {
+                let hayErrores = false;
+                tabla.querySelectorAll('.nota-input').forEach(input => {
+                    if (!validarYFormatearInput(input, false)) {
+                        hayErrores = true;
+                    }
+                });
+
+                if (hayErrores) {
+                    e.preventDefault();
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'error',
+                        title: '¡Calificación inválida!',
+                        text: 'Existen notas con formato o rango incorrecto (0.0 a 5.0, máx 3 caracteres).',
+                        showConfirmButton: false,
+                        timer: 3500,
+                        timerProgressBar: true
+                    });
+                    return;
+                }
+
+                if (formPlanilla.dataset.confirmado === "true") return;
+
+                e.preventDefault();
+
+                Swal.fire({
+                    title: '¿Guardar Calificaciones?',
+                    text: '¿Deseas guardar los cambios realizados en la planilla actual?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#0d6efd',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: '<i class="bi bi-save me-1"></i> Sí, guardar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        guardarEnCache(); // Asegurar guardado en caché antes de enviar
+                        formPlanilla.dataset.confirmado = "true";
+                        formPlanilla.submit();
                     }
                 });
             });
         }
 
-        // 2. AGREGAR COLUMNA CON TÍTULO PERSONALIZADO Y BOTONES EDITAR / ELIMINAR
+        // --- D. AGREGAR COLUMNA ---
         let contadorNotas = 2;
         const btnAgregar = document.getElementById('btnAgregarNota');
 
         if (btnAgregar) {
-            btnAgregar.addEventListener('click', function () {
-                const nombreCalificacion = prompt("Escriba el nombre de la nueva calificación:", `Nota ${contadorNotas}`);
-                if (nombreCalificacion === null) return;
+            btnAgregar.addEventListener('click', function() {
+                Swal.fire({
+                    title: 'Agregar Calificación',
+                    text: 'Escriba el nombre de la nueva columna/evaluación:',
+                    input: 'text',
+                    inputValue: `Nota ${contadorNotas}`,
+                    showCancelButton: true,
+                    confirmButtonText: '<i class="bi bi-check-lg"></i> Agregar',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonColor: '#198754',
+                    inputValidator: (value) => {
+                        if (!value || !value.trim()) {
+                            return '¡Debes ingresar un nombre!';
+                        }
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed && result.value) {
+                        const tituloFinal = result.value.trim();
+                        contadorNotas++;
 
-                const tituloFinal = nombreCalificacion.trim() || `Nota ${contadorNotas}`;
-                contadorNotas++;
+                        const trHeader = document.querySelector('#tablaPlanilla thead tr');
+                        const thDefinitiva = Array.from(trHeader.children).find(th => th.textContent.trim().includes('Definitiva')) || trHeader.lastElementChild;
 
-                const trHeader = document.querySelector('#tablaPlanilla thead tr');
-                const thDefinitiva = trHeader.lastElementChild;
-                
-                const nuevoTh = document.createElement('th');
-                nuevoTh.className = 'text-center';
-                nuevoTh.style.width = '170px';
-                nuevoTh.innerHTML = `
-                    <span class="titulo-col">${tituloFinal}</span>
-                    <button type="button" class="btn btn-sm btn-outline-warning text-white p-0 px-1 ms-1 btn-editar-col" title="Renombrar nota">
-                        <i class="bi bi-pencil"></i>
-                    </button>
-                    <button type="button" class="btn btn-sm btn-outline-danger text-white p-0 px-1 ms-1 btn-eliminar-col" title="Eliminar nota">
-                        <i class="bi bi-trash"></i>
-                    </button>
-                `;
-                
-                trHeader.insertBefore(nuevoTh, thDefinitiva);
+                        const nuevoTh = document.createElement('th');
+                        nuevoTh.className = 'text-center';
+                        nuevoTh.style.width = '170px';
+                        nuevoTh.innerHTML = `
+                                <span class="titulo-col">${tituloFinal}</span>
+                                <button type="button" class="btn btn-sm btn-outline-warning text-white p-0 px-1 ms-1 btn-editar-col" title="Renombrar nota">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-danger text-white p-0 px-1 ms-1 btn-eliminar-col" title="Eliminar nota">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            `;
 
-                const filasBody = document.querySelectorAll('#tablaPlanilla tbody tr');
-                filasBody.forEach(fila => {
-                    const tdDefinitiva = fila.lastElementChild;
-                    
-                    const nuevoTd = document.createElement('td');
-                    nuevoTd.innerHTML = `<input type="number" class="form-control form-control-sm text-center nota-input" value="0.0" step="0.1" min="0" max="5">`;
-                    
-                    fila.insertBefore(nuevoTd, tdDefinitiva);
-                    calcularDefinitiva(fila);
+                        trHeader.insertBefore(nuevoTh, thDefinitiva);
+
+                        const filasBody = document.querySelectorAll('#tablaPlanilla tbody tr');
+                        filasBody.forEach(fila => {
+                            const tdDefinitiva = Array.from(fila.children).find(td => td.querySelector('.nota-definitiva')) || fila.lastElementChild;
+                            const nuevoTd = document.createElement('td');
+                            nuevoTd.innerHTML = `
+                                    <div class="input-group input-group-sm nota-group mx-auto" style="width: 95px;">
+                                        <input type="text" inputmode="decimal" class="form-control form-control-sm text-center nota-input px-1" value="0.0" maxlength="3" placeholder="0.0">
+                                        <div class="input-group-text p-0 d-flex flex-column justify-content-center bg-light border-start-0" style="width: 18px; cursor: pointer;">
+                                            <i class="bi bi-chevron-up btn-step-up text-secondary" style="font-size: 8px; line-height: 8px; padding: 2px 0;" title="Aumentar 0.1"></i>
+                                            <i class="bi bi-chevron-down btn-step-down text-secondary" style="font-size: 8px; line-height: 8px; padding: 2px 0;" title="Disminuir 0.1"></i>
+                                        </div>
+                                    </div>
+                                `;
+                            fila.insertBefore(nuevoTd, tdDefinitiva);
+                            calcularDefinitiva(fila);
+                        });
+
+                        guardarEnCache();
+                    }
                 });
             });
         }
 
-        // 3. EDITAR / RENOMBRAR TÍTULO DE NOTA
-        document.addEventListener('click', function (e) {
+        // --- E. RENOMBRAR Y ELIMINAR COLUMNAS ---
+        document.addEventListener('click', function(e) {
             const btnEditar = e.target.closest('.btn-editar-col');
             if (btnEditar) {
                 const th = btnEditar.closest('th');
                 const spanTitulo = th.querySelector('.titulo-col');
                 const tituloActual = spanTitulo ? spanTitulo.textContent.trim() : 'Nota';
 
-                const nuevoNombre = prompt("Escriba el nuevo nombre para esta calificación:", tituloActual);
-                if (nuevoNombre !== null && nuevoNombre.trim() !== "") {
-                    if (spanTitulo) {
-                        spanTitulo.textContent = nuevoNombre.trim();
+                Swal.fire({
+                    title: 'Renombrar Calificación',
+                    text: 'Ingrese el nuevo nombre para esta columna:',
+                    input: 'text',
+                    inputValue: tituloActual,
+                    showCancelButton: true,
+                    confirmButtonText: 'Guardar',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonColor: '#ffc107',
+                    inputValidator: (value) => {
+                        if (!value || !value.trim()) {
+                            return 'El nombre no puede estar vacío';
+                        }
                     }
-                }
+                }).then((result) => {
+                    if (result.isConfirmed && result.value) {
+                        if (spanTitulo) {
+                            spanTitulo.textContent = result.value.trim();
+                            guardarEnCache();
+                        }
+                    }
+                });
             }
-        });
 
-        // 4. ELIMINAR COLUMNA DE NOTA CON BOTÓN DE BASURA
-        document.addEventListener('click', function (e) {
             const btnEliminar = e.target.closest('.btn-eliminar-col');
             if (btnEliminar) {
                 const th = btnEliminar.closest('th');
@@ -271,17 +854,32 @@
                 const nombreCol = spanTitulo ? spanTitulo.textContent.trim() : 'esta nota';
                 const colIndex = th.cellIndex;
 
-                if (confirm(`¿Desea eliminar la columna "${nombreCol}"?`)) {
-                    th.remove();
-
-                    document.querySelectorAll('#tablaPlanilla tbody tr').forEach(fila => {
-                        if (fila.cells[colIndex]) {
-                            fila.cells[colIndex].remove();
-                            calcularDefinitiva(fila);
-                        }
-                    });
-                }
+                Swal.fire({
+                    title: '¿Eliminar columna?',
+                    text: `¿Está seguro de eliminar "${nombreCol}"? Se perderán las notas de esta columna.`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#dc3545',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Sí, eliminar',
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        th.remove();
+                        document.querySelectorAll('#tablaPlanilla tbody tr').forEach(fila => {
+                            if (fila.cells[colIndex]) {
+                                fila.cells[colIndex].remove();
+                                calcularDefinitiva(fila);
+                            }
+                        });
+                        guardarEnCache();
+                    }
+                });
             }
         });
     });
 </script>
+
+
+
+

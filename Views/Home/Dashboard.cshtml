@@ -6,6 +6,11 @@
 @{
     var nombre = Context.Session.GetString("NombreUsuario");
     var rolReal = Context.Session.GetString("UserRol"); // Rol original de la sesión
+    var rep = ViewBag.ReportesPro as ProyectoPAE.Models.ReportesProViewModel ?? new ProyectoPAE.Models.ReportesProViewModel();
+    var cursosExtraDocente = ViewBag.CursosExtraDocente as List<ProyectoPAE.Models.ExtraCursoItemViewModel> ?? new List<ProyectoPAE.Models.ExtraCursoItemViewModel>();
+    var cursosExtraEstudiante = ViewBag.CursosExtraEstudiante as List<ProyectoPAE.Models.ExtraCursoItemViewModel> ?? new List<ProyectoPAE.Models.ExtraCursoItemViewModel>();
+    var misCursosExtraInscritos = ViewBag.MisCursosExtraInscritos as List<ProyectoPAE.Models.ExtraCursoItemViewModel> ?? new List<ProyectoPAE.Models.ExtraCursoItemViewModel>();
+    int? gradoEstudianteSesion = ViewBag.GradoEstudiante as int?;
 }
 
 <input type="hidden" id="rolOculto" value="@ViewBag.Rol" />
@@ -58,49 +63,7 @@
 
 <div class="container pb-5">
 
-    @if (ViewBag.NotificacionesActivas != null)
-    {
-        var notifs = ViewBag.NotificacionesActivas as List<ProyectoPAE.Models.Notificacion>;
-        if (notifs != null && notifs.Any())
-        {
-            <div class="mb-4">
-                <div class="card border-0 shadow-sm rounded-4" style="background: linear-gradient(135deg, #fffaf5 0%, #ffffff 100%); border-left: 5px solid #e67e22 !important;">
-                    <div class="card-body p-4">
-                        <div class="d-flex align-items-center justify-content-between mb-3">
-                            <h5 class="fw-bold mb-0 text-dark">
-                                <i class="bi bi-bell-fill me-2" style="color: #e67e22;"></i> Comunicados y Avisos Institucionales
-                            </h5>
-                            <span class="badge bg-warning text-dark px-3 py-1 rounded-pill">
-                                @notifs.Count @(notifs.Count == 1 ? "nuevo aviso" : "nuevos avisos")
-                            </span>
-                        </div>
 
-                        <div class="row g-3">
-                            @foreach (var notif in notifs)
-                            {
-                                <div class="col-md-6 col-lg-4">
-                                    <div class="card h-100 border-light-subtle shadow-sm rounded-3">
-                                        <div class="card-body">
-                                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                                <h6 class="fw-bold mb-0 text-primary">@notif.Titulo</h6>
-                                                <small class="text-muted ms-2" style="font-size: 0.75rem;">
-                                                    @notif.FechaCreacion.ToString("dd/MM/yyyy")
-                                                </small>
-                                            </div>
-                                            <p class="card-text text-secondary small mb-2" style="white-space: pre-line;">@notif.Mensaje</p>
-                                            <div class="text-end text-muted small border-top pt-2" style="font-size: 0.75rem;">
-                                                <span><i class="bi bi-person-fill me-1"></i>@(notif.Emisor != null ? notif.Emisor.NOMBRES : "Institucional")</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            }
-                        </div>
-                    </div>
-                </div>
-            </div>
-        }
-    }
 
     <div id="panel-admin" class="role-panel d-none">
 
@@ -207,32 +170,24 @@
                     <div class="d-flex gap-3">
                         <div>
                             <label class="form-label small mb-1">Filtrar por Grado</label>
-
                             <select id="filtroGrado" class="form-select form-select-sm" onchange="filtrarMatriculas()">
-
-                                <option>Todos los Grados</option>
-                                <option>6</option>
-                                <option>7</option>
-                                <option>8</option>
-                                <option>9</option>
-                                <option>10</option>
-                                <option>11</option>
+                                <option value="todos">Todos los Grados</option>
+                                <option value="6">Grado 6</option>
+                                <option value="7">Grado 7</option>
+                                <option value="8">Grado 8</option>
+                                <option value="9">Grado 9</option>
+                                <option value="10">Grado 10</option>
+                                <option value="11">Grado 11</option>
                             </select>
                         </div>
                         <div>
                             <label class="form-label small mb-1">Estado</label>
-
                             <select id="filtroEstado" class="form-select form-select-sm" onchange="filtrarMatriculas()">
-
-                                <option>Cualquier Estado</option>
-                                <option>Activa</option>
-                                <option>Finalizada</option>
+                                <option value="todos">Cualquier Estado</option>
+                                <option value="activa">Activa</option>
+                                <option value="finalizada">Finalizada</option>
                             </select>
                         </div>
-                    </div>
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-outline-secondary btn-sm"><i class="bi bi-funnel me-1"></i>Más Filtros</button>
-                        <button class="btn btn-outline-secondary btn-sm"><i class="bi bi-download me-1"></i>Exportar</button>
                     </div>
                 </div>
 
@@ -248,7 +203,7 @@
                                 <th class="px-3 py-3 text-end">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="tbodyMatriculas">
                             @{
                                 var listaMatriculas = ViewBag.ListaMatriculas as List<ProyectoPAE.Models.MatriculaAdminItemViewModel>;
                             }
@@ -261,9 +216,7 @@
                                     string colorTexto = esActiva ? "#0d2a4a" : "#6c757d";
                                     var iniciales = string.Join("", mat.NombreEstudiante.Split(' ').Take(2).Select(p => p.Length > 0 ? p[0].ToString().ToUpper() : ""));
 
-
-                                    <tr data-grado="@mat.Grado" data-estado="@mat.Estado">
-
+                                    <tr class="fila-mat" data-grado="@mat.Grado" data-estado="@mat.Estado?.ToLower()">
                                         <td class="px-3 py-3">
                                             <div class="d-flex align-items-center gap-2">
                                                 <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width:40px;height:40px;background:@colorFondo;color:@colorTexto;">@iniciales</div>
@@ -288,14 +241,12 @@
                                                 </button>
                                                 <ul class="dropdown-menu dropdown-menu-end shadow-sm"
                                                     aria-labelledby="accion-@mat.IdMatricula">
-                                                    <!-- Editar -->
                                                     <li>
                                                         <button type="button" class="dropdown-item"
                                                                 onclick="abrirModalEditarMatricula(@mat.IdMatricula, @mat.Grado, '@mat.Estado', '@mat.NombreEstudiante')">
                                                             <i class="bi bi-pencil-square text-primary me-2"></i>Editar
                                                         </button>
                                                     </li>
-                                                    <!-- Marcar Activa -->
                                                     @if (!esActiva)
                                                     {
                                                         <li>
@@ -303,13 +254,10 @@
                                                                 <input type="hidden" name="idMatricula" value="@mat.IdMatricula" />
                                                                 <input type="hidden" name="nuevoEstado" value="Activa" />
                                                                 @Html.AntiForgeryToken()
-                                                                <button type="submit" class="dropdown-item">
-                                                                    <i class="bi bi-check-circle text-success me-2"></i>Marcar Activa
-                                                                </button>
+                                                                <button type="submit" class="dropdown-item"><i class="bi bi-check-circle text-success me-2"></i>Marcar Activa</button>
                                                             </form>
                                                         </li>
                                                     }
-                                                    <!-- Dar de Baja -->
                                                     @if (esActiva)
                                                     {
                                                         <li>
@@ -317,22 +265,17 @@
                                                                 <input type="hidden" name="idMatricula" value="@mat.IdMatricula" />
                                                                 <input type="hidden" name="nuevoEstado" value="Finalizada" />
                                                                 @Html.AntiForgeryToken()
-                                                                <button type="submit" class="dropdown-item">
-                                                                    <i class="bi bi-x-circle text-warning me-2"></i>Dar de Baja
-                                                                </button>
+                                                                <button type="submit" class="dropdown-item"><i class="bi bi-x-circle text-warning me-2"></i>Dar de Baja</button>
                                                             </form>
                                                         </li>
                                                     }
                                                     <li><hr class="dropdown-divider" /></li>
-                                                    <!-- Eliminar -->
                                                     <li>
                                                         <form method="post" action="/Admin/EliminarMatricula" style="display:inline"
                                                               onsubmit="return confirm('¿Eliminar la matrícula de @mat.NombreEstudiante? Esta acción no se puede deshacer.')">
                                                             <input type="hidden" name="idMatricula" value="@mat.IdMatricula" />
                                                             @Html.AntiForgeryToken()
-                                                            <button type="submit" class="dropdown-item text-danger">
-                                                                <i class="bi bi-trash me-2"></i>Eliminar
-                                                            </button>
+                                                            <button type="submit" class="dropdown-item text-danger"><i class="bi bi-trash me-2"></i>Eliminar</button>
                                                         </form>
                                                     </li>
                                                 </ul>
@@ -343,7 +286,7 @@
                             }
                             else
                             {
-                                <tr>
+                                <tr id="sinMatriculas">
                                     <td colspan="6" class="text-center text-muted py-4">No hay matrículas registradas.</td>
                                 </tr>
                             }
@@ -351,8 +294,12 @@
                     </table>
                 </div>
 
-                <div class="card-footer bg-white d-flex align-items-center justify-content-between">
-                    <p class="text-muted small mb-0">Mostrando las últimas @(listaMatriculas?.Count ?? 0) matrículas</p>
+                <!-- PAGINACIÓN MATRÍCULAS -->
+                <div class="card-footer bg-white d-flex flex-wrap align-items-center justify-content-between gap-2 px-3 py-2">
+                    <p class="text-muted small mb-0" id="infoMatPagina">Cargando...</p>
+                    <nav aria-label="Paginación matrículas">
+                        <ul class="pagination pagination-sm mb-0" id="paginacionMat"></ul>
+                    </nav>
                 </div>
             </div>
 
@@ -417,20 +364,20 @@
             </div>
 
             <script>
-            function abrirModalEditarMatricula(idMatricula, grado, estado, nombre) {
-                document.getElementById('edit_idMatricula').value = idMatricula;
-                document.getElementById('edit_nombreEstudiante').textContent = 'Estudiante: ' + nombre;
-                var selectGrado = document.getElementById('edit_idCurso');
-                for (var i = 0; i < selectGrado.options.length; i++) {
-                    selectGrado.options[i].selected = (parseInt(selectGrado.options[i].value) === grado);
-                }
-                var selectEstado = document.getElementById('edit_estado');
-                for (var j = 0; j < selectEstado.options.length; j++) {
-                    selectEstado.options[j].selected = (selectEstado.options[j].value === estado);
-                }
-                var modal = new bootstrap.Modal(document.getElementById('modalEditarMatricula'));
-                modal.show();
-            }
+                            function abrirModalEditarMatricula(idMatricula, grado, estado, nombre) {
+                                document.getElementById('edit_idMatricula').value = idMatricula;
+                                document.getElementById('edit_nombreEstudiante').textContent = 'Estudiante: ' + nombre;
+                                var selectGrado = document.getElementById('edit_idCurso');
+                                for (var i = 0; i < selectGrado.options.length; i++) {
+                                    selectGrado.options[i].selected = (parseInt(selectGrado.options[i].value) === grado);
+                                }
+                                var selectEstado = document.getElementById('edit_estado');
+                                for (var j = 0; j < selectEstado.options.length; j++) {
+                                    selectEstado.options[j].selected = (selectEstado.options[j].value === estado);
+                                }
+                                var modal = new bootstrap.Modal(document.getElementById('modalEditarMatricula'));
+                                modal.show();
+                            }
             </script>
         </div>
 
@@ -483,14 +430,221 @@
             <div class="alert alert-info">Seleccione un docente para asignar sus materias y grupos correspondientes.</div>
         </div>
 
+        <!-- ─── SECCIÓN: REPORTES PRO ANUAL CONSOLIDADO ────────────────── -->
         <div id="admin-reportes" class="d-none">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h3 style="color: #e67e22;"><i class="bi bi-graph-up-arrow me-2"></i>Reportes Pro</h3>
-                <button class="btn btn-outline-secondary btn-sm" onclick="volverAdmin()">Volver</button>
+            <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+                <div>
+                    <h3 class="fw-bold mb-1" style="color: #1b2a47;">
+                        <i class="bi bi-graph-up-arrow me-2" style="color: #e67e22;"></i>Reportes Pro - Anual Consolidado
+                    </h3>
+                    <p class="text-muted small mb-0">Indicadores institucionales de rendimiento académico, convivencia, permanencia y matrículas.</p>
+                </div>
+                <button class="btn btn-outline-secondary rounded-pill px-4" onclick="volverAdmin()">
+                    <i class="bi bi-arrow-left me-1"></i> Volver al Dashboard
+                </button>
             </div>
-            <div class="row g-3">
-                <div class="col-md-6"><div class="card p-4 border-0 shadow-sm text-center"><h1 class="text-warning">92%</h1><p>Asistencia General</p></div></div>
-                <div class="col-md-6"><div class="card p-4 border-0 shadow-sm text-center"><h1 class="text-warning">4.1</h1><p>Promedio Institucional</p></div></div>
+
+            <!-- TARJETAS PRINCIPALES KPI -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-3">
+                    <div class="card border-0 shadow-sm p-3 h-100 rounded-4" style="border-left: 5px solid #1b2a47 !important;">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <p class="text-muted text-uppercase small fw-semibold mb-1">Estudiantes Registrados</p>
+                                <h2 class="fw-bold mb-0" style="color: #1b2a47;">@rep.TotalEstudiantes</h2>
+                            </div>
+                            <div class="rounded-circle p-3 bg-light text-primary">
+                                <i class="bi bi-people-fill fs-3" style="color: #1b2a47 !important;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card border-0 shadow-sm p-3 h-100 rounded-4" style="border-left: 5px solid #e67e22 !important;">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <p class="text-muted text-uppercase small fw-semibold mb-1">Promedio Institucional</p>
+                                <h2 class="fw-bold mb-0" style="color: #e67e22;">@rep.PromedioInstitucional.ToString("0.0") / 5.0</h2>
+                            </div>
+                            <div class="rounded-circle p-3 bg-light">
+                                <i class="bi bi-journal-bookmark-fill fs-3" style="color: #e67e22 !important;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card border-0 shadow-sm p-3 h-100 rounded-4" style="border-left: 5px solid #27ae60 !important;">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <p class="text-muted text-uppercase small fw-semibold mb-1">Asistencia Consolidada</p>
+                                <h2 class="fw-bold mb-0 text-success">@rep.PorcentajeAsistencia%</h2>
+                            </div>
+                            <div class="rounded-circle p-3 bg-light text-success">
+                                <i class="bi bi-calendar-check-fill fs-3"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card border-0 shadow-sm p-3 h-100 rounded-4" style="border-left: 5px solid #e74c3c !important;">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <p class="text-muted text-uppercase small fw-semibold mb-1">Tasa de Deserción</p>
+                                <h2 class="fw-bold mb-0 text-danger">@rep.PorcentajeDesercion%</h2>
+                            </div>
+                            <div class="rounded-circle p-3 bg-light text-danger">
+                                <i class="bi bi-person-x-fill fs-3"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECCIÓN 1: RENDIMIENTO ACADÉMICO ANUAL -->
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
+                    <h5 class="fw-bold mb-0" style="color: #1b2a47;">
+                        <i class="bi bi-award-fill me-2" style="color: #e67e22;"></i>1. Rendimiento Académico Anual
+                    </h5>
+                    <span class="badge bg-light text-dark border">Cierre de Período</span>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-4 mb-4">
+                        <div class="col-lg-8">
+                            <div class="card border-0 bg-light p-3 rounded-3 h-100">
+                                <h6 class="fw-bold text-secondary mb-3">Notas Promedio Finales por Área / Materia</h6>
+                                <div style="position: relative; height:260px;">
+                                    <canvas id="chartPromediosMateria"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-4">
+                            <div class="card border-0 bg-light p-3 rounded-3 h-100">
+                                <h6 class="fw-bold text-secondary mb-3">Tasa de Aprobación vs Reprobación</h6>
+                                <div style="position: relative; height:200px;" class="d-flex justify-content-center">
+                                    <canvas id="chartAprobacion"></canvas>
+                                </div>
+                                <div class="d-flex justify-content-around text-center mt-3 pt-2 border-top">
+                                    <div>
+                                        <span class="badge bg-success px-2 py-1">Aprobados</span>
+                                        <p class="fw-bold mb-0 mt-1">@rep.Aprobados (@rep.PorcentajeAprobacion%)</p>
+                                    </div>
+                                    <div>
+                                        <span class="badge bg-danger px-2 py-1">Reprobados</span>
+                                        <p class="fw-bold mb-0 mt-1">@rep.Reprobados (@rep.PorcentajeReprobacion%)</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ALERTA DE DATO NO DISPONIBLE EN BD (PRUEBAS SABER) -->
+                    <div class="alert alert-warning border-warning d-flex align-items-center rounded-3 mb-0" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill fs-3 me-3 flex-shrink-0 text-warning"></i>
+                        <div>
+                            <h6 class="fw-bold mb-1">Resultados de Pruebas de Estado (Pruebas Saber)</h6>
+                            <p class="mb-0 small">
+                                <strong>Estado de Base de Datos:</strong> Los datos históricos y puntajes de exámenes nacionales (Pruebas Saber ICFES) no se encuentran registrados en la base de datos actual.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECCIÓN 2: REGISTROS DE CONVIVENCIA Y PERMANENCIA -->
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
+                    <h5 class="fw-bold mb-0" style="color: #1b2a47;">
+                        <i class="bi bi-shield-check me-2" style="color: #e67e22;"></i>2. Registros de Convivencia y Permanencia
+                    </h5>
+                    <span class="badge bg-light text-dark border">Asistencia & Retención</span>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-4 mb-3">
+                        <div class="col-md-6">
+                            <div class="p-3 border rounded-3 bg-light">
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="bi bi-calendar-range-fill text-success fs-4 me-2"></i>
+                                    <h6 class="fw-bold mb-0 text-dark">Asistencia Escolar Consolidada</h6>
+                                </div>
+                                <h3 class="fw-bold text-success mb-1">@rep.PorcentajeAsistencia%</h3>
+                                <p class="text-muted small mb-0">Total asistencias registradas: @rep.TotalAsistencias (@rep.AsistenciasPresentes registros de presencia).</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 border rounded-3 bg-light">
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="bi bi-person-dash-fill text-danger fs-4 me-2"></i>
+                                    <h6 class="fw-bold mb-0 text-dark">Tasa de Deserción Escolar</h6>
+                                </div>
+                                <h3 class="fw-bold text-danger mb-1">@rep.PorcentajeDesercion%</h3>
+                                <p class="text-muted small mb-0">Matrículas retiradas o inactivas: @rep.Desertores de @rep.TotalMatriculas matrículas procesadas.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ALERTA DE DATO NO DISPONIBLE EN BD (REPITENCIA) -->
+                    <div class="alert alert-warning border-warning d-flex align-items-center rounded-3 mb-0" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill fs-3 me-3 flex-shrink-0 text-warning"></i>
+                        <div>
+                            <h6 class="fw-bold mb-1">Índices de Repitencia Escolar Consecutiva</h6>
+                            <p class="mb-0 small">
+                                <strong>Estado de Base de Datos:</strong> El historial consecutivo de repitencia de curso por estudiante no se encuentra registrado en el esquema de base de datos actual.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECCIÓN 3: INFORMACIÓN DE MATRÍCULA Y EGRESO -->
+            <div class="card border-0 shadow-sm rounded-4 mb-4">
+                <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
+                    <h5 class="fw-bold mb-0" style="color: #1b2a47;">
+                        <i class="bi bi-mortarboard-fill me-2" style="color: #e67e22;"></i>3. Información de Matrícula por Grado y Género
+                    </h5>
+                    <span class="badge bg-light text-dark border">Consolidado por Nivel</span>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-4">
+                        <div class="col-lg-7">
+                            <div class="card border-0 bg-light p-3 rounded-3 h-100">
+                                <h6 class="fw-bold text-secondary mb-3">Historial de Matrícula Registrada por Grado</h6>
+                                <div style="position: relative; height:240px;">
+                                    <canvas id="chartMatriculasGrado"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-5">
+                            <div class="card border-0 bg-light p-3 rounded-3 h-100">
+                                <h6 class="fw-bold text-secondary mb-3">Distribución por Género</h6>
+                                <div style="position: relative; height:200px;" class="d-flex justify-content-center">
+                                    <canvas id="chartGenero"></canvas>
+                                </div>
+                                <div class="d-flex justify-content-around text-center mt-3 pt-2 border-top">
+                                    <div>
+                                        <span class="badge bg-primary px-2 py-1">Hombres</span>
+                                        <p class="fw-bold mb-0 mt-1">@rep.TotalHombres</p>
+                                    </div>
+                                    <div>
+                                        <span class="badge px-2 py-1" style="background-color: #e84393; color: white;">Mujeres</span>
+                                        <p class="fw-bold mb-0 mt-1">@rep.TotalMujeres</p>
+                                    </div>
+                                    @if (rep.TotalSinGenero > 0)
+                                    {
+                                        <div>
+                                            <span class="badge bg-secondary px-2 py-1">No Esp.</span>
+                                            <p class="fw-bold mb-0 mt-1">@rep.TotalSinGenero</p>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -516,13 +670,13 @@
             <h2 class="mb-4" style="color: #2980b9;"><i class="bi bi-person-badge-fill me-2"></i>Panel del Docente</h2>
 
             <div class="row">
-                <!-- Tarjeta: Planilla de Notas (Actualizado para usar la vista interna) -->
+                <!-- Tarjeta: Planilla de Notas (Navega a la vista completa de Planilla de Calificaciones) -->
                 <div class="col-md-4 mb-4" onclick="location.href='@Url.Action("Planilla", "Docente")'" style="cursor: pointer;">
                     <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover" style="border-top: 4px solid #2980b9 !important;">
                         <i class="bi bi-clipboard-check fs-2 mb-2" style="color: #2980b9;"></i>
                         <h5 class="text-dark">Planilla de Notas</h5>
                         <p class="small text-muted">Gestión de calificaciones y promedios.</p>
-                        <button class="btn btn-sm btn-outline-primary mt-auto w-100" type="button">Ver Planilla</button>
+                        <a href="@Url.Action("Planilla", "Docente")" class="btn btn-sm btn-outline-primary mt-auto w-100">Ver Planilla</a>
                     </div>
                 </div>
 
@@ -548,7 +702,7 @@
 
                 <!-- Tarjeta: Reportes Generales -->
                 <div class="col-md-4 mb-4" onclick="location.href='@Url.Action("ReporteGrupal", "Docente")'" style="cursor: pointer;">
-                    <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover" style="border-top: 4px solid #2980b9 !important; min-width: 100%;">
+                    <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover" style="border-top: 4px solid #2980b9 !important;">
                         <i class="bi bi-bar-chart-line fs-2 mb-2" style="color: #2980b9;"></i>
                         <h5 class="text-dark">Reportes Generales</h5>
                         <p class="small text-muted">Estadísticas y promedios grupales del curso.</p>
@@ -565,8 +719,29 @@
                         <button class="btn btn-sm btn-outline-primary mt-auto w-100">Gestionar Mejoras</button>
                     </div>
                 </div>
+
+                <!-- Tarjeta: Horario de Clases -->
+                <div class="col-md-4 mb-4" onclick="location.href='@Url.Action("MiHorario", "Horario")'" style="cursor: pointer;">
+                    <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover" style="border-top: 4px solid #2980b9 !important;">
+                        <i class="bi bi-calendar-week fs-2 mb-2" style="color: #2980b9;"></i>
+                        <h5 class="text-dark">Horario de Clases</h5>
+                        <p class="small text-muted">Consulta la programación semanal de tus clases.</p>
+                        <button class="btn btn-sm btn-outline-primary mt-auto w-100" type="button">Ver Horario</button>
+                    </div>
+                </div>
+
+                <!-- Tarjeta: Cursos Extracurriculares (Docente) -->
+                <div class="col-md-4 mb-4" onclick="verCursosExtraDocente()" style="cursor: pointer;">
+                    <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover" style="border-top: 4px solid #2980b9 !important;">
+                        <i class="bi bi-stars fs-2 mb-2" style="color: #2980b9;"></i>
+                        <h5 class="text-dark">Cursos Extracurriculares</h5>
+                        <p class="small text-muted">Publica talleres, define fechas, cupos, temario y gestiona inscripciones.</p>
+                        <button class="btn btn-sm btn-outline-primary mt-auto w-100">Gestionar Extracurriculares</button>
+                    </div>
+                </div>
             </div>
         </div>
+
         <!--  -->
         <!-- 2. MÓDULOS INDEPENDIENTES Y COMPONENTES OCULTOS -->
         <!--  -->
@@ -634,127 +809,428 @@
                 </div>
             </div>
         </div>
-
-        <!-- Módulo Oculto de Planilla de Calificaciones -->
-        <div id="docente-planilla" class="d-none">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h3 style="color: #2980b9;"><i class="bi bi-pencil-square me-2"></i>Planilla de Calificaciones</h3>
-                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="volverDocente()">
-                    Volver
-                </button>
-            </div>
-
-            <div class="card border-0 shadow-sm p-4 mb-4">
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <label class="form-label fw-bold">Asignatura</label>
-                        <select class="form-select"><option>Matemáticas - 6°A</option></select>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label fw-bold">Periodo</label>
-                        <select class="form-select"><option>Primer Periodo</option></select>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card border-0 shadow-sm overflow-hidden">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-dark">
-                        <tr>
-                            <th class="ps-3">Estudiante</th>
-                            <th class="text-center">Tarea 1</th>
-                            <th class="text-center">Examen</th>
-                            <th class="text-center">Actitudinal</th>
-                            <th class="text-center">Definitiva</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- (David) Se agregan las clases nota-input y nota-definitiva -->
-                        <tr>
-                            <td class="ps-3 fw-bold">Ospina Juan Pablo</td>
-                            <td><input type="number" class="form-control form-control-sm text-center nota-input" value="4.5" step="0.1"></td>
-                            <td><input type="number" class="form-control form-control-sm text-center nota-input" value="3.8" step="0.1"></td>
-                            <td><input type="number" class="form-control form-control-sm text-center nota-input" value="5.0" step="0.1"></td>
-                            <td class="text-center"><span class="badge bg-success fs-6 nota-definitiva">4.4</span></td>
-                        </tr>
-                        <tr>
-                            <td class="ps-3 fw-bold">García María</td>
-                            <td><input type="number" class="form-control form-control-sm text-center nota-input" value="3.0" step="0.1"></td>
-                            <td><input type="number" class="form-control form-control-sm text-center nota-input" value="2.5" step="0.1"></td>
-                            <td><input type="number" class="form-control form-control-sm text-center nota-input" value="4.0" step="0.1"></td>
-                            <td class="text-center"><span class="badge bg-danger fs-6 nota-definitiva">3.2</span></td>
-                        </tr>
-                    </tbody>
-                </table>
-                <div class="p-3 bg-light text-end">
-                    <button class="btn btn-primary"><i class="bi bi-save me-2"></i>Guardar Calificaciones</button>
-                </div>
-            </div>
-        </div>
-
         <!-- Módulo Oculto de Control de Asistencia -->
         <div id="docente-asistencia" class="d-none">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h3 style="color: #2980b9;"><i class="bi bi-calendar-check me-2"></i>Control de Asistencia</h3>
-                <button class="btn btn-outline-secondary btn-sm" onclick="volverDocente()">Volver</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="volverDocente()">Volver</button>
             </div>
 
+            <!-- Filtros: Fecha, Grupo, Jornada y Acción Rápida -->
             <div class="card border-0 shadow-sm p-4 mb-4">
-                <div class="row g-3 align-items-center">
-                    <div class="col-md-4">
+                <div class="row g-3 align-items-end">
+                    <!-- 1. Campo Fecha -->
+                    <div class="col-md-3">
                         <label class="form-label fw-bold">Fecha</label>
-                        <input type="date" class="form-control" value="2024-03-15">
+                        <input type="date" class="form-control" value="@DateTime.Now.ToString("yyyy-MM-dd")">
                     </div>
-                    <div class="col-md-4">
+
+                    <!-- 2. Seleccionar Grupo (Grado) -->
+                    <div class="col-md-3">
                         <label class="form-label fw-bold">Grupo</label>
-                        <select class="form-select"><option>6° Grado - A</option></select>
+                        <select class="form-select" id="selectGrupoAsistencia">
+                            @if (ViewBag.CursosAsistencia != null && ((IEnumerable<string>)ViewBag.CursosAsistencia).Any())
+                            {
+                                foreach (var c in ViewBag.CursosAsistencia)
+                                {
+                                    <option value="@c">@c</option>
+                                }
+                            }
+                            else
+                            {
+                                <option value="601 M">601 M</option>
+                                <option value="602 M">602 M</option>
+                                <option value="603 M">603 M</option>
+                                <option value="701 M">701 M</option>
+                                <option value="702 M">702 M</option>
+                                <option value="703 M">703 M</option>
+                                <option value="801 M">801 M</option>
+                                <option value="802 M">802 M</option>
+                                <option value="803 M">803 M</option>
+                                <option value="901 M">901 M</option>
+                                <option value="902 M">902 M</option>
+                                <option value="903 M">903 M</option>
+                                <option value="1001 M">1001 M</option>
+                                <option value="1002 M">1002 M</option>
+                                <option value="1003 M">1003 M</option>
+                                <option value="1101 M">1101 M</option>
+                                <option value="1102 M">1102 M</option>
+                                <option value="1103 M">1103 M</option>
+                                <option value="601 T">601 T</option>
+                                <option value="602 T">602 T</option>
+                                <option value="603 T">603 T</option>
+                                <option value="701 T">701 T</option>
+                                <option value="702 T">702 T</option>
+                                <option value="703 T">703 T</option>
+                                <option value="801 T">801 T</option>
+                                <option value="802 T">802 T</option>
+                                <option value="803 T">803 T</option>
+                                <option value="901 T">901 T</option>
+                                <option value="902 T">902 T</option>
+                                <option value="903 T">903 T</option>
+                                <option value="1001 T">1001 T</option>
+                                <option value="1002 T">1002 T</option>
+                                <option value="1003 T">1003 T</option>
+                                <option value="1101 T">1101 T</option>
+                                <option value="1102 T">1102 T</option>
+                                <option value="1103 T">1103 T</option>
+                            }
+                        </select>
                     </div>
-                    <div class="col-md-4 text-end">
-                        <button class="btn btn-success"><i class="bi bi-check-all me-2"></i>Marcar todos como Presente</button>
+
+                    <!-- 3. Seleccionar Jornada (Mañana / Tarde) -->
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Jornada</label>
+                        <select class="form-select" id="selectJornadaAsistencia" name="jornada">
+                            <option value="Mañana">Mañana</option>
+                            <option value="Tarde">Tarde</option>
+                        </select>
+                    </div>
+
+                    <!-- 4. Botón Marcar Todos como Presente -->
+                    <div class="col-md-3 text-end">
+                        <button type="button" class="btn btn-success w-100" onclick="marcarTodosPresentes()">
+                            <i class="bi bi-check-all me-2"></i>Marcar todos como Presente
+                        </button>
                     </div>
                 </div>
             </div>
 
+            <!-- Tabla Dinámica cargada desde la Base de Datos -->
             <div class="card border-0 shadow-sm overflow-hidden">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th class="ps-3">Estudiante</th>
-                            <th class="text-center">Estado</th>
-                            <th>Observación</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="ps-3">Ospina Juan Pablo</td>
-                            <td class="text-center">
-                                <div class="btn-group btn-group-sm" role="group">
-                                    <input type="radio" class="btn-check" name="ast1" id="p1" checked>
-                                    <label class="btn btn-outline-success" for="p1">P</label>
-                                    <input type="radio" class="btn-check" name="ast1" id="f1">
-                                    <label class="btn btn-outline-danger" for="f1">F</label>
-                                    <input type="radio" class="btn-check" name="ast1" id="r1">
-                                    <label class="btn btn-outline-warning" for="r1">R</label>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0" id="tablaAsistencia">
+                        <thead class="table-light">
+                            <tr>
+                                <th class="ps-3">Estudiante</th>
+                                <th class="text-center" style="width: 220px;">Estado</th>
+                                <th>Observación</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (ViewBag.EstudiantesAsistencia != null && ((List<ProyectoPAE.Models.Usuario>)ViewBag.EstudiantesAsistencia).Any())
+                            {
+                                var listaEst = (List<ProyectoPAE.Models.Usuario>)ViewBag.EstudiantesAsistencia;
+                                for (int i = 0; i < listaEst.Count; i++)
+                                {
+                                    var est = listaEst[i];
+                                    var radId = i + 1;
+                                    <tr>
+                                        <td class="ps-3 fw-bold estudiante-nombre">
+                                            <input type="hidden" name="estudiante_id_asistencia" value="@est.ID_Usuario" />
+                                            @(!string.IsNullOrEmpty(est.NOMBRES) ? $"{est.NOMBRES} {est.APELLIDOS}".Trim() : est.NOMBRE_USUARIO)
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="btn-group btn-group-sm" role="group">
+                                                <input type="radio" class="btn-check radio-estado-p" name="ast_@est.ID_Usuario" id="p_@radId" value="P">
+                                                <label class="btn btn-outline-success fw-bold px-3" for="p_@radId" title="Presente">P</label>
+
+                                                <input type="radio" class="btn-check" name="ast_@est.ID_Usuario" id="f_@radId" value="F">
+                                                <label class="btn btn-outline-danger fw-bold px-3" for="f_@radId" title="Falla / Ausente">F</label>
+
+                                                <input type="radio" class="btn-check" name="ast_@est.ID_Usuario" id="r_@radId" value="R">
+                                                <label class="btn btn-outline-warning fw-bold px-3" for="r_@radId" title="Retardo / Llegada Tardía">R</label>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control form-control-sm" name="obs_@est.ID_Usuario" placeholder="Observación opcional...">
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted py-4">No hay estudiantes registrados en la base de datos.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Botones de Acción: Reiniciar y Guardar Asistencia -->
+                <div class="p-3 bg-light d-flex justify-content-between align-items-center border-top">
+                    <button type="button" class="btn btn-outline-secondary fw-bold" onclick="reiniciarAsistencias()">
+                        <i class="bi bi-arrow-counterclockwise me-2"></i>Reiniciar Calificación de Asistencias
+                    </button>
+                    <button type="button" class="btn btn-primary fw-bold px-4" onclick="guardarAsistenciaYObservaciones()">
+                        <i class="bi bi-save me-2"></i>Guardar Asistencia y Observaciones
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Módulo Oculto de Gestión de Cursos Extracurriculares (Docente) -->
+        <div id="docente-cursosextra" class="d-none">
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+                <div>
+                    <h3 class="fw-bold mb-0" style="color: #2980b9;">
+                        <i class="bi bi-stars me-2"></i>Gestión de Cursos Extracurriculares
+                    </h3>
+                    <p class="text-muted small mb-0">Crea talleres institucionales, define temarios de aprendizaje, límites de cupos y consulta inscripciones en tiempo real.</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn text-white shadow-sm" style="background-color: #2980b9; border-radius: 8px;" data-bs-toggle="modal" data-bs-target="#modalCrearCursoExtra">
+                        <i class="bi bi-plus-circle me-1"></i> Publicar Nuevo Curso
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="volverDocente()" style="border-radius: 8px;">
+                        <i class="bi bi-arrow-left me-1"></i> Volver
+                    </button>
+                </div>
+            </div>
+
+            <!-- KPIs de Cursos Extracurriculares -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm p-3 h-100 rounded-3" style="border-left: 4px solid #2980b9 !important;">
+                        <span class="text-muted text-uppercase small fw-semibold">Cursos Registrados</span>
+                        <h3 class="fw-bold mb-0 text-dark">@cursosExtraDocente.Count</h3>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm p-3 h-100 rounded-3" style="border-left: 4px solid #27ae60 !important;">
+                        <span class="text-muted text-uppercase small fw-semibold">Cupos Totales Ofertados</span>
+                        <h3 class="fw-bold mb-0 text-success">@cursosExtraDocente.Sum(c => c.CuposTotales)</h3>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm p-3 h-100 rounded-3" style="border-left: 4px solid #f39c12 !important;">
+                        <span class="text-muted text-uppercase small fw-semibold">Cupos Disponibles Libres</span>
+                        <h3 class="fw-bold mb-0 text-warning">@cursosExtraDocente.Sum(c => c.CuposDisponibles)</h3>
+                    </div>
+                </div>
+            </div>
+
+            @if (!cursosExtraDocente.Any())
+            {
+                <div class="card border-0 shadow-sm p-5 text-center rounded-4 bg-white">
+                    <i class="bi bi-stars text-muted display-4 mb-3"></i>
+                    <h5 class="fw-bold text-secondary">Aún no has publicado ningún curso extracurricular</h5>
+                    <p class="text-muted small mb-4">Haz clic en el botón inferior para abrir las inscripciones a un nuevo taller o actividad extracurricular.</p>
+                    <div>
+                        <button class="btn text-white px-4 py-2 shadow-sm" style="background-color: #2980b9; border-radius: 8px;" data-bs-toggle="modal" data-bs-target="#modalCrearCursoExtra">
+                            <i class="bi bi-plus-circle me-2"></i> Crear Primer Curso Extracurricular
+                        </button>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="row g-3">
+                    @foreach (var curso in cursosExtraDocente)
+                    {
+                        var pctOcupacion = curso.CuposTotales > 0 ? (int)(((double)(curso.CuposTotales - curso.CuposDisponibles) / curso.CuposTotales) * 100) : 0;
+                        var estadoClase = !curso.Activo ? "bg-secondary" : (curso.CuposDisponibles == 0 ? "bg-danger" : (curso.PeriodoInscripcionAbierto ? "bg-success" : "bg-warning text-dark"));
+                        var estadoTexto = !curso.Activo ? "Inactivo / Pausado" : (curso.CuposDisponibles == 0 ? "Cupos Agotados" : (curso.PeriodoInscripcionAbierto ? "Inscripciones Abiertas" : "Fuera de Periodo"));
+
+                        <div class="col-lg-6 mb-3">
+                            <div class="card border-0 shadow-sm rounded-4 h-100 p-3 bg-white" style="border-top: 4px solid #2980b9 !important;">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h5 class="fw-bold text-dark mb-0">@curso.Nombre</h5>
+                                    <span class="badge @estadoClase rounded-pill px-3 py-1">@estadoTexto</span>
                                 </div>
-                            </td>
-                            <td><input type="text" class="form-control form-control-sm" placeholder="Opcional..."></td>
-                        </tr>
-                        <tr>
-                            <td class="ps-3">García María</td>
-                            <td class="text-center">
-                                <div class="btn-group btn-group-sm" role="group">
-                                    <input type="radio" class="btn-check" name="ast2" id="p2" checked>
-                                    <label class="btn btn-outline-success" for="p2">P</label>
-                                    <input type="radio" class="btn-check" name="ast2" id="f2">
-                                    <label class="btn btn-outline-danger" for="f2">F</label>
-                                    <input type="radio" class="btn-check" name="ast2" id="r2">
-                                    <label class="btn btn-outline-warning" for="r2">R</label>
+
+                                <p class="text-muted small mb-2">
+                                    <i class="bi bi-person-fill text-primary me-1"></i><strong>Instructor:</strong> @curso.Instructor
+                                    @if (!string.IsNullOrEmpty(curso.Horario))
+                                    {
+                                        <span class="ms-2"><i class="bi bi-clock-fill text-secondary me-1"></i>@curso.Horario</span>
+                                    }
+                                </p>
+
+                                <div class="p-3 bg-light rounded-3 mb-3">
+                                    <h6 class="fw-bold text-secondary small mb-1"><i class="bi bi-journal-text me-1 text-primary"></i>¿Qué se va a aprender? / Temario:</h6>
+                                    <p class="small text-muted mb-0" style="white-space: pre-line;">@(string.IsNullOrWhiteSpace(curso.Descripcion) ? "Sin descripción detallada." : curso.Descripcion)</p>
                                 </div>
-                            </td>
-                            <td><input type="text" class="form-control form-control-sm" placeholder="Opcional..."></td>
-                        </tr>
-                    </tbody>
-                </table>
+
+                                <div class="row g-2 small text-muted mb-3">
+                                    <div class="col-6">
+                                        <div class="border p-2 rounded-2 bg-white">
+                                            <span class="d-block text-secondary fw-semibold"><i class="bi bi-calendar-event me-1"></i>Inscripciones:</span>
+                                            <span class="fw-bold text-dark">@curso.FechaInicioInscripcion.ToString("dd/MM/yyyy") - @curso.FechaFinInscripcion.ToString("dd/MM/yyyy")</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="border p-2 rounded-2 bg-white">
+                                            <span class="d-block text-secondary fw-semibold"><i class="bi bi-calendar-check me-1"></i>Clases del Curso:</span>
+                                            <span class="fw-bold text-dark">@curso.FechaInicio.ToString("dd/MM/yyyy") - @curso.FechaFin.ToString("dd/MM/yyyy")</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="border p-2 rounded-2 bg-white d-flex justify-content-between align-items-center">
+                                            <span><i class="bi bi-mortarboard me-1 text-primary"></i>Grados admitidos:</span>
+                                            <span class="badge bg-primary text-white">Grados @(curso.GradoMin ?? 6)° a @(curso.GradoMax ?? 11)°</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Barra de cupos -->
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between align-items-center small mb-1">
+                                        <span class="text-muted fw-semibold">Disponibilidad de cupos:</span>
+                                        <span class="fw-bold @(curso.CuposDisponibles > 0 ? "text-success" : "text-danger")">
+                                            @curso.CuposDisponibles de @curso.CuposTotales disponibles (@(curso.CuposTotales - curso.CuposDisponibles) inscritos)
+                                        </span>
+                                    </div>
+                                    <div class="progress" style="height: 8px;">
+                                        <div class="progress-bar @(pctOcupacion >= 100 ? "bg-danger" : (pctOcupacion >= 80 ? "bg-warning" : "bg-primary"))" role="progressbar" style="width: @pctOcupacion%;" aria-valuenow="@pctOcupacion" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center pt-2 border-top mt-auto">
+                                    <button class="btn btn-outline-primary btn-sm rounded-pill px-3" onclick="verInscritosCursoExtra(@curso.IdExtraCurso)">
+                                        <i class="bi bi-people-fill me-1"></i> Ver Inscritos (@(curso.CuposTotales - curso.CuposDisponibles))
+                                    </button>
+                                    <div class="d-flex gap-1">
+                                        <button class="btn btn-sm @(curso.Activo ? "btn-outline-warning" : "btn-outline-success") rounded-pill px-3" onclick="cambiarEstadoCursoExtra(@curso.IdExtraCurso, @(curso.Activo ? "false" : "true"))">
+                                            @(curso.Activo ? "Pausar" : "Activar")
+                                        </button>
+                                        <button class="btn btn-outline-danger btn-sm rounded-pill px-2" title="Eliminar curso" onclick="eliminarCursoExtra(@curso.IdExtraCurso)">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+
+        <!-- MODAL: CREAR CURSO EXTRACURRICULAR -->
+        <div class="modal fade" id="modalCrearCursoExtra" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+                    <div class="modal-header text-white" style="background-color: #2980b9; border-radius: 16px 16px 0 0;">
+                        <h5 class="modal-title fw-bold"><i class="bi bi-stars me-2"></i>Publicar Nuevo Curso Extracurricular</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form id="formCrearCursoExtra" onsubmit="guardarCursoExtra(event)">
+                        <div class="modal-body p-4">
+                            <div class="row g-3">
+                                <div class="col-md-8">
+                                    <label class="form-label fw-bold small">Nombre del Curso / Taller <span class="text-danger">*</span></label>
+                                    <input type="text" name="Nombre" class="form-control" placeholder="Ej: Club de Robótica y Programación, Taller de Arte y Óleo..." required />
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold small">Docente / Instructor</label>
+                                    <input type="text" name="Instructor" class="form-control" value="@nombre" placeholder="Nombre del instructor" />
+                                </div>
+
+                                <div class="col-12">
+                                    <label class="form-label fw-bold small">¿Qué se va a aprender? / Temario y Objetivos <span class="text-danger">*</span></label>
+                                    <textarea name="Descripcion" class="form-control" rows="3" placeholder="Describe los contenidos del curso, competencias a desarrollar, materiales necesarios y dinámica de las sesiones..." required></textarea>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold small">Cupos Totales <span class="text-danger">*</span></label>
+                                    <input type="number" name="CuposTotales" class="form-control" min="1" max="500" value="20" required />
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold small">Grado Mínimo Permitido</label>
+                                    <select name="GradoMin" class="form-select">
+                                        <option value="6" selected>6° Grado</option>
+                                        <option value="7">7° Grado</option>
+                                        <option value="8">8° Grado</option>
+                                        <option value="9">9° Grado</option>
+                                        <option value="10">10° Grado</option>
+                                        <option value="11">11° Grado</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold small">Grado Máximo Permitido</label>
+                                    <select name="GradoMax" class="form-select">
+                                        <option value="6">6° Grado</option>
+                                        <option value="7">7° Grado</option>
+                                        <option value="8">8° Grado</option>
+                                        <option value="9">9° Grado</option>
+                                        <option value="10">10° Grado</option>
+                                        <option value="11" selected>11° Grado</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-12">
+                                    <label class="form-label fw-bold small">Horario / Días de Clase</label>
+                                    <input type="text" name="Horario" class="form-control" placeholder="Ej: Martes y Jueves de 3:30 PM a 5:00 PM (Aula de Informática)" />
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="card p-3 bg-light border-0 rounded-3">
+                                        <h6 class="fw-bold small text-primary mb-2"><i class="bi bi-calendar-event me-1"></i>Periodo de Inscripción</h6>
+                                        <div class="mb-2">
+                                            <label class="form-label small mb-1">Fecha Inicio Inscripción:</label>
+                                            <input type="date" name="FechaInicioInscripcion" class="form-control form-control-sm" value="@DateTime.Now.ToString("yyyy-MM-dd")" required />
+                                        </div>
+                                        <div>
+                                            <label class="form-label small mb-1">Fecha Cierre Inscripción:</label>
+                                            <input type="date" name="FechaFinInscripcion" class="form-control form-control-sm" value="@DateTime.Now.AddDays(15).ToString("yyyy-MM-dd")" required />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="card p-3 bg-light border-0 rounded-3">
+                                        <h6 class="fw-bold small text-success mb-2"><i class="bi bi-calendar-check me-1"></i>Periodo de Clases</h6>
+                                        <div class="mb-2">
+                                            <label class="form-label small mb-1">Fecha Inicio del Curso:</label>
+                                            <input type="date" name="FechaInicio" class="form-control form-control-sm" value="@DateTime.Now.AddDays(16).ToString("yyyy-MM-dd")" required />
+                                        </div>
+                                        <div>
+                                            <label class="form-label small mb-1">Fecha Fin del Curso:</label>
+                                            <input type="date" name="FechaFin" class="form-control form-control-sm" value="@DateTime.Now.AddMonths(3).ToString("yyyy-MM-dd")" required />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer bg-light" style="border-radius: 0 0 16px 16px;">
+                            <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn text-white rounded-pill px-4 shadow-sm" style="background-color: #2980b9;">
+                                <i class="bi bi-check-circle me-1"></i> Publicar Curso
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: VER ESTUDIANTES INSCRITOS -->
+        <div class="modal fade" id="modalVerInscritosExtra" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+                    <div class="modal-header text-white" style="background-color: #2980b9; border-radius: 16px 16px 0 0;">
+                        <h5 class="modal-title fw-bold" id="tituloModalInscritos"><i class="bi bi-people-fill me-2"></i>Estudiantes Inscritos</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <div id="resumenInscritos" class="d-flex justify-content-between align-items-center mb-3 p-3 bg-light rounded-3">
+                            <span class="text-muted fw-semibold" id="conteoInscritos">Cargando inscritos...</span>
+                            <span class="badge bg-primary px-3 py-1" id="badgeCuposModal">--</span>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Estudiante</th>
+                                        <th>Documento / Código</th>
+                                        <th>Correo Electrónico</th>
+                                        <th>Fecha Inscripción</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tablaCuerpoInscritos">
+                                    <tr>
+                                        <td colspan="6" class="text-center py-4 text-muted">Cargando lista de inscritos...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light" style="border-radius: 0 0 16px 16px;">
+                        <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cerrar</button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -941,26 +1417,237 @@
         </div>
 
         <div id="estudiante-cursosextra" class="d-none">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h3 style="color: #6f42c1;"><i class="bi bi-stars me-2"></i>Cursos Extracurriculares</h3>
-                <button class="btn btn-outline-secondary btn-sm" onclick="volverEstudiante()">Volver</button>
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+                <div>
+                    <h3 class="fw-bold mb-0" style="color: #6f42c1;">
+                        <i class="bi bi-stars me-2"></i>Cursos Extracurriculares
+                    </h3>
+                    <p class="text-muted small mb-0">Explora talleres y actividades complementarias, consulta temarios y asegura tu cupo en tiempo real.</p>
+                </div>
+                <button class="btn btn-outline-secondary btn-sm" onclick="volverEstudiante()" style="border-radius: 8px;">
+                    <i class="bi bi-arrow-left me-1"></i> Volver
+                </button>
             </div>
-            <div class="card border-0 shadow-sm p-4">
-                <div class="list-group">
-                    <div class="list-group-item d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="mb-1">Club de Robótica</h6>
-                            <small class="text-muted">Martes y Jueves — 3:00 PM</small>
+
+            <!-- Navegación por pestañas: Catálogo vs Mis Inscripciones -->
+            <ul class="nav nav-pills mb-4" id="pills-tab-extra" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active rounded-pill px-4 fw-bold" id="pills-catalogo-tab" data-bs-toggle="pill" data-bs-target="#pills-catalogo" type="button" role="tab" aria-controls="pills-catalogo" aria-selected="true" style="border: 1px solid #6f42c1;">
+                        <i class="bi bi-grid-fill me-2"></i>Catálogo Disponible (@cursosExtraEstudiante.Count(c => c.Activo))
+                    </button>
+                </li>
+                <li class="nav-item ms-2" role="presentation">
+                    <button class="nav-link rounded-pill px-4 fw-bold text-dark" id="pills-miscursos-tab" data-bs-toggle="pill" data-bs-target="#pills-miscursos" type="button" role="tab" aria-controls="pills-miscursos" aria-selected="false" style="border: 1px solid #dee2e6;">
+                        <i class="bi bi-check2-circle me-2"></i>Mis Cursos Inscritos (@misCursosExtraInscritos.Count)
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content" id="pills-tabContent-extra">
+                <!-- PESTAÑA 1: CATÁLOGO DISPONIBLE -->
+                <div class="tab-pane fade show active" id="pills-catalogo" role="tabpanel" aria-labelledby="pills-catalogo-tab">
+                    @if (!cursosExtraEstudiante.Any(c => c.Activo))
+                    {
+                        <div class="card border-0 shadow-sm p-5 text-center rounded-4 bg-white">
+                            <i class="bi bi-stars text-muted display-4 mb-3"></i>
+                            <h5 class="fw-bold text-secondary">No hay cursos extracurriculares abiertos en este momento</h5>
+                            <p class="text-muted small mb-0">Los docentes publicarán nuevas actividades y talleres complementarios próximamente. ¡Mantente atento!</p>
                         </div>
-                        <span class="badge bg-success">Inscrito</span>
-                    </div>
-                    <div class="list-group-item d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="mb-1">Taller de Arte</h6>
-                            <small class="text-muted">Miércoles — 2:00 PM</small>
+                    }
+                    else
+                    {
+                        <div class="row g-3">
+                            @foreach (var curso in cursosExtraEstudiante.Where(c => c.Activo))
+                            {
+                                var pctOcupacion = curso.CuposTotales > 0 ? (int)(((double)(curso.CuposTotales - curso.CuposDisponibles) / curso.CuposTotales) * 100) : 0;
+                                var esGradoValido = curso.EsGradoValido(gradoEstudianteSesion);
+
+                                <div class="col-lg-6 mb-3">
+                                    <div class="card border-0 shadow-sm rounded-4 h-100 p-3 bg-white card-hover position-relative" style="border-top: 4px solid #6f42c1 !important;">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <h5 class="fw-bold text-dark mb-0" style="color: #4a154b;">@curso.Nombre</h5>
+                                            @if (curso.EstaInscrito)
+                                            {
+                                                <span class="badge bg-success rounded-pill px-3 py-1"><i class="bi bi-check-circle-fill me-1"></i>Inscrito</span>
+                                            }
+                                            else if (curso.CuposDisponibles <= 0)
+                                            {
+                                                <span class="badge bg-danger rounded-pill px-3 py-1">Cupos Agotados</span>
+                                            }
+                                            else if (!curso.PeriodoInscripcionAbierto)
+                                            {
+                                                <span class="badge bg-secondary rounded-pill px-3 py-1">Inscripciones Cerradas</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-primary rounded-pill px-3 py-1" style="background-color: #6f42c1 !important;">Inscripción Abierta</span>
+                                            }
+                                        </div>
+
+                                        <p class="text-muted small mb-2">
+                                            <i class="bi bi-person-badge text-purple me-1" style="color: #6f42c1;"></i><strong>Docente:</strong> @curso.Instructor
+                                            @if (!string.IsNullOrEmpty(curso.Horario))
+                                            {
+                                                <span class="ms-2"><i class="bi bi-clock-fill text-muted me-1"></i>@curso.Horario</span>
+                                            }
+                                        </p>
+
+                                        <div class="p-3 rounded-3 mb-3" style="background-color: #f8f5fc; border-left: 3px solid #6f42c1;">
+                                            <h6 class="fw-bold small mb-1" style="color: #6f42c1;">
+                                                <i class="bi bi-mortarboard-fill me-1"></i>¿Qué vas a aprender?
+                                            </h6>
+                                            <p class="small text-muted mb-0" style="white-space: pre-line;">@(string.IsNullOrWhiteSpace(curso.Descripcion) ? "Sin descripción detallada." : curso.Descripcion)</p>
+                                        </div>
+
+                                        <div class="row g-2 small text-muted mb-3">
+                                            <div class="col-6">
+                                                <div class="border p-2 rounded-2 bg-light">
+                                                    <span class="d-block text-secondary fw-semibold"><i class="bi bi-calendar-event me-1"></i>Inscripciones hasta:</span>
+                                                    <span class="fw-bold text-dark">@curso.FechaFinInscripcion.ToString("dd/MM/yyyy")</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="border p-2 rounded-2 bg-light">
+                                                    <span class="d-block text-secondary fw-semibold"><i class="bi bi-calendar-check me-1"></i>Inicio de clases:</span>
+                                                    <span class="fw-bold text-dark">@curso.FechaInicio.ToString("dd/MM/yyyy")</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-12">
+                                                <div class="border p-2 rounded-2 bg-light d-flex justify-content-between align-items-center">
+                                                    <span><i class="bi bi-people me-1" style="color: #6f42c1;"></i>Rango de grados permitidos:</span>
+                                                    <span class="badge text-white" style="background-color: #6f42c1;">Grados @(curso.GradoMin ?? 6)° a @(curso.GradoMax ?? 11)°</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Barra de cupos disponibles -->
+                                        <div class="mb-3">
+                                            <div class="d-flex justify-content-between align-items-center small mb-1">
+                                                <span class="text-muted fw-semibold">Disponibilidad de cupos:</span>
+                                                <span class="fw-bold @(curso.CuposDisponibles > 0 ? "text-success" : "text-danger")">
+                                                    @curso.CuposDisponibles de @curso.CuposTotales cupos libres
+                                                </span>
+                                            </div>
+                                            <div class="progress" style="height: 8px;">
+                                                <div class="progress-bar @(pctOcupacion >= 100 ? "bg-danger" : (pctOcupacion >= 80 ? "bg-warning" : "bg-success"))" role="progressbar" style="width: @pctOcupacion%;" aria-valuenow="@pctOcupacion" aria-valuemin="0" aria-valuemax="100"></div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Botones de Acción -->
+                                        <div class="d-flex justify-content-between align-items-center pt-2 border-top mt-auto">
+                                            @if (curso.EstaInscrito)
+                                            {
+                                                <div class="d-flex align-items-center gap-2 w-100 justify-content-between">
+                                                    <span class="text-success small fw-bold"><i class="bi bi-check-circle me-1"></i>Inscrito el @curso.FechaInscripcionEstudiante?.ToString("dd/MM/yyyy")</span>
+                                                    @if (curso.IdInscripcion.HasValue)
+                                                    {
+                                                        <button class="btn btn-outline-danger btn-sm rounded-pill px-3" onclick="cancelarInscripcionEstudiante(@curso.IdInscripcion.Value, '@curso.Nombre')">
+                                                            <i class="bi bi-x-circle me-1"></i> Cancelar Cupo
+                                                        </button>
+                                                    }
+                                                </div>
+                                            }
+                                            else if (curso.CuposDisponibles <= 0)
+                                            {
+                                                <button class="btn btn-secondary btn-sm rounded-pill w-100 py-2" disabled>
+                                                    <i class="bi bi-slash-circle me-1"></i> Cupos Agotados
+                                                </button>
+                                            }
+                                            else if (!curso.PeriodoInscripcionAbierto)
+                                            {
+                                                <button class="btn btn-outline-secondary btn-sm rounded-pill w-100 py-2" disabled>
+                                                    <i class="bi bi-clock-history me-1"></i> Fuera de periodo de inscripción
+                                                </button>
+                                            }
+                                            else if (!esGradoValido)
+                                            {
+                                                <button class="btn btn-outline-warning text-dark btn-sm rounded-pill w-100 py-2" disabled>
+                                                    <i class="bi bi-exclamation-triangle me-1"></i> No admitido para tu grado actual (@(gradoEstudianteSesion.HasValue ? $"{gradoEstudianteSesion}°" : "-"))
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                <button class="btn text-white btn-sm rounded-pill w-100 py-2 shadow-sm" style="background-color: #6f42c1;" onclick="inscribirseEstudiante(@curso.IdExtraCurso, '@curso.Nombre')">
+                                                    <i class="bi bi-pencil-square me-1"></i> Inscribirme a este Curso
+                                                </button>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
                         </div>
-                        <span class="badge bg-warning text-dark">Disponible</span>
-                    </div>
+                    }
+                </div>
+
+                <!-- PESTAÑA 2: MIS CURSOS INSCRITOS -->
+                <div class="tab-pane fade" id="pills-miscursos" role="tabpanel" aria-labelledby="pills-miscursos-tab">
+                    @if (!misCursosExtraInscritos.Any())
+                    {
+                        <div class="card border-0 shadow-sm p-5 text-center rounded-4 bg-white">
+                            <i class="bi bi-journal-x text-muted display-4 mb-3"></i>
+                            <h5 class="fw-bold text-secondary">Aún no estás inscrito en ningún curso extracurricular</h5>
+                            <p class="text-muted small mb-4">Revisa el catálogo disponible e inscríbete para aprovechar las actividades extracurriculares de la institución.</p>
+                            <div>
+                                <button class="btn text-white rounded-pill px-4 py-2 shadow-sm" style="background-color: #6f42c1;" onclick="document.getElementById('pills-catalogo-tab').click();">
+                                    <i class="bi bi-search me-1"></i> Ver Catálogo Disponible
+                                </button>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="row g-3">
+                            @foreach (var miCurso in misCursosExtraInscritos)
+                            {
+                                <div class="col-lg-6 mb-3">
+                                    <div class="card border-0 shadow-sm rounded-4 h-100 p-3 bg-white" style="border-left: 5px solid #27ae60 !important;">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <h5 class="fw-bold text-dark mb-0">@miCurso.Nombre</h5>
+                                            <span class="badge bg-success rounded-pill px-3 py-1"><i class="bi bi-check-circle me-1"></i>Activo</span>
+                                        </div>
+
+                                        <p class="text-muted small mb-2">
+                                            <i class="bi bi-person-badge me-1 text-success"></i><strong>Docente:</strong> @miCurso.Instructor
+                                            @if (!string.IsNullOrEmpty(miCurso.Horario))
+                                            {
+                                                <span class="ms-2"><i class="bi bi-clock-fill text-muted me-1"></i>@miCurso.Horario</span>
+                                            }
+                                        </p>
+
+                                        <div class="p-3 bg-light rounded-3 mb-3">
+                                            <h6 class="fw-bold text-secondary small mb-1"><i class="bi bi-info-circle me-1"></i>Temario:</h6>
+                                            <p class="small text-muted mb-0">@(string.IsNullOrWhiteSpace(miCurso.Descripcion) ? "Sin descripción." : miCurso.Descripcion)</p>
+                                        </div>
+
+                                        <div class="row g-2 small text-muted mb-3">
+                                            <div class="col-6">
+                                                <div class="border p-2 rounded-2 bg-white">
+                                                    <span class="d-block text-secondary fw-semibold">Fecha de Inscripción:</span>
+                                                    <span class="fw-bold text-dark">@miCurso.FechaInscripcionEstudiante?.ToString("dd/MM/yyyy")</span>
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="border p-2 rounded-2 bg-white">
+                                                    <span class="d-block text-secondary fw-semibold">Periodo de Clases:</span>
+                                                    <span class="fw-bold text-dark">@miCurso.FechaInicio.ToString("dd/MM/yyyy") - @miCurso.FechaFin.ToString("dd/MM/yyyy")</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="d-flex justify-content-between align-items-center pt-2 border-top mt-auto">
+                                            <span class="text-success small fw-semibold"><i class="bi bi-shield-check me-1"></i>Cupo asegurado</span>
+                                            @if (miCurso.IdInscripcion.HasValue)
+                                            {
+                                                <button class="btn btn-outline-danger btn-sm rounded-pill px-3" onclick="cancelarInscripcionEstudiante(@miCurso.IdInscripcion.Value, '@miCurso.Nombre')">
+                                                    <i class="bi bi-x-circle me-1"></i> Cancelar Inscripción
+                                                </button>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
                 </div>
             </div>
         </div>
@@ -1099,7 +1786,7 @@
     function ocultarTodo() {
         const subs = [
             'admin-main', 'admin-matricula', 'admin-usuarios', 'admin-certificados', 'admin-notificaciones', 'admin-asignacion', 'admin-reportes',
-            'docente-main', 'docente-planilla', 'docente-asistencia', 'docente-observaciones', 'docente-mejoras',
+            'docente-main', 'docente-planilla', 'docente-asistencia', 'docente-observaciones', 'docente-mejoras', 'docente-cursosextra',
             'estudiante-main', 'estudiante-calificaciones', 'estudiante-actividades', 'estudiante-cursosextra', 'estudiante-mejoras'
         ];
 
@@ -1139,6 +1826,8 @@
             role = 'admin';
         } else if (role === 'padre') {
             role = 'acudiente';
+        } else if (role === 'profesor') {
+            role = 'docente';
         }
 
         ocultarTodo();
@@ -1165,6 +1854,7 @@
     function verAsistencia() { ocultarTodo(); mostrarSubpanel('panel-docente', 'docente-asistencia'); }
     function verObservaciones() { ocultarTodo(); mostrarSubpanel('panel-docente', 'docente-observaciones'); }
     function verModuloMejorasDocente() { ocultarTodo(); mostrarSubpanel('panel-docente', 'docente-mejoras'); }
+    function verCursosExtraDocente() { ocultarTodo(); mostrarSubpanel('panel-docente', 'docente-cursosextra'); }
     function volverDocente() { ocultarTodo(); mostrarSubpanel('panel-docente', 'docente-main'); }
 
     // --- FUNCIONES DE NAVEGACIÓN ESTUDIANTE ---
@@ -1181,20 +1871,488 @@
         if (sub) sub.classList.remove('d-none');
     }
 
+    // ==========================================
+    // AJAX: GESTIÓN DE CURSOS EXTRACURRICULARES
+    // ==========================================
+
+    // 1. Docente: Guardar nuevo curso
+    function guardarCursoExtra(event) {
+        event.preventDefault();
+        const form = document.getElementById('formCrearCursoExtra');
+        const formData = new FormData(form);
+
+        fetch('@Url.Action("CrearCursoExtra", "Docente")', {
+            method: 'POST',
+            body: formData
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    const modalEl = document.getElementById('modalCrearCursoExtra');
+                    const modal = bootstrap.Modal.getInstance(modalEl);
+                    if (modal) modal.hide();
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Ocurrió un error al procesar la solicitud.');
+            });
+    }
+
+    // 2. Docente: Ver estudiantes inscritos
+    function verInscritosCursoExtra(idCurso) {
+        const tabla = document.getElementById('tablaCuerpoInscritos');
+        tabla.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted"><div class="spinner-border spinner-border-sm text-primary me-2"></div>Cargando lista de inscritos...</td></tr>';
+
+        const modalEl = document.getElementById('modalVerInscritosExtra');
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        modal.show();
+
+        fetch(`@Url.Action("ObtenerInscritosCursoExtra", "Docente")?idCurso=${idCurso}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('tituloModalInscritos').innerHTML = `<i class="bi bi-people-fill me-2"></i>Inscritos en: ${data.nombreCurso}`;
+                    document.getElementById('conteoInscritos').innerText = `Total Alumnos Inscritos: ${data.totalInscritos}`;
+                    document.getElementById('badgeCuposModal').innerText = `Cupos Disponibles: ${data.cuposDisponibles} de ${data.cuposTotales}`;
+
+                    if (!data.estudiantes || data.estudiantes.length === 0) {
+                        tabla.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted"><i class="bi bi-inbox me-2"></i>Aún no hay estudiantes inscritos en este curso.</td></tr>';
+                    } else {
+                        let html = '';
+                        data.estudiantes.forEach((est, idx) => {
+                            const fecha = new Date(est.fechaInscripcion).toLocaleDateString();
+                            html += `
+                                    <tr>
+                                        <td><span class="fw-bold">${idx + 1}</span></td>
+                                        <td class="fw-semibold text-dark">${est.nombreCompleto}</td>
+                                        <td>${est.documento}</td>
+                                        <td><small class="text-muted">${est.correo}</small></td>
+                                        <td>${fecha}</td>
+                                        <td><span class="badge bg-success">Inscrito</span></td>
+                                    </tr>
+                                `;
+                        });
+                        tabla.innerHTML = html;
+                    }
+                } else {
+                    tabla.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-danger">${data.message || 'Error al cargar estudiantes.'}</td></tr>`;
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                tabla.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-danger">Error de conexión al cargar inscritos.</td></tr>';
+            });
+    }
+
+    // 3. Docente: Cambiar estado activo/pausado
+    function cambiarEstadoCursoExtra(idCurso, activo) {
+        const accion = activo ? 'activar' : 'pausar';
+        if (!confirm(`¿Estás seguro de que deseas ${accion} este curso extracurricular?`)) return;
+
+        const formData = new FormData();
+        formData.append('idCurso', idCurso);
+        formData.append('activo', activo);
+
+        fetch('@Url.Action("CambiarEstadoCursoExtra", "Docente")', {
+            method: 'POST',
+            body: formData
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(err => console.error(err));
+    }
+
+    // 4. Docente: Eliminar curso
+    function eliminarCursoExtra(idCurso) {
+        if (!confirm('¿Deseas eliminar este curso extracurricular? Si tiene alumnos inscritos se marcará como inactivo para proteger el historial.')) return;
+
+        const formData = new FormData();
+        formData.append('idCurso', idCurso);
+
+        fetch('@Url.Action("EliminarCursoExtra", "Docente")', {
+            method: 'POST',
+            body: formData
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(err => console.error(err));
+    }
+
+    // 5. Estudiante: Inscribirse a un curso
+    function inscribirseEstudiante(idCurso, nombreCurso) {
+        if (!confirm(`¿Confirmas tu inscripción al curso '${nombreCurso}'?`)) return;
+
+        const formData = new FormData();
+        formData.append('idCurso', idCurso);
+
+        fetch('@Url.Action("InscribirseCursoExtra", "Estudiante")', {
+            method: 'POST',
+            body: formData
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    window.location.reload();
+                } else {
+                    alert('Aviso: ' + data.message);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Ocurrió un error al intentar inscribirte.');
+            });
+    }
+
+    // 6. Estudiante: Cancelar inscripción
+    function cancelarInscripcionEstudiante(idInscripcion, nombreCurso) {
+        if (!confirm(`¿Estás seguro de cancelar tu inscripción a '${nombreCurso}'? Tu cupo será liberado para otro compañero.`)) return;
+
+        const formData = new FormData();
+        formData.append('idInscripcion', idInscripcion);
+
+        fetch('@Url.Action("CancelarInscripcionCursoExtra", "Estudiante")', {
+            method: 'POST',
+            body: formData
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    window.location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Ocurrió un error al intentar cancelar la inscripción.');
+            });
+    }
+
+    // --- FILTRADO + PAGINACIÓN DE MATRÍCULAS (20 por página) ---
+    let matPaginaActual = 1;
+    const MAT_POR_PAGINA = 20;
+
+    function getFilasMatriculasFiltradas() {
+        const selGrado = document.getElementById('filtroGrado');
+        const selEstado = document.getElementById('filtroEstado');
+        const valGrado  = selGrado  ? selGrado.value.toLowerCase().trim()  : 'todos';
+        const valEstado = selEstado ? selEstado.value.toLowerCase().trim() : 'todos';
+
+        const todasFilas = Array.from(document.querySelectorAll('#tbodyMatriculas tr.fila-mat'));
+        return todasFilas.filter(fila => {
+            const grado  = (fila.getAttribute('data-grado')  || '').toLowerCase();
+            const estado = (fila.getAttribute('data-estado') || '').toLowerCase();
+            const okGrado  = valGrado  === 'todos' || grado === valGrado;
+            const okEstado = valEstado === 'todos' || estado.includes(valEstado) ||
+                             (valEstado === 'activa' && (estado === 'activa' || estado === 'activo'));
+            return okGrado && okEstado;
+        });
+    }
+
+    function renderizarPaginacionMat() {
+        const filasFiltradas = getFilasMatriculasFiltradas();
+        const totalFilas = filasFiltradas.length;
+        const totalPaginas = Math.max(1, Math.ceil(totalFilas / MAT_POR_PAGINA));
+
+        // Ajustar página actual si se va de rango
+        if (matPaginaActual > totalPaginas) matPaginaActual = totalPaginas;
+
+        // Ocultar todas las filas primero
+        document.querySelectorAll('#tbodyMatriculas tr.fila-mat').forEach(f => f.style.display = 'none');
+
+        // Mostrar solo las de la página actual
+        const inicio = (matPaginaActual - 1) * MAT_POR_PAGINA;
+        const fin    = Math.min(inicio + MAT_POR_PAGINA, totalFilas);
+        for (let i = inicio; i < fin; i++) {
+            filasFiltradas[i].style.display = '';
+        }
+
+        // Info de página
+        const info = document.getElementById('infoMatPagina');
+        if (info) {
+            if (totalFilas === 0) {
+                info.textContent = 'Sin resultados para los filtros seleccionados';
+            } else {
+                info.textContent = `Mostrando ${inicio + 1}–${fin} de ${totalFilas} matrículas`;
+            }
+        }
+
+        // Renderizar controles de paginación
+        const ul = document.getElementById('paginacionMat');
+        if (!ul) return;
+        ul.innerHTML = '';
+
+        if (totalPaginas <= 1) return;
+
+        const crearLi = (label, pagina, activo, disabled) => {
+            const li = document.createElement('li');
+            li.className = `page-item${activo ? ' active' : ''}${disabled ? ' disabled' : ''}`;
+            const a = document.createElement('a');
+            a.className = 'page-link';
+            a.innerHTML = label;
+            a.href = '#';
+            if (!disabled && !activo) {
+                a.addEventListener('click', (e) => { e.preventDefault(); matPaginaActual = pagina; renderizarPaginacionMat(); });
+            }
+            li.appendChild(a);
+            ul.appendChild(li);
+        };
+
+        crearLi('&laquo;', matPaginaActual - 1, false, matPaginaActual === 1);
+
+        // Mostrar máximo 7 botones con elipsis
+        const rango = 2;
+        for (let p = 1; p <= totalPaginas; p++) {
+            if (p === 1 || p === totalPaginas || (p >= matPaginaActual - rango && p <= matPaginaActual + rango)) {
+                crearLi(p, p, p === matPaginaActual, false);
+            } else if (p === matPaginaActual - rango - 1 || p === matPaginaActual + rango + 1) {
+                crearLi('...', p, false, true);
+            }
+        }
+
+        crearLi('&raquo;', matPaginaActual + 1, false, matPaginaActual === totalPaginas);
+    }
+
+    function filtrarMatriculas() {
+        matPaginaActual = 1;
+        renderizarPaginacionMat();
+    }
+
     // --- INICIALIZACIÓN ÚNICA DEL DOM ---
     document.addEventListener("DOMContentLoaded", function() {
         switchRole();
-
+        // Inicializar paginación de matrículas al cargar la página
+        renderizarPaginacionMat();
         // Configuración de acudientes/hijos
         const selectHijo = document.getElementById("selectHijo");
         const btnVerNotas = document.getElementById("btnVerNotas");
 
-        if (selectHijo && btnVerNotas) {
-            const actualizarEnlace = () => {
+        function actualizarEnlaceNotas() {
+            if (selectHijo && btnVerNotas) {
                 btnVerNotas.href = `/Estudiante/MisNotas?idEstudiante=${selectHijo.value}`;
-            };
-            actualizarEnlace();
-            selectHijo.addEventListener("change", actualizarEnlace);
+            }
+        }
+
+        if (selectHijo && btnVerNotas) {
+            actualizarEnlaceNotas();
+            selectHijo.addEventListener("change", actualizarEnlaceNotas);
+        }
+
+        // --- (David) CÁLCULO AUTOMÁTICO DE NOTA DEFINITIVA EN TIEMPO REAL ---
+        function calcularDefinitiva(fila) {
+            const inputs = fila.querySelectorAll('.nota-input');
+            const badgeDefinitiva = fila.querySelector('.nota-definitiva');
+            if (!inputs.length || !badgeDefinitiva) return;
+
+            let suma = 0, cantidad = 0;
+            inputs.forEach(input => {
+                const val = parseFloat(input.value.toString().replace(',', '.'));
+                if (!isNaN(val)) { suma += val; cantidad++; }
+            });
+
+            if (cantidad > 0) {
+                const promedio = (suma / cantidad).toFixed(1);
+                badgeDefinitiva.textContent = promedio;
+                badgeDefinitiva.className = parseFloat(promedio) >= 3.0
+                    ? "badge bg-success fs-6 nota-definitiva"
+                    : "badge bg-danger fs-6 nota-definitiva";
+            }
+        }
+
+        // (David) Recalcular automáticamente al iniciar la pantalla
+        document.querySelectorAll('tr').forEach(fila => {
+            if (fila.querySelector('.nota-input')) {
+                calcularDefinitiva(fila);
+            }
+        });
+
+        // (David) Escuchar cambios al escribir o usar flechas del mouse
+        ['input', 'change'].forEach(evento => {
+            document.addEventListener(evento, function(e) {
+                if (e.target.classList.contains('nota-input')) {
+                    calcularDefinitiva(e.target.closest('tr'));
+                }
+            });
+        });
+
+        // Función para reiniciar/limpiar todas las calificaciones y observaciones de asistencia
+        window.reiniciarAsistencias = function() {
+            const radiosMarcados = document.querySelectorAll('#tablaAsistencia input[type="radio"]:checked');
+            const observaciones = document.querySelectorAll('#tablaAsistencia input[type="text"]');
+            let hayObservaciones = Array.from(observaciones).some(i => i.value.trim() !== '');
+
+            if (radiosMarcados.length === 0 && !hayObservaciones) {
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'info',
+                    title: 'La asistencia ya se encuentra limpia.',
+                    showConfirmButton: false,
+                    timer: 2000,
+                    timerProgressBar: true
+                });
+                return;
+            }
+
+            Swal.fire({
+                title: '¿Reiniciar calificación de asistencias?',
+                text: 'Se desmarcarán todas las calificaciones (P, F, R) y observaciones anotadas.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="bi bi-arrow-counterclockwise me-1"></i> Sí, reiniciar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.querySelectorAll('#tablaAsistencia input[type="radio"]').forEach(radio => {
+                        radio.checked = false;
+                    });
+                    observaciones.forEach(input => {
+                        input.value = '';
+                    });
+
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'success',
+                        title: 'Se han reiniciado las calificaciones de asistencia.',
+                        showConfirmButton: false,
+                        timer: 2500,
+                        timerProgressBar: true
+                    });
+                }
+            });
+        };
+
+        // Función para marcar la asistencia de todos los estudiantes como Presente ('P')
+        window.marcarTodosPresentes = function() {
+            document.querySelectorAll('.radio-estado-p').forEach(radio => {
+                radio.checked = true;
+            });
+        };
+
+        // Función para guardar asistencias con validación de calificados y confirmación SweetAlert2
+        window.guardarAsistenciaYObservaciones = function() {
+            const filas = document.querySelectorAll('#tablaAsistencia tbody tr');
+            let sinCalificar = [];
+
+            filas.forEach(fila => {
+                const inputNombre = fila.querySelector('.estudiante-nombre');
+                const radios = fila.querySelectorAll('input[type="radio"]');
+
+                if (radios.length > 0) {
+                    const algunoSeleccionado = Array.from(radios).some(r => r.checked);
+                    if (!algunoSeleccionado) {
+                        const nombreEst = inputNombre ? inputNombre.innerText.trim() : "Estudiante";
+                        sinCalificar.push(nombreEst);
+                    }
+                }
+            });
+
+            // 1. Si falta calificar a algún estudiante, mostrar ventana emergente con la lista
+            if (sinCalificar.length > 0) {
+                let listaHtml = sinCalificar.map(n => `<li class="text-danger fw-bold">${n}</li>`).join('');
+                Swal.fire({
+                    icon: 'warning',
+                    title: '¡Falta calificar la asistencia!',
+                    html: `<p>Falta calificar la asistencia a las siguientes personas:</p><ul class="text-start mb-0" style="max-height: 200px; overflow-y: auto;">${listaHtml}</ul>`,
+                    confirmButtonText: 'Entendido',
+                    confirmButtonColor: '#0d6efd'
+                });
+                return;
+            }
+
+            // 2. Si todos están calificados, mostrar ventana de confirmación antes de guardar
+            Swal.fire({
+                title: '¿Seguro que quieres guardar?',
+                text: '¿Deseas guardar el control de asistencia para este grupo?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#0d6efd',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="bi bi-save me-1"></i> Sí, guardar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'success',
+                        title: '¡Asistencia y observaciones guardadas exitosamente!',
+                        showConfirmButton: false,
+                        timer: 3500,
+                        timerProgressBar: true
+                    });
+                }
+            });
+        };
+
+        // Filtrar el desplegable Grupo por Jornada (Mañana / Tarde) en Control de Asistencia
+        const selectGrupoAsistencia = document.getElementById("selectGrupoAsistencia");
+        const selectJornadaAsistencia = document.getElementById("selectJornadaAsistencia");
+
+        function filtrarGruposAsistencia() {
+            if (!selectGrupoAsistencia || !selectJornadaAsistencia) return;
+
+            const jornada = selectJornadaAsistencia.value || '';
+            const esManana = jornada.toLowerCase().includes('mañana') || jornada.toLowerCase().includes('manana') || jornada.toLowerCase().startsWith('m');
+            const esTarde = jornada.toLowerCase().includes('tarde') || jornada.toLowerCase().startsWith('t');
+
+            let seleccionadoVisible = false;
+
+            Array.from(selectGrupoAsistencia.options).forEach(opt => {
+                const txt = opt.text.trim();
+                const val = opt.value.trim();
+                let mostrar = true;
+
+                if (esManana) {
+                    mostrar = txt.endsWith('M') || txt.includes(' M') || val.endsWith('M');
+                } else if (esTarde) {
+                    mostrar = txt.endsWith('T') || txt.includes(' T') || val.endsWith('T');
+                }
+
+                opt.hidden = !mostrar;
+                opt.disabled = !mostrar;
+                opt.style.display = mostrar ? '' : 'none';
+
+                if (mostrar && opt.selected) {
+                    seleccionadoVisible = true;
+                }
+            });
+
+            if (!seleccionadoVisible) {
+                const primerVisible = Array.from(selectGrupoAsistencia.options).find(opt => !opt.hidden && !opt.disabled);
+                if (primerVisible) {
+                    selectGrupoAsistencia.value = primerVisible.value;
+                }
+            }
+        }
+
+        if (selectJornadaAsistencia) {
+            selectJornadaAsistencia.addEventListener("change", filtrarGruposAsistencia);
+            filtrarGruposAsistencia();
         }
 
         // --- (David) CÁLCULO AUTOMÁTICO DE NOTA DEFINITIVA EN TIEMPO REAL ---
@@ -1304,23 +2462,114 @@
         }
 </style>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        const selectHijo = document.getElementById("selectHijo");
-        const btnVerNotas = document.getElementById("btnVerNotas");
+        // 1. Gráfica Promedios por Materia
+        const ctxMateria = document.getElementById('chartPromediosMateria');
+        if (ctxMateria) {
+            const labelsMat = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(rep.PromediosPorMateria.Select(p => p.Materia)));
+            const dataMat = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(rep.PromediosPorMateria.Select(p => p.Promedio)));
 
-        function actualizarEnlace() {
-            // Solo ejecuta si ambos elementos existen en la vista (pantalla de acudiente)
-            if (selectHijo && btnVerNotas) {
-                const idHijo = selectHijo.value;
-                btnVerNotas.href = `/Estudiante/MisNotas?idEstudiante=${idHijo}`;
-            }
+            new Chart(ctxMateria, {
+                type: 'bar',
+                data: {
+                    labels: labelsMat.length ? labelsMat : ['General'],
+                    datasets: [{
+                        label: 'Promedio (0 - 5.0)',
+                        data: dataMat.length ? dataMat : [0],
+                        backgroundColor: 'rgba(230, 126, 34, 0.65)',
+                        borderColor: '#e67e22',
+                        borderWidth: 1.5,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, max: 5 }
+                    }
+                }
+            });
         }
 
-        if (selectHijo && btnVerNotas) {
-            actualizarEnlace();
-            selectHijo.addEventListener("change", actualizarEnlace);
+        // 2. Gráfica Aprobación vs Reprobación
+        const ctxApro = document.getElementById('chartAprobacion');
+        if (ctxApro) {
+            new Chart(ctxApro, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Aprobados', 'Reprobados'],
+                    datasets: [{
+                        data: [@rep.Aprobados, @rep.Reprobados],
+                        backgroundColor: ['#27ae60', '#e74c3c'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+        }
+
+        // 3. Gráfica Matrículas por Grado
+        const ctxGrado = document.getElementById('chartMatriculasGrado');
+        if (ctxGrado) {
+            const labelsGrados = ['Grado 6°', 'Grado 7°', 'Grado 8°', 'Grado 9°', 'Grado 10°', 'Grado 11°'];
+            const dataGrados = [
+                        @rep.MatriculasPorGrado.GetValueOrDefault(6, 0),
+                        @rep.MatriculasPorGrado.GetValueOrDefault(7, 0),
+                        @rep.MatriculasPorGrado.GetValueOrDefault(8, 0),
+                        @rep.MatriculasPorGrado.GetValueOrDefault(9, 0),
+                        @rep.MatriculasPorGrado.GetValueOrDefault(10, 0),
+                        @rep.MatriculasPorGrado.GetValueOrDefault(11, 0)
+                    ];
+
+            new Chart(ctxGrado, {
+                type: 'bar',
+                data: {
+                    labels: labelsGrados,
+                    datasets: [{
+                        label: 'Estudiantes Matriculados',
+                        data: dataGrados,
+                        backgroundColor: 'rgba(27, 42, 71, 0.75)',
+                        borderColor: '#1b2a47',
+                        borderWidth: 1.5,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, precision: 0 }
+                    }
+                }
+            });
+        }
+
+        // 4. Gráfica Distribución por Género
+        const ctxGenero = document.getElementById('chartGenero');
+        if (ctxGenero) {
+            new Chart(ctxGenero, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Hombres', 'Mujeres' @(rep.TotalSinGenero > 0 ? ", 'No especificado'" : "")],
+                    datasets: [{
+                        data: [@rep.TotalHombres, @rep.TotalMujeres @(rep.TotalSinGenero > 0 ? $", {rep.TotalSinGenero}" : "")],
+                        backgroundColor: ['#2980b9', '#e84393', '#95a5a6'],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
         }
     });
 </script>
-

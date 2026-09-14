@@ -43,4 +43,25 @@ namespace ProyectoPAE.Models
         [ForeignKey("id_usuario")]
         public virtual Usuario Usuario { get; set; }
     }
+    [Table("GU_INTENTOS_LOGIN")]
+    public class GU_IntentosLogin
+    {
+        [Key]
+        public int id_intento { get; set; }
+
+        public int id_usuario { get; set; }
+
+        public DateTime fecha_intento { get; set; }
+
+        public bool exitoso { get; set; }
+
+        public string? ip_origen { get; set; }
+
+        public DateTime? bloqueado_hasta { get; set; }
+
+        [ForeignKey("id_usuario")]
+        public virtual Usuario Usuario { get; set; }
+    }
 }
+
+
