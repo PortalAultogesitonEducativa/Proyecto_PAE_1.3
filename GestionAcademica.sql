@@ -2291,10 +2291,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-IF OBJECT_ID(N'[dbo].[sp_AccesoDocumento]', N'P') IS NOT NULL
-    DROP PROCEDURE [dbo].[sp_AccesoDocumento];
-GO
-CREATE PROCEDURE [dbo].[sp_AccesoDocumento]
+CREATE OR ALTER PROCEDURE [dbo].[sp_AccesoDocumento]
 
 @IdUsuario INT,
 
@@ -2391,10 +2388,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-IF OBJECT_ID(N'[dbo].[sp_AlertaAsistencia]', N'P') IS NOT NULL
-    DROP PROCEDURE [dbo].[sp_AlertaAsistencia];
-GO
-CREATE PROCEDURE [dbo].[sp_AlertaAsistencia]
+CREATE OR ALTER PROCEDURE [dbo].[sp_AlertaAsistencia]
 
 @IdCurso INT,
 
@@ -2483,10 +2477,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-IF OBJECT_ID(N'[dbo].[sp_ArchivarPeriodo]', N'P') IS NOT NULL
-    DROP PROCEDURE [dbo].[sp_ArchivarPeriodo];
-GO
-CREATE PROCEDURE [dbo].[sp_ArchivarPeriodo]
+CREATE OR ALTER PROCEDURE [dbo].[sp_ArchivarPeriodo]
 
 @IdPeriodo INT,
 
@@ -2602,10 +2593,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-IF OBJECT_ID(N'[dbo].[sp_AsignarNuevoHorario]', N'P') IS NOT NULL
-    DROP PROCEDURE [dbo].[sp_AsignarNuevoHorario];
-GO
-CREATE PROCEDURE [dbo].[sp_AsignarNuevoHorario]
+CREATE OR ALTER PROCEDURE [dbo].[sp_AsignarNuevoHorario]
 
 @cur_id INT, @aul_id INT, @prof_id INT, @dia NVARCHAR(30), @ini
 TIME, @fin TIME
@@ -2640,10 +2628,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-IF OBJECT_ID(N'[dbo].[sp_AsignarRolUsuario]', N'P') IS NOT NULL
-    DROP PROCEDURE [dbo].[sp_AsignarRolUsuario];
-GO
-CREATE PROCEDURE [dbo].[sp_AsignarRolUsuario]
+CREATE OR ALTER PROCEDURE [dbo].[sp_AsignarRolUsuario]
 
 @IdUsuario INT,
 
@@ -2811,10 +2796,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-IF OBJECT_ID(N'[dbo].[sp_AuditoriaDocumental]', N'P') IS NOT NULL
-    DROP PROCEDURE [dbo].[sp_AuditoriaDocumental];
-GO
-CREATE PROCEDURE [dbo].[sp_AuditoriaDocumental]
+CREATE OR ALTER PROCEDURE [dbo].[sp_AuditoriaDocumental]
 
 @IdUsuario INT,
 
@@ -2867,10 +2849,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-IF OBJECT_ID(N'[dbo].[sp_AuditoriaSistema]', N'P') IS NOT NULL
-    DROP PROCEDURE [dbo].[sp_AuditoriaSistema];
-GO
-CREATE PROCEDURE [dbo].[sp_AuditoriaSistema]
+CREATE OR ALTER PROCEDURE [dbo].[sp_AuditoriaSistema]
 
 @FechaDesde DATE = NULL,
 
@@ -2994,10 +2973,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-IF OBJECT_ID(N'[dbo].[sp_BloquearUsuario]', N'P') IS NOT NULL
-    DROP PROCEDURE [dbo].[sp_BloquearUsuario];
-GO
-CREATE PROCEDURE [dbo].[sp_BloquearUsuario]
+CREATE OR ALTER PROCEDURE [dbo].[sp_BloquearUsuario]
 
 @IdUsuario INT,
 
@@ -3105,10 +3081,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-IF OBJECT_ID(N'[dbo].[sp_BoletinEstudiante]', N'P') IS NOT NULL
-    DROP PROCEDURE [dbo].[sp_BoletinEstudiante];
-GO
-CREATE PROCEDURE [dbo].[sp_BoletinEstudiante]
+CREATE OR ALTER PROCEDURE [dbo].[sp_BoletinEstudiante]
 
 @IdEstudiante INT,
 
@@ -3205,10 +3178,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-IF OBJECT_ID(N'[dbo].[sp_BorrarInscripcion]', N'P') IS NOT NULL
-    DROP PROCEDURE [dbo].[sp_BorrarInscripcion];
-GO
-CREATE PROCEDURE [dbo].[sp_BorrarInscripcion]
+CREATE OR ALTER PROCEDURE [dbo].[sp_BorrarInscripcion]
 
 @id_ins INT
 
@@ -3239,10 +3209,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-IF OBJECT_ID(N'[dbo].[sp_BuscarDocumentos]', N'P') IS NOT NULL
-    DROP PROCEDURE [dbo].[sp_BuscarDocumentos];
-GO
-CREATE PROCEDURE [dbo].[sp_BuscarDocumentos]
+CREATE OR ALTER PROCEDURE [dbo].[sp_BuscarDocumentos]
 
 @Etiqueta NVARCHAR(80) = NULL,
 
@@ -3370,10 +3337,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-IF OBJECT_ID(N'[dbo].[sp_CambiarEstadoDoc]', N'P') IS NOT NULL
-    DROP PROCEDURE [dbo].[sp_CambiarEstadoDoc];
-GO
-CREATE PROCEDURE [dbo].[sp_CambiarEstadoDoc]
+CREATE OR ALTER PROCEDURE [dbo].[sp_CambiarEstadoDoc]
 
 @IdDocumento INT,
 
@@ -3519,10 +3483,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-IF OBJECT_ID(N'[dbo].[sp_CambiarPassword]', N'P') IS NOT NULL
-    DROP PROCEDURE [dbo].[sp_CambiarPassword];
-GO
-CREATE PROCEDURE [dbo].[sp_CambiarPassword]
+CREATE OR ALTER PROCEDURE [dbo].[sp_CambiarPassword]
 
 @IdUsuario INT,
 
@@ -3648,10 +3609,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-IF OBJECT_ID(N'[dbo].[sp_CheckAsistencia]', N'P') IS NOT NULL
-    DROP PROCEDURE [dbo].[sp_CheckAsistencia];
-GO
-CREATE PROCEDURE [dbo].[sp_CheckAsistencia]
+CREATE OR ALTER PROCEDURE [dbo].[sp_CheckAsistencia]
 
 @est_id INT, @hor_id INT, @prof_id INT, @estado
 NVARCHAR(20)
@@ -3686,10 +3644,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-IF OBJECT_ID(N'[dbo].[sp_ConsultarClasesProfe]', N'P') IS NOT NULL
-    DROP PROCEDURE [dbo].[sp_ConsultarClasesProfe];
-GO
-CREATE PROCEDURE [dbo].[sp_ConsultarClasesProfe]
+CREATE OR ALTER PROCEDURE [dbo].[sp_ConsultarClasesProfe]
 
 @prof_id INT
 
@@ -3728,10 +3683,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-IF OBJECT_ID(N'[dbo].[sp_DashboardEstudiante]', N'P') IS NOT NULL
-    DROP PROCEDURE [dbo].[sp_DashboardEstudiante];
-GO
-CREATE PROCEDURE [dbo].[sp_DashboardEstudiante]
+CREATE OR ALTER PROCEDURE [dbo].[sp_DashboardEstudiante]
 
 @IdUsuario INT
 
@@ -3862,10 +3814,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-IF OBJECT_ID(N'[dbo].[sp_DashboardProfesor]', N'P') IS NOT NULL
-    DROP PROCEDURE [dbo].[sp_DashboardProfesor];
-GO
-CREATE PROCEDURE [dbo].[sp_DashboardProfesor]
+CREATE OR ALTER PROCEDURE [dbo].[sp_DashboardProfesor]
 
 @IdUsuario INT
 
@@ -4022,10 +3971,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-IF OBJECT_ID(N'[dbo].[sp_EntregaTarea]', N'P') IS NOT NULL
-    DROP PROCEDURE [dbo].[sp_EntregaTarea];
-GO
-CREATE PROCEDURE [dbo].[sp_EntregaTarea]
+CREATE OR ALTER PROCEDURE [dbo].[sp_EntregaTarea]
 
 @IdDocumento INT,
 
@@ -4144,10 +4090,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-IF OBJECT_ID(N'[dbo].[sp_EstadisticasCurso]', N'P') IS NOT NULL
-    DROP PROCEDURE [dbo].[sp_EstadisticasCurso];
-GO
-CREATE PROCEDURE [dbo].[sp_EstadisticasCurso]
+CREATE OR ALTER PROCEDURE [dbo].[sp_EstadisticasCurso]
 
 @IdCurso INT
 
@@ -4249,10 +4192,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-IF OBJECT_ID(N'[dbo].[sp_InscribirMatricular]', N'P') IS NOT NULL
-    DROP PROCEDURE [dbo].[sp_InscribirMatricular];
-GO
-CREATE PROCEDURE [dbo].[sp_InscribirMatricular]
+CREATE OR ALTER PROCEDURE [dbo].[sp_InscribirMatricular]
 
 @est_id INT, @cur_id INT, @anio INT, @periodo NVARCHAR(40)
 
@@ -4308,10 +4248,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-IF OBJECT_ID(N'[dbo].[sp_InscripcionCompleta]', N'P') IS NOT NULL
-    DROP PROCEDURE [dbo].[sp_InscripcionCompleta];
-GO
-CREATE PROCEDURE [dbo].[sp_InscripcionCompleta]
+CREATE OR ALTER PROCEDURE [dbo].[sp_InscripcionCompleta]
 
 @IdEstudiante INT,
 
@@ -4497,10 +4434,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-IF OBJECT_ID(N'[dbo].[sp_LoginUsuario]', N'P') IS NOT NULL
-    DROP PROCEDURE [dbo].[sp_LoginUsuario];
-GO
-CREATE PROCEDURE [dbo].[sp_LoginUsuario]
+CREATE OR ALTER PROCEDURE [dbo].[sp_LoginUsuario]
 
 @NombreUsuario NVARCHAR(50),
 
@@ -4681,10 +4615,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-IF OBJECT_ID(N'[dbo].[sp_MaterialesCurso]', N'P') IS NOT NULL
-    DROP PROCEDURE [dbo].[sp_MaterialesCurso];
-GO
-CREATE PROCEDURE [dbo].[sp_MaterialesCurso]
+CREATE OR ALTER PROCEDURE [dbo].[sp_MaterialesCurso]
 
 @IdCurso INT,
 
@@ -4769,10 +4700,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-IF OBJECT_ID(N'[dbo].[sp_ModificarEstudiante]', N'P') IS NOT NULL
-    DROP PROCEDURE [dbo].[sp_ModificarEstudiante];
-GO
-CREATE PROCEDURE [dbo].[sp_ModificarEstudiante]
+CREATE OR ALTER PROCEDURE [dbo].[sp_ModificarEstudiante]
 
 @id INT, @nombre NVARCHAR(100)
 
@@ -4804,10 +4732,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-IF OBJECT_ID(N'[dbo].[sp_NuevaVersionDoc]', N'P') IS NOT NULL
-    DROP PROCEDURE [dbo].[sp_NuevaVersionDoc];
-GO
-CREATE PROCEDURE [dbo].[sp_NuevaVersionDoc]
+CREATE OR ALTER PROCEDURE [dbo].[sp_NuevaVersionDoc]
 
 @IdDocumento INT,
 
@@ -4958,10 +4883,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-IF OBJECT_ID(N'[dbo].[sp_RecuperarPassword]', N'P') IS NOT NULL
-    DROP PROCEDURE [dbo].[sp_RecuperarPassword];
-GO
-CREATE PROCEDURE [dbo].[sp_RecuperarPassword]
+CREATE OR ALTER PROCEDURE [dbo].[sp_RecuperarPassword]
 
 @IdUsuario INT,
 
@@ -5052,10 +4974,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-IF OBJECT_ID(N'[dbo].[sp_SubirDocConPermiso]', N'P') IS NOT NULL
-    DROP PROCEDURE [dbo].[sp_SubirDocConPermiso];
-GO
-CREATE PROCEDURE [dbo].[sp_SubirDocConPermiso]
+CREATE OR ALTER PROCEDURE [dbo].[sp_SubirDocConPermiso]
 
 @IdUsuarioSolicitante INT,
 
@@ -5171,10 +5090,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-IF OBJECT_ID(N'[dbo].[sp_SubirDocumento]', N'P') IS NOT NULL
-    DROP PROCEDURE [dbo].[sp_SubirDocumento];
-GO
-CREATE PROCEDURE [dbo].[sp_SubirDocumento]
+CREATE OR ALTER PROCEDURE [dbo].[sp_SubirDocumento]
 
 @Titulo NVARCHAR(200),
 
@@ -5347,10 +5263,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-IF OBJECT_ID(N'[dbo].[sp_SubirNota]', N'P') IS NOT NULL
-    DROP PROCEDURE [dbo].[sp_SubirNota];
-GO
-CREATE PROCEDURE [dbo].[sp_SubirNota]
+CREATE OR ALTER PROCEDURE [dbo].[sp_SubirNota]
 
 @est_id INT, @cur_id INT, @mat_id INT, @tipo NVARCHAR(50), @nota
 DECIMAL(3,2), @calif_id INT
@@ -5394,10 +5307,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-IF OBJECT_ID(N'[dbo].[sp_ValidarSolapamiento]', N'P') IS NOT NULL
-    DROP PROCEDURE [dbo].[sp_ValidarSolapamiento];
-GO
-CREATE PROCEDURE [dbo].[sp_ValidarSolapamiento]
+CREATE OR ALTER PROCEDURE [dbo].[sp_ValidarSolapamiento]
 
 @IdCurso INT,
 
@@ -5524,10 +5434,7 @@ GO
 --
 -- ------------------------------------------------------------
 
-IF OBJECT_ID(N'[dbo].[sp_VerificarPermiso]', N'P') IS NOT NULL
-    DROP PROCEDURE [dbo].[sp_VerificarPermiso];
-GO
-CREATE PROCEDURE [dbo].[sp_VerificarPermiso]
+CREATE OR ALTER PROCEDURE [dbo].[sp_VerificarPermiso]
 
 @IdUsuario INT,
 
