@@ -739,6 +739,16 @@
                         <button class="btn btn-sm btn-outline-primary mt-auto w-100">Gestionar Extracurriculares</button>
                     </div>
                 </div>
+
+                <!-- Tarjeta: Actividades y Tareas (Docente) -->
+                <div class="col-md-4 mb-4" onclick="verActividadesDocente()" style="cursor: pointer;">
+                    <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover" style="border-top: 4px solid #2980b9 !important;">
+                        <i class="bi bi-journal-check fs-2 mb-2" style="color: #2980b9;"></i>
+                        <h5 class="text-dark">Actividades y Tareas</h5>
+                        <p class="small text-muted">Crea talleres, recibe entregas, califica y sincroniza notas en planilla.</p>
+                        <button class="btn btn-sm btn-outline-primary mt-auto w-100">Gestionar Actividades</button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -1234,6 +1244,168 @@
             </div>
         </div>
 
+        <!--  -->
+        <!-- SUBPANEL: GESTIÓN DE ACTIVIDADES Y TAREAS ACADÉMICAS (DOCENTE) -->
+        <!--  -->
+        <div id="docente-actividades" class="d-none">
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+                <div>
+                    <h3 class="fw-bold mb-0" style="color: #2980b9;">
+                        <i class="bi bi-journal-check me-2"></i>Gestión de Actividades y Tareas
+                    </h3>
+                    <p class="text-muted small mb-0">Publica talleres, consulta entregas en tiempo real, califica a los estudiantes y sincroniza sus notas con la planilla oficial.</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn text-white btn-sm shadow-sm px-3" style="background-color: #2980b9; border-radius: 8px;" data-bs-toggle="modal" data-bs-target="#modalCrearActividad">
+                        <i class="bi bi-plus-circle me-1"></i> Nueva Actividad
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="volverDocenteActividades()" style="border-radius: 8px;">
+                        <i class="bi bi-arrow-left me-1"></i> Volver
+                    </button>
+                </div>
+            </div>
+
+            <!-- Listado de Actividades del Docente -->
+            <div id="contenedorActividadesDocente" class="row g-3">
+                <div class="col-12 text-center py-5">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="text-muted small mt-2">Cargando actividades académicas...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: CREAR NUEVA ACTIVIDAD ACADÉMICA (DOCENTE) -->
+        <div class="modal fade" id="modalCrearActividad" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+                    <div class="modal-header text-white" style="background: linear-gradient(135deg, #0d2a4a 0%, #2980b9 100%); border-radius: 16px 16px 0 0;">
+                        <h5 class="modal-title fw-bold"><i class="bi bi-journal-plus me-2"></i>Crear Nueva Actividad / Tarea</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form id="formCrearActividad" onsubmit="guardarNuevaActividad(event)">
+                        <div class="modal-body p-4">
+                            <div class="row g-3">
+                                <div class="col-md-12">
+                                    <label class="form-label fw-bold small">Título de la Actividad / Tarea <span class="text-danger">*</span></label>
+                                    <input type="text" name="Titulo" class="form-control" placeholder="Ej: Taller 1 - Ecuaciones Cuadráticas, Ensayo Histórico..." required />
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold small">Asignatura / Materia <span class="text-danger">*</span></label>
+                                    <input type="text" name="Materia" list="listaMateriasSugeridas" class="form-control" placeholder="Selecciona o escribe la materia" required />
+                                    <datalist id="listaMateriasSugeridas">
+                                        @if (ViewBag.Asignaturas != null)
+                                        {
+                                            foreach (var asig in (IEnumerable<string>)ViewBag.Asignaturas)
+                                            {
+                                                <option value="@asig">@asig</option>
+                                            }
+                                        }
+                                        <option value="Matemáticas">Matemáticas</option>
+                                        <option value="Español y Literatura">Español y Literatura</option>
+                                        <option value="Ciencias Naturales">Ciencias Naturales</option>
+                                        <option value="Ciencias Sociales">Ciencias Sociales</option>
+                                        <option value="Inglés">Inglés</option>
+                                        <option value="Informática y Tecnología">Informática y Tecnología</option>
+                                        <option value="Educación Física">Educación Física</option>
+                                        <option value="Educación Artística">Educación Artística</option>
+                                        <option value="Ética y Valores">Ética y Valores</option>
+                                        <option value="Filosofía">Filosofía</option>
+                                    </datalist>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold small">Grado / Grupo Destino</label>
+                                    <select name="Grado" class="form-select">
+                                        <option value="Todos">Todos los Grados</option>
+                                        <option value="601">601</option>
+                                        <option value="602">602</option>
+                                        <option value="701">701</option>
+                                        <option value="702">702</option>
+                                        <option value="801">801</option>
+                                        <option value="802">802</option>
+                                        <option value="901">901</option>
+                                        <option value="902">902</option>
+                                        <option value="1001">1001</option>
+                                        <option value="1002">1002</option>
+                                        <option value="1101">1101</option>
+                                        <option value="1102">1102</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold small">Fecha y Hora Límite de Entrega <span class="text-danger">*</span></label>
+                                    <input type="datetime-local" name="FechaLimite" class="form-control" value="@DateTime.Now.AddDays(7).ToString("yyyy-MM-ddTHH:mm")" required />
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold small">Archivo Adjunto / Guía Docente (Opcional)</label>
+                                    <input type="file" name="archivo" class="form-control" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.png,.jpg,.jpeg" />
+                                    <small class="text-muted" style="font-size: 0.75rem;">PDF, Word, Excel, PowerPoint, ZIP (Máx 25 MB)</small>
+                                </div>
+
+                                <div class="col-12">
+                                    <label class="form-label fw-bold small">Descripción, Instrucciones y Criterios de Evaluación</label>
+                                    <textarea name="Descripcion" class="form-control" rows="4" placeholder="Indica detalladamente los puntos a desarrollar, formato de entrega y rúbrica de calificación..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer bg-light" style="border-radius: 0 0 16px 16px;">
+                            <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn text-white rounded-pill px-4 shadow-sm" style="background-color: #2980b9;">
+                                <i class="bi bi-cloud-arrow-up me-1"></i> Publicar Actividad
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: REVISAR ENTREGAS Y CALIFICAR (DOCENTE) -->
+        <div class="modal fade" id="modalRevisarEntregas" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+                    <div class="modal-header text-white" style="background: linear-gradient(135deg, #0d2a4a 0%, #2980b9 100%); border-radius: 16px 16px 0 0;">
+                        <div>
+                            <h5 class="modal-title fw-bold" id="tituloModalRevisarEntregas"><i class="bi bi-file-earmark-check me-2"></i>Entregas de Estudiantes</h5>
+                            <small class="opacity-75" id="subtituloModalRevisarEntregas">Revisión, calificación y sincronización con planilla de notas</small>
+                        </div>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <div class="alert alert-info border-0 rounded-3 d-flex align-items-center mb-4 py-2 px-3 small">
+                            <i class="bi bi-info-circle-fill fs-5 me-2 text-primary"></i>
+                            <span>Las calificaciones asignadas aquí (0.0 a 5.0) se <strong>guardan y sincronizan automáticamente en la Planilla Oficial de Notas</strong> del estudiante en la materia correspondiente.</span>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr class="small text-uppercase text-muted">
+                                        <th>Estudiante</th>
+                                        <th>Fecha Entrega</th>
+                                        <th>Archivo / Comentario</th>
+                                        <th style="width: 130px;">Periodo</th>
+                                        <th style="width: 140px;">Calificación (0-5)</th>
+                                        <th style="width: 220px;">Retroalimentación</th>
+                                        <th class="text-end" style="width: 120px;">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tablaCuerpoEntregas">
+                                    <tr>
+                                        <td colspan="7" class="text-center py-4 text-muted">Cargando entregas...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light" style="border-radius: 0 0 16px 16px;">
+                        <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cerrar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div> <!-- Cierre definitivo del panel-docente general -->
 
     <div id="panel-acudiente" class="role-panel d-none">
@@ -1398,20 +1570,90 @@
             </div>
         </div>
 
+        <!-- SUBPANEL: TAREAS Y ACTIVIDADES ACADÉMICAS (ESTUDIANTE) -->
         <div id="estudiante-actividades" class="d-none">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h3 style="color: #6f42c1;"><i class="bi bi-list-task me-2"></i>Tareas y Trabajos</h3>
-                <button class="btn btn-outline-secondary btn-sm" onclick="volverEstudiante()">Volver</button>
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+                <div>
+                    <h3 class="fw-bold mb-0" style="color: #6f42c1;">
+                        <i class="bi bi-list-task me-2"></i>Mis Tareas y Actividades Académicas
+                    </h3>
+                    <p class="text-muted small mb-0">Consulta tus tareas pendientes, descarga guías docentes, sube tus trabajos y revisa tus calificaciones y comentarios.</p>
+                </div>
+                <div class="d-flex gap-2 align-items-center">
+                    <button class="btn btn-outline-secondary btn-sm" onclick="volverEstudiante()" style="border-radius: 8px;">
+                        <i class="bi bi-arrow-left me-1"></i> Volver al Menú
+                    </button>
+                </div>
             </div>
-            <div class="card border-0 shadow-sm p-4">
-                <div class="list-group">
-                    <div class="list-group-item d-flex justify-content-between align-items-center">
+
+            <!-- Filtros Rápidos -->
+            <div class="d-flex flex-wrap gap-2 mb-4">
+                <button class="btn btn-sm btn-outline-primary active rounded-pill px-3 filtro-act-btn" onclick="filtrarActividadesEstudiante('todas', this)">
+                    Todas
+                </button>
+                <button class="btn btn-sm btn-outline-warning rounded-pill px-3 filtro-act-btn" onclick="filtrarActividadesEstudiante('Pendiente', this)">
+                    <i class="bi bi-clock me-1"></i> Pendientes
+                </button>
+                <button class="btn btn-sm btn-outline-info rounded-pill px-3 filtro-act-btn" onclick="filtrarActividadesEstudiante('Entregado', this)">
+                    <i class="bi bi-send-check me-1"></i> Entregadas
+                </button>
+                <button class="btn btn-sm btn-outline-success rounded-pill px-3 filtro-act-btn" onclick="filtrarActividadesEstudiante('Calificado', this)">
+                    <i class="bi bi-check-circle me-1"></i> Calificadas
+                </button>
+            </div>
+
+            <!-- Contenedor dinámico de actividades -->
+            <div id="contenedorActividadesEstudiante" class="row g-3">
+                <div class="col-12 text-center py-5">
+                    <div class="spinner-border" style="color: #6f42c1;" role="status"></div>
+                    <p class="text-muted small mt-2">Cargando tus actividades académicas...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL: SUBIR ENTREGA DE ACTIVIDAD (ESTUDIANTE) -->
+        <div class="modal fade" id="modalSubirEntregaActividad" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+                    <div class="modal-header text-white" style="background: linear-gradient(135deg, #3b0764 0%, #6f42c1 100%); border-radius: 16px 16px 0 0;">
                         <div>
-                            <h6 class="mb-1">Taller de Álgebra</h6>
-                            <small class="text-muted">Fecha límite: 20 de Julio</small>
+                            <h5 class="modal-title fw-bold"><i class="bi bi-cloud-arrow-up me-2"></i>Entregar Actividad Académica</h5>
+                            <small class="opacity-75" id="subtituloModalSubirEntrega">Envía tu trabajo y comentarios al docente</small>
                         </div>
-                        <span class="badge bg-warning text-dark">Pendiente</span>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
+                    <form id="formSubirEntregaActividad" onsubmit="guardarEntregaEstudiante(event)">
+                        <input type="hidden" id="idActividadEntrega" name="idActividad" />
+                        <div class="modal-body p-4">
+                            <!-- Datos de la Actividad -->
+                            <div class="p-3 rounded-3 mb-3 bg-light border">
+                                <h6 class="fw-bold mb-1" id="entregaTituloActividad" style="color: #6f42c1;">Título de la Actividad</h6>
+                                <div class="d-flex flex-wrap gap-3 small text-muted">
+                                    <span><i class="bi bi-book me-1 text-primary"></i><strong id="entregaMateriaActividad">Materia</strong></span>
+                                    <span><i class="bi bi-calendar-event me-1 text-danger"></i>Fecha Límite: <strong id="entregaFechaLimiteActividad">--</strong></span>
+                                </div>
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label class="form-label fw-bold small">Adjuntar Archivo de Trabajo / Tarea <span class="text-danger">*</span></label>
+                                    <input type="file" id="inputArchivoEntrega" name="archivo" class="form-control" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.png,.jpg,.jpeg" required />
+                                    <small class="text-muted" style="font-size: 0.75rem;">Formatos aceptados: PDF, Word, Excel, PowerPoint, ZIP, Imágenes (Máx 20 MB).</small>
+                                </div>
+
+                                <div class="col-12">
+                                    <label class="form-label fw-bold small">Comentario u Observación para el Docente (Opcional)</label>
+                                    <textarea id="inputComentarioEntrega" name="comentario" class="form-control" rows="3" placeholder="Escribe aquí cualquier nota, explicación o duda sobre tu trabajo..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer bg-light" style="border-radius: 0 0 16px 16px;">
+                            <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn text-white rounded-pill px-4 shadow-sm" style="background-color: #6f42c1;" id="btnEnviarEntrega">
+                                <i class="bi bi-send me-1"></i> Enviar Entrega
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -1786,7 +2028,7 @@
     function ocultarTodo() {
         const subs = [
             'admin-main', 'admin-matricula', 'admin-usuarios', 'admin-certificados', 'admin-notificaciones', 'admin-asignacion', 'admin-reportes',
-            'docente-main', 'docente-planilla', 'docente-asistencia', 'docente-observaciones', 'docente-mejoras', 'docente-cursosextra',
+            'docente-main', 'docente-planilla', 'docente-asistencia', 'docente-observaciones', 'docente-mejoras', 'docente-cursosextra', 'docente-actividades',
             'estudiante-main', 'estudiante-calificaciones', 'estudiante-actividades', 'estudiante-cursosextra', 'estudiante-mejoras'
         ];
 
@@ -1855,11 +2097,13 @@
     function verObservaciones() { ocultarTodo(); mostrarSubpanel('panel-docente', 'docente-observaciones'); }
     function verModuloMejorasDocente() { ocultarTodo(); mostrarSubpanel('panel-docente', 'docente-mejoras'); }
     function verCursosExtraDocente() { ocultarTodo(); mostrarSubpanel('panel-docente', 'docente-cursosextra'); }
+    function verActividadesDocente() { ocultarTodo(); mostrarSubpanel('panel-docente', 'docente-actividades'); cargarActividadesDocente(); }
+    function volverDocenteActividades() { ocultarTodo(); mostrarSubpanel('panel-docente', 'docente-main'); }
     function volverDocente() { ocultarTodo(); mostrarSubpanel('panel-docente', 'docente-main'); }
 
     // --- FUNCIONES DE NAVEGACIÓN ESTUDIANTE ---
     function verCalificacionesEstudiante() { ocultarTodo(); mostrarSubpanel('panel-estudiante', 'estudiante-calificaciones'); }
-    function verActividadesEstudiante() { ocultarTodo(); mostrarSubpanel('panel-estudiante', 'estudiante-actividades'); }
+    function verActividadesEstudiante() { ocultarTodo(); mostrarSubpanel('panel-estudiante', 'estudiante-actividades'); cargarActividadesEstudiante(); }
     function verCursosExtra() { ocultarTodo(); mostrarSubpanel('panel-estudiante', 'estudiante-cursosextra'); }
     function verModuloMejoras() { ocultarTodo(); mostrarSubpanel('panel-estudiante', 'estudiante-mejoras'); }
     function volverEstudiante() { ocultarTodo(); mostrarSubpanel('panel-estudiante', 'estudiante-main'); }
@@ -1869,6 +2113,591 @@
         const sub = document.getElementById(subId);
         if (panel) panel.classList.remove('d-none');
         if (sub) sub.classList.remove('d-none');
+    }
+
+    // ===============================================
+    // AJAX: GESTIÓN DE ACTIVIDADES Y TAREAS (DOCENTE)
+    // ===============================================
+
+    function cargarActividadesDocente() {
+        const contenedor = document.getElementById('contenedorActividadesDocente');
+        if (!contenedor) return;
+
+        contenedor.innerHTML = `
+            <div class="col-12 text-center py-5">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="text-muted small mt-2">Cargando actividades académicas...</p>
+            </div>
+        `;
+
+        fetch('@Url.Action("ObtenerActividadesDocente", "Docente")')
+            .then(res => res.json())
+            .then(data => {
+                if (!data.success || !data.actividades || data.actividades.length === 0) {
+                    contenedor.innerHTML = `
+                        <div class="col-12">
+                            <div class="card border-0 shadow-sm p-5 text-center rounded-4 bg-white">
+                                <i class="bi bi-journal-x text-muted display-4 mb-3"></i>
+                                <h5 class="fw-bold text-secondary">No hay actividades creadas</h5>
+                                <p class="text-muted small mb-4">Comienza publicando una nueva tarea o taller para tus grupos de clase.</p>
+                                <div>
+                                    <button class="btn text-white px-4 py-2 shadow-sm" style="background-color: #2980b9; border-radius: 8px;" data-bs-toggle="modal" data-bs-target="#modalCrearActividad">
+                                        <i class="bi bi-plus-circle me-1"></i> Publicar Primera Actividad
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let html = '';
+                data.actividades.forEach(act => {
+                    const badgeVencida = act.estaVencida 
+                        ? `<span class="badge bg-danger rounded-pill px-2 py-1"><i class="bi bi-exclamation-triangle-fill me-1"></i>Vencida</span>` 
+                        : `<span class="badge bg-success rounded-pill px-2 py-1"><i class="bi bi-check-circle-fill me-1"></i>Vigente</span>`;
+
+                    const linkAdjunto = act.archivoAdjunto 
+                        ? `<a href="${act.archivoAdjunto}" target="_blank" class="btn btn-sm btn-outline-secondary rounded-pill px-2 py-0" style="font-size: 0.78rem;">
+                               <i class="bi bi-file-earmark-arrow-down me-1"></i>Guía / Adjunto
+                           </a>` 
+                        : '';
+
+                    html += `
+                        <div class="col-lg-6 mb-3">
+                            <div class="card border-0 shadow-sm rounded-4 h-100 p-3 bg-white" style="border-top: 4px solid #2980b9 !important;">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div class="d-flex gap-2 align-items-center flex-wrap">
+                                        <span class="badge bg-primary rounded-pill px-3 py-1">${act.materia}</span>
+                                        <span class="badge bg-light text-dark border rounded-pill px-2 py-1">Grado: ${act.grado || 'Todos'}</span>
+                                    </div>
+                                    ${badgeVencida}
+                                </div>
+
+                                <h5 class="fw-bold text-dark mb-1">${act.titulo}</h5>
+                                
+                                <p class="small text-muted mb-2" style="white-space: pre-line; max-height: 80px; overflow: hidden; text-overflow: ellipsis;">
+                                    ${act.descripcion || 'Sin descripción adicional.'}
+                                </p>
+
+                                <div class="d-flex justify-content-between align-items-center small text-muted p-2 bg-light rounded-3 mb-3">
+                                    <span><i class="bi bi-clock-history me-1 text-danger"></i>Fecha Límite: <strong>${act.fechaLimite}</strong></span>
+                                    ${linkAdjunto}
+                                </div>
+
+                                <!-- Métricas de entregas -->
+                                <div class="row g-2 mb-3 text-center">
+                                    <div class="col-4">
+                                        <div class="p-2 border rounded-3 bg-white">
+                                            <span class="d-block text-muted small" style="font-size: 0.75rem;">Total Entregas</span>
+                                            <span class="fs-5 fw-bold text-dark">${act.totalEntregas}</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="p-2 border rounded-3 bg-white">
+                                            <span class="d-block text-muted small" style="font-size: 0.75rem;">Calificadas</span>
+                                            <span class="fs-5 fw-bold text-success">${act.calificadas}</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="p-2 border rounded-3 bg-white">
+                                            <span class="d-block text-muted small" style="font-size: 0.75rem;">Por Calificar</span>
+                                            <span class="fs-5 fw-bold text-warning">${act.pendientes}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-between align-items-center pt-2 border-top mt-auto">
+                                    <button class="btn btn-outline-primary btn-sm rounded-pill px-3 fw-bold" onclick="abrirModalRevisarEntregas(${act.idActividad})">
+                                        <i class="bi bi-file-earmark-check me-1"></i> Revisar y Calificar (${act.totalEntregas})
+                                    </button>
+                                    <button class="btn btn-outline-danger btn-sm rounded-pill px-2" title="Eliminar actividad" onclick="eliminarActividadDocente(${act.idActividad})">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                contenedor.innerHTML = html;
+            })
+            .catch(err => {
+                console.error(err);
+                contenedor.innerHTML = `<div class="col-12 text-center text-danger py-4">Error al cargar las actividades.</div>`;
+            });
+    }
+
+    function guardarNuevaActividad(event) {
+        event.preventDefault();
+        const form = document.getElementById('formCrearActividad');
+        const formData = new FormData(form);
+
+        fetch('@Url.Action("CrearActividad", "Docente")', {
+            method: 'POST',
+            body: formData
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({ icon: 'success', title: '¡Éxito!', text: data.message, timer: 2000, showConfirmButton: false });
+                    } else {
+                        alert(data.message);
+                    }
+                    const modalEl = document.getElementById('modalCrearActividad');
+                    const modal = bootstrap.Modal.getInstance(modalEl);
+                    if (modal) modal.hide();
+                    form.reset();
+                    cargarActividadesDocente();
+                } else {
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({ icon: 'error', title: 'Atención', text: data.message });
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Ocurrió un error al publicar la actividad.');
+            });
+    }
+
+    function abrirModalRevisarEntregas(idActividad) {
+        const tbody = document.getElementById('tablaCuerpoEntregas');
+        if (!tbody) return;
+
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted"><div class="spinner-border spinner-border-sm text-primary"></div> Cargando entregas...</td></tr>`;
+
+        const modalEl = document.getElementById('modalRevisarEntregas');
+        const modal = new bootstrap.Modal(modalEl);
+        modal.show();
+
+        fetch(`@Url.Action("ObtenerEntregasActividad", "Docente")?idActividad=${idActividad}`)
+            .then(res => res.json())
+            .then(data => {
+                if (!data.success) {
+                    tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-danger">${data.message}</td></tr>`;
+                    return;
+                }
+
+                document.getElementById('tituloModalRevisarEntregas').innerHTML = `<i class="bi bi-file-earmark-check me-2"></i>Entregas: ${data.tituloActividad}`;
+                document.getElementById('subtituloModalRevisarEntregas').textContent = `Materia: ${data.materia} | Grado: ${data.grado || 'Todos'} | Total entregas: ${data.totalEntregas}`;
+
+                if (!data.entregas || data.entregas.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">Ningún estudiante ha subido su entrega todavía.</td></tr>`;
+                    return;
+                }
+
+                let html = '';
+                data.entregas.forEach(ent => {
+                    const badgeEstado = ent.estado === 'Calificado' 
+                        ? `<span class="badge bg-success" id="badge-estado-${ent.idEntrega}">Calificado</span>` 
+                        : `<span class="badge bg-warning text-dark" id="badge-estado-${ent.idEntrega}">Pendiente</span>`;
+
+                    const linkArchivo = ent.archivoRuta 
+                        ? `<a href="${ent.archivoRuta}" target="_blank" class="btn btn-sm btn-outline-primary py-0 px-2 rounded-pill" style="font-size: 0.8rem;">
+                               <i class="bi bi-file-earmark-arrow-down me-1"></i>${ent.archivoNombre || 'Descargar Trabajo'}
+                           </a>` 
+                        : `<span class="text-muted small">Sin archivo adjunto</span>`;
+
+                    const comentarioEstudiante = ent.comentario 
+                        ? `<div class="p-2 bg-light rounded mt-1 small text-dark border" style="font-size: 0.78rem;">
+                               <i class="bi bi-chat-left-quote me-1 text-primary"></i>${ent.comentario}
+                           </div>` 
+                        : '';
+
+                    const valorNota = ent.calificacion !== null && ent.calificacion !== undefined 
+                        ? Number(ent.calificacion).toFixed(1) 
+                        : '';
+
+                    html += `
+                        <tr id="fila-entrega-${ent.idEntrega}">
+                            <td>
+                                <strong class="d-block text-dark">${ent.nombreEstudiante}</strong>
+                                <small class="text-muted">${ent.correo} | Doc: ${ent.documento}</small>
+                            </td>
+                            <td>
+                                <small class="text-muted">${ent.fechaEntrega}</small>
+                                <div class="mt-1">${badgeEstado}</div>
+                            </td>
+                            <td>
+                                ${linkArchivo}
+                                ${comentarioEstudiante}
+                            </td>
+                            <td>
+                                <select class="form-select form-select-sm" id="periodo-entrega-${ent.idEntrega}">
+                                    <option value="1" selected>Periodo 1</option>
+                                    <option value="2">Periodo 2</option>
+                                    <option value="3">Periodo 3</option>
+                                    <option value="4">Periodo 4</option>
+                                </select>
+                            </td>
+                            <td>
+                                <div class="input-group input-group-sm">
+                                    <input type="number" step="0.1" min="0" max="5" class="form-control form-control-sm text-center fw-bold text-primary" 
+                                           id="nota-entrega-${ent.idEntrega}" value="${valorNota}" placeholder="0.0 - 5.0" />
+                                </div>
+                            </td>
+                            <td>
+                                <textarea class="form-control form-control-sm" id="retro-entrega-${ent.idEntrega}" rows="2" placeholder="Observaciones o retroalimentación...">${ent.retroalimentacion || ''}</textarea>
+                            </td>
+                            <td class="text-end">
+                                <button type="button" class="btn btn-sm btn-success rounded-pill px-3 shadow-sm" onclick="guardarCalificacionEntrega(${ent.idEntrega})">
+                                    <i class="bi bi-check-lg me-1"></i>Guardar
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                tbody.innerHTML = html;
+            })
+            .catch(err => {
+                console.error(err);
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-danger">Error al cargar entregas.</td></tr>`;
+            });
+    }
+
+    function guardarCalificacionEntrega(idEntrega) {
+        const inputNota = document.getElementById(`nota-entrega-${idEntrega}`);
+        const inputRetro = document.getElementById(`retro-entrega-${idEntrega}`);
+        const selectPeriodo = document.getElementById(`periodo-entrega-${idEntrega}`);
+
+        const notaVal = inputNota ? inputNota.value.trim() : '';
+        const retroVal = inputRetro ? inputRetro.value.trim() : '';
+        const periodoVal = selectPeriodo ? selectPeriodo.value : '1';
+
+        if (!notaVal) {
+            alert('Por favor ingresa una nota válida entre 0.0 y 5.0');
+            return;
+        }
+
+        const notaNum = parseFloat(notaVal.replace(',', '.'));
+        if (isNaN(notaNum) || notaNum < 0 || notaNum > 5.0) {
+            alert('La calificación debe ser un valor numérico entre 0.0 y 5.0');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('idEntrega', idEntrega);
+        formData.append('nota', notaVal);
+        formData.append('retroalimentacion', retroVal);
+        formData.append('periodo', periodoVal);
+
+        fetch('@Url.Action("CalificarEntrega", "Docente")', {
+            method: 'POST',
+            body: formData
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: 'success',
+                            title: '¡Calificación registrada y sincronizada en planilla!',
+                            showConfirmButton: false,
+                            timer: 3000
+                        });
+                    } else {
+                        alert(data.message);
+                    }
+
+                    const badge = document.getElementById(`badge-estado-${idEntrega}`);
+                    if (badge) {
+                        badge.className = 'badge bg-success';
+                        badge.textContent = 'Calificado';
+                    }
+
+                    cargarActividadesDocente();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Ocurrió un error al guardar la calificación.');
+            });
+    }
+
+    function eliminarActividadDocente(idActividad) {
+        if (!confirm('¿Estás seguro de eliminar esta actividad?')) return;
+
+        const formData = new FormData();
+        formData.append('idActividad', idActividad);
+
+        fetch('@Url.Action("EliminarActividad", "Docente")', {
+            method: 'POST',
+            body: formData
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    cargarActividadesDocente();
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Error al eliminar actividad.');
+            });
+    }
+
+    // ===============================================
+    // AJAX: ACTIVIDADES Y ENTREGAS (ESTUDIANTE)
+    // ===============================================
+
+    let listaActividadesEstudianteGlobal = [];
+
+    function cargarActividadesEstudiante() {
+        const contenedor = document.getElementById('contenedorActividadesEstudiante');
+        if (!contenedor) return;
+
+        contenedor.innerHTML = `
+            <div class="col-12 text-center py-5">
+                <div class="spinner-border" style="color: #6f42c1;" role="status"></div>
+                <p class="text-muted small mt-2">Cargando tus actividades académicas...</p>
+            </div>
+        `;
+
+        fetch('@Url.Action("ObtenerActividades", "Estudiante")')
+            .then(res => res.json())
+            .then(data => {
+                if (!data.success || !data.actividades || data.actividades.length === 0) {
+                    contenedor.innerHTML = `
+                        <div class="col-12">
+                            <div class="card border-0 shadow-sm p-5 text-center rounded-4 bg-white">
+                                <i class="bi bi-journal-check text-muted display-4 mb-3" style="color: #6f42c1 !important;"></i>
+                                <h5 class="fw-bold text-secondary">¡Todo al día! No tienes actividades pendientes</h5>
+                                <p class="text-muted small mb-0">Cuando tus docentes publiquen tareas o talleres académicos, aparecerán aquí.</p>
+                            </div>
+                        </div>
+                    `;
+                    listaActividadesEstudianteGlobal = [];
+                    return;
+                }
+
+                listaActividadesEstudianteGlobal = data.actividades;
+                renderizarActividadesEstudiante(listaActividadesEstudianteGlobal);
+            })
+            .catch(err => {
+                console.error(err);
+                contenedor.innerHTML = `<div class="col-12 text-center text-danger py-4">Error al cargar las actividades.</div>`;
+            });
+    }
+
+    function renderizarActividadesEstudiante(actividades) {
+        const contenedor = document.getElementById('contenedorActividadesEstudiante');
+        if (!contenedor) return;
+
+        if (actividades.length === 0) {
+            contenedor.innerHTML = `
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm p-4 text-center rounded-4 bg-white">
+                        <p class="text-muted small mb-0">No se encontraron actividades con el filtro seleccionado.</p>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
+        let html = '';
+        actividades.forEach(act => {
+            let badgeEstado = '';
+            let accionBoton = '';
+            let bloqueCalificacion = '';
+
+            if (act.estado === 'Calificado') {
+                const notaFormateada = act.calificacion !== null ? Number(act.calificacion).toFixed(1) : '5.0';
+                const colorNota = Number(notaFormateada) >= 3.0 ? 'bg-success' : 'bg-danger';
+
+                badgeEstado = `<span class="badge bg-success rounded-pill px-3 py-1"><i class="bi bi-check2-all me-1"></i>Calificado</span>`;
+                bloqueCalificacion = `
+                    <div class="p-3 rounded-3 mb-3 bg-light border-start border-4 border-success">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="small fw-bold text-success"><i class="bi bi-award-fill me-1"></i>Nota Obtenida:</span>
+                            <span class="badge ${colorNota} fs-6 px-3 py-1">${notaFormateada} / 5.0</span>
+                        </div>
+                        ${act.retroalimentacion ? `<p class="small text-muted mb-0 mt-1"><strong>Comentario del docente:</strong> "${act.retroalimentacion}"</p>` : ''}
+                    </div>
+                `;
+                accionBoton = `
+                    <button class="btn btn-outline-secondary btn-sm rounded-pill px-3" onclick="abrirModalSubirEntrega(${act.idActividad}, '${escapeJsString(act.titulo)}', '${escapeJsString(act.materia)}', '${act.fechaLimite}')">
+                        <i class="bi bi-arrow-repeat me-1"></i> Actualizar Entrega
+                    </button>
+                `;
+            } else if (act.entregada) {
+                badgeEstado = `<span class="badge bg-info text-dark rounded-pill px-3 py-1"><i class="bi bi-send-check me-1"></i>Entregado</span>`;
+                bloqueCalificacion = `
+                    <div class="p-2 rounded-3 mb-3 bg-light border small text-muted">
+                        <i class="bi bi-info-circle me-1 text-primary"></i>Entregado el <strong>${act.fechaEntrega || 'recientemente'}</strong>. En espera de revisión por el docente.
+                    </div>
+                `;
+                accionBoton = `
+                    <button class="btn btn-outline-primary btn-sm rounded-pill px-3" onclick="abrirModalSubirEntrega(${act.idActividad}, '${escapeJsString(act.titulo)}', '${escapeJsString(act.materia)}', '${act.fechaLimite}')">
+                        <i class="bi bi-pencil-square me-1"></i> Reenviar / Modificar
+                    </button>
+                `;
+            } else if (act.vencida) {
+                badgeEstado = `<span class="badge bg-danger rounded-pill px-3 py-1"><i class="bi bi-exclamation-octagon me-1"></i>Vencido</span>`;
+                accionBoton = `
+                    <button class="btn btn-outline-danger btn-sm rounded-pill px-3" onclick="abrirModalSubirEntrega(${act.idActividad}, '${escapeJsString(act.titulo)}', '${escapeJsString(act.materia)}', '${act.fechaLimite}')">
+                        <i class="bi bi-cloud-arrow-up me-1"></i> Entrega Extemporánea
+                    </button>
+                `;
+            } else {
+                badgeEstado = `<span class="badge bg-warning text-dark rounded-pill px-3 py-1"><i class="bi bi-clock me-1"></i>Pendiente</span>`;
+                accionBoton = `
+                    <button class="btn text-white btn-sm rounded-pill px-4 shadow-sm" style="background-color: #6f42c1;" onclick="abrirModalSubirEntrega(${act.idActividad}, '${escapeJsString(act.titulo)}', '${escapeJsString(act.materia)}', '${act.fechaLimite}')">
+                        <i class="bi bi-cloud-arrow-up me-1"></i> Entregar Actividad
+                    </button>
+                `;
+            }
+
+            const linkGuiaDocente = act.archivoAdjunto 
+                ? `<a href="${act.archivoAdjunto}" target="_blank" class="btn btn-sm btn-outline-primary rounded-pill px-2 py-1" style="font-size: 0.8rem;">
+                       <i class="bi bi-file-earmark-arrow-down me-1"></i>Descargar Guía / Taller
+                   </a>` 
+                : '';
+
+            const linkArchivoSubido = act.archivoRuta 
+                ? `<div class="mt-2 small text-muted">
+                       <i class="bi bi-paperclip me-1 text-primary"></i>Tu archivo entregado: 
+                       <a href="${act.archivoRuta}" target="_blank" class="text-primary text-decoration-underline">${act.archivoNombre || 'Ver Archivo'}</a>
+                   </div>` 
+                : '';
+
+            html += `
+                <div class="col-lg-6 mb-3">
+                    <div class="card border-0 shadow-sm rounded-4 h-100 p-3 bg-white" style="border-top: 4px solid #6f42c1 !important;">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="badge text-white rounded-pill px-3 py-1" style="background-color: #6f42c1;">${act.materia}</span>
+                            ${badgeEstado}
+                        </div>
+
+                        <h5 class="fw-bold text-dark mb-1">${act.titulo}</h5>
+                        
+                        <p class="small text-muted mb-2" style="white-space: pre-line;">
+                            ${act.descripcion || 'Sin descripción detallada.'}
+                        </p>
+
+                        <div class="d-flex justify-content-between align-items-center small text-muted p-2 bg-light rounded-3 mb-3">
+                            <span><i class="bi bi-calendar-event me-1 text-danger"></i>Fecha Límite: <strong>${act.fechaLimite}</strong></span>
+                            ${linkGuiaDocente}
+                        </div>
+
+                        ${bloqueCalificacion}
+                        ${linkArchivoSubido}
+
+                        <div class="d-flex justify-content-end align-items-center pt-2 border-top mt-auto">
+                            ${accionBoton}
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        contenedor.innerHTML = html;
+    }
+
+    function filtrarActividadesEstudiante(estado, btn) {
+        document.querySelectorAll('.filtro-act-btn').forEach(b => {
+            b.classList.remove('active');
+            b.classList.remove('btn-primary');
+            b.classList.remove('btn-warning');
+            b.classList.remove('btn-info');
+            b.classList.remove('btn-success');
+        });
+
+        if (btn) btn.classList.add('active');
+
+        if (estado === 'todas') {
+            renderizarActividadesEstudiante(listaActividadesEstudianteGlobal);
+        } else {
+            const filtradas = listaActividadesEstudianteGlobal.filter(a => a.estado === estado || (estado === 'Entregado' && a.entregada && a.estado !== 'Calificado'));
+            renderizarActividadesEstudiante(filtradas);
+        }
+    }
+
+    function escapeJsString(str) {
+        if (!str) return '';
+        return str.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    }
+
+    function abrirModalSubirEntrega(idActividad, titulo, materia, fechaLimite) {
+        document.getElementById('idActividadEntrega').value = idActividad;
+        document.getElementById('entregaTituloActividad').textContent = titulo;
+        document.getElementById('entregaMateriaActividad').textContent = materia;
+        document.getElementById('entregaFechaLimiteActividad').textContent = fechaLimite;
+
+        document.getElementById('inputArchivoEntrega').value = '';
+        document.getElementById('inputComentarioEntrega').value = '';
+
+        const modalEl = document.getElementById('modalSubirEntregaActividad');
+        const modal = new bootstrap.Modal(modalEl);
+        modal.show();
+    }
+
+    function guardarEntregaEstudiante(event) {
+        event.preventDefault();
+        const form = document.getElementById('formSubirEntregaActividad');
+        const btn = document.getElementById('btnEnviarEntrega');
+        const formData = new FormData(form);
+
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> Subiendo...`;
+        }
+
+        fetch('@Url.Action("SubirEntregaActividad", "Estudiante")', {
+            method: 'POST',
+            body: formData
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = `<i class="bi bi-send me-1"></i> Enviar Entrega`;
+                }
+
+                if (data.success) {
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: '¡Entrega Enviada!',
+                            text: data.message,
+                            timer: 2500,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        alert(data.message);
+                    }
+
+                    const modalEl = document.getElementById('modalSubirEntregaActividad');
+                    const modal = bootstrap.Modal.getInstance(modalEl);
+                    if (modal) modal.hide();
+
+                    cargarActividadesEstudiante();
+                } else {
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({ icon: 'error', title: 'Atención', text: data.message });
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = `<i class="bi bi-send me-1"></i> Enviar Entrega`;
+                }
+                alert('Ocurrió un error al subir tu entrega.');
+            });
     }
 
     // ==========================================

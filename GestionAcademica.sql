@@ -23,6 +23,50 @@ PRIMARY KEY CLUSTERED
 ) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY]
 GO
+/****** Object:  Table [dbo].[ACTIVIDAD]    Script Date: 16/04/2026 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[ACTIVIDAD](
+	[id_actividad] [int] IDENTITY(1,1) NOT NULL,
+	[titulo] [nvarchar](150) NOT NULL,
+	[descripcion] [nvarchar](max) NULL,
+	[materia] [nvarchar](100) NOT NULL,
+	[grado] [nvarchar](50) NULL,
+	[fecha_limite] [datetime] NOT NULL,
+	[id_docente] [int] NULL,
+	[archivo_adjunto] [nvarchar](255) NULL,
+	[fecha_creacion] [datetime] NOT NULL DEFAULT GETDATE(),
+	[activo] [bit] NOT NULL DEFAULT 1,
+PRIMARY KEY CLUSTERED 
+(
+	[id_actividad] ASC
+) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[ENTREGA_ACTIVIDAD]    Script Date: 16/04/2026 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[ENTREGA_ACTIVIDAD](
+	[id_entrega] [int] IDENTITY(1,1) NOT NULL,
+	[id_actividad] [int] NOT NULL,
+	[id_estudiante] [int] NOT NULL,
+	[archivo_ruta] [nvarchar](255) NULL,
+	[archivo_nombre] [nvarchar](255) NULL,
+	[comentario] [nvarchar](max) NULL,
+	[fecha_entrega] [datetime] NOT NULL DEFAULT GETDATE(),
+	[calificacion] [decimal](3, 1) NULL,
+	[retroalimentacion] [nvarchar](max) NULL,
+	[estado] [nvarchar](50) NOT NULL DEFAULT 'Entregado',
+PRIMARY KEY CLUSTERED 
+(
+	[id_entrega] ASC
+) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
 /****** Object:  Table [dbo].[ASISTENCIA]    Script Date: 16/04/2026 3:09:36 p. m. ******/
 SET ANSI_NULLS ON
 GO
@@ -281,13 +325,17 @@ CREATE TABLE [dbo].[EXTRA_CURSO](
 	[instructor] [nvarchar](150) NULL,
 	[cupos_totales] [int] NOT NULL,
 	[cupos_disponibles] [int] NOT NULL,
-	[fecha_inicio] [date] NOT NULL,
-	[fecha_fin] [date] NOT NULL,
-	[fecha_inicio_inscripcion] [date] NOT NULL,
-	[fecha_fin_inscripcion] [date] NOT NULL,
+	[fecha_inicio] [datetime] NOT NULL,
+	[fecha_fin] [datetime] NOT NULL,
+	[fecha_inicio_inscripcion] [datetime] NOT NULL,
+	[fecha_fin_inscripcion] [datetime] NOT NULL,
 	[activo] [bit] NOT NULL,
 	[id_periodo] [int] NULL,
 	[id_aula] [int] NULL,
+	[grado_min] [int] NULL DEFAULT 6,
+	[grado_max] [int] NULL DEFAULT 11,
+	[horario] [nvarchar](100) NULL,
+	[id_docente] [int] NULL,
 PRIMARY KEY CLUSTERED 
 (
 	[id_extra_curso] ASC

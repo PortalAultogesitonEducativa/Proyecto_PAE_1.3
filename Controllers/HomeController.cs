@@ -137,7 +137,6 @@ namespace ProyectoPAE.Controllers
                                            PeriodoAcademico = m.periodo_academico,
                                            Estado = m.estado
                                        })
-                                       .Take(20)
                                        .ToList();
 
                 ViewBag.ListaMatriculas = listaMatriculas;
