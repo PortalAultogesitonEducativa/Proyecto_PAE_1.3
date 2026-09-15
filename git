@@ -1,15 +1,64 @@
-[33mc738f70[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mArreglos-colores-y-cositas[m[33m)[m Actualizacion de proyecto PAE: vistas, modelos y configuracion
-[33m3657fdc[m Arreglo errores en push
-[33m39262f6[m[33m ([m[1;31morigin/Arreglos-colores-y-cositas[m[33m)[m Un monton de cambios
-[33mf3fbcae[m Fusion Nico,adres,Jean paul
-[33m4a84f80[m Update Dashboard errores git
-[33me3ef1f2[m Add Profesor model with properties and annotations
-[33mdc7a3b5[m Update Base de datos 2.0
-[33m116ad26[m Merge pull request #10 from PortalAultogesitonEducativa/Arreglo-colores-y-cositas
-[33m3643e48[m[33m ([m[1;31morigin/Arreglo-colores-y-cositas[m[33m)[m Merge branch 'main' into Arreglo-colores-y-cositas
-[33m80f39ed[m Cambio base de datos, Registro Gu_Usuario y Docente_Profesor
-[33m6867917[m Update dash, matricula 2.0
-[33m0bce218[m Merge pull request #9 from PortalAultogesitonEducativa/Arreglo-colores-y-cositas
-[33me3cbbf7[m Actu matriculas admin
-[33m29b8489[m Update Dashboard
-[33m50c7f88[m Ajuste Base de Datos (Nico)
+# Recorrido de Mejoras y Sincronización Realizada
+
+Se han atendido y completado de forma integral los 3 requerimientos solicitados:
+
+---
+
+## 1. Actualización y Sincronización del Script de Base de Datos ([GestionAcademica.sql](file:///c:/Users/APRENDIZ/source/repos/Proyecto_PAE_1.3%20bien/GestionAcademica.sql))
+
+El script SQL se encontraba desactualizado respecto a los modelos y esquemas que usa el proyecto en Entity Framework. Se realizaron las siguientes correcciones:
+
+- **Tabla `ACTIVIDAD`**: Agregada con sus campos (`id_actividad`, `titulo`, `descripcion`, `materia`, `grado`, `fecha_limite`, `id_docente`, `archivo_adjunto`, `fecha_creacion`, `activo`).
+- **Tabla `ENTREGA_ACTIVIDAD`**: Agregada con sus campos (`id_entrega`, `id_actividad`, `id_estudiante`, `archivo_ruta`, `archivo_nombre`, `comentario`, `fecha_entrega`, `calificacion`, `retroalimentacion`, `estado`).
+- **Tabla `EXTRA_CURSO`**: Se actualizaron y agregaron las columnas faltantes (`grado_min`, `grado_max`, `horario`, `id_docente`).
+
+---
+
+## 2. Cursos Extracurriculares Operativos para Docente y Estudiante
+
+Se aseguró la funcionalidad para ambos perfiles en el Dashboard y controladores:
+
+- **Para el Docente**:
+  - Creación de cursos extracurriculares especificando temario, fechas de inscripción, periodo de clases, cupos totales y rango de grados admitidos.
+  - Monitoreo en tiempo real de cupos disponibles y porcentaje de ocupación.
+  - Visualización del listado completo de estudiantes inscritos con sus datos de contacto y documento.
+  - Opciones para pausar/activar o eliminar cursos.
+- **Para el Estudiante**:
+  - Catálogo interactivo de cursos extracurriculares disponibles según su grado.
+  - Botón de inscripción con verificación automática de cupos y fechas.
+  - Pestaña **"Mis Cursos Inscritos"** con la confirmación de su cupo y opción de cancelación voluntaria que libera el cupo automáticamente.
+
+---
+
+## 3. Módulo de Actividades Académicas con Calificación en Planilla de Notas
+
+Se implementó el ciclo de vida completo de las actividades y tareas de clase:
+
+```mermaid
+flowchart LR
+    A[Docente: Crea Actividad con Guía] --> B[Estudiante: Ve Tarea y Descarga Guía]
+    B --> C[Estudiante: Sube Archivo y Comentarios]
+    C --> D[Docente: Revisa Entrega y Asigna Nota 0.0 - 5.0]
+    D --> E[Sincronización Automática en Calificaciones / Planilla]
+    E --> F[Reflejo Inmediato en Docente/Planilla y Estudiante/MisNotas]
+```
+
+### Funcionalidades Implementadas:
+1. **Docente**:
+   - Tarjeta **"Actividades y Tareas"** en el panel principal y subpanel `docente-actividades`.
+   - **Publicar Actividad**: Asignar título, materia, grado, fecha/hora límite, descripción y adjuntar archivo guía/taller (`/uploads/guias/`).
+   - **Revisar y Calificar**: Modal con tabla de estudiantes que han enviado sus trabajos, enlace para descargar el archivo del alumno, lectura de comentarios, selector de periodo, input de calificación (0.0 a 5.0) y retroalimentación.
+   - **Reflejo en Planilla**: Al guardar la nota en `DocenteController.CalificarEntrega`, se registra/actualiza de forma automática en la tabla `Calificaciones` con la materia y periodo correspondientes.
+2. **Estudiante**:
+   - Subpanel `estudiante-actividades` con listado de tareas asignadas.
+   - Filtros rápidos (*Todas, Pendientes, Entregadas, Calificadas*).
+   - Botón para descargar la guía del docente.
+   - Modal para subir archivos de entrega (PDF, Word, Excel, ZIP, imágenes) y comentarios.
+   - Visualización de la nota final obtenida (`4.5 / 5.0`) y comentarios de retroalimentación emitidos por el profesor.
+   - Las calificaciones se reflejan inmediatamente en la vista de [Mis Calificaciones](file:///c:/Users/APRENDIZ/source/repos/Proyecto_PAE_1.3%20bien/Views/Estudiante/MisNotas.cshtml).
+
+---
+
+## Verificación
+- **Compilación**: Ejecución exitosa de `dotnet build` con 0 errores.
+- **Rutas y Controladores**: Verificados `DocenteController`, `EstudianteController` y `HomeController`.
