@@ -211,7 +211,7 @@ public class EstudianteController : Controller
         {
             var entrega = entregas.FirstOrDefault(e => e.IdActividad == a.IdActividad);
             bool vencida = DateTime.Now > a.FechaLimite;
-            string estado = entrega != null ? entrega.Estado :
+            string estado = entrega != null ? (!string.IsNullOrEmpty(entrega.Estado) && entrega.Estado == "Calificado" ? "Calificado" : (entrega.Calificacion.HasValue ? "Calificado" : "Entregado")) :
                             (vencida ? "Vencido" : "Pendiente");
 
             return new

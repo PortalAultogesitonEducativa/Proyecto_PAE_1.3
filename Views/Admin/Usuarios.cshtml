@@ -57,7 +57,7 @@
                 <th>Acciones</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody id="tbodyUsuarios">
             @if (Model != null && Model.Any())
             {
                 foreach (var usuario in Model)
@@ -71,7 +71,7 @@
                     else if (rolNormalizado.Contains("estudiante")) { colorHex = "#6f42c1"; } // Púrpura Estudiante
                     else if (rolNormalizado.Contains("acudiente")) { colorHex = "#198754"; }  // Verde Acudiente
 
-                    <tr>
+                    <tr class="fila-usuario">
                         <td>@usuario.NOMBRES @usuario.APELLIDOS</td>
                         <td>@usuario.CORREO_ELECTRONICO</td>
                         <td>
@@ -102,6 +102,14 @@
             }
         </tbody>
     </table>
+
+    <!-- PAGINACIÓN CLIENT-SIDE USUARIOS -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-3 p-2 bg-light rounded border">
+        <p class="text-muted small mb-0" id="infoUsuariosPagina">Cargando...</p>
+        <nav aria-label="Paginación usuarios">
+            <ul class="pagination pagination-sm mb-0" id="paginacionUsuarios"></ul>
+        </nav>
+    </div>
 </div>
 
 <div class="modal fade" id="modalCambiarRol" tabindex="-1" aria-labelledby="modalCambiarRolLabel" aria-hidden="true">
@@ -559,4 +567,80 @@
             document.getElementById('editSelectRol').value = rolActual;
         });
     }
+</script>
+
+<script>
+    // --- PAGINACIÓN CLIENT-SIDE USUARIOS (20 por página) ---
+    let usrPaginaActual = 1;
+    const USR_POR_PAGINA = 20;
+
+    function renderizarPaginacionUsuarios() {
+        const todasFilas = Array.from(document.querySelectorAll('#tbodyUsuarios tr.fila-usuario'));
+        const totalFilas = todasFilas.length;
+        const totalPaginas = Math.max(1, Math.ceil(totalFilas / USR_POR_PAGINA));
+
+        if (usrPaginaActual > totalPaginas) usrPaginaActual = totalPaginas;
+
+        // Ocultar todas las filas
+        todasFilas.forEach(f => f.style.display = 'none');
+
+        // Mostrar las de la página actual
+        const inicio = (usrPaginaActual - 1) * USR_POR_PAGINA;
+        const fin = Math.min(inicio + USR_POR_PAGINA, totalFilas);
+        for (let i = inicio; i < fin; i++) {
+            todasFilas[i].style.display = '';
+        }
+
+        // Info de paginación
+        const info = document.getElementById('infoUsuariosPagina');
+        if (info) {
+            if (totalFilas === 0) {
+                info.textContent = 'No hay usuarios para mostrar';
+            } else {
+                info.textContent = `Mostrando ${inicio + 1}–${fin} de ${totalFilas} usuarios`;
+            }
+        }
+
+        // Renderizar barra de botones
+        const ul = document.getElementById('paginacionUsuarios');
+        if (!ul) return;
+        ul.innerHTML = '';
+
+        if (totalPaginas <= 1) return;
+
+        const crearLi = (label, pagina, activo, disabled) => {
+            const li = document.createElement('li');
+            li.className = `page-item${activo ? ' active' : ''}${disabled ? ' disabled' : ''}`;
+            const a = document.createElement('a');
+            a.className = 'page-link';
+            a.innerHTML = label;
+            a.href = '#';
+            if (!disabled && !activo) {
+                a.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    usrPaginaActual = pagina;
+                    renderizarPaginacionUsuarios();
+                });
+            }
+            li.appendChild(a);
+            ul.appendChild(li);
+        };
+
+        crearLi('&laquo;', usrPaginaActual - 1, false, usrPaginaActual === 1);
+
+        const rango = 2;
+        for (let p = 1; p <= totalPaginas; p++) {
+            if (p === 1 || p === totalPaginas || (p >= usrPaginaActual - rango && p <= usrPaginaActual + rango)) {
+                crearLi(p, p, p === usrPaginaActual, false);
+            } else if (p === usrPaginaActual - rango - 1 || p === usrPaginaActual + rango + 1) {
+                crearLi('...', p, false, true);
+            }
+        }
+
+        crearLi('&raquo;', usrPaginaActual + 1, false, usrPaginaActual === totalPaginas);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        renderizarPaginacionUsuarios();
+    });
 </script>

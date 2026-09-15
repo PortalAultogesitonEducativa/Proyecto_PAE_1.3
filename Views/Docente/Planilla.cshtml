@@ -14,6 +14,7 @@
 
 @{
     ViewData["Title"] = "Planilla de Calificaciones";
+    var estGrados = ViewBag.EstudianteGrados as Dictionary<int, string>;
 }
 
 <div class="container-fluid mt-4 px-4 pb-5" style="max-width: 1300px; margin: 0 auto;">
@@ -83,6 +84,7 @@
                     <i class="bi bi-mortarboard me-1 text-primary"></i>Grado
                 </label>
                 <select class="form-select" id="selectGrado" name="selectGrado">
+                    <option value="todos">Todos los Grados / Cursos</option>
                     @if (ViewBag.Grados != null && ((IEnumerable<string>)ViewBag.Grados).Any())
                     {
                         foreach (var grado in ViewBag.Grados)
@@ -197,15 +199,26 @@
                             <th class="text-center" style="width: 140px;">Desempeño</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="tbodyPlanilla">
                         @if (Model != null && Model.Any())
                         {
                             foreach (var estudiante in Model)
                             {
-                                <tr>
+                                string gradoEst = "";
+                                if (estGrados != null && estGrados.ContainsKey(estudiante.ID_Usuario))
+                                {
+                                    gradoEst = estGrados[estudiante.ID_Usuario] ?? "";
+                                }
+                                <tr class="fila-estudiante" data-grado="@gradoEst">
                                     <td class="ps-3 fw-bold">
                                         <input type="hidden" name="estudiante_id" value="@estudiante.ID_Usuario" />
-                                        @estudiante.NOMBRES @estudiante.APELLIDOS
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <span>@estudiante.NOMBRES @estudiante.APELLIDOS</span>
+                                            @if (!string.IsNullOrEmpty(gradoEst))
+                                            {
+                                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle ms-2">@gradoEst</span>
+                                            }
+                                        </div>
                                     </td>
                                     <td>
                                         <div class="input-group input-group-sm nota-group mx-auto" style="width: 95px;">
@@ -252,6 +265,14 @@
                         }
                     </tbody>
                 </table>
+            </div>
+
+            <!-- PAGINACIÓN CLIENT-SIDE PLANILLA -->
+            <div class="card-footer bg-white d-flex flex-wrap align-items-center justify-content-between gap-2 px-3 py-2 border-top">
+                <p class="text-muted small mb-0" id="infoPlanillaPagina">Cargando...</p>
+                <nav aria-label="Paginación planilla">
+                    <ul class="pagination pagination-sm mb-0" id="paginacionPlanilla"></ul>
+                </nav>
             </div>
 
             <!-- Botón Guardar Calificaciones (CRUD) -->
@@ -646,6 +667,93 @@
             });
         }
 
+        // --- FILTRADO POR CURSO Y PAGINACIÓN CLIENT-SIDE (20 por página) ---
+        let planillaPaginaActual = 1;
+        const PLANILLA_POR_PAGINA = 20;
+
+        function getFilasPlanillaFiltradas() {
+            const selGrado = document.getElementById('selectGrado');
+            const valGrado = selGrado ? selGrado.value.toLowerCase().trim() : 'todos';
+
+            const todasFilas = Array.from(document.querySelectorAll('#tablaPlanilla tbody tr.fila-estudiante'));
+            return todasFilas.filter(fila => {
+                if (valGrado === 'todos' || valGrado === '') return true;
+                const gradoFila = (fila.getAttribute('data-grado') || '').toLowerCase().trim();
+                return gradoFila === valGrado || gradoFila.includes(valGrado) || valGrado.includes(gradoFila);
+            });
+        }
+
+        function renderizarPaginacionPlanilla() {
+            const filasFiltradas = getFilasPlanillaFiltradas();
+            const totalFilas = filasFiltradas.length;
+            const totalPaginas = Math.max(1, Math.ceil(totalFilas / PLANILLA_POR_PAGINA));
+
+            if (planillaPaginaActual > totalPaginas) planillaPaginaActual = totalPaginas;
+
+            // Ocultar todas las filas
+            document.querySelectorAll('#tablaPlanilla tbody tr.fila-estudiante').forEach(f => f.style.display = 'none');
+
+            // Mostrar las de la página actual
+            const inicio = (planillaPaginaActual - 1) * PLANILLA_POR_PAGINA;
+            const fin = Math.min(inicio + PLANILLA_POR_PAGINA, totalFilas);
+            for (let i = inicio; i < fin; i++) {
+                filasFiltradas[i].style.display = '';
+            }
+
+            // Info de paginación
+            const info = document.getElementById('infoPlanillaPagina');
+            if (info) {
+                if (totalFilas === 0) {
+                    info.textContent = 'Sin estudiantes para el curso seleccionado';
+                } else {
+                    info.textContent = `Mostrando ${inicio + 1}–${fin} de ${totalFilas} estudiantes`;
+                }
+            }
+
+            // Barra de navegación
+            const ul = document.getElementById('paginacionPlanilla');
+            if (!ul) return;
+            ul.innerHTML = '';
+
+            if (totalPaginas <= 1) return;
+
+            const crearLi = (label, pagina, activo, disabled) => {
+                const li = document.createElement('li');
+                li.className = `page-item${activo ? ' active' : ''}${disabled ? ' disabled' : ''}`;
+                const a = document.createElement('a');
+                a.className = 'page-link';
+                a.innerHTML = label;
+                a.href = '#';
+                if (!disabled && !activo) {
+                    a.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        planillaPaginaActual = pagina;
+                        renderizarPaginacionPlanilla();
+                    });
+                }
+                li.appendChild(a);
+                ul.appendChild(li);
+            };
+
+            crearLi('&laquo;', planillaPaginaActual - 1, false, planillaPaginaActual === 1);
+
+            const rango = 2;
+            for (let p = 1; p <= totalPaginas; p++) {
+                if (p === 1 || p === totalPaginas || (p >= planillaPaginaActual - rango && p <= planillaPaginaActual + rango)) {
+                    crearLi(p, p, p === planillaPaginaActual, false);
+                } else if (p === planillaPaginaActual - rango - 1 || p === planillaPaginaActual + rango + 1) {
+                    crearLi('...', p, false, true);
+                }
+            }
+
+            crearLi('&raquo;', planillaPaginaActual + 1, false, planillaPaginaActual === totalPaginas);
+        }
+
+        function filtrarPlanilla() {
+            planillaPaginaActual = 1;
+            renderizarPaginacionPlanilla();
+        }
+
         // Filtrado dinámico de Grados según la Jornada (Mañana -> M / Tarde -> T)
         function filtrarGradosPorJornada() {
             if (!selectGrado || !selectJornada) return;
@@ -661,7 +769,9 @@
                 const val = opt.value.trim();
                 let mostrar = true;
 
-                if (esManana) {
+                if (val === 'todos' || txt.toLowerCase().includes('todos')) {
+                    mostrar = true;
+                } else if (esManana) {
                     mostrar = txt.endsWith('M') || txt.includes(' M') || val.endsWith('M');
                 } else if (esTarde) {
                     mostrar = txt.endsWith('T') || txt.includes(' T') || val.endsWith('T');
@@ -687,19 +797,25 @@
         if (selectJornada) {
             selectJornada.addEventListener('change', function() {
                 filtrarGradosPorJornada();
+                filtrarPlanilla();
                 cargarDesdeCache();
             });
         }
 
-        // Recargar caché cuando cambie el Grado o la Asignatura
-        [selectGrado, selectAsignatura].forEach(select => {
-            if (select) {
-                select.addEventListener('change', cargarDesdeCache);
-            }
-        });
+        // Recargar caché y actualizar filtro cuando cambie el Grado o la Asignatura
+        if (selectGrado) {
+            selectGrado.addEventListener('change', function() {
+                filtrarPlanilla();
+                cargarDesdeCache();
+            });
+        }
+        if (selectAsignatura) {
+            selectAsignatura.addEventListener('change', cargarDesdeCache);
+        }
 
-        // Ejecutar filtrado inicial al cargar la vista
+        // Ejecutar filtrado inicial y paginación al cargar la vista
         filtrarGradosPorJornada();
+        renderizarPaginacionPlanilla();
 
         // --- C. CONFIRMACIÓN ANTES DE GUARDAR FORMULARIO ---
         if (formPlanilla) {
