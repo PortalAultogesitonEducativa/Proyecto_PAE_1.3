@@ -5756,6 +5756,31 @@ BEGIN
 END
 GO
 
+-- Asegurar columnas id_curso y curso_asignado en ESTUDIANTE
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[ESTUDIANTE]') AND name = 'id_curso')
+BEGIN
+    ALTER TABLE [dbo].[ESTUDIANTE] ADD [id_curso] INT NULL;
+END
+GO
+
+IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[ESTUDIANTE]') AND name = 'curso_asignado')
+BEGIN
+    ALTER TABLE [dbo].[ESTUDIANTE] ADD [curso_asignado] NVARCHAR(50) NULL;
+END
+GO
+
+IF EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[ESTUDIANTE]') AND name = 'id_curso')
+BEGIN
+    UPDATE e
+    SET e.id_curso = m.id_curso,
+        e.curso_asignado = c.nombre_curso
+    FROM [dbo].[ESTUDIANTE] e
+    INNER JOIN [dbo].[MATRICULA] m ON e.id_estudiante = m.id_estudiante
+    LEFT JOIN [dbo].[CURSO] c ON m.id_curso = c.id_curso
+    WHERE e.id_curso IS NULL;
+END
+GO
+
 USE [master]
 GO
 ALTER DATABASE [GestionAcademica] SET  READ_WRITE 

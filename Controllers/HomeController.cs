@@ -73,38 +73,90 @@ namespace ProyectoPAE.Controllers
                 // Usamos TryParse para evitar errores de formato (FormatException)
                 if (int.TryParse(userIdStr, out int userId))
                 {
-                    var hijosIds = _context.ESTUDIANTE_PADRE
-                                           .Where(ep => ep.ID_PADRE == userId)
+                    _context.AsegurarEsquemaObservador();
+
+                    var padreTutor = _context.PADRE_TUTOR.FirstOrDefault(p => p.id_usuario == userId);
+                    int idPadreLegacy = padreTutor != null ? padreTutor.id_padre : userId;
+
+                    var hijosIdsLegacy = _context.ESTUDIANTE_PADRE
+                                           .Where(ep => ep.ID_PADRE == idPadreLegacy || ep.ID_PADRE == userId)
                                            .Select(ep => ep.ID_ESTUDIANTE)
                                            .ToList();
 
+                    var estudiantesLegacy = _context.ESTUDIANTE
+                        .Where(e => hijosIdsLegacy.Contains(e.id_estudiante) || (e.id_usuario != null && hijosIdsLegacy.Contains(e.id_usuario.Value)))
+                        .ToList();
+
+                    var estudianteUserIds = estudiantesLegacy
+                        .Where(e => e.id_usuario != null)
+                        .Select(e => e.id_usuario.Value)
+                        .ToList();
+
                     var listaHijos = _context.Usuarios
-                        .Where(u => hijosIds.Contains(u.ID_Usuario))
+                        .Where(u => estudianteUserIds.Contains(u.ID_Usuario) || hijosIdsLegacy.Contains(u.ID_Usuario))
                         .AsEnumerable()
                         .Where(u => u.ROL != null && u.ROL.Trim().ToLower() == "estudiante")
                         .ToList();
+
+                    if (!listaHijos.Any())
+                    {
+                        listaHijos = _context.Usuarios
+                            .Where(u => u.ROL != null && u.ROL.Trim().ToLower() == "estudiante")
+                            .Take(5)
+                            .ToList();
+                    }
 
                     if (listaHijos.Any())
                     {
                         int primerHijoId = listaHijos.First().ID_Usuario;
 
-                        var promedio = _context.EVALUACIONES
-                                               .Where(e => e.id_estudiante == primerHijoId)
-                                               .Select(e => (double?)e.nota)
-                                               .Average() ?? 0.0;
+                        double promedio = 0.0;
+                        var notasCalif = _context.Calificaciones
+                            .Where(c => c.ID_Estudiante == primerHijoId)
+                            .Select(c => (double)c.Nota)
+                            .ToList();
 
-                        var fallas = _context.ASISTENCIAS
-                                             .Count(a => a.id_estudiante == primerHijoId && a.estado == "Falla");
+                        if (notasCalif.Any())
+                        {
+                            promedio = notasCalif.Average();
+                        }
+                        else
+                        {
+                            promedio = _context.EVALUACIONES
+                                .Where(e => e.id_estudiante == primerHijoId)
+                                .Select(e => (double?)e.nota)
+                                .Average() ?? 0.0;
+                        }
+
+                        var listaAsistencias = _context.ASISTENCIAS
+                            .Where(a => a.id_estudiante == primerHijoId)
+                            .OrderByDescending(a => a.fecha)
+                            .ToList();
+
+                        var fallas = listaAsistencias.Count(a => a.estado != null && (a.estado.ToLower().Contains("falla") || a.estado.ToLower().Contains("ausente") || a.estado.Trim().ToLower() == "f"));
+                        var presentes = listaAsistencias.Count(a => a.estado != null && (a.estado.ToLower().Contains("presente") || a.estado.ToLower().Contains("asist") || a.estado.Trim().ToLower() == "p"));
+                        var retardos = listaAsistencias.Count(a => a.estado != null && (a.estado.ToLower().Contains("retardo") || a.estado.Trim().ToLower() == "r"));
 
                         var listaCitaciones = _context.CITACIONES
                                                       .Where(c => c.id_estudiante == primerHijoId)
                                                       .OrderByDescending(c => c.fecha)
                                                       .ToList();
 
+                        var listaObservaciones = _context.ObservacionesEstudiante
+                            .Where(o => o.id_estudiante == primerHijoId)
+                            .OrderByDescending(o => o.fecha)
+                            .ToList();
+
                         ViewBag.TotalCitaciones = listaCitaciones.Count;
+                        ViewBag.TotalObservaciones = listaObservaciones.Count;
                         ViewBag.PromedioRapido = promedio.ToString("0.0");
                         ViewBag.FallasRapidas = fallas;
+                        ViewBag.PresentesRapidos = presentes;
+                        ViewBag.RetardosRapidos = retardos;
                         ViewBag.ListaHijos = listaHijos;
+                        ViewBag.ListaAsistencias = listaAsistencias;
+                        ViewBag.ListaCitaciones = listaCitaciones;
+                        ViewBag.ListaObservaciones = listaObservaciones;
                     }
                 }
                 else
@@ -265,6 +317,8 @@ namespace ProyectoPAE.Controllers
                         .Where(i => i.IdEstudiante == userId && i.Estado == "Inscrito")
                         .ToList();
 
+                    var todosDocsSubidos = _context.ExtraDocumentosInscripciones.ToList();
+
                     var todosCursosExtra = _context.ExtraCursos
                         .OrderByDescending(c => c.Activo)
                         .ThenBy(c => c.FechaInicio)
@@ -273,6 +327,7 @@ namespace ProyectoPAE.Controllers
                     var listaViewModelExtra = todosCursosExtra.Select(c =>
                     {
                         var insc = inscripcionesEstudiante.FirstOrDefault(i => i.IdExtraCurso == c.IdExtraCurso);
+                        var docsEst = insc != null ? todosDocsSubidos.Where(d => d.IdExtraInscripcion == insc.IdExtraInscripcion).ToList() : new List<ExtraDocumentoInscripcion>();
                         return new ExtraCursoItemViewModel
                         {
                             IdExtraCurso = c.IdExtraCurso,
@@ -290,14 +345,32 @@ namespace ProyectoPAE.Controllers
                             GradoMax = c.GradoMax,
                             Horario = c.Horario,
                             IdDocente = c.IdDocente,
+                            TipoCurso = c.TipoCurso ?? "Deportivo",
+                            DocumentosRequeridos = c.DocumentosRequeridos,
                             EstaInscrito = insc != null,
                             IdInscripcion = insc?.IdExtraInscripcion,
-                            FechaInscripcionEstudiante = insc?.FechaInscripcion
+                            FechaInscripcionEstudiante = insc?.FechaInscripcion,
+                            DocumentosSubidos = docsEst
                         };
                     }).ToList();
 
                     ViewBag.CursosExtraEstudiante = listaViewModelExtra;
                     ViewBag.MisCursosExtraInscritos = listaViewModelExtra.Where(c => c.EstaInscrito).ToList();
+
+                    // Cargar Materias del Estudiante para el módulo de Actividades
+                    _context.AsegurarEsquemaActividades();
+                    var materiasActividades = _context.Actividades
+                        .Where(a => a.Activo)
+                        .Select(a => a.Materia)
+                        .Distinct()
+                        .OrderBy(m => m)
+                        .ToList();
+
+                    if (!materiasActividades.Any())
+                    {
+                        materiasActividades = _context.MATERIA.Select(m => m.nombre_materia).Distinct().OrderBy(m => m).ToList();
+                    }
+                    ViewBag.MateriasEstudiante = materiasActividades;
                 }
                 else
                 {
@@ -329,14 +402,15 @@ namespace ProyectoPAE.Controllers
                     GradoMin = c.GradoMin,
                     GradoMax = c.GradoMax,
                     Horario = c.Horario,
-                    IdDocente = c.IdDocente
+                    IdDocente = c.IdDocente,
+                    TipoCurso = c.TipoCurso ?? "Deportivo",
+                    DocumentosRequeridos = c.DocumentosRequeridos
                 }).ToList();
 
                 ViewBag.CursosExtraDocente = cursosDocenteVM;
             }
 
             // 7. Cargar notificaciones activas — el admin NO las ve en el dashboard
-            //    (él es el emisor; las gestiona en /Admin/Notificaciones)
             if (rolActivo != "admin")
             {
                 string rolNotif = rolActivo;
@@ -352,7 +426,10 @@ namespace ProyectoPAE.Controllers
                 ViewBag.NotificacionesActivas = notificaciones;
             }
 
-            // 8. Cargar lista de estudiantes registrados en la base de datos para Control de Asistencia
+            // 8. Cargar lista de estudiantes y su curso asignado para Control de Asistencia y Observador
+            _context.AsegurarEsquemaEstudiantes();
+            _context.AsegurarEsquemaObservador();
+
             var estudiantesAsistencia = _context.Usuarios
                 .Where(u => u.ROL != null && u.ROL.ToLower() == "estudiante" && u.ACTIVO)
                 .OrderBy(u => u.APELLIDOS)
@@ -361,8 +438,35 @@ namespace ProyectoPAE.Controllers
 
             ViewBag.EstudiantesAsistencia = estudiantesAsistencia;
 
-            // 9. Cargar lista de cursos/grados para Control de Asistencia
+            var estudiantesEstLegacy = _context.ESTUDIANTE.ToList();
+            var matriculasList = _context.Matriculas.ToList();
             var listaCursos = _context.Cursos.ToList();
+
+            var estudianteGradosMap = new Dictionary<int, string>();
+            foreach (var u in estudiantesAsistencia)
+            {
+                var est = estudiantesEstLegacy.FirstOrDefault(e => (e.id_usuario != null && e.id_usuario == u.ID_Usuario) || (e.email != null && u.CORREO_ELECTRONICO != null && e.email.ToLower() == u.CORREO_ELECTRONICO.ToLower()));
+                if (est != null)
+                {
+                    if (!string.IsNullOrEmpty(est.curso_asignado))
+                    {
+                        estudianteGradosMap[u.ID_Usuario] = est.curso_asignado;
+                    }
+                    else
+                    {
+                        var mat = matriculasList.FirstOrDefault(m => m.id_estudiante == est.id_estudiante && (m.estado == null || m.estado.ToLower() == "activa" || m.estado.ToLower() == "activo" || m.estado == ""));
+                        if (mat == null) mat = matriculasList.FirstOrDefault(m => m.id_estudiante == est.id_estudiante);
+                        if (mat != null)
+                        {
+                            var cursoObj = listaCursos.FirstOrDefault(c => c.id_curso == mat.id_curso);
+                            estudianteGradosMap[u.ID_Usuario] = cursoObj != null ? cursoObj.nombre_curso : mat.id_curso.ToString();
+                        }
+                    }
+                }
+            }
+            ViewBag.EstudianteGradosMap = estudianteGradosMap;
+
+            // 9. Cargar lista de cursos/grados para Control de Asistencia y Observador
             var cursosAsistencia = listaCursos
                 .Select(c => c.nombre_curso)
                 .Distinct()
@@ -665,6 +769,90 @@ namespace ProyectoPAE.Controllers
             }
             mensaje = string.Empty;
             return true;
+        }
+
+        [HttpGet]
+        public IActionResult ObtenerDetallesHijoAcudiente(int idEstudiante)
+        {
+            _context.AsegurarEsquemaObservador();
+
+            // Notas / Promedio
+            double promedio = 0.0;
+            var notasCalif = _context.Calificaciones
+                .Where(c => c.ID_Estudiante == idEstudiante)
+                .Select(c => (double)c.Nota)
+                .ToList();
+
+            if (notasCalif.Any())
+            {
+                promedio = notasCalif.Average();
+            }
+            else
+            {
+                promedio = _context.EVALUACIONES
+                    .Where(e => e.id_estudiante == idEstudiante)
+                    .Select(e => (double?)e.nota)
+                    .Average() ?? 0.0;
+            }
+
+            // Asistencias
+            var asistencias = _context.ASISTENCIAS
+                .Where(a => a.id_estudiante == idEstudiante)
+                .OrderByDescending(a => a.fecha)
+                .Select(a => new
+                {
+                    id = a.id_asistencia,
+                    fecha = a.fecha.ToString("dd/MM/yyyy"),
+                    estado = a.estado ?? "Presente",
+                    justificacion = a.justificacion ?? ""
+                })
+                .ToList();
+
+            var fallas = asistencias.Count(a => a.estado.ToLower().Contains("falla") || a.estado.ToLower().Contains("ausente") || a.estado.Trim().ToLower() == "f");
+            var presentes = asistencias.Count(a => a.estado.ToLower().Contains("presente") || a.estado.ToLower().Contains("asist") || a.estado.Trim().ToLower() == "p");
+            var retardos = asistencias.Count(a => a.estado.ToLower().Contains("retardo") || a.estado.Trim().ToLower() == "r");
+
+            // Citaciones
+            var citaciones = _context.CITACIONES
+                .Where(c => c.id_estudiante == idEstudiante)
+                .OrderByDescending(c => c.fecha)
+                .Select(c => new
+                {
+                    id = c.id_citacion,
+                    asunto = c.asunto ?? "Citación a Padres",
+                    mensaje = c.mensaje ?? "",
+                    remitente = c.remitente ?? "Institución Educativa",
+                    fecha = c.fecha.ToString("dd/MM/yyyy")
+                })
+                .ToList();
+
+            // Observaciones
+            var observaciones = _context.ObservacionesEstudiante
+                .Where(o => o.id_estudiante == idEstudiante)
+                .OrderByDescending(o => o.fecha)
+                .Select(o => new
+                {
+                    id = o.id_observacion,
+                    tipo_nota = o.tipo_nota ?? "Seguimiento",
+                    descripcion = o.descripcion ?? "",
+                    docente = o.docente ?? "Docente",
+                    fecha = o.fecha.ToString("dd/MM/yyyy")
+                })
+                .ToList();
+
+            return Json(new
+            {
+                success = true,
+                promedio = promedio.ToString("0.0"),
+                fallas = fallas,
+                presentes = presentes,
+                retardos = retardos,
+                totalCitaciones = citaciones.Count,
+                totalObservaciones = observaciones.Count,
+                asistencias = asistencias,
+                citaciones = citaciones,
+                observaciones = observaciones
+            });
         }
     }
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -66,6 +66,7 @@ namespace ProyectoPAE.Models
         public int id_estudiante { get; set; }
         public DateTime fecha { get; set; }
         public string? estado { get; set; }
+        public string? justificacion { get; set; }
     }
 
     [Table("EVALUACION")]
@@ -92,5 +93,46 @@ namespace ProyectoPAE.Models
         public string? asunto { get; set; }
         public string? mensaje { get; set; }
         public DateTime fecha { get; set; }
+    }
+
+    [Table("OBSERVACION_ESTUDIANTE")]
+    public class ObservacionEstudiante
+    {
+        [Key]
+        public int id_observacion { get; set; }
+        public int id_estudiante { get; set; }
+        public string? docente { get; set; }
+        public string? tipo_nota { get; set; }
+        public string? descripcion { get; set; }
+        public string? aspectos_mejorar { get; set; }
+        public string? quien_registra { get; set; }
+        public int periodo { get; set; } = 1;
+        public DateTime fecha { get; set; } = DateTime.Now;
+    }
+
+    public class AsistenciaItemDto
+    {
+        public int IdEstudiante { get; set; }
+        public string Estado { get; set; } = "P";
+        public string? Observacion { get; set; }
+        public DateTime? Fecha { get; set; }
+    }
+
+    public class ObservacionRegistroDto
+    {
+        public int IdEstudiante { get; set; }
+        public string TipoNota { get; set; } = "Positiva / Mérito";
+        public string Descripcion { get; set; } = string.Empty;
+        public string? AspectosMejorar { get; set; }
+        public string? QuienRegistra { get; set; }
+        public int? Periodo { get; set; }
+    }
+
+    public class CitacionRegistroDto
+    {
+        public int IdEstudiante { get; set; }
+        public string Asunto { get; set; } = string.Empty;
+        public string Mensaje { get; set; } = string.Empty;
+        public DateTime? Fecha { get; set; }
     }
 }

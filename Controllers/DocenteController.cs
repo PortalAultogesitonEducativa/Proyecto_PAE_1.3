@@ -21,14 +21,19 @@ namespace ProyectoPAE.Controllers
         /// <returns>Vista de planilla con la lista de estudiantes con rol 'estudiante'</returns>
         public IActionResult Planilla()
         {
+            _context.AsegurarEsquemaEstudiantes();
+
             // 1. Verificación de sesión y autorización por rol (docente o admin)
-            var rol = HttpContext.Session.GetString("UserRol");
-            if (rol != "docente" && rol != "admin") return RedirectToAction("Index", "Login");
+            var rol = (HttpContext.Session.GetString("UserRol") ?? "").ToLower().Trim();
+            if (rol != "docente" && rol != "admin" && rol != "profesor") return RedirectToAction("Index", "Login");
+
+            var userId = HttpContext.Session.GetInt32("UserId");
+            var usuarioActual = userId.HasValue ? _context.Usuarios.Find(userId.Value) : null;
 
             // 2. Obtención de estudiantes registrados en el sistema
-            var estudiantes = _context.Usuarios.Where(u => u.ROL == "estudiante").ToList();
+            var estudiantes = _context.Usuarios.Where(u => u.ROL == "estudiante" && u.ACTIVO).ToList();
 
-            // 2b. Mapeo de estudiante a su curso/grado asignado vía MATRICULA
+            // 2b. Mapeo de estudiante a su curso/grado asignado vía ESTUDIANTE y MATRICULA
             var estudiantesEst = _context.ESTUDIANTE.ToList();
             var matriculas = _context.Matriculas.ToList();
             var listaCursos = _context.Cursos.ToList();
@@ -39,38 +44,105 @@ namespace ProyectoPAE.Controllers
                 var est = estudiantesEst.FirstOrDefault(e => (e.id_usuario != null && e.id_usuario == u.ID_Usuario) || (e.email != null && u.CORREO_ELECTRONICO != null && e.email.ToLower() == u.CORREO_ELECTRONICO.ToLower()));
                 if (est != null)
                 {
-                    var mat = matriculas.FirstOrDefault(m => m.id_estudiante == est.id_estudiante && (m.estado == null || m.estado.ToLower() == "activa" || m.estado.ToLower() == "activo" || m.estado == ""));
-                    if (mat == null)
+                    if (!string.IsNullOrEmpty(est.curso_asignado))
                     {
-                        mat = matriculas.FirstOrDefault(m => m.id_estudiante == est.id_estudiante);
+                        estudianteGrados[u.ID_Usuario] = est.curso_asignado;
                     }
-                    if (mat != null)
+                    else
                     {
-                        var cursoObj = listaCursos.FirstOrDefault(c => c.id_curso == mat.id_curso);
-                        string nombreCurso = cursoObj != null ? cursoObj.nombre_curso : mat.id_curso.ToString();
-                        estudianteGrados[u.ID_Usuario] = nombreCurso;
+                        var mat = matriculas.FirstOrDefault(m => m.id_estudiante == est.id_estudiante && (m.estado == null || m.estado.ToLower() == "activa" || m.estado.ToLower() == "activo" || m.estado == ""));
+                        if (mat == null)
+                        {
+                            mat = matriculas.FirstOrDefault(m => m.id_estudiante == est.id_estudiante);
+                        }
+                        if (mat != null)
+                        {
+                            var cursoObj = listaCursos.FirstOrDefault(c => c.id_curso == mat.id_curso);
+                            string nombreCurso = cursoObj != null ? cursoObj.nombre_curso : mat.id_curso.ToString();
+                            estudianteGrados[u.ID_Usuario] = nombreCurso;
+                        }
                     }
                 }
             }
             ViewBag.EstudianteGrados = estudianteGrados;
 
-            // 3. Consulta de grados desde la tabla CURSO (601 M - 1103 M, 601 T - 1103 T)
-            var grados = listaCursos
-                .Select(c => c.nombre_curso)
-                .Distinct()
-                .OrderBy(n => {
-                    var digits = new string(n.TakeWhile(char.IsDigit).ToArray());
-                    return int.TryParse(digits, out int num) ? num : 999999;
-                })
-                .ThenBy(n => n)
-                .ToList();
+            // 3. Consulta de asignaturas y cursos asignados al docente
+            List<string> grados = new List<string>();
+            List<string> asignaturas = new List<string>();
 
-            // 4. Consulta de asignaturas/materias académicas desde la tabla MATERIA
-            var asignaturas = _context.MATERIA
-                .Select(m => m.nombre_materia)
-                .Distinct()
-                .OrderBy(n => n)
-                .ToList();
+            if (rol == "admin")
+            {
+                // El administrador puede acceder a todos los cursos y materias
+                grados = listaCursos
+                    .Select(c => c.nombre_curso)
+                    .Distinct()
+                    .OrderBy(n => {
+                        var digits = new string(n.TakeWhile(char.IsDigit).ToArray());
+                        return int.TryParse(digits, out int num) ? num : 999999;
+                    })
+                    .ThenBy(n => n)
+                    .ToList();
+
+                asignaturas = _context.MATERIA
+                    .Select(m => m.nombre_materia)
+                    .Distinct()
+                    .OrderBy(n => n)
+                    .ToList();
+            }
+            else
+            {
+                // Buscar profesor vinculado al usuario en sesión
+                var prof = _context.PROFESOR.FirstOrDefault(p => (p.id_usuario != null && p.id_usuario == userId) ||
+                                                               (usuarioActual != null && !string.IsNullOrEmpty(p.email) && p.email.ToLower() == usuarioActual.CORREO_ELECTRONICO.ToLower()));
+
+                if (prof != null)
+                {
+                    // Cursos asignados en HORARIOS para este profesor
+                    var cursoIdsHorario = _context.HORARIOS
+                        .Where(h => h.id_profesor == prof.id_profesor)
+                        .Select(h => h.id_curso)
+                        .Distinct()
+                        .ToList();
+
+                    if (cursoIdsHorario.Any())
+                    {
+                        grados = listaCursos
+                            .Where(c => cursoIdsHorario.Contains(c.id_curso))
+                            .Select(c => c.nombre_curso)
+                            .Distinct()
+                            .OrderBy(n => n)
+                            .ToList();
+                    }
+
+                    // Materias asignadas en PROFESOR_MATERIA
+                    var materiaIds = _context.PROFESOR_MATERIA
+                        .Where(pm => pm.id_profesor == prof.id_profesor)
+                        .Select(pm => pm.id_materia)
+                        .Distinct()
+                        .ToList();
+
+                    if (materiaIds.Any())
+                    {
+                        asignaturas = _context.MATERIA
+                            .Where(m => materiaIds.Contains(m.id_materia))
+                            .Select(m => m.nombre_materia)
+                            .Distinct()
+                            .OrderBy(n => n)
+                            .ToList();
+                    }
+                }
+
+                // Fallback seguro si no hay asignaciones explícitas en base de datos
+                if (!grados.Any())
+                {
+                    grados = listaCursos.Select(c => c.nombre_curso).Distinct().OrderBy(n => n).ToList();
+                }
+
+                if (!asignaturas.Any())
+                {
+                    asignaturas = _context.MATERIA.Select(m => m.nombre_materia).Distinct().OrderBy(n => n).ToList();
+                }
+            }
 
             ViewBag.Grados = grados;
             ViewBag.Asignaturas = asignaturas;
@@ -198,18 +270,117 @@ namespace ProyectoPAE.Controllers
         }
 
         /// <summary>
-        /// Genera y descarga el reporte del observador en formato PDF usando Rotativa.
+        /// Genera y descarga el reporte del observador en formato PDF usando Rotativa con el formato institucional Sor María Juliana.
         /// </summary>
-        public IActionResult DescargarObservadorPdf()
+        public IActionResult DescargarObservadorPdf(int? idEstudiante, string? curso)
         {
-            return new ViewAsPdf("ReporteObservadorPdf")
+            _context.AsegurarEsquemaObservador();
+            _context.AsegurarEsquemaEstudiantes();
+
+            Usuario? userEst = null;
+            Estudiante? estLegacy = null;
+
+            if (idEstudiante.HasValue && idEstudiante.Value > 0)
             {
-                FileName = $"Reporte_Observador_{DateTime.Now:yyyyMMdd}.pdf",
+                userEst = _context.Usuarios.FirstOrDefault(u => u.ID_Usuario == idEstudiante.Value);
+                estLegacy = _context.ESTUDIANTE.FirstOrDefault(e => e.id_usuario == idEstudiante.Value || e.id_estudiante == idEstudiante.Value);
+                if (userEst == null && estLegacy != null && estLegacy.id_usuario.HasValue)
+                {
+                    userEst = _context.Usuarios.Find(estLegacy.id_usuario.Value);
+                }
+            }
+
+            if (userEst == null)
+            {
+                userEst = _context.Usuarios.FirstOrDefault(u => u.ROL != null && u.ROL.ToLower() == "estudiante" && u.ACTIVO);
+                if (userEst != null)
+                {
+                    estLegacy = _context.ESTUDIANTE.FirstOrDefault(e => e.id_usuario == userEst.ID_Usuario || (e.email != null && e.email.ToLower() == (userEst.CORREO_ELECTRONICO ?? "").ToLower()));
+                }
+            }
+
+            var vm = new ObservadorPdfViewModel
+            {
+                Institucion = "INSTITUCIÓN EDUCATIVA SOR MARÍA JULIANA",
+                Sede = "SEDE: SOR MARÍA JULIANA",
+                Titulo = "OBSERVADOR DEL ALUMNO",
+                Ciudad = "Cartago",
+                Jornada = "Mañana",
+                Grupo = !string.IsNullOrEmpty(curso) ? curso : "601 M",
+                AnoLectivo = DateTime.Now.Year.ToString(),
+                DirGrupo = "Claudia Milena Londoño C.",
+                Calendario = "A",
+                EstudianteNombre = userEst != null ? $"{userEst.NOMBRES} {userEst.APELLIDOS}".Trim() : (estLegacy != null ? $"{estLegacy.nombre} {estLegacy.apellido}".Trim() : "Estudiante Institucional"),
+                Codigo = estLegacy?.codigo_estudiante ?? (userEst != null ? $"EST-{userEst.ID_Usuario:D4}" : "04644"),
+                MatriculaNo = estLegacy != null ? $"{estLegacy.id_estudiante:D4}" : "4644",
+                LugarNacimiento = "Cartago",
+                FechaNacimiento = estLegacy != null && estLegacy.fecha_inscripcion != default ? estLegacy.fecha_inscripcion.ToString("dd 'de' MMMM 'de' yyyy", new System.Globalization.CultureInfo("es-ES")) : "14 de Julio de 2008",
+                Identificacion = userEst?.NUM_DOCUMENTO != null ? $"T.I. {userEst.NUM_DOCUMENTO} de Cartago" : "T.I. 9507141911 de Cartago",
+                Acudiente = "LUIS MARTINEZ",
+                IdentificacionAcudiente = "C.C. 10.123.456",
+                Direccion = userEst?.DIRECCION ?? (estLegacy != null && !string.IsNullOrEmpty(estLegacy.email) ? "Carrera 19C No. 14 - 20" : "Carrera 19C No. 14 - 20"),
+                Telefonos = userEst?.TELEFONO ?? "314 41 64"
+            };
+
+            // Buscar matrícula para grupo y jornada reales
+            if (estLegacy != null)
+            {
+                var mat = _context.Matriculas.FirstOrDefault(m => m.id_estudiante == estLegacy.id_estudiante);
+                if (mat != null)
+                {
+                    var cursoObj = _context.Cursos.FirstOrDefault(c => c.id_curso == mat.id_curso);
+                    if (cursoObj != null)
+                    {
+                        vm.Grupo = cursoObj.nombre_curso;
+                        if (cursoObj.nombre_curso.Contains(" T") || cursoObj.nombre_curso.ToLower().Contains("tarde"))
+                            vm.Jornada = "Tarde";
+                    }
+                    if (mat.ano > 0) vm.AnoLectivo = mat.ano.ToString();
+                }
+            }
+
+            // Cargar observaciones registradas para el estudiante
+            int estIdQuery = userEst?.ID_Usuario ?? (estLegacy?.id_estudiante ?? 0);
+            int estIdLegacy = estLegacy?.id_estudiante ?? 0;
+
+            var listaObs = _context.ObservacionesEstudiante
+                .Where(o => o.id_estudiante == estIdQuery || (estIdLegacy > 0 && o.id_estudiante == estIdLegacy))
+                .OrderBy(o => o.fecha)
+                .ToList();
+
+            var periodosNombres = new[] { "PRIMER PERIODO", "SEGUNDO PERIODO", "TERCER PERIODO", "CUARTO PERIODO" };
+
+            for (int p = 1; p <= 4; p++)
+            {
+                var obsPeriodo = listaObs.Where(o => o.periodo == p || (o.periodo == 0 && p == 1)).ToList();
+                var pItem = new ObservadorPeriodoItem
+                {
+                    NombrePeriodo = periodosNombres[p - 1]
+                };
+
+                foreach (var o in obsPeriodo)
+                {
+                    pItem.Observaciones.Add(new ObservacionDetalleItem
+                    {
+                        Fecha = o.fecha.ToString("MMMM dd 'de' yyyy", new System.Globalization.CultureInfo("es-ES")),
+                        TipoNota = o.tipo_nota ?? "Observación",
+                        Descripcion = o.descripcion,
+                        AspectosMejorar = o.aspectos_mejorar,
+                        FirmaDocente = !string.IsNullOrEmpty(o.quien_registra) ? o.quien_registra : (!string.IsNullOrEmpty(o.docente) ? o.docente : "cml")
+                    });
+                }
+
+                vm.Periodos.Add(pItem);
+            }
+
+            return new ViewAsPdf("ReporteObservadorPdf", vm)
+            {
+                FileName = $"Observador_{vm.EstudianteNombre.Replace(" ", "_")}_{DateTime.Now:yyyyMMdd}.pdf",
                 PageSize = Rotativa.AspNetCore.Options.Size.A4,
-                PageOrientation = Rotativa.AspNetCore.Options.Orientation.Portrait
+                PageOrientation = Rotativa.AspNetCore.Options.Orientation.Portrait,
+                PageMargins = new Rotativa.AspNetCore.Options.Margins(12, 10, 12, 10)
             };
         }
-
 
         // ==========================================
         // GESTIÓN DE CURSOS EXTRACURRICULARES (DOCENTE)
@@ -269,23 +440,31 @@ namespace ProyectoPAE.Controllers
         {
             _context.AsegurarEsquemaExtracurriculares();
 
-            var inscritos = _context.ExtraInscripciones
+            var inscripciones = _context.ExtraInscripciones
                 .Where(i => i.IdExtraCurso == idCurso && i.Estado == "Inscrito")
+                .ToList();
+
+            var docsSubidos = _context.ExtraDocumentosInscripciones.ToList();
+
+            var inscritos = inscripciones
                 .Join(_context.Usuarios,
                       i => i.IdEstudiante,
                       u => u.ID_Usuario,
-                      (i, u) => new ExtraEstudianteInscritoDto
+                      (i, u) => new
                       {
-                          IdInscripcion = i.IdExtraInscripcion,
-                          IdEstudiante = u.ID_Usuario,
-                          NombreCompleto = (u.NOMBRES + " " + u.APELLIDOS).Trim(),
-                          Documento = u.NUM_DOCUMENTO ?? u.NOMBRE_USUARIO,
-                          Correo = u.CORREO_ELECTRONICO ?? "-",
-                          Grado = u.COLEGIO_PROCEDENCIA ?? "Estudiante",
-                          FechaInscripcion = i.FechaInscripcion,
-                          Estado = i.Estado
+                          idInscripcion = i.IdExtraInscripcion,
+                          idEstudiante = u.ID_Usuario,
+                          nombreCompleto = (u.NOMBRES + " " + u.APELLIDOS).Trim(),
+                          documento = u.NUM_DOCUMENTO ?? u.NOMBRE_USUARIO,
+                          correo = u.CORREO_ELECTRONICO ?? "-",
+                          grado = u.COLEGIO_PROCEDENCIA ?? "Estudiante",
+                          fechaInscripcion = i.FechaInscripcion.ToString("dd/MM/yyyy HH:mm"),
+                          estado = i.Estado,
+                          documentos = docsSubidos.Where(d => d.IdExtraInscripcion == i.IdExtraInscripcion)
+                              .Select(d => new { d.TipoDocumento, d.ArchivoNombre, d.ArchivoRuta, d.Estado, FechaSubida = d.FechaSubida.ToString("dd/MM/yyyy") })
+                              .ToList()
                       })
-                .OrderBy(e => e.NombreCompleto)
+                .OrderBy(e => e.nombreCompleto)
                 .ToList();
 
             var curso = _context.ExtraCursos.Find(idCurso);
@@ -294,10 +473,10 @@ namespace ProyectoPAE.Controllers
             {
                 success = true,
                 nombreCurso = curso?.Nombre ?? "Curso Extracurricular",
+                tipoCurso = curso?.TipoCurso ?? "Deportivo",
                 cuposTotales = curso?.CuposTotales ?? 0,
                 cuposDisponibles = curso?.CuposDisponibles ?? 0,
                 totalInscritos = inscritos.Count,
-                estudiantes = inscritos
             });
         }
 
@@ -595,6 +774,123 @@ namespace ProyectoPAE.Controllers
             _context.SaveChanges();
 
             return Json(new { success = true, message = "Actividad académica eliminada correctamente." });
+        }
+
+        [HttpPost]
+        public IActionResult GuardarControlAsistencia([FromBody] List<AsistenciaItemDto> registros, DateTime? fecha)
+        {
+            _context.AsegurarEsquemaObservador();
+            if (registros == null || !registros.Any())
+            {
+                return Json(new { success = false, message = "No se recibieron registros de asistencia." });
+            }
+
+            var fechaAsistencia = fecha ?? DateTime.Today;
+
+            foreach (var r in registros)
+            {
+                string estadoTexto = "Presente";
+                if (r.Estado == "F" || (r.Estado != null && r.Estado.ToLower() == "falla")) estadoTexto = "Falla";
+                else if (r.Estado == "R" || (r.Estado != null && r.Estado.ToLower() == "retardo")) estadoTexto = "Retardo";
+
+                var existente = _context.ASISTENCIAS
+                    .FirstOrDefault(a => a.id_estudiante == r.IdEstudiante && a.fecha.Date == fechaAsistencia.Date);
+
+                if (existente != null)
+                {
+                    existente.estado = estadoTexto;
+                    existente.justificacion = r.Observacion;
+                }
+                else
+                {
+                    _context.ASISTENCIAS.Add(new Asistencia
+                    {
+                        id_estudiante = r.IdEstudiante,
+                        fecha = fechaAsistencia,
+                        estado = estadoTexto,
+                        justificacion = r.Observacion
+                    });
+                }
+            }
+
+            _context.SaveChanges();
+            return Json(new { success = true, message = "¡Control de asistencia guardado exitosamente!" });
+        }
+
+        [HttpPost]
+        public IActionResult RegistrarObservacion([FromBody] ObservacionRegistroDto dto)
+        {
+            _context.AsegurarEsquemaObservador();
+            if (dto == null || dto.IdEstudiante <= 0 || string.IsNullOrWhiteSpace(dto.Descripcion))
+            {
+                return Json(new { success = false, message = "Debe seleccionar un estudiante e ingresar la descripción de la observación." });
+            }
+
+            var nombreDocente = HttpContext.Session.GetString("NombreUsuario") ?? "Docente";
+            var autor = !string.IsNullOrWhiteSpace(dto.QuienRegistra) ? dto.QuienRegistra.Trim() : nombreDocente;
+
+            _context.ObservacionesEstudiante.Add(new ObservacionEstudiante
+            {
+                id_estudiante = dto.IdEstudiante,
+                tipo_nota = string.IsNullOrWhiteSpace(dto.TipoNota) ? "Seguimiento Académico" : dto.TipoNota,
+                descripcion = dto.Descripcion.Trim(),
+                aspectos_mejorar = !string.IsNullOrWhiteSpace(dto.AspectosMejorar) ? dto.AspectosMejorar.Trim() : null,
+                quien_registra = autor,
+                docente = autor,
+                periodo = dto.Periodo ?? 1,
+                fecha = DateTime.Now
+            });
+
+            _context.SaveChanges();
+            return Json(new { success = true, message = "¡Observación registrada en el observador del alumno exitosamente!" });
+        }
+
+        [HttpGet]
+        public IActionResult ObtenerObservacionesEstudiante(int idEstudiante)
+        {
+            _context.AsegurarEsquemaObservador();
+
+            var observaciones = _context.ObservacionesEstudiante
+                .Where(o => o.id_estudiante == idEstudiante)
+                .OrderByDescending(o => o.fecha)
+                .Select(o => new
+                {
+                    idObservacion = o.id_observacion,
+                    idEstudiante = o.id_estudiante,
+                    tipoNota = o.tipo_nota,
+                    descripcion = o.descripcion,
+                    aspectosMejorar = o.aspectos_mejorar,
+                    quienRegistra = o.quien_registra ?? o.docente,
+                    periodo = o.periodo,
+                    fecha = o.fecha.ToString("dd/MM/yyyy HH:mm")
+                })
+                .ToList();
+
+            return Json(new { success = true, observaciones = observaciones });
+        }
+
+        [HttpPost]
+        public IActionResult RegistrarCitacion([FromBody] CitacionRegistroDto dto)
+        {
+            _context.AsegurarEsquemaObservador();
+            if (dto == null || dto.IdEstudiante <= 0 || string.IsNullOrWhiteSpace(dto.Asunto) || string.IsNullOrWhiteSpace(dto.Mensaje))
+            {
+                return Json(new { success = false, message = "El asunto y mensaje de la citación son obligatorios." });
+            }
+
+            var nombreDocente = HttpContext.Session.GetString("NombreUsuario") ?? "Docente";
+
+            _context.CITACIONES.Add(new Citacion
+            {
+                id_estudiante = dto.IdEstudiante,
+                asunto = dto.Asunto.Trim(),
+                mensaje = dto.Mensaje.Trim(),
+                remitente = nombreDocente,
+                fecha = dto.Fecha ?? DateTime.Now
+            });
+
+            _context.SaveChanges();
+            return Json(new { success = true, message = "¡Citación enviada al padre/acudiente exitosamente!" });
         }
     }
 }
