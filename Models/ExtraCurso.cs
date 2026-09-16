@@ -64,5 +64,13 @@ namespace ProyectoPAE.Models
 
         [Column("id_docente")]
         public int? IdDocente { get; set; }
+
+        [Column("tipo_curso")]
+        [StringLength(50)]
+        public string? TipoCurso { get; set; } = "Deportivo"; // "Deportivo", "Matemático", "Artístico", "Servicio Social", "Académico"
+
+        [Column("documentos_requeridos")]
+        [StringLength(500)]
+        public string? DocumentosRequeridos { get; set; } // Lista separada por comas de códigos de docs requeridos
     }
 }

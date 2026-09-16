@@ -1,0 +1,336 @@
+@model ProyectoPAE.Models.ObservadorPdfViewModel
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <title>Observador del Alumno - @Model.EstudianteNombre</title>
+    <style>
+        @@page {
+            size: A4 portrait;
+            margin: 1.5cm 1.2cm 1.5cm 1.2cm;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 11px;
+            color: #111;
+            margin: 0;
+            padding: 0;
+            line-height: 1.3;
+        }
+
+        .header-container {
+            width: 100%;
+            margin-bottom: 12px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 6px;
+        }
+
+        .header-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .header-table td {
+            vertical-align: middle;
+        }
+
+        .logo-box {
+            width: 80px;
+            text-align: center;
+        }
+
+        .logo-emblem {
+            width: 65px;
+            height: 65px;
+        }
+
+        .header-titles {
+            text-align: center;
+        }
+
+        .header-titles h2 {
+            margin: 0;
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .header-titles h3 {
+            margin: 3px 0;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .header-titles h4 {
+            margin: 4px 0 0 0;
+            font-size: 13px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #0b3c5d;
+        }
+
+        /* Tabla de Información del Estudiante */
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 14px;
+        }
+
+        .info-table td, .info-table th {
+            border: 1px solid #333;
+            padding: 4px 6px;
+            font-size: 10.5px;
+        }
+
+        .info-label {
+            font-weight: bold;
+            background-color: #f7f7f7;
+            width: 20%;
+        }
+
+        .info-value {
+            background-color: #fff;
+        }
+
+        .estudiante-destacado {
+            background-color: #f0f4f8;
+            font-weight: bold;
+            font-size: 11px;
+        }
+
+        /* Tabla de Observaciones por Periodo */
+        .observaciones-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+        }
+
+        .observaciones-table th {
+            border: 1px solid #333;
+            background-color: #e9ecef;
+            padding: 5px 6px;
+            font-size: 11px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .observaciones-table td {
+            border: 1px solid #333;
+            padding: 6px 8px;
+            vertical-align: top;
+            font-size: 10.5px;
+        }
+
+        .periodo-header-row {
+            background-color: #d9e2ec;
+            font-weight: bold;
+            text-align: center;
+            letter-spacing: 1px;
+            font-size: 11px;
+            padding: 4px !important;
+        }
+
+        .fecha-col {
+            width: 110px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .obs-contenido {
+            position: relative;
+            padding-bottom: 12px;
+        }
+
+        .firma-sigla {
+            text-align: right;
+            font-style: italic;
+            color: #333;
+            font-size: 9.5px;
+            margin-top: 4px;
+        }
+
+        .aspectos-box {
+            margin-top: 4px;
+            padding: 3px 6px;
+            background-color: #fff8e6;
+            border-left: 3px solid #f59e0b;
+            font-size: 10px;
+        }
+
+        .sin-observaciones {
+            text-align: center;
+            color: #777;
+            font-style: italic;
+            padding: 8px !important;
+        }
+
+        .footer-note {
+            margin-top: 15px;
+            font-size: 9px;
+            color: #666;
+            text-align: center;
+            border-top: 1px dashed #bbb;
+            padding-top: 6px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. Encabezado Institucional -->
+    <div class="header-container">
+        <table class="header-table">
+            <tr>
+                <td class="logo-box">
+                    <svg class="logo-emblem" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M50 5 L85 20 L85 55 C85 75 50 95 50 95 C50 95 15 75 15 55 L15 20 Z" fill="#0b3c5d" stroke="#f1c40f" stroke-width="3"/>
+                        <path d="M50 15 L75 27 L75 52 C75 67 50 82 50 82 C50 82 25 67 25 52 L25 27 Z" fill="#2980b9"/>
+                        <circle cx="50" cy="45" r="14" fill="#f1c40f"/>
+                        <path d="M50 35 L50 55 M40 45 L60 45" stroke="#0b3c5d" stroke-width="3"/>
+                    </svg>
+                </td>
+                <td class="header-titles">
+                    <h2>@Model.Institucion</h2>
+                    <h3>@Model.Sede</h3>
+                    <h4>@Model.Titulo</h4>
+                </td>
+                <td class="logo-box" style="width: 80px;">
+                    <!-- Espacio balanceador -->
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- 2. Información del Estudiante -->
+    <table class="info-table">
+        <tr>
+            <td class="info-label">Ciudad:</td>
+            <td class="info-value">@Model.Ciudad</td>
+            <td class="info-label">Jornada:</td>
+            <td class="info-value">@Model.Jornada</td>
+        </tr>
+        <tr>
+            <td class="info-label">Grupo:</td>
+            <td class="info-value">@Model.Grupo</td>
+            <td class="info-label">Año Lectivo:</td>
+            <td class="info-value">@Model.AnoLectivo</td>
+        </tr>
+        <tr>
+            <td class="info-label">Dir. Grupo:</td>
+            <td class="info-value">@Model.DirGrupo</td>
+            <td class="info-label">Calendario:</td>
+            <td class="info-value">@Model.Calendario</td>
+        </tr>
+        <tr>
+            <td class="info-label estudiante-destacado" colspan="4">
+                Estudiante: <span style="color: #0b3c5d; font-size: 11.5px;">@Model.EstudianteNombre.ToUpper()</span>
+            </td>
+        </tr>
+        <tr>
+            <td class="info-label">Código:</td>
+            <td class="info-value">@Model.Codigo</td>
+            <td class="info-label">Matrícula No.:</td>
+            <td class="info-value">@Model.MatriculaNo</td>
+        </tr>
+        <tr>
+            <td class="info-label">Lugar de Nacimiento:</td>
+            <td class="info-value">@Model.LugarNacimiento</td>
+            <td class="info-label">Fecha de Nacimiento:</td>
+            <td class="info-value">@Model.FechaNacimiento</td>
+        </tr>
+        <tr>
+            <td class="info-label">Identificación:</td>
+            <td class="info-value" colspan="3">@Model.Identificacion</td>
+        </tr>
+        <tr>
+            <td class="info-label">Acudiente:</td>
+            <td class="info-value">@Model.Acudiente</td>
+            <td class="info-label">Identificación:</td>
+            <td class="info-value">@Model.IdentificacionAcudiente</td>
+        </tr>
+        <tr>
+            <td class="info-label">Dirección:</td>
+            <td class="info-value">@Model.Direccion</td>
+            <td class="info-label">Teléfonos:</td>
+            <td class="info-value">@Model.Telefonos</td>
+        </tr>
+    </table>
+
+    <!-- 3. Registro Cronológico de Observaciones por Periodo -->
+    <table class="observaciones-table">
+        <thead>
+            <tr>
+                <th class="fecha-col">FECHA</th>
+                <th>OBSERVACIONES</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Periodos != null && Model.Periodos.Any())
+            {
+                foreach (var periodo in Model.Periodos)
+                {
+                    <tr>
+                        <td colspan="2" class="periodo-header-row">@periodo.NombrePeriodo.ToUpper()</td>
+                    </tr>
+                    @if (periodo.Observaciones != null && periodo.Observaciones.Any())
+                    {
+                        foreach (var obs in periodo.Observaciones)
+                        {
+                            <tr>
+                                <td class="fecha-col">@obs.Fecha</td>
+                                <td>
+                                    <div class="obs-contenido">
+                                        @if (!string.IsNullOrEmpty(obs.TipoNota))
+                                        {
+                                            <span style="font-weight: bold; color: #0b3c5d;">[@obs.TipoNota]: </span>
+                                        }
+                                        <span>@obs.Descripcion</span>
+
+                                        @if (!string.IsNullOrEmpty(obs.AspectosMejorar))
+                                        {
+                                            <div class="aspectos-box">
+                                                <strong>Aspectos a mejorar:</strong> @obs.AspectosMejorar
+                                            </div>
+                                        }
+
+                                        <div class="firma-sigla">
+                                            <span>@(string.IsNullOrWhiteSpace(obs.FirmaDocente) ? "Docente" : obs.FirmaDocente)</span>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="2" class="sin-observaciones">No se registran novedades o anotaciones en este periodo.</td>
+                        </tr>
+                    }
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="2" class="periodo-header-row">PRIMER PERIODO</td>
+                </tr>
+                <tr>
+                    <td colspan="2" class="sin-observaciones">El estudiante no registra llamados de atención ni anotaciones en el observador.</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="footer-note">
+        Documento Oficial expedido por el Sistema de Información y Gestión Académica PAE &copy; @DateTime.Now.Year.
+    </div>
+
+</body>
+</html>

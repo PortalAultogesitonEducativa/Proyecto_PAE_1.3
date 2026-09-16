@@ -752,96 +752,210 @@
             </div>
         </div>
 
-        <!--  -->
-        <!-- 2. MÓDULOS INDEPENDIENTES Y COMPONENTES OCULTOS -->
-        <!--  -->
-        <!-- Módulo Oculto de Acciones de Mejora (Docente) -->
-        <div id="docente-mejoras" class="d-none">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h3 style="color: #2980b9; font-weight: bold;">
-                    <i class="bi bi-arrow-up-right-circle me-2"></i> Control de Acciones de Mejora
-                </h3>
-                <button class="btn btn-sm btn-outline-secondary" onclick="volverDocenteMejoras()">
+        <!-- ============================================================== -->
+        <!-- 2. MÓDULOS INDEPENDIENTES Y COMPONENTES OCULTOS (DOCENTE)      -->
+        <!-- ============================================================== -->
+
+        <!-- MÓDULO: OBSERVADOR DEL ALUMNO & CITACIONES (DOCENTE) -->
+        <div id="docente-observaciones" class="d-none">
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+                <div>
+                    <h3 style="color: #2980b9;" class="fw-bold mb-0"><i class="bi bi-eye-fill me-2"></i>Observador del Alumno</h3>
+                    <p class="text-muted small mb-0">Seguimiento convivencial, reconocimientos de mérito, compromisos y generación de informe institucional.</p>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-sm btn-danger text-white shadow-sm" style="border-radius: 8px;" onclick="descargarObservadorDocentePdf()">
+                        <i class="bi bi-file-earmark-pdf me-1"></i> Descargar Reporte PDF
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="volverDocente()" style="border-radius: 8px;">
+                        <i class="bi bi-arrow-left me-1"></i> Volver
+                    </button>
+                </div>
+            </div>
+
+            <!-- 1. Filtros Previos: Curso, Jornada y Tipo de Nota -->
+            <div class="card border-0 shadow-sm p-4 mb-4 rounded-3">
+                <h5 class="fw-bold text-dark mb-3"><i class="bi bi-funnel-fill text-primary me-2"></i>Filtros de Búsqueda y Selección</h5>
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold">Curso / Grado</label>
+                        <select class="form-select" id="selectCursoObservador" onchange="filtrarEstudiantesObservador()">
+                            <option value="todos">Todos los Cursos</option>
+                            @if (ViewBag.CursosAsistencia != null)
+                            {
+                                foreach (var c in (IEnumerable<string>)ViewBag.CursosAsistencia)
+                                {
+                                    <option value="@c">@c</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold">Jornada</label>
+                        <select class="form-select" id="selectJornadaObservador" onchange="filtrarEstudiantesObservador()">
+                            <option value="todos">Todas las Jornadas</option>
+                            <option value="Mañana" selected>Mañana</option>
+                            <option value="Tarde">Tarde</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold">Estudiante <span class="text-danger">*</span></label>
+                        <select class="form-select" id="selectEstudianteObservacion" required onchange="cargarObservacionesEstudianteSeleccionado()">
+                            <option value="">-- Seleccionar Estudiante --</option>
+                            @if (ViewBag.EstudiantesAsistencia != null)
+                            {
+                                var gradosMap = ViewBag.EstudianteGradosMap as Dictionary<int, string>;
+                                foreach (var est in (List<ProyectoPAE.Models.Usuario>)ViewBag.EstudiantesAsistencia)
+                                {
+                                    string cursoEst = (gradosMap != null && gradosMap.ContainsKey(est.ID_Usuario)) ? gradosMap[est.ID_Usuario] : "";
+                                    <option value="@est.ID_Usuario" data-curso="@cursoEst">@(!string.IsNullOrEmpty(est.NOMBRES) ? $"{est.NOMBRES} {est.APELLIDOS}".Trim() : est.NOMBRE_USUARIO) @(!string.IsNullOrEmpty(cursoEst) ? $"({cursoEst})" : "")</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold">Tipo de Nota <span class="text-danger">*</span></label>
+                        <select class="form-select" id="selectTipoNotaObservacion" onchange="cambiarCamposObservadorPorTipo()">
+                            <option value="Positiva / Mérito" class="text-success fw-bold">Positiva / Mérito</option>
+                            <option value="Seguimiento Académico" class="text-warning fw-bold">Seguimiento Académico (Compromiso)</option>
+                            <option value="Llamado de Atención" class="text-danger fw-bold">Llamado de Atención (Disciplinario)</option>
+                            <option value="Falta al Manual de Convivencia" class="text-danger">Falta al Manual de Convivencia</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Formulario Dinámico de Registro según Tipo de Nota -->
+            <div class="row g-4 mb-4">
+                <div class="col-lg-7">
+                    <div class="card border-0 shadow-sm p-4 h-100 rounded-3" style="border-top: 4px solid #2980b9 !important;">
+                        <h5 class="fw-bold mb-3 text-dark"><i class="bi bi-journal-plus text-primary me-2"></i>Registrar Anotación en Observador</h5>
+
+                        <!-- Periodo Lectivo -->
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Periodo Lectivo</label>
+                            <select class="form-select form-select-sm" id="selectPeriodoObservacion">
+                                <option value="1">Primer Periodo</option>
+                                <option value="2">Segundo Periodo</option>
+                                <option value="3">Tercer Periodo</option>
+                                <option value="4">Cuarto Periodo</option>
+                            </select>
+                        </div>
+
+                        <!-- BLOQUE 1: Para notas Positivas / Mérito (1 Campo) -->
+                        <div id="bloqueNotaPositiva">
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold text-success"><i class="bi bi-star-fill me-1"></i>Descripción del Mérito <span class="text-danger">*</span></label>
+                                <textarea class="form-control" id="txtDescripcionMerito" rows="4" placeholder="Detalla el logro, felicitación, mérito académico o actitudinal destacado del estudiante..."></textarea>
+                            </div>
+                        </div>
+
+                        <!-- BLOQUE 2: Para notas Negativas / Seguimiento Académico / Llamado de Atención (3 Campos) -->
+                        <div id="bloqueNotaNegativa" class="d-none">
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold text-danger"><i class="bi bi-exclamation-circle-fill me-1"></i>1. Descripción del Suceso <span class="text-danger">*</span></label>
+                                <textarea class="form-control" id="txtDescripcionSuceso" rows="3" placeholder="Detalle lo sucedido, fecha/hora y hechos ocurridos en el aula o institución..."></textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold text-warning text-dark"><i class="bi bi-arrow-up-right-circle-fill me-1 text-warning"></i>2. Aspectos a Mejorar del Estudiante <span class="text-danger">*</span></label>
+                                <textarea class="form-control" id="txtAspectosMejorar" rows="3" placeholder="Especifique los compromisos pedagógicos, pautas de comportamiento y acciones de mejora a adoptar..."></textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold text-primary"><i class="bi bi-person-badge-fill me-1"></i>3. Quién le Pone la Nota / Docente que Registra <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="txtQuienRegistra" value="@nombre" placeholder="Nombre completo o cargo del docente/directivo" />
+                            </div>
+                        </div>
+
+                        <div class="text-end mt-3">
+                            <button type="button" class="btn text-white fw-bold px-4 shadow-sm" style="background-color: #2980b9;" onclick="guardarObservacionDocente()">
+                                <i class="bi bi-save me-1"></i> Registrar en Observador
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Formulario de Citación a Padres -->
+                <div class="col-lg-5">
+                    <div class="card border-0 shadow-sm p-4 h-100 rounded-3" style="border-top: 4px solid #27ae60 !important;">
+                        <h5 class="fw-bold mb-3 text-dark"><i class="bi bi-envelope-paper-fill text-success me-2"></i>Enviar Citación Oficial a Acudiente</h5>
+                        <p class="text-muted small">Notifica formalmente al padre de familia o tutor legal sobre novedades académicas o citaciones presenciales.</p>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Asunto de la Citación <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="txtAsuntoCitacion" placeholder="Ej: Citación sobre rendimiento académico - Periodo 1" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Mensaje y Fecha/Hora de Citación <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="txtMensajeCitacion" rows="4" placeholder="Estimado acudiente, se solicita su presencia el día..."></textarea>
+                        </div>
+
+                        <button type="button" class="btn btn-success fw-bold w-100 mt-auto text-white" onclick="guardarCitacionDocente()">
+                            <i class="bi bi-send-fill me-1"></i> Enviar Citación al Acudiente
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. Historial de Observaciones del Estudiante Seleccionado -->
+            <div class="card border-0 shadow-sm p-4 rounded-3">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold text-dark mb-0"><i class="bi bi-clock-history text-secondary me-2"></i>Historial de Anotaciones en el Observador</h5>
+                    <span class="badge bg-secondary" id="conteoObservacionesEstudiante">Selecciona un estudiante</span>
+                </div>
+                <div id="contenedorHistorialObservaciones" class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 130px;">Fecha</th>
+                                <th style="width: 110px;">Periodo</th>
+                                <th style="width: 170px;">Tipo de Nota</th>
+                                <th>Descripción / Hechos</th>
+                                <th>Aspectos a Mejorar</th>
+                                <th style="width: 150px;">Docente / Autor</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cuerpoHistorialObservaciones">
+                            <tr>
+                                <td colspan="6" class="text-center py-4 text-muted">Seleccione un estudiante para consultar su historial de observador.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- MÓDULO: CONTROL DE ASISTENCIA (DOCENTE) -->
+        <div id="docente-asistencia" class="d-none">
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+                <div>
+                    <h3 style="color: #2980b9;" class="fw-bold mb-0"><i class="bi bi-calendar-check me-2"></i>Control de Asistencia</h3>
+                    <p class="text-muted small mb-0">Selecciona el curso y la jornada para cargar la lista de estudiantes y registrar la asistencia diaria.</p>
+                </div>
+                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="volverDocente()" style="border-radius: 8px;">
                     <i class="bi bi-arrow-left me-1"></i> Volver
                 </button>
             </div>
 
-            <div class="card border-0 shadow-sm p-4" style="border-radius: 15px;">
-                <h5 class="fw-bold mb-3" style="color: #2980b9;">Revisión de Compromisos Académicos</h5>
-                <p class="small text-muted">Selecciona un alumno para revisar su avance y redactar observaciones de mejora.</p>
-
-                <div class="mt-2">
-                    <button class="btn btn-sm text-white" style="background-color: #2980b9; border-radius: 8px;"
-                            onclick="abrirCuadroTexto(1, 'Docente', 'Reforzamiento de Álgebra')">
-                        <i class="bi bi-pencil-square me-2"></i> Escribir Observación
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Módulo Oculto del Observador (Docente) -->
-        <div id="docente-observaciones" class="d-none">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h3 style="color: #2980b9;"><i class="bi bi-eye-fill me-2"></i>Observador del Alumno</h3>
-                <div>
-                    <a href="@Url.Action("DescargarObservadorPdf", "Docente")" class="btn btn-sm btn-danger text-white me-2" style="border-radius: 8px;">
-                        <i class="bi bi-file-earmark-pdf me-1"></i> Descargar Reporte PDF
-                    </a>
-                    <button class="btn btn-outline-secondary btn-sm" onclick="volverDocente()">Volver</button>
-                </div>
-            </div>
-
-            <div class="card border-0 shadow-sm p-4 mb-4">
-                <h5 class="mb-3 text-secondary">Crear Nueva Observación</h5>
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <label class="form-label small fw-bold">Estudiante</label>
-                        <select class="form-select">
-                            <option>Ospina Juan Pablo</option>
-                            <option>García María</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label small fw-bold">Tipo de Nota</label>
-                        <select class="form-select">
-                            <option class="text-success">Positiva / Mérito</option>
-                            <option class="text-danger">Llamado de Atención</option>
-                            <option class="text-warning">Seguimiento Académico</option>
-                        </select>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label small fw-bold">Descripción del Evento</label>
-                        <textarea class="form-control" rows="3" placeholder="Detalle lo sucedido..."></textarea>
-                    </div>
-                    <div class="col-12 text-end">
-                        <button class="btn btn-primary"><i class="bi bi-save me-2"></i>Registrar en Observador</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- Módulo Oculto de Control de Asistencia -->
-        <div id="docente-asistencia" class="d-none">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h3 style="color: #2980b9;"><i class="bi bi-calendar-check me-2"></i>Control de Asistencia</h3>
-                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="volverDocente()">Volver</button>
-            </div>
-
-            <!-- Filtros: Fecha, Grupo, Jornada y Acción Rápida -->
-            <div class="card border-0 shadow-sm p-4 mb-4">
+            <!-- Filtros: Fecha, Grupo (Curso), Jornada y Botón Rápido -->
+            <div class="card border-0 shadow-sm p-4 mb-4 rounded-3">
                 <div class="row g-3 align-items-end">
                     <!-- 1. Campo Fecha -->
                     <div class="col-md-3">
-                        <label class="form-label fw-bold">Fecha</label>
-                        <input type="date" class="form-control" value="@DateTime.Now.ToString("yyyy-MM-dd")">
+                        <label class="form-label fw-bold small text-dark"><i class="bi bi-calendar3 me-1 text-primary"></i>Fecha de Asistencia</label>
+                        <input type="date" class="form-control" id="inputFechaAsistencia" value="@DateTime.Now.ToString("yyyy-MM-dd")">
                     </div>
 
-                    <!-- 2. Seleccionar Grupo (Grado) -->
+                    <!-- 2. Seleccionar Grupo / Curso -->
                     <div class="col-md-3">
-                        <label class="form-label fw-bold">Grupo</label>
-                        <select class="form-select" id="selectGrupoAsistencia">
+                        <label class="form-label fw-bold small text-dark"><i class="bi bi-mortarboard me-1 text-primary"></i>Curso / Grupo <span class="text-danger">*</span></label>
+                        <select class="form-select" id="selectGrupoAsistencia" onchange="filtrarAsistenciaPorCursoYJornada()">
+                            <option value="todos">Todos los Cursos</option>
                             @if (ViewBag.CursosAsistencia != null && ((IEnumerable<string>)ViewBag.CursosAsistencia).Any())
                             {
-                                foreach (var c in ViewBag.CursosAsistencia)
+                                foreach (var c in (IEnumerable<string>)ViewBag.CursosAsistencia)
                                 {
                                     <option value="@c">@c</option>
                                 }
@@ -850,89 +964,74 @@
                             {
                                 <option value="601 M">601 M</option>
                                 <option value="602 M">602 M</option>
-                                <option value="603 M">603 M</option>
                                 <option value="701 M">701 M</option>
-                                <option value="702 M">702 M</option>
-                                <option value="703 M">703 M</option>
                                 <option value="801 M">801 M</option>
-                                <option value="802 M">802 M</option>
-                                <option value="803 M">803 M</option>
                                 <option value="901 M">901 M</option>
-                                <option value="902 M">902 M</option>
-                                <option value="903 M">903 M</option>
                                 <option value="1001 M">1001 M</option>
-                                <option value="1002 M">1002 M</option>
-                                <option value="1003 M">1003 M</option>
                                 <option value="1101 M">1101 M</option>
-                                <option value="1102 M">1102 M</option>
-                                <option value="1103 M">1103 M</option>
-                                <option value="601 T">601 T</option>
-                                <option value="602 T">602 T</option>
-                                <option value="603 T">603 T</option>
-                                <option value="701 T">701 T</option>
-                                <option value="702 T">702 T</option>
-                                <option value="703 T">703 T</option>
-                                <option value="801 T">801 T</option>
-                                <option value="802 T">802 T</option>
-                                <option value="803 T">803 T</option>
-                                <option value="901 T">901 T</option>
-                                <option value="902 T">902 T</option>
-                                <option value="903 T">903 T</option>
-                                <option value="1001 T">1001 T</option>
-                                <option value="1002 T">1002 T</option>
-                                <option value="1003 T">1003 T</option>
-                                <option value="1101 T">1101 T</option>
-                                <option value="1102 T">1102 T</option>
-                                <option value="1103 T">1103 T</option>
                             }
                         </select>
                     </div>
 
                     <!-- 3. Seleccionar Jornada (Mañana / Tarde) -->
                     <div class="col-md-3">
-                        <label class="form-label fw-bold">Jornada</label>
-                        <select class="form-select" id="selectJornadaAsistencia" name="jornada">
-                            <option value="Mañana">Mañana</option>
+                        <label class="form-label fw-bold small text-dark"><i class="bi bi-clock-history me-1 text-primary"></i>Jornada</label>
+                        <select class="form-select" id="selectJornadaAsistencia" onchange="filtrarAsistenciaPorCursoYJornada()">
+                            <option value="todos">Todas las Jornadas</option>
+                            <option value="Mañana" selected>Mañana</option>
                             <option value="Tarde">Tarde</option>
                         </select>
                     </div>
 
                     <!-- 4. Botón Marcar Todos como Presente -->
                     <div class="col-md-3 text-end">
-                        <button type="button" class="btn btn-success w-100" onclick="marcarTodosPresentes()">
-                            <i class="bi bi-check-all me-2"></i>Marcar todos como Presente
+                        <button type="button" class="btn btn-success w-100 fw-bold shadow-sm" onclick="marcarTodosPresentes()">
+                            <i class="bi bi-check-all me-1"></i> Marcar todos como Presente
                         </button>
                     </div>
                 </div>
             </div>
 
-            <!-- Tabla Dinámica cargada desde la Base de Datos -->
-            <div class="card border-0 shadow-sm overflow-hidden">
+            <!-- Tabla Dinámica cargada desde la Base de Datos con Paginación Client-Side -->
+            <div class="card border-0 shadow-sm overflow-hidden mb-4 rounded-3">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0" id="tablaAsistencia">
-                        <thead class="table-light">
+                        <thead class="table-dark">
                             <tr>
                                 <th class="ps-3">Estudiante</th>
-                                <th class="text-center" style="width: 220px;">Estado</th>
-                                <th>Observación</th>
+                                <th class="text-center" style="width: 140px;">Curso</th>
+                                <th class="text-center" style="width: 220px;">Estado (P / F / R)</th>
+                                <th>Observación / Justificación</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="tbodyAsistencia">
                             @if (ViewBag.EstudiantesAsistencia != null && ((List<ProyectoPAE.Models.Usuario>)ViewBag.EstudiantesAsistencia).Any())
                             {
                                 var listaEst = (List<ProyectoPAE.Models.Usuario>)ViewBag.EstudiantesAsistencia;
+                                var gradosMap = ViewBag.EstudianteGradosMap as Dictionary<int, string>;
                                 for (int i = 0; i < listaEst.Count; i++)
                                 {
                                     var est = listaEst[i];
                                     var radId = i + 1;
-                                    <tr>
+                                    string cursoEst = (gradosMap != null && gradosMap.ContainsKey(est.ID_Usuario)) ? gradosMap[est.ID_Usuario] : "";
+                                    <tr class="fila-asistencia-estudiante" data-curso="@cursoEst">
                                         <td class="ps-3 fw-bold estudiante-nombre">
                                             <input type="hidden" name="estudiante_id_asistencia" value="@est.ID_Usuario" />
                                             @(!string.IsNullOrEmpty(est.NOMBRES) ? $"{est.NOMBRES} {est.APELLIDOS}".Trim() : est.NOMBRE_USUARIO)
                                         </td>
                                         <td class="text-center">
+                                            @if (!string.IsNullOrEmpty(cursoEst))
+                                            {
+                                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle">@cursoEst</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-light text-muted border">-</span>
+                                            }
+                                        </td>
+                                        <td class="text-center">
                                             <div class="btn-group btn-group-sm" role="group">
-                                                <input type="radio" class="btn-check radio-estado-p" name="ast_@est.ID_Usuario" id="p_@radId" value="P">
+                                                <input type="radio" class="btn-check radio-estado-p" name="ast_@est.ID_Usuario" id="p_@radId" value="P" checked>
                                                 <label class="btn btn-outline-success fw-bold px-3" for="p_@radId" title="Presente">P</label>
 
                                                 <input type="radio" class="btn-check" name="ast_@est.ID_Usuario" id="f_@radId" value="F">
@@ -951,11 +1050,19 @@
                             else
                             {
                                 <tr>
-                                    <td colspan="3" class="text-center text-muted py-4">No hay estudiantes registrados en la base de datos.</td>
+                                    <td colspan="4" class="text-center text-muted py-4">No hay estudiantes registrados en la base de datos.</td>
                                 </tr>
                             }
                         </tbody>
                     </table>
+                </div>
+
+                <!-- Paginación Client-Side Asistencia -->
+                <div class="card-footer bg-white d-flex flex-wrap align-items-center justify-content-between gap-2 px-3 py-2 border-top">
+                    <p class="text-muted small mb-0" id="infoAsistenciaPagina">Cargando...</p>
+                    <nav aria-label="Paginación asistencia">
+                        <ul class="pagination pagination-sm mb-0" id="paginacionAsistencia"></ul>
+                    </nav>
                 </div>
 
                 <!-- Botones de Acción: Reiniciar y Guardar Asistencia -->
@@ -963,7 +1070,7 @@
                     <button type="button" class="btn btn-outline-secondary fw-bold" onclick="reiniciarAsistencias()">
                         <i class="bi bi-arrow-counterclockwise me-2"></i>Reiniciar Calificación de Asistencias
                     </button>
-                    <button type="button" class="btn btn-primary fw-bold px-4" onclick="guardarAsistenciaYObservaciones()">
+                    <button type="button" class="btn text-white fw-bold px-4 shadow-sm" style="background-color: #2980b9;" onclick="guardarAsistenciaYObservaciones()">
                         <i class="bi bi-save me-2"></i>Guardar Asistencia y Observaciones
                     </button>
                 </div>
@@ -1127,16 +1234,82 @@
                                     <input type="text" name="Instructor" class="form-control" value="@nombre" placeholder="Nombre del instructor" />
                                 </div>
 
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold small">Categoría / Tipo de Curso <span class="text-danger">*</span></label>
+                                    <select name="TipoCurso" class="form-select" required>
+                                        <option value="Deportivo">⚽ Deportivo (Fútbol, Baloncesto, Voleibol, Atletismo)</option>
+                                        <option value="Matemático / Académico">📐 Matemático / Académico (Olimpiadas, Robótica, Ciencias)</option>
+                                        <option value="Artístico y Cultural">🎨 Artístico y Cultural (Música, Teatro, Pintura, Danza)</option>
+                                        <option value="Servicio Social y Comunitario">🤝 Servicio Social y Comunitario</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold small">Cupos Totales <span class="text-danger">*</span></label>
+                                    <input type="number" name="CuposTotales" class="form-control" min="1" max="500" value="20" required />
+                                </div>
+
                                 <div class="col-12">
                                     <label class="form-label fw-bold small">¿Qué se va a aprender? / Temario y Objetivos <span class="text-danger">*</span></label>
                                     <textarea name="Descripcion" class="form-control" rows="3" placeholder="Describe los contenidos del curso, competencias a desarrollar, materiales necesarios y dinámica de las sesiones..." required></textarea>
                                 </div>
 
-                                <div class="col-md-4">
-                                    <label class="form-label fw-bold small">Cupos Totales <span class="text-danger">*</span></label>
-                                    <input type="number" name="CuposTotales" class="form-control" min="1" max="500" value="20" required />
+                                <!-- SECCIÓN: DOCUMENTOS REQUERIDOS ORGANIZADOS POR CATEGORÍAS -->
+                                <div class="col-12">
+                                    <div class="card p-3 border-0 rounded-3" style="background-color: #f0f7ff; border-left: 4px solid #2980b9 !important;">
+                                        <h6 class="fw-bold text-dark mb-2"><i class="bi bi-file-earmark-check-fill text-primary me-2"></i>Documentos Requeridos para la Inscripción</h6>
+                                        <p class="text-muted small mb-3">Selecciona los documentos que los estudiantes deberán adjuntar obligatoriamente (formato PDF/Imagen, máx. 5 MB c/u):</p>
+                                        
+                                        <div class="row g-3">
+                                            <!-- Categoría 1: Obligatorios -->
+                                            <div class="col-md-4">
+                                                <div class="p-2 bg-white rounded-3 border h-100">
+                                                    <span class="d-block fw-bold text-primary small mb-2"><i class="bi bi-person-vcard me-1"></i>1. Obligatorios</span>
+                                                    <div class="form-check mb-1">
+                                                        <input class="form-check-input check-doc-req" type="checkbox" value="Documento de Identidad (TI / RC)" id="docReqTI" checked>
+                                                        <label class="form-check-label small" for="docReqTI">Doc. de Identidad (TI / RC)</label>
+                                                    </div>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input check-doc-req" type="checkbox" value="Formato de Autorización de Padres / Acudientes" id="docReqAut" checked>
+                                                        <label class="form-check-label small" for="docReqAut">Autorización de Padres</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Categoría 2: Salud y Emergencias -->
+                                            <div class="col-md-4">
+                                                <div class="p-2 bg-white rounded-3 border h-100">
+                                                    <span class="d-block fw-bold text-success small mb-2"><i class="bi bi-heart-pulse me-1"></i>2. Salud y Emergencias</span>
+                                                    <div class="form-check mb-1">
+                                                        <input class="form-check-input check-doc-req" type="checkbox" value="Certificado Médico de Aptitud Física" id="docReqMed">
+                                                        <label class="form-check-label small" for="docReqMed">Certificado Médico Aptitud</label>
+                                                    </div>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input check-doc-req" type="checkbox" value="Copia de EPS o Seguro Estudiantil" id="docReqEPS" checked>
+                                                        <label class="form-check-label small" for="docReqEPS">Copia de EPS / Seguro</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Categoría 3: Administrativos -->
+                                            <div class="col-md-4">
+                                                <div class="p-2 bg-white rounded-3 border h-100">
+                                                    <span class="d-block fw-bold text-warning text-dark small mb-2"><i class="bi bi-folder-check me-1 text-warning"></i>3. Administrativos</span>
+                                                    <div class="form-check mb-1">
+                                                        <input class="form-check-input check-doc-req" type="checkbox" value="Foto Tipo Documento 3x4 Fondo Blanco" id="docReqFoto">
+                                                        <label class="form-check-label small" for="docReqFoto">Foto tipo carné 3x4</label>
+                                                    </div>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input check-doc-req" type="checkbox" value="Paz y Salvo Institucional" id="docReqPaz">
+                                                        <label class="form-check-label small" for="docReqPaz">Paz y Salvo</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="col-md-4">
+
+                                <div class="col-md-6">
                                     <label class="form-label fw-bold small">Grado Mínimo Permitido</label>
                                     <select name="GradoMin" class="form-select">
                                         <option value="6" selected>6° Grado</option>
@@ -1147,7 +1320,7 @@
                                         <option value="11">11° Grado</option>
                                     </select>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-6">
                                     <label class="form-label fw-bold small">Grado Máximo Permitido</label>
                                     <select name="GradoMax" class="form-select">
                                         <option value="6">6° Grado</option>
@@ -1206,7 +1379,7 @@
 
         <!-- MODAL: VER ESTUDIANTES INSCRITOS -->
         <div class="modal fade" id="modalVerInscritosExtra" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
                 <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
                     <div class="modal-header text-white" style="background-color: #2980b9; border-radius: 16px 16px 0 0;">
                         <h5 class="modal-title fw-bold" id="tituloModalInscritos"><i class="bi bi-people-fill me-2"></i>Estudiantes Inscritos</h5>
@@ -1226,12 +1399,13 @@
                                         <th>Documento / Código</th>
                                         <th>Correo Electrónico</th>
                                         <th>Fecha Inscripción</th>
+                                        <th>Documentos Requeridos</th>
                                         <th>Estado</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tablaCuerpoInscritos">
                                     <tr>
-                                        <td colspan="6" class="text-center py-4 text-muted">Cargando lista de inscritos...</td>
+                                        <td colspan="7" class="text-center py-4 text-muted">Cargando lista de inscritos...</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -1433,35 +1607,46 @@
         </div>
 
         <div class="row g-3">
-            <div class="col-md-4">
-                <div class="card p-4 text-center border-0 shadow-sm card-hover" style="border-top: 4px solid #27ae60 !important;">
+            <div class="col-md-3 col-sm-6">
+                <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover" style="border-top: 4px solid #27ae60 !important;">
                     <i class="bi bi-journal-text fs-2 mb-2" style="color: #27ae60;"></i>
-                    <h5>Ver Calificaciones</h5>
-                    <p class="small text-muted">Promedio actual: <strong class="text-success">@ViewBag.PromedioRapido</strong></p>
-                    <a id="btnVerNotas" href="#" class="btn btn-sm btn-outline-success">
+                    <h5>Calificaciones</h5>
+                    <p class="small text-muted mb-3">Promedio actual: <strong id="lblPromedioHijo" class="text-success">@ViewBag.PromedioRapido</strong></p>
+                    <a id="btnVerNotas" href="#" class="btn btn-sm btn-outline-success mt-auto w-100">
                         Ver Reporte
                     </a>
                 </div>
             </div>
 
-            <div class="col-md-4">
-                <div class="card p-4 text-center border-0 shadow-sm card-hover" style="border-top: 4px solid #27ae60 !important;">
+            <div class="col-md-3 col-sm-6">
+                <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover" style="border-top: 4px solid #27ae60 !important;">
                     <i class="bi bi-calendar-check fs-2 mb-2" style="color: #27ae60;"></i>
                     <h5>Asistencia</h5>
-                    <p class="small text-muted">Fallas registradas: <strong class="text-danger">@ViewBag.FallasRapidas</strong></p>
-                    <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#modalAsistencia">
-                        Ver Detalle
+                    <p class="small text-muted mb-3">Fallas registradas: <strong id="lblFallasHijo" class="text-danger">@(ViewBag.FallasRapidas ?? 0)</strong></p>
+                    <button class="btn btn-sm btn-outline-success mt-auto w-100" data-bs-toggle="modal" data-bs-target="#modalAsistencia">
+                        Ver Asistencia
                     </button>
                 </div>
             </div>
 
-            <div class="col-md-4">
-                <div class="card p-4 text-center border-0 shadow-sm card-hover" style="border-top: 4px solid #27ae60 !important;">
+            <div class="col-md-3 col-sm-6">
+                <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover" style="border-top: 4px solid #27ae60 !important;">
                     <i class="bi bi-chat-left-dots fs-2 mb-2" style="color: #27ae60;"></i>
                     <h5>Citaciones</h5>
-                    <p class="small text-muted">Mensajes directos de los docentes.</p>
-                    <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#modalCitaciones">
-                        Ir a Mensajes
+                    <p class="small text-muted mb-3">Citaciones activas: <strong id="lblCitacionesHijo" class="text-primary">@(ViewBag.TotalCitaciones ?? 0)</strong></p>
+                    <button class="btn btn-sm btn-outline-success mt-auto w-100" data-bs-toggle="modal" data-bs-target="#modalCitaciones">
+                        Ver Citaciones
+                    </button>
+                </div>
+            </div>
+
+            <div class="col-md-3 col-sm-6">
+                <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover" style="border-top: 4px solid #27ae60 !important;">
+                    <i class="bi bi-eye-fill fs-2 mb-2" style="color: #27ae60;"></i>
+                    <h5>Observador</h5>
+                    <p class="small text-muted mb-3">Anotaciones: <strong id="lblObservadorHijo" class="text-warning">@(ViewBag.TotalObservaciones ?? 0)</strong></p>
+                    <button class="btn btn-sm btn-outline-success mt-auto w-100" data-bs-toggle="modal" data-bs-target="#modalObservadorAcudiente">
+                        Ver Observador
                     </button>
                 </div>
             </div>
@@ -1586,10 +1771,29 @@
                 </div>
             </div>
 
-            <!-- Filtros Rápidos -->
+            <!-- 1. Filtro por Materia / Asignatura (Organización por Materias - Moodle LMS Style) -->
+            <div class="card border-0 shadow-sm p-3 mb-4 rounded-3 bg-white" style="border-left: 4px solid #6f42c1 !important;">
+                <label class="form-label small fw-bold text-dark mb-2"><i class="bi bi-book-half text-purple me-1" style="color: #6f42c1;"></i>Filtrar por Asignatura / Materia:</label>
+                <div class="d-flex flex-wrap gap-2" id="contenedorFiltrosMaterias">
+                    <button class="btn btn-sm btn-outline-purple active rounded-pill px-3 filtro-materia-btn" onclick="filtrarActividadesPorMateria('todas', this)" style="border-color: #6f42c1; color: #6f42c1;">
+                        <i class="bi bi-grid-fill me-1"></i> Todas las Materias
+                    </button>
+                    @if (ViewBag.MateriasEstudiante != null)
+                    {
+                        foreach (var mat in (IEnumerable<string>)ViewBag.MateriasEstudiante)
+                        {
+                            <button class="btn btn-sm btn-outline-secondary rounded-pill px-3 filtro-materia-btn" onclick="filtrarActividadesPorMateria('@mat', this)">
+                                @mat
+                            </button>
+                        }
+                    }
+                </div>
+            </div>
+
+            <!-- 2. Filtros Rápidos por Estado -->
             <div class="d-flex flex-wrap gap-2 mb-4">
                 <button class="btn btn-sm btn-outline-primary active rounded-pill px-3 filtro-act-btn" onclick="filtrarActividadesEstudiante('todas', this)">
-                    Todas
+                    Todas las Actividades
                 </button>
                 <button class="btn btn-sm btn-outline-warning rounded-pill px-3 filtro-act-btn" onclick="filtrarActividadesEstudiante('Pendiente', this)">
                     <i class="bi bi-clock me-1"></i> Pendientes
@@ -1611,14 +1815,14 @@
             </div>
         </div>
 
-        <!-- MODAL: SUBIR ENTREGA DE ACTIVIDAD (ESTUDIANTE) -->
+        <!-- MODAL: SUBIR ENTREGA DE ACTIVIDAD (ESTUDIANTE - ESTILO LMS / MOODLE) -->
         <div class="modal fade" id="modalSubirEntregaActividad" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-lg modal-dialog-centered">
                 <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
                     <div class="modal-header text-white" style="background: linear-gradient(135deg, #3b0764 0%, #6f42c1 100%); border-radius: 16px 16px 0 0;">
                         <div>
                             <h5 class="modal-title fw-bold"><i class="bi bi-cloud-arrow-up me-2"></i>Entregar Actividad Académica</h5>
-                            <small class="opacity-75" id="subtituloModalSubirEntrega">Envía tu trabajo y comentarios al docente</small>
+                            <small class="opacity-75" id="subtituloModalSubirEntrega">Envío institucional - Respuesta en línea y archivos adjuntos</small>
                         </div>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
@@ -1626,31 +1830,38 @@
                         <input type="hidden" id="idActividadEntrega" name="idActividad" />
                         <div class="modal-body p-4">
                             <!-- Datos de la Actividad -->
-                            <div class="p-3 rounded-3 mb-3 bg-light border">
+                            <div class="p-3 rounded-3 mb-4 bg-light border">
                                 <h6 class="fw-bold mb-1" id="entregaTituloActividad" style="color: #6f42c1;">Título de la Actividad</h6>
                                 <div class="d-flex flex-wrap gap-3 small text-muted">
-                                    <span><i class="bi bi-book me-1 text-primary"></i><strong id="entregaMateriaActividad">Materia</strong></span>
+                                    <span><i class="bi bi-book me-1 text-primary"></i>Materia: <strong id="entregaMateriaActividad">Materia</strong></span>
                                     <span><i class="bi bi-calendar-event me-1 text-danger"></i>Fecha Límite: <strong id="entregaFechaLimiteActividad">--</strong></span>
                                 </div>
                             </div>
 
-                            <div class="row g-3">
-                                <div class="col-12">
-                                    <label class="form-label fw-bold small">Adjuntar Archivo de Trabajo / Tarea <span class="text-danger">*</span></label>
-                                    <input type="file" id="inputArchivoEntrega" name="archivo" class="form-control" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.png,.jpg,.jpeg" required />
-                                    <small class="text-muted" style="font-size: 0.75rem;">Formatos aceptados: PDF, Word, Excel, PowerPoint, ZIP, Imágenes (Máx 20 MB).</small>
-                                </div>
+                            <!-- SECCIÓN 1: TEXTO EN LÍNEA / RESPUESTA (LMS STYLE) -->
+                            <div class="mb-4">
+                                <label class="form-label fw-bold small text-dark"><i class="bi bi-chat-left-text-fill text-purple me-1" style="color: #6f42c1;"></i>1. Texto en Línea / Respuesta Escrita (Opcional)</label>
+                                <textarea id="inputComentarioEntrega" name="comentario" class="form-control" rows="4" placeholder="Escribe aquí tu respuesta directa, enlaces web (Google Drive, Canva, GitHub) o comentarios para el docente..."></textarea>
+                                <small class="text-muted" style="font-size: 0.75rem;">Puedes redactar tu síntesis o pegar enlaces complementarios directamente.</small>
+                            </div>
 
-                                <div class="col-12">
-                                    <label class="form-label fw-bold small">Comentario u Observación para el Docente (Opcional)</label>
-                                    <textarea id="inputComentarioEntrega" name="comentario" class="form-control" rows="3" placeholder="Escribe aquí cualquier nota, explicación o duda sobre tu trabajo..."></textarea>
+                            <!-- SECCIÓN 2: ARCHIVO ADJUNTO (LMS DROPZONE STYLE - MÁX 5 MB) -->
+                            <div class="mb-3">
+                                <label class="form-label fw-bold small text-dark"><i class="bi bi-paperclip me-1 text-primary"></i>2. Archivo Adjunto de Trabajo (Máx. 5 MB)</label>
+                                <div class="p-3 border rounded-3 bg-light text-center" style="border: 2px dashed #6f42c1 !important;">
+                                    <i class="bi bi-cloud-arrow-up display-6 text-muted mb-2 d-block"></i>
+                                    <input type="file" id="inputArchivoEntrega" name="archivo" class="form-control" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.rar,.png,.jpg,.jpeg" onchange="validarTamanoArchivoEntrega(this)" />
+                                    <div class="d-flex justify-content-between align-items-center mt-2 px-1">
+                                        <small class="text-muted" style="font-size: 0.75rem;">Formatos: PDF, Word, Excel, PowerPoint, ZIP, JPG, PNG</small>
+                                        <span class="badge bg-warning text-dark"><i class="bi bi-exclamation-triangle-fill me-1"></i>Límite: 5 MB</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         <div class="modal-footer bg-light" style="border-radius: 0 0 16px 16px;">
                             <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
                             <button type="submit" class="btn text-white rounded-pill px-4 shadow-sm" style="background-color: #6f42c1;" id="btnEnviarEntrega">
-                                <i class="bi bi-send me-1"></i> Enviar Entrega
+                                <i class="bi bi-send me-1"></i> Guardar y Enviar Entrega
                             </button>
                         </div>
                     </form>
@@ -1876,6 +2087,66 @@
                                             </div>
                                         </div>
 
+                                        <!-- SECCIÓN: COLA DE DOCUMENTOS REQUERIDOS PARA EL ESTUDIANTE -->
+                                        <div class="p-3 rounded-3 mb-3 border bg-light">
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <h6 class="fw-bold text-dark mb-0 small"><i class="bi bi-folder-symlink-fill text-primary me-1"></i>Documentos de Inscripción (Máx 5 MB)</h6>
+                                                <span class="badge bg-secondary" style="font-size: 0.72rem;">Requisitos Obligatorios</span>
+                                            </div>
+
+                                            @if (miCurso.DocumentosRequeridosLista != null && miCurso.DocumentosRequeridosLista.Any())
+                                            {
+                                                <div class="d-flex flex-column gap-2">
+                                                    @foreach (var docNombre in miCurso.DocumentosRequeridosLista)
+                                                    {
+                                                        var subido = miCurso.DocumentosSubidos != null ? miCurso.DocumentosSubidos.FirstOrDefault(d => d.TipoDocumento == docNombre) : null;
+                                                        var estaCargado = subido != null && !string.IsNullOrEmpty(subido.RutaArchivo);
+
+                                                        <div class="p-2 bg-white rounded-2 border d-flex flex-wrap justify-content-between align-items-center gap-2">
+                                                            <div class="d-flex align-items-center gap-2">
+                                                                <i class="bi @(estaCargado ? "bi-check-circle-fill text-success" : "bi-file-earmark-arrow-up text-warning") fs-6"></i>
+                                                                <div>
+                                                                    <span class="d-block small fw-bold text-dark" style="font-size: 0.8rem;">@docNombre</span>
+                                                                    @if (estaCargado)
+                                                                    {
+                                                                        <small class="text-muted" style="font-size: 0.72rem;">Cargado el @subido!.FechaSubida.ToString("dd/MM/yyyy HH:mm")</small>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <small class="text-danger" style="font-size: 0.72rem;">Pendiente por adjuntar</small>
+                                                                    }
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="d-flex align-items-center gap-1">
+                                                                @if (estaCargado)
+                                                                {
+                                                                    <a href="@subido!.RutaArchivo" target="_blank" class="btn btn-sm btn-outline-success rounded-pill px-2 py-0" style="font-size: 0.75rem;" title="Ver archivo cargado">
+                                                                        <i class="bi bi-eye"></i> Ver
+                                                                    </a>
+                                                                    <label class="btn btn-sm btn-outline-secondary rounded-pill px-2 py-0 mb-0" style="font-size: 0.75rem; cursor: pointer;" title="Reemplazar archivo">
+                                                                        <i class="bi bi-arrow-repeat"></i>
+                                                                        <input type="file" class="d-none" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" onchange="subirDocumentoEstudianteExtra(@miCurso.IdInscripcion, '@docNombre', this)" />
+                                                                    </label>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <label class="btn btn-sm btn-primary rounded-pill px-3 py-1 mb-0 shadow-sm" style="font-size: 0.75rem; cursor: pointer; background-color: #6f42c1; border-color: #6f42c1;">
+                                                                        <i class="bi bi-upload me-1"></i> Adjuntar
+                                                                        <input type="file" class="d-none" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" onchange="subirDocumentoEstudianteExtra(@miCurso.IdInscripcion, '@docNombre', this)" />
+                                                                    </label>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                    }
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <small class="text-muted fst-italic">Este curso no requiere entrega de documentos adicionales.</small>
+                                            }
+                                        </div>
+
                                         <div class="d-flex justify-content-between align-items-center pt-2 border-top mt-auto">
                                             <span class="text-success small fw-semibold"><i class="bi bi-shield-check me-1"></i>Cupo asegurado</span>
                                             @if (miCurso.IdInscripcion.HasValue)
@@ -1963,52 +2234,155 @@
     </div>
 
     <div class="modal fade" id="modalAsistencia" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header bg-success text-white">
-                    <h5 class="modal-title"><i class="bi bi-calendar-check me-2"></i>Detalle de Asistencia</h5>
+                    <h5 class="modal-title"><i class="bi bi-calendar-check me-2"></i>Historial de Asistencia del Estudiante</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body text-center">
-                    <h3 class="display-4 text-danger">@ViewBag.FallasRapidas</h3>
-                    <p class="text-muted">Fallas totales en el periodo actual</p>
-                    <hr>
-                    <p class="small text-start text-muted italic">Próximamente: Listado detallado de fechas e inasistencias.</p>
+                <div class="modal-body p-4">
+                    <!-- Resumen KPIs -->
+                    <div class="row g-3 mb-4 text-center">
+                        <div class="col-4">
+                            <div class="p-3 bg-success-subtle rounded border border-success-subtle">
+                                <span class="d-block small text-success fw-bold">PRESENTES</span>
+                                <h4 class="fw-bold mb-0 text-success" id="kpiPresentesModal">@(ViewBag.PresentesRapidos ?? 0)</h4>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="p-3 bg-danger-subtle rounded border border-danger-subtle">
+                                <span class="d-block small text-danger fw-bold">FALLAS</span>
+                                <h4 class="fw-bold mb-0 text-danger" id="kpiFallasModal">@(ViewBag.FallasRapidas ?? 0)</h4>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="p-3 bg-warning-subtle rounded border border-warning-subtle">
+                                <span class="d-block small text-warning-emphasis fw-bold">RETARDOS</span>
+                                <h4 class="fw-bold mb-0 text-warning-emphasis" id="kpiRetardosModal">@(ViewBag.RetardosRapidos ?? 0)</h4>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold text-dark mb-3"><i class="bi bi-list-check me-1 text-success"></i>Registro detallado de asistencias</h6>
+                    <div class="table-responsive border rounded" style="max-height: 320px; overflow-y: auto;">
+                        <table class="table table-hover align-middle mb-0" id="tablaAsistenciaModal">
+                            <thead class="table-light sticky-top">
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Estado</th>
+                                    <th>Observación / Justificación</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbodyAsistenciasModal">
+                                @if (ViewBag.ListaAsistencias != null && ((List<ProyectoPAE.Models.Asistencia>)ViewBag.ListaAsistencias).Any())
+                                {
+                                    foreach (var a in (List<ProyectoPAE.Models.Asistencia>)ViewBag.ListaAsistencias)
+                                    {
+                                        string est = a.estado?.ToLower() ?? "";
+                                        string badgeClass = est.Contains("falla") || est == "f" ? "bg-danger text-white" : (est.Contains("retardo") || est == "r" ? "bg-warning text-dark" : "bg-success text-white");
+                                        string textoEstado = est.Contains("falla") || est == "f" ? "Falla" : (est.Contains("retardo") || est == "r" ? "Retardo" : "Presente");
+                                        <tr>
+                                            <td>@a.fecha.ToString("dd/MM/yyyy")</td>
+                                            <td><span class="badge @badgeClass">@textoEstado</span></td>
+                                            <td>@(string.IsNullOrWhiteSpace(a.justificacion) ? "-" : a.justificacion)</td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr id="sinAsistenciasRow">
+                                        <td colspan="3" class="text-center text-muted py-4">No hay registros de asistencia para este estudiante.</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
                 </div>
             </div>
         </div>
     </div>
 
     <div class="modal fade" id="modalCitaciones" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header bg-success text-white">
                     <h5 class="modal-title"><i class="bi bi-envelope-paper me-2"></i>Buzón de Citaciones</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <div id="listaCitaciones">
+                <div class="modal-body p-4">
+                    <div id="listaCitaciones" style="max-height: 400px; overflow-y: auto;">
                         @if (ViewBag.ListaCitaciones != null && ((List<ProyectoPAE.Models.Citacion>)ViewBag.ListaCitaciones).Any())
                         {
                             foreach (var cita in (List<ProyectoPAE.Models.Citacion>)ViewBag.ListaCitaciones)
                             {
-                                <div class="alert alert-light border shadow-sm mb-3">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <h6 class="fw-bold text-success mb-1">@cita.asunto</h6>
-                                        <span class="badge bg-secondary">@cita.fecha.ToShortDateString()</span>
-                                    </div>
-                                    <p class="mb-2 text-dark" style="font-size: 0.9rem;">@cita.mensaje</p>
-                                    <div class="border-top pt-2 mt-1">
-                                        <small class="text-muted"><strong>Remitente:</strong> @cita.remitente</small>
+                                <div class="card border-0 shadow-sm mb-3 bg-light" style="border-left: 4px solid #27ae60 !important;">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <h6 class="fw-bold text-success mb-0">@cita.asunto</h6>
+                                            <span class="badge bg-secondary">@cita.fecha.ToString("dd/MM/yyyy")</span>
+                                        </div>
+                                        <p class="mb-2 text-dark" style="font-size: 0.95rem;">@cita.mensaje</p>
+                                        <div class="border-top pt-2 mt-2">
+                                            <small class="text-muted"><i class="bi bi-person-circle me-1"></i><strong>Remitente:</strong> @cita.remitente</small>
+                                        </div>
                                     </div>
                                 </div>
                             }
                         }
                         else
                         {
-                            <div class="text-center py-4">
+                            <div class="text-center py-4" id="sinCitacionesMsg">
                                 <i class="bi bi-chat-left-x fs-1 text-muted"></i>
-                                <p class="text-muted mt-2">No tienes citaciones o mensajes pendientes.</p>
+                                <p class="text-muted mt-2">No tienes citaciones o mensajes pendientes para este estudiante.</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalObservadorAcudiente" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title"><i class="bi bi-eye-fill me-2"></i>Observador del Alumno (Convivencia y Disciplina)</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div id="listaObservacionesHijo" style="max-height: 400px; overflow-y: auto;">
+                        @if (ViewBag.ListaObservaciones != null && ((List<ProyectoPAE.Models.ObservacionEstudiante>)ViewBag.ListaObservaciones).Any())
+                        {
+                            foreach (var obs in (List<ProyectoPAE.Models.ObservacionEstudiante>)ViewBag.ListaObservaciones)
+                            {
+                                string tipo = obs.tipo_nota?.ToLower() ?? "";
+                                string borderCol = tipo.Contains("positiva") || tipo.Contains("merito") ? "#27ae60" : (tipo.Contains("llamado") || tipo.Contains("atencion") ? "#e74c3c" : "#f39c12");
+                                string badgeCol = tipo.Contains("positiva") || tipo.Contains("merito") ? "bg-success" : (tipo.Contains("llamado") || tipo.Contains("atencion") ? "bg-danger" : "bg-warning text-dark");
+                                <div class="card border-0 shadow-sm mb-3 bg-light" style="border-left: 4px solid @borderCol !important;">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span class="badge @badgeCol px-2 py-1">@obs.tipo_nota</span>
+                                            <span class="badge bg-secondary">@obs.fecha.ToString("dd/MM/yyyy")</span>
+                                        </div>
+                                        <p class="mb-2 text-dark" style="font-size: 0.95rem;">@obs.descripcion</p>
+                                        <div class="border-top pt-2 mt-2">
+                                            <small class="text-muted"><i class="bi bi-person-badge me-1"></i><strong>Docente:</strong> @obs.docente</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="text-center py-4" id="sinObservacionesMsg">
+                                <i class="bi bi-journal-check fs-1 text-muted"></i>
+                                <p class="text-muted mt-2">El estudiante no registra llamados de atención ni anotaciones en el observador.</p>
                             </div>
                         }
                     </div>
@@ -2604,7 +2978,42 @@
         contenedor.innerHTML = html;
     }
 
+    let materiaFiltroActividadActual = 'todas';
+    let estadoFiltroActividadActual = 'todas';
+
+    function validarTamanoArchivoEntrega(input) {
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+            const maxBytes = 5 * 1024 * 1024; // 5 MB
+            if (file.size > maxBytes) {
+                alert('El archivo seleccionado (' + (file.size / (1024 * 1024)).toFixed(2) + ' MB) supera el límite máximo permitido de 5 MB.');
+                input.value = '';
+            }
+        }
+    }
+
+    function filtrarActividadesPorMateria(materia, btn) {
+        materiaFiltroActividadActual = materia;
+        document.querySelectorAll('.filtro-materia-btn').forEach(b => {
+            b.classList.remove('active');
+            b.classList.remove('btn-outline-purple');
+            b.classList.add('btn-outline-secondary');
+            b.style.color = '';
+            b.style.backgroundColor = '';
+            b.style.borderColor = '#dee2e6';
+        });
+        if (btn) {
+            btn.classList.add('active');
+            btn.classList.remove('btn-outline-secondary');
+            btn.style.borderColor = '#6f42c1';
+            btn.style.backgroundColor = '#6f42c1';
+            btn.style.color = '#fff';
+        }
+        aplicarFiltrosActividadesEstudiante();
+    }
+
     function filtrarActividadesEstudiante(estado, btn) {
+        estadoFiltroActividadActual = estado;
         document.querySelectorAll('.filtro-act-btn').forEach(b => {
             b.classList.remove('active');
             b.classList.remove('btn-primary');
@@ -2614,13 +3023,18 @@
         });
 
         if (btn) btn.classList.add('active');
+        aplicarFiltrosActividadesEstudiante();
+    }
 
-        if (estado === 'todas') {
-            renderizarActividadesEstudiante(listaActividadesEstudianteGlobal);
-        } else {
-            const filtradas = listaActividadesEstudianteGlobal.filter(a => a.estado === estado || (estado === 'Entregado' && a.entregada && a.estado !== 'Calificado'));
-            renderizarActividadesEstudiante(filtradas);
+    function aplicarFiltrosActividadesEstudiante() {
+        let filtradas = listaActividadesEstudianteGlobal;
+        if (materiaFiltroActividadActual !== 'todas') {
+            filtradas = filtradas.filter(a => (a.materia || '').toLowerCase().trim() === materiaFiltroActividadActual.toLowerCase().trim());
         }
+        if (estadoFiltroActividadActual !== 'todas') {
+            filtradas = filtradas.filter(a => a.estado === estadoFiltroActividadActual || (estadoFiltroActividadActual === 'Entregado' && a.entregada && a.estado !== 'Calificado'));
+        }
+        renderizarActividadesEstudiante(filtradas);
     }
 
     function escapeJsString(str) {
@@ -2646,11 +3060,21 @@
         event.preventDefault();
         const form = document.getElementById('formSubirEntregaActividad');
         const btn = document.getElementById('btnEnviarEntrega');
+        const inputArchivo = document.getElementById('inputArchivoEntrega');
+
+        if (inputArchivo && inputArchivo.files && inputArchivo.files[0]) {
+            const maxBytes = 5 * 1024 * 1024; // 5 MB
+            if (inputArchivo.files[0].size > maxBytes) {
+                alert('El archivo seleccionado supera los 5 MB permitidos.');
+                return;
+            }
+        }
+
         const formData = new FormData(form);
 
         if (btn) {
             btn.disabled = true;
-            btn.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> Subiendo...`;
+            btn.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> Enviando...`;
         }
 
         fetch('@Url.Action("SubirEntregaActividad", "Estudiante")', {
@@ -2661,7 +3085,7 @@
             .then(data => {
                 if (btn) {
                     btn.disabled = false;
-                    btn.innerHTML = `<i class="bi bi-send me-1"></i> Enviar Entrega`;
+                    btn.innerHTML = `<i class="bi bi-send me-1"></i> Guardar y Enviar Entrega`;
                 }
 
                 if (data.success) {
@@ -2694,7 +3118,7 @@
                 console.error(err);
                 if (btn) {
                     btn.disabled = false;
-                    btn.innerHTML = `<i class="bi bi-send me-1"></i> Enviar Entrega`;
+                    btn.innerHTML = `<i class="bi bi-send me-1"></i> Guardar y Enviar Entrega`;
                 }
                 alert('Ocurrió un error al subir tu entrega.');
             });
@@ -2709,6 +3133,12 @@
         event.preventDefault();
         const form = document.getElementById('formCrearCursoExtra');
         const formData = new FormData(form);
+
+        const checkedDocs = [];
+        document.querySelectorAll('.check-doc-req:checked').forEach(chk => {
+            checkedDocs.push(chk.value);
+        });
+        formData.append('DocumentosRequeridos', JSON.stringify(checkedDocs));
 
         fetch('@Url.Action("CrearCursoExtra", "Docente")', {
             method: 'POST',
@@ -2735,7 +3165,7 @@
     // 2. Docente: Ver estudiantes inscritos
     function verInscritosCursoExtra(idCurso) {
         const tabla = document.getElementById('tablaCuerpoInscritos');
-        tabla.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted"><div class="spinner-border spinner-border-sm text-primary me-2"></div>Cargando lista de inscritos...</td></tr>';
+        tabla.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted"><div class="spinner-border spinner-border-sm text-primary me-2"></div>Cargando lista de inscritos...</td></tr>';
 
         const modalEl = document.getElementById('modalVerInscritosExtra');
         const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
@@ -2750,11 +3180,18 @@
                     document.getElementById('badgeCuposModal').innerText = `Cupos Disponibles: ${data.cuposDisponibles} de ${data.cuposTotales}`;
 
                     if (!data.estudiantes || data.estudiantes.length === 0) {
-                        tabla.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted"><i class="bi bi-inbox me-2"></i>Aún no hay estudiantes inscritos en este curso.</td></tr>';
+                        tabla.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-muted"><i class="bi bi-inbox me-2"></i>Aún no hay estudiantes inscritos en este curso.</td></tr>';
                     } else {
                         let html = '';
                         data.estudiantes.forEach((est, idx) => {
                             const fecha = new Date(est.fechaInscripcion).toLocaleDateString();
+                            let docsHtml = '';
+                            if (est.documentosSubidos && est.documentosSubidos.length > 0) {
+                                docsHtml = est.documentosSubidos.map(d => `<a href="${d.rutaArchivo}" target="_blank" class="badge bg-success-subtle text-success border border-success-subtle me-1 text-decoration-none" title="Ver documento"><i class="bi bi-file-earmark-check me-1"></i>${d.tipoDocumento}</a>`).join('');
+                            } else {
+                                docsHtml = '<span class="badge bg-warning-subtle text-warning border border-warning-subtle text-dark"><i class="bi bi-clock me-1"></i>Pendientes</span>';
+                            }
+
                             html += `
                                     <tr>
                                         <td><span class="fw-bold">${idx + 1}</span></td>
@@ -2762,6 +3199,7 @@
                                         <td>${est.documento}</td>
                                         <td><small class="text-muted">${est.correo}</small></td>
                                         <td>${fecha}</td>
+                                        <td>${docsHtml}</td>
                                         <td><span class="badge bg-success">Inscrito</span></td>
                                     </tr>
                                 `;
@@ -2769,13 +3207,58 @@
                         tabla.innerHTML = html;
                     }
                 } else {
-                    tabla.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-danger">${data.message || 'Error al cargar estudiantes.'}</td></tr>`;
+                    tabla.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-danger">${data.message || 'Error al cargar estudiantes.'}</td></tr>`;
                 }
             })
             .catch(err => {
                 console.error(err);
-                tabla.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-danger">Error de conexión al cargar inscritos.</td></tr>';
+                tabla.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-danger">Error de conexión al cargar inscritos.</td></tr>';
             });
+    }
+
+    // Función: Subida individual de documentos extracurriculares por el estudiante (Máx 5 MB)
+    function subirDocumentoEstudianteExtra(idInscripcion, tipoDoc, inputEl) {
+        if (!inputEl.files || !inputEl.files[0]) return;
+        const archivo = inputEl.files[0];
+        const maxBytes = 5 * 1024 * 1024; // 5 MB
+        if (archivo.size > maxBytes) {
+            alert('El documento seleccionado (' + (archivo.size / (1024 * 1024)).toFixed(2) + ' MB) supera el tamaño máximo permitido de 5 MB.');
+            inputEl.value = '';
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('idInscripcion', idInscripcion);
+        formData.append('tipoDocumento', tipoDoc);
+        formData.append('archivo', archivo);
+
+        fetch('@Url.Action("SubirDocumentoExtraCurso", "Estudiante")', {
+            method: 'POST',
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Documento Cargado!',
+                        text: data.message,
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => window.location.reload());
+                } else {
+                    alert(data.message);
+                    window.location.reload();
+                }
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Ocurrió un error al subir el documento.');
+        });
     }
 
     // 3. Docente: Cambiar estado activo/pausado
@@ -2983,9 +3466,133 @@
             }
         }
 
+        function cargarDetallesHijoAcudiente(idEstudiante) {
+            if (!idEstudiante) return;
+
+            fetch(`/Home/ObtenerDetallesHijoAcudiente?idEstudiante=${idEstudiante}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.success) return;
+
+                    const lblProm = document.getElementById('lblPromedioHijo');
+                    const lblFallas = document.getElementById('lblFallasHijo');
+                    const lblCitaciones = document.getElementById('lblCitacionesHijo');
+                    const lblObservador = document.getElementById('lblObservadorHijo');
+
+                    if (lblProm) lblProm.textContent = data.promedio;
+                    if (lblFallas) lblFallas.textContent = data.fallas;
+                    if (lblCitaciones) lblCitaciones.textContent = data.totalCitaciones;
+                    if (lblObservador) lblObservador.textContent = data.totalObservaciones;
+
+                    const kpiPresentes = document.getElementById('kpiPresentesModal');
+                    const kpiFallas = document.getElementById('kpiFallasModal');
+                    const kpiRetardos = document.getElementById('kpiRetardosModal');
+
+                    if (kpiPresentes) kpiPresentes.textContent = data.presentes;
+                    if (kpiFallas) kpiFallas.textContent = data.fallas;
+                    if (kpiRetardos) kpiRetardos.textContent = data.retardos;
+
+                    const tbodyAst = document.getElementById('tbodyAsistenciasModal');
+                    if (tbodyAst) {
+                        tbodyAst.innerHTML = '';
+                        if (data.asistencias && data.asistencias.length > 0) {
+                            data.asistencias.forEach(a => {
+                                const tr = document.createElement('tr');
+                                const est = (a.estado || '').toLowerCase();
+                                const badgeClass = est.includes('falla') || est === 'f' ? 'bg-danger text-white' : (est.includes('retardo') || est === 'r' ? 'bg-warning text-dark' : 'bg-success text-white');
+                                const texto = est.includes('falla') || est === 'f' ? 'Falla' : (est.includes('retardo') || est === 'r' ? 'Retardo' : 'Presente');
+                                tr.innerHTML = `
+                                    <td>${a.fecha}</td>
+                                    <td><span class="badge ${badgeClass}">${texto}</span></td>
+                                    <td>${a.justificacion ? a.justificacion : '-'}</td>
+                                `;
+                                tbodyAst.appendChild(tr);
+                            });
+                        } else {
+                            tbodyAst.innerHTML = `
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted py-4">No hay registros de asistencia para este estudiante.</td>
+                                </tr>
+                            `;
+                        }
+                    }
+
+                    const divCit = document.getElementById('listaCitaciones');
+                    if (divCit) {
+                        divCit.innerHTML = '';
+                        if (data.citaciones && data.citaciones.length > 0) {
+                            data.citaciones.forEach(c => {
+                                const card = document.createElement('div');
+                                card.className = 'card border-0 shadow-sm mb-3 bg-light';
+                                card.style.borderLeft = '4px solid #27ae60 !important';
+                                card.innerHTML = `
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <h6 class="fw-bold text-success mb-0">${c.asunto}</h6>
+                                            <span class="badge bg-secondary">${c.fecha}</span>
+                                        </div>
+                                        <p class="mb-2 text-dark" style="font-size: 0.95rem;">${c.mensaje}</p>
+                                        <div class="border-top pt-2 mt-2">
+                                            <small class="text-muted"><i class="bi bi-person-circle me-1"></i><strong>Remitente:</strong> ${c.remitente}</small>
+                                        </div>
+                                    </div>
+                                `;
+                                divCit.appendChild(card);
+                            });
+                        } else {
+                            divCit.innerHTML = `
+                                <div class="text-center py-4" id="sinCitacionesMsg">
+                                    <i class="bi bi-chat-left-x fs-1 text-muted"></i>
+                                    <p class="text-muted mt-2">No tienes citaciones o mensajes pendientes para este estudiante.</p>
+                                </div>
+                            `;
+                        }
+                    }
+
+                    const divObs = document.getElementById('listaObservacionesHijo');
+                    if (divObs) {
+                        divObs.innerHTML = '';
+                        if (data.observaciones && data.observaciones.length > 0) {
+                            data.observaciones.forEach(o => {
+                                const card = document.createElement('div');
+                                const tipo = (o.tipo_nota || '').toLowerCase();
+                                const borderCol = tipo.includes('positiva') || tipo.includes('merito') ? '#27ae60' : (tipo.includes('llamado') || tipo.includes('atencion') ? '#e74c3c' : '#f39c12');
+                                const badgeCol = tipo.includes('positiva') || tipo.includes('merito') ? 'bg-success' : (tipo.includes('llamado') || tipo.includes('atencion') ? 'bg-danger' : 'bg-warning text-dark');
+                                card.className = 'card border-0 shadow-sm mb-3 bg-light';
+                                card.style.borderLeft = `4px solid ${borderCol} !important`;
+                                card.innerHTML = `
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <span class="badge ${badgeCol} px-2 py-1">${o.tipo_nota}</span>
+                                            <span class="badge bg-secondary">${o.fecha}</span>
+                                        </div>
+                                        <p class="mb-2 text-dark" style="font-size: 0.95rem;">${o.descripcion}</p>
+                                        <div class="border-top pt-2 mt-2">
+                                            <small class="text-muted"><i class="bi bi-person-badge me-1"></i><strong>Docente:</strong> ${o.docente}</small>
+                                        </div>
+                                    </div>
+                                `;
+                                divObs.appendChild(card);
+                            });
+                        } else {
+                            divObs.innerHTML = `
+                                <div class="text-center py-4" id="sinObservacionesMsg">
+                                    <i class="bi bi-journal-check fs-1 text-muted"></i>
+                                    <p class="text-muted mt-2">El estudiante no registra llamados de atención ni anotaciones en el observador.</p>
+                                </div>
+                            `;
+                        }
+                    }
+                })
+                .catch(err => console.error("Error al cargar detalles del estudiante:", err));
+        }
+
         if (selectHijo && btnVerNotas) {
             actualizarEnlaceNotas();
-            selectHijo.addEventListener("change", actualizarEnlaceNotas);
+            selectHijo.addEventListener("change", function() {
+                actualizarEnlaceNotas();
+                cargarDetallesHijoAcudiente(this.value);
+            });
         }
 
         // --- (David) CÁLCULO AUTOMÁTICO DE NOTA DEFINITIVA EN TIEMPO REAL ---
@@ -3125,64 +3732,415 @@
                 cancelButtonText: 'Cancelar'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    Swal.fire({
-                        toast: true,
-                        position: 'top-end',
-                        icon: 'success',
-                        title: '¡Asistencia y observaciones guardadas exitosamente!',
-                        showConfirmButton: false,
-                        timer: 3500,
-                        timerProgressBar: true
+                    const registros = [];
+                    filas.forEach(fila => {
+                        const inputId = fila.querySelector('input[name="estudiante_id_asistencia"]');
+                        const radioChecked = fila.querySelector('input[type="radio"]:checked');
+                        const inputObs = fila.querySelector('input[type="text"]');
+
+                        if (inputId && radioChecked) {
+                            registros.push({
+                                IdEstudiante: parseInt(inputId.value),
+                                Estado: radioChecked.value,
+                                Observacion: inputObs ? inputObs.value.trim() : ""
+                            });
+                        }
+                    });
+
+                    fetch('@Url.Action("GuardarControlAsistencia", "Docente")', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(registros)
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                toast: true,
+                                position: 'top-end',
+                                icon: 'success',
+                                title: data.message || '¡Asistencia y observaciones guardadas exitosamente!',
+                                showConfirmButton: false,
+                                timer: 3500,
+                                timerProgressBar: true
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error al guardar',
+                                text: data.message || 'No se pudo guardar la asistencia.'
+                            });
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error de red',
+                            text: 'Ocurrió un error al intentar guardar la asistencia.'
+                        });
                     });
                 }
             });
         };
 
-        // Filtrar el desplegable Grupo por Jornada (Mañana / Tarde) en Control de Asistencia
-        const selectGrupoAsistencia = document.getElementById("selectGrupoAsistencia");
-        const selectJornadaAsistencia = document.getElementById("selectJornadaAsistencia");
+        // ===============================================
+        // MÓDULO: OBSERVADOR DEL ALUMNO (DOCENTE)
+        // ===============================================
 
-        function filtrarGruposAsistencia() {
-            if (!selectGrupoAsistencia || !selectJornadaAsistencia) return;
+        window.filtrarEstudiantesObservador = function() {
+            const selectCurso = document.getElementById('selectCursoObservador');
+            const selectJornada = document.getElementById('selectJornadaObservador');
+            const selectEst = document.getElementById('selectEstudianteObservacion');
+            if (!selectEst) return;
 
-            const jornada = selectJornadaAsistencia.value || '';
-            const esManana = jornada.toLowerCase().includes('mañana') || jornada.toLowerCase().includes('manana') || jornada.toLowerCase().startsWith('m');
-            const esTarde = jornada.toLowerCase().includes('tarde') || jornada.toLowerCase().startsWith('t');
+            const curso = selectCurso ? selectCurso.value.trim().toLowerCase() : 'todos';
+            const jornada = selectJornada ? selectJornada.value.trim().toLowerCase() : 'todos';
 
-            let seleccionadoVisible = false;
-
-            Array.from(selectGrupoAsistencia.options).forEach(opt => {
-                const txt = opt.text.trim();
-                const val = opt.value.trim();
-                let mostrar = true;
-
-                if (esManana) {
-                    mostrar = txt.endsWith('M') || txt.includes(' M') || val.endsWith('M');
-                } else if (esTarde) {
-                    mostrar = txt.endsWith('T') || txt.includes(' T') || val.endsWith('T');
+            Array.from(selectEst.options).forEach((opt, idx) => {
+                if (idx === 0) return;
+                const cursoEst = (opt.getAttribute('data-curso') || '').trim().toLowerCase();
+                let matchCurso = (curso === 'todos' || cursoEst === curso);
+                let matchJornada = true;
+                if (jornada === 'mañana' || jornada === 'manana' || jornada === 'm') {
+                    matchJornada = cursoEst.endsWith('m') || cursoEst.includes('m') || cursoEst === '';
+                } else if (jornada === 'tarde' || jornada === 't') {
+                    matchJornada = cursoEst.endsWith('t') || cursoEst.includes('t') || cursoEst === '';
                 }
 
-                opt.hidden = !mostrar;
-                opt.disabled = !mostrar;
-                opt.style.display = mostrar ? '' : 'none';
-
-                if (mostrar && opt.selected) {
-                    seleccionadoVisible = true;
-                }
+                const visible = matchCurso && matchJornada;
+                opt.hidden = !visible;
+                opt.disabled = !visible;
+                opt.style.display = visible ? '' : 'none';
             });
 
-            if (!seleccionadoVisible) {
-                const primerVisible = Array.from(selectGrupoAsistencia.options).find(opt => !opt.hidden && !opt.disabled);
-                if (primerVisible) {
-                    selectGrupoAsistencia.value = primerVisible.value;
+            if (selectEst.selectedOptions.length === 0 || selectEst.selectedOptions[0].hidden) {
+                selectEst.value = "";
+            }
+            cargarObservacionesEstudianteSeleccionado();
+        };
+
+        window.cambiarCamposObservadorPorTipo = function() {
+            const tipo = document.getElementById('selectTipoNotaObservacion') ? document.getElementById('selectTipoNotaObservacion').value : '';
+            const bloquePositiva = document.getElementById('bloqueNotaPositiva');
+            const bloqueNegativa = document.getElementById('bloqueNotaNegativa');
+
+            if (tipo === 'Positiva / Mérito') {
+                if (bloquePositiva) bloquePositiva.classList.remove('d-none');
+                if (bloqueNegativa) bloqueNegativa.classList.add('d-none');
+            } else {
+                if (bloquePositiva) bloquePositiva.classList.add('d-none');
+                if (bloqueNegativa) bloqueNegativa.classList.remove('d-none');
+            }
+        };
+
+        window.guardarObservacionDocente = function() {
+            const selectEst = document.getElementById('selectEstudianteObservacion');
+            const selectTipo = document.getElementById('selectTipoNotaObservacion');
+            const selectPeriodo = document.getElementById('selectPeriodoObservacion');
+
+            if (!selectEst || !selectEst.value) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Campo obligatorio',
+                    text: 'Debe seleccionar un estudiante para registrar la observación.'
+                });
+                return;
+            }
+
+            const tipo = selectTipo ? selectTipo.value : 'Seguimiento Académico';
+            const periodo = selectPeriodo ? parseInt(selectPeriodo.value) : 1;
+
+            let descripcion = '';
+            let aspectosMejorar = '';
+            let quienRegistra = document.getElementById('txtQuienRegistra') ? document.getElementById('txtQuienRegistra').value.trim() : '';
+
+            if (tipo === 'Positiva / Mérito') {
+                const txtMerito = document.getElementById('txtDescripcionMerito');
+                if (!txtMerito || !txtMerito.value.trim()) {
+                    Swal.fire({ icon: 'warning', title: 'Campo obligatorio', text: 'Debe ingresar la descripción del mérito o felicitación.' });
+                    return;
+                }
+                descripcion = txtMerito.value.trim();
+            } else {
+                const txtSuceso = document.getElementById('txtDescripcionSuceso');
+                const txtMejorar = document.getElementById('txtAspectosMejorar');
+                if (!txtSuceso || !txtSuceso.value.trim()) {
+                    Swal.fire({ icon: 'warning', title: 'Campo obligatorio', text: 'Debe ingresar la descripción del suceso o falta.' });
+                    return;
+                }
+                if (!txtMejorar || !txtMejorar.value.trim()) {
+                    Swal.fire({ icon: 'warning', title: 'Campo obligatorio', text: 'Debe especificar los aspectos y compromisos a mejorar.' });
+                    return;
+                }
+                descripcion = txtSuceso.value.trim();
+                aspectosMejorar = txtMejorar.value.trim();
+            }
+
+            const payload = {
+                IdEstudiante: parseInt(selectEst.value),
+                TipoNota: tipo,
+                Periodo: periodo,
+                Descripcion: descripcion,
+                AspectosMejorar: aspectosMejorar,
+                QuienRegistra: quienRegistra
+            };
+
+            fetch('@Url.Action("RegistrarObservacion", "Docente")', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Anotación Guardada!',
+                        text: data.message || 'Se registró correctamente en el observador del alumno.',
+                        timer: 3000,
+                        showConfirmButton: false
+                    });
+                    if (document.getElementById('txtDescripcionMerito')) document.getElementById('txtDescripcionMerito').value = '';
+                    if (document.getElementById('txtDescripcionSuceso')) document.getElementById('txtDescripcionSuceso').value = '';
+                    if (document.getElementById('txtAspectosMejorar')) document.getElementById('txtAspectosMejorar').value = '';
+                    cargarObservacionesEstudianteSeleccionado();
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message || 'No se pudo registrar la observación.'
+                    });
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de conexión',
+                    text: 'No se pudo conectar con el servidor.'
+                });
+            });
+        };
+
+        window.cargarObservacionesEstudianteSeleccionado = function() {
+            const selectEst = document.getElementById('selectEstudianteObservacion');
+            const tbody = document.getElementById('cuerpoHistorialObservaciones');
+            const badgeConteo = document.getElementById('conteoObservacionesEstudiante');
+            if (!tbody) return;
+
+            if (!selectEst || !selectEst.value) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">Seleccione un estudiante para consultar su historial de observador.</td></tr>';
+                if (badgeConteo) badgeConteo.textContent = 'Selecciona un estudiante';
+                return;
+            }
+
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-3 text-muted"><div class="spinner-border spinner-border-sm text-primary me-2"></div>Cargando historial del observador...</td></tr>';
+
+            fetch(`@Url.Action("ObtenerObservacionesEstudiante", "Docente")?idEstudiante=${selectEst.value}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success && data.observaciones && data.observaciones.length > 0) {
+                        if (badgeConteo) badgeConteo.textContent = `${data.observaciones.length} anotaciones registradas`;
+                        let html = '';
+                        data.observaciones.forEach(obs => {
+                            const badgeTipo = obs.tipoNota === 'Positiva / Mérito' 
+                                ? `<span class="badge bg-success">${obs.tipoNota}</span>` 
+                                : `<span class="badge bg-danger">${obs.tipoNota}</span>`;
+                            html += `
+                                <tr>
+                                    <td><small class="text-muted fw-bold">${obs.fecha}</small></td>
+                                    <td><span class="badge bg-light text-dark border">Periodo ${obs.periodo || 1}</span></td>
+                                    <td>${badgeTipo}</td>
+                                    <td>${obs.descripcion}</td>
+                                    <td>${obs.aspectosMejorar ? `<span class="text-warning text-dark small"><i class="bi bi-arrow-up-right me-1"></i>${obs.aspectosMejorar}</span>` : '<span class="text-muted small">-</span>'}</td>
+                                    <td><small class="fw-semibold text-primary">${obs.quienRegistra || 'Docente'}</small></td>
+                                </tr>
+                            `;
+                        });
+                        tbody.innerHTML = html;
+                    } else {
+                        if (badgeConteo) badgeConteo.textContent = '0 anotaciones';
+                        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted"><i class="bi bi-clipboard-check me-2"></i>El estudiante no registra anotaciones disciplinarias o de seguimiento aún.</td></tr>';
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-danger">Error al cargar el historial del observador.</td></tr>';
+                });
+        };
+
+        window.descargarObservadorDocentePdf = function() {
+            const selectEst = document.getElementById('selectEstudianteObservacion');
+            const selectCurso = document.getElementById('selectCursoObservador');
+
+            let url = '@Url.Action("DescargarObservadorPdf", "Docente")';
+            const params = [];
+            if (selectEst && selectEst.value) {
+                params.push(`idEstudiante=${selectEst.value}`);
+            }
+            if (selectCurso && selectCurso.value && selectCurso.value !== 'todos') {
+                params.push(`curso=${encodeURIComponent(selectCurso.value)}`);
+            }
+
+            if (params.length > 0) {
+                url += '?' + params.join('&');
+            }
+
+            window.open(url, '_blank');
+        };
+
+        // Función para enviar Citación a Padres desde Docente
+        window.guardarCitacionDocente = function() {
+            const selectEst = document.getElementById('selectEstudianteObservacion');
+            const txtAsunto = document.getElementById('txtAsuntoCitacion');
+            const txtMsg = document.getElementById('txtMensajeCitacion');
+
+            if (!selectEst || !selectEst.value) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Campo obligatorio',
+                    text: 'Debe seleccionar un estudiante en los filtros de arriba para enviar la citación.'
+                });
+                return;
+            }
+
+            if (!txtAsunto || !txtAsunto.value.trim()) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Campo obligatorio',
+                    text: 'Debe ingresar el asunto de la citación.'
+                });
+                return;
+            }
+
+            if (!txtMsg || !txtMsg.value.trim()) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Campo obligatorio',
+                    text: 'Debe ingresar el mensaje o detalles de la citación.'
+                });
+                return;
+            }
+
+            const payload = {
+                IdEstudiante: parseInt(selectEst.value),
+                Asunto: txtAsunto.value.trim(),
+                Mensaje: txtMsg.value.trim()
+            };
+
+            fetch('@Url.Action("RegistrarCitacion", "Docente")', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Citación Enviada!',
+                        text: data.message || 'La citación ha sido enviada al acudiente del estudiante.',
+                        timer: 3000,
+                        showConfirmButton: false
+                    });
+                    txtAsunto.value = '';
+                    txtMsg.value = '';
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: data.message || 'No se pudo enviar la citación.'
+                    });
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error de conexión',
+                    text: 'No se pudo conectar con el servidor.'
+                });
+            });
+        };
+
+        // ===============================================
+        // MÓDULO: CONTROL DE ASISTENCIA (PAGINACIÓN & FILTROS)
+        // ===============================================
+
+        let paginaActualAsistencia = 1;
+        const itemsPorPaginaAsistencia = 10;
+
+        window.filtrarAsistenciaPorCursoYJornada = function() {
+            paginaActualAsistencia = 1;
+            renderizarPaginacionAsistencia();
+        };
+
+        window.renderizarPaginacionAsistencia = function() {
+            const selectGrupo = document.getElementById('selectGrupoAsistencia');
+            const selectJornada = document.getElementById('selectJornadaAsistencia');
+            const cursoSeleccionado = (selectGrupo ? selectGrupo.value : 'todos').trim().toLowerCase();
+            const jornadaSeleccionada = (selectJornada ? selectJornada.value : 'todos').trim().toLowerCase();
+
+            const todasFilas = Array.from(document.querySelectorAll('#tbodyAsistencia .fila-asistencia-estudiante'));
+            
+            const filasFiltradas = todasFilas.filter(fila => {
+                const cursoFila = (fila.getAttribute('data-curso') || '').trim().toLowerCase();
+                let matchCurso = (cursoSeleccionado === 'todos' || cursoFila === cursoSeleccionado);
+                let matchJornada = true;
+                if (jornadaSeleccionada === 'mañana' || jornadaSeleccionada === 'manana' || jornadaSeleccionada === 'm') {
+                    matchJornada = cursoFila.endsWith('m') || cursoFila.includes('m') || cursoFila === '';
+                } else if (jornadaSeleccionada === 'tarde' || jornadaSeleccionada === 't') {
+                    matchJornada = cursoFila.endsWith('t') || cursoFila.includes('t') || cursoFila === '';
+                }
+                return matchCurso && matchJornada;
+            });
+
+            const totalItems = filasFiltradas.length;
+            const totalPaginas = Math.ceil(totalItems / itemsPorPaginaAsistencia) || 1;
+            if (paginaActualAsistencia > totalPaginas) paginaActualAsistencia = totalPaginas;
+
+            todasFilas.forEach(f => f.style.display = 'none');
+
+            const inicio = (paginaActualAsistencia - 1) * itemsPorPaginaAsistencia;
+            const fin = inicio + itemsPorPaginaAsistencia;
+            filasFiltradas.slice(inicio, fin).forEach(f => f.style.display = '');
+
+            const infoP = document.getElementById('infoAsistenciaPagina');
+            if (infoP) {
+                if (totalItems === 0) {
+                    infoP.textContent = 'Mostrando 0 estudiantes para los filtros seleccionados.';
+                } else {
+                    infoP.textContent = `Mostrando ${inicio + 1} - ${Math.min(fin, totalItems)} de ${totalItems} estudiantes (Página ${paginaActualAsistencia} de ${totalPaginas})`;
                 }
             }
-        }
 
-        if (selectJornadaAsistencia) {
-            selectJornadaAsistencia.addEventListener("change", filtrarGruposAsistencia);
-            filtrarGruposAsistencia();
-        }
+            const ulPaginacion = document.getElementById('paginacionAsistencia');
+            if (ulPaginacion) {
+                let pagHtml = '';
+                if (totalPaginas > 1) {
+                    pagHtml += `<li class="page-item ${paginaActualAsistencia === 1 ? 'disabled' : ''}"><a class="page-link" href="javascript:void(0)" onclick="cambiarPaginaAsistencia(${paginaActualAsistencia - 1})">Anterior</a></li>`;
+                    for (let p = 1; p <= totalPaginas; p++) {
+                        pagHtml += `<li class="page-item ${paginaActualAsistencia === p ? 'active' : ''}"><a class="page-link" href="javascript:void(0)" onclick="cambiarPaginaAsistencia(${p})">${p}</a></li>`;
+                    }
+                    pagHtml += `<li class="page-item ${paginaActualAsistencia === totalPaginas ? 'disabled' : ''}"><a class="page-link" href="javascript:void(0)" onclick="cambiarPaginaAsistencia(${paginaActualAsistencia + 1})">Siguiente</a></li>`;
+                }
+                ulPaginacion.innerHTML = pagHtml;
+            }
+        };
+
+        window.cambiarPaginaAsistencia = function(pagina) {
+            if (pagina < 1) return;
+            paginaActualAsistencia = pagina;
+            renderizarPaginacionAsistencia();
+        };
+
+        // Inicializar paginación de asistencia al cargar la página
+        setTimeout(function() {
+            renderizarPaginacionAsistencia();
+        }, 300);
     });
 </script>
 

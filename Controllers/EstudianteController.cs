@@ -272,8 +272,8 @@ public class EstudianteController : Controller
             if (!extensionesPermitidas.Contains(extension))
                 return Json(new { success = false, message = "Tipo de archivo no permitido. Use: PDF, Word, Excel, PowerPoint, ZIP o imágenes." });
 
-            if (archivo.Length > 20 * 1024 * 1024) // 20 MB máximo
-                return Json(new { success = false, message = "El archivo supera el tamaño máximo permitido de 20 MB." });
+            if (archivo.Length > 5 * 1024 * 1024) // 5 MB máximo según especificación
+                return Json(new { success = false, message = "El archivo supera el tamaño máximo permitido de 5 MB." });
 
             var carpeta = Path.Combine("wwwroot", "uploads", "actividades");
             Directory.CreateDirectory(carpeta);
@@ -286,12 +286,23 @@ public class EstudianteController : Controller
             await archivo.CopyToAsync(stream);
         }
 
+        if (string.IsNullOrWhiteSpace(comentario) && (archivo == null || archivo.Length == 0))
+        {
+            return Json(new { success = false, message = "Debe ingresar una respuesta en texto o adjuntar un archivo (máximo 5 MB)." });
+        }
+
         if (entregaExistente != null)
         {
             // Actualizar entrega existente
-            if (rutaArchivo != null) entregaExistente.ArchivoRuta = rutaArchivo;
-            if (nombreArchivo != null) entregaExistente.ArchivoNombre = archivo!.FileName;
-            entregaExistente.Comentario = comentario;
+            if (rutaArchivo != null)
+            {
+                entregaExistente.ArchivoRuta = rutaArchivo;
+                entregaExistente.ArchivoNombre = archivo!.FileName;
+            }
+            if (!string.IsNullOrEmpty(comentario))
+            {
+                entregaExistente.Comentario = comentario;
+            }
             entregaExistente.FechaEntrega = DateTime.Now;
             entregaExistente.Estado = "Entregado";
         }
@@ -316,8 +327,108 @@ public class EstudianteController : Controller
         return Json(new
         {
             success = true,
-            message = "¡Tu actividad fue entregada exitosamente! El docente revisará tu trabajo pronto.",
+            message = "¡Tu actividad fue enviada exitosamente con el texto y archivos adjuntos!",
             archivoNombre = archivo?.FileName
         });
+    }
+
+    // ===============================================
+    // SUBIDA DE DOCUMENTOS PARA CURSOS EXTRACURRICULARES
+    // ===============================================
+
+    [HttpPost]
+    public async Task<IActionResult> SubirDocumentoExtraCurso(int idInscripcion, string tipoDocumento, IFormFile? archivo)
+    {
+        _context.AsegurarEsquemaExtracurriculares();
+
+        var userId = HttpContext.Session.GetInt32("UserId");
+        if (userId == null)
+            return Json(new { success = false, message = "Sesión no válida." });
+
+        if (archivo == null || archivo.Length == 0)
+            return Json(new { success = false, message = "Debe seleccionar un archivo para subir." });
+
+        if (string.IsNullOrWhiteSpace(tipoDocumento))
+            return Json(new { success = false, message = "El tipo de documento es requerido." });
+
+        var inscripcion = _context.ExtraInscripciones.Find(idInscripcion);
+        if (inscripcion == null || inscripcion.IdEstudiante != userId.Value)
+            return Json(new { success = false, message = "Inscripción no encontrada." });
+
+        var extPermitidas = new[] { ".pdf", ".jpg", ".jpeg", ".png", ".doc", ".docx" };
+        var ext = Path.GetExtension(archivo.FileName).ToLowerInvariant();
+        if (!extPermitidas.Contains(ext))
+            return Json(new { success = false, message = "Formato no permitido. Solo se admiten archivos PDF, imágenes o Word." });
+
+        if (archivo.Length > 5 * 1024 * 1024)
+            return Json(new { success = false, message = "El archivo supera el tamaño máximo permitido de 5 MB." });
+
+        var carpeta = Path.Combine("wwwroot", "uploads", "documentos_extra");
+        Directory.CreateDirectory(carpeta);
+
+        var safeNombreDoc = string.Concat(tipoDocumento.Split(Path.GetInvalidFileNameChars())).Replace(" ", "_");
+        var nombreGuardado = $"doc_{idInscripcion}_{safeNombreDoc}_{DateTime.Now:yyyyMMddHHmmss}{ext}";
+        var rutaFisica = Path.Combine(carpeta, nombreGuardado);
+
+        using (var stream = new FileStream(rutaFisica, FileMode.Create))
+        {
+            await archivo.CopyToAsync(stream);
+        }
+
+        var rutaWeb = $"/uploads/documentos_extra/{nombreGuardado}";
+
+        var docExistente = _context.ExtraDocumentosInscripciones
+            .FirstOrDefault(d => d.IdExtraInscripcion == idInscripcion && d.TipoDocumento.ToLower() == tipoDocumento.ToLower());
+
+        if (docExistente != null)
+        {
+            docExistente.ArchivoRuta = rutaWeb;
+            docExistente.ArchivoNombre = archivo.FileName;
+            docExistente.FechaSubida = DateTime.Now;
+            docExistente.Estado = "Cargado";
+        }
+        else
+        {
+            _context.ExtraDocumentosInscripciones.Add(new ExtraDocumentoInscripcion
+            {
+                IdExtraInscripcion = idInscripcion,
+                TipoDocumento = tipoDocumento,
+                ArchivoRuta = rutaWeb,
+                ArchivoNombre = archivo.FileName,
+                FechaSubida = DateTime.Now,
+                Estado = "Cargado"
+            });
+        }
+
+        _context.SaveChanges();
+
+        return Json(new
+        {
+            success = true,
+            message = $"¡Documento '{tipoDocumento}' cargado exitosamente!",
+            archivoNombre = archivo.FileName,
+            archivoRuta = rutaWeb
+        });
+    }
+
+    [HttpGet]
+    public IActionResult ObtenerDocumentosInscripcion(int idInscripcion)
+    {
+        _context.AsegurarEsquemaExtracurriculares();
+
+        var docs = _context.ExtraDocumentosInscripciones
+            .Where(d => d.IdExtraInscripcion == idInscripcion)
+            .Select(d => new
+            {
+                d.IdDocumento,
+                d.TipoDocumento,
+                d.ArchivoNombre,
+                d.ArchivoRuta,
+                d.Estado,
+                FechaSubida = d.FechaSubida.ToString("dd/MM/yyyy HH:mm")
+            })
+            .ToList();
+
+        return Json(new { success = true, documentos = docs });
     }
 }

@@ -30,6 +30,7 @@ namespace ProyectoPAE.Models
         // --- ACTIVIDADES EXTRACURRICULARES ---
         public DbSet<ExtraCurso> ExtraCursos { get; set; }
         public DbSet<ExtraInscripcion> ExtraInscripciones { get; set; }
+        public DbSet<ExtraDocumentoInscripcion> ExtraDocumentosInscripciones { get; set; }
 
         // --- ACTIVIDADES ACADÉMICAS Y ENTREGAS ---
         public DbSet<Actividad> Actividades { get; set; }
@@ -47,6 +48,9 @@ namespace ProyectoPAE.Models
         // --- NOTIFICACIONES Y ANUNCIOS GLOBALES ---
         public DbSet<Notificacion> Notificaciones { get; set; }
         public DbSet<NotificacionLeida> NotificacionesLeidas { get; set; }
+
+        // --- OBSERVADOR DEL ALUMNO ---
+        public DbSet<ObservacionEstudiante> ObservacionesEstudiante { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -72,6 +76,38 @@ namespace ProyectoPAE.Models
                 .WithMany()
                 .HasForeignKey(ep => ep.ID_ESTUDIANTE)
                 .OnDelete(DeleteBehavior.Restrict);
+        }
+
+        public void AsegurarEsquemaEstudiantes()
+        {
+            try
+            {
+                Database.ExecuteSqlRaw(@"
+                    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[ESTUDIANTE]') AND name = 'id_curso')
+                    BEGIN
+                        EXEC(N'ALTER TABLE [dbo].[ESTUDIANTE] ADD [id_curso] INT NULL;');
+                    END
+
+                    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[ESTUDIANTE]') AND name = 'curso_asignado')
+                    BEGIN
+                        EXEC(N'ALTER TABLE [dbo].[ESTUDIANTE] ADD [curso_asignado] NVARCHAR(50) NULL;');
+                    END
+
+                    IF EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[ESTUDIANTE]') AND name = 'id_curso')
+                    BEGIN
+                        EXEC(N'
+                            UPDATE e
+                            SET e.id_curso = m.id_curso,
+                                e.curso_asignado = c.nombre_curso
+                            FROM [dbo].[ESTUDIANTE] e
+                            INNER JOIN [dbo].[MATRICULA] m ON e.id_estudiante = m.id_estudiante
+                            LEFT JOIN [dbo].[CURSO] c ON m.id_curso = c.id_curso
+                            WHERE e.id_curso IS NULL;
+                        ');
+                    END
+                ");
+            }
+            catch { }
         }
 
         public void AsegurarEsquemaNotificaciones()
@@ -127,7 +163,9 @@ namespace ProyectoPAE.Models
                             [grado_min] [int] NULL DEFAULT 6,
                             [grado_max] [int] NULL DEFAULT 11,
                             [horario] [nvarchar](100) NULL,
-                            [id_docente] [int] NULL
+                            [id_docente] [int] NULL,
+                            [tipo_curso] [nvarchar](50) NULL DEFAULT 'Deportivo',
+                            [documentos_requeridos] [nvarchar](500) NULL
                         );
                     END
                     ELSE
@@ -140,6 +178,10 @@ namespace ProyectoPAE.Models
                             ALTER TABLE [dbo].[EXTRA_CURSO] ADD [horario] NVARCHAR(100) NULL;
                         IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[EXTRA_CURSO]') AND name = 'id_docente')
                             ALTER TABLE [dbo].[EXTRA_CURSO] ADD [id_docente] INT NULL;
+                        IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[EXTRA_CURSO]') AND name = 'tipo_curso')
+                            ALTER TABLE [dbo].[EXTRA_CURSO] ADD [tipo_curso] NVARCHAR(50) NULL DEFAULT 'Deportivo';
+                        IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[EXTRA_CURSO]') AND name = 'documentos_requeridos')
+                            ALTER TABLE [dbo].[EXTRA_CURSO] ADD [documentos_requeridos] NVARCHAR(500) NULL;
                     END
 
                     IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'EXTRA_INSCRIPCION')
@@ -153,6 +195,19 @@ namespace ProyectoPAE.Models
                             [fecha_cancelacion] [datetime] NULL,
                             [motivo_cancelacion] [nvarchar](300) NULL,
                             [id_extra_curso_nuevo] [int] NULL
+                        );
+                    END
+
+                    IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'EXTRA_DOCUMENTO_INSCRIPCION')
+                    BEGIN
+                        CREATE TABLE [dbo].[EXTRA_DOCUMENTO_INSCRIPCION](
+                            [id_documento] [int] IDENTITY(1,1) NOT NULL PRIMARY KEY,
+                            [id_extra_inscripcion] [int] NOT NULL,
+                            [tipo_documento] [nvarchar](100) NOT NULL,
+                            [archivo_ruta] [nvarchar](255) NOT NULL,
+                            [archivo_nombre] [nvarchar](255) NOT NULL,
+                            [fecha_subida] [datetime] NOT NULL DEFAULT GETDATE(),
+                            [estado] [nvarchar](30) NOT NULL DEFAULT 'Cargado'
                         );
                     END
                 ");
@@ -195,6 +250,44 @@ namespace ProyectoPAE.Models
                             [retroalimentacion] [nvarchar](max) NULL,
                             [estado] [nvarchar](50) NOT NULL DEFAULT 'Entregado'
                         );
+                    END
+                ");
+            }
+            catch { }
+        }
+
+        public void AsegurarEsquemaObservador()
+        {
+            try
+            {
+                Database.ExecuteSqlRaw(@"
+                    IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'OBSERVACION_ESTUDIANTE')
+                    BEGIN
+                        CREATE TABLE [dbo].[OBSERVACION_ESTUDIANTE](
+                            [id_observacion] [int] IDENTITY(1,1) NOT NULL PRIMARY KEY,
+                            [id_estudiante] [int] NOT NULL,
+                            [docente] [nvarchar](150) NULL,
+                            [tipo_nota] [nvarchar](50) NOT NULL,
+                            [descripcion] [nvarchar](max) NOT NULL,
+                            [aspectos_mejorar] [nvarchar](max) NULL,
+                            [quien_registra] [nvarchar](150) NULL,
+                            [periodo] [int] NOT NULL DEFAULT 1,
+                            [fecha] [datetime] NOT NULL DEFAULT GETDATE()
+                        );
+                    END
+                    ELSE
+                    BEGIN
+                        IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[OBSERVACION_ESTUDIANTE]') AND name = 'aspectos_mejorar')
+                            ALTER TABLE [dbo].[OBSERVACION_ESTUDIANTE] ADD [aspectos_mejorar] NVARCHAR(MAX) NULL;
+                        IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[OBSERVACION_ESTUDIANTE]') AND name = 'quien_registra')
+                            ALTER TABLE [dbo].[OBSERVACION_ESTUDIANTE] ADD [quien_registra] NVARCHAR(150) NULL;
+                        IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[OBSERVACION_ESTUDIANTE]') AND name = 'periodo')
+                            ALTER TABLE [dbo].[OBSERVACION_ESTUDIANTE] ADD [periodo] INT NOT NULL DEFAULT 1;
+                    END
+
+                    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[ASISTENCIA]') AND name = 'justificacion')
+                    BEGIN
+                        ALTER TABLE [dbo].[ASISTENCIA] ADD [justificacion] NVARCHAR(MAX) NULL;
                     END
                 ");
             }
