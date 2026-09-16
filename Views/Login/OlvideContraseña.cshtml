@@ -1,4 +1,4 @@
-﻿@{
+@{
     ViewData["Title"] = "Recuperar Contraseña";
 }
 
@@ -31,7 +31,36 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(13, 42, 74, 0.25);
         }
+
+    .login-bg {
+        position: fixed;
+        top: -30px;
+        left: -30px;
+        right: -30px;
+        bottom: -30px;
+        background-image: url('@Url.Content("~/images/login-bg.jpg")');
+        background-size: cover;
+        background-position: center center;
+        background-repeat: no-repeat;
+        filter: blur(10px) brightness(0.85);
+        transform: scale(1.08);
+        z-index: -2;
+    }
+
+    .login-bg-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(13, 42, 74, 0.45) 0%, rgba(20, 61, 106, 0.3) 100%);
+        backdrop-filter: blur(2px);
+        z-index: -1;
+    }
 </style>
+
+<div class="login-bg"></div>
+<div class="login-bg-overlay"></div>
 
 <div class="container my-5 py-5">
     <div class="row justify-content-center">
