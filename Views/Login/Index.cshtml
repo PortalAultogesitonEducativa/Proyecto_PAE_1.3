@@ -1,44 +1,46 @@
-﻿@{
+@{
     ViewData["Title"] = "Iniciar Sesión";
 }
 <style>
     .login-bg {
         position: fixed;
-        top: -20px;
-        left: -20px;
-        right: -20px;
-        bottom: -20px;
-        background-image: url('~/images/login-bg.jpg');
+        top: -30px;
+        left: -30px;
+        right: -30px;
+        bottom: -30px;
+        background-image: url('@Url.Content("~/images/login-bg.jpg")');
         background-size: cover;
-        background-position: center;
-        filter: blur(8px);
-        transform: scale(1.05);
+        background-position: center center;
+        background-repeat: no-repeat;
+        filter: blur(10px) brightness(0.85);
+        transform: scale(1.08);
         z-index: -2;
     }
- 
+
     .login-bg-overlay {
         position: fixed;
         top: 0;
         left: 0;
         right: 0;
         bottom: 0;
-        background-color: rgba(13, 42, 74, 0.35);
+        background: linear-gradient(135deg, rgba(13, 42, 74, 0.45) 0%, rgba(20, 61, 106, 0.3) 100%);
+        backdrop-filter: blur(2px);
         z-index: -1;
     }
- 
+
     .btn-login-main {
         background-color: #0d2a4a;
         border-radius: 10px;
         border: none;
         transition: all 0.3s ease;
     }
- 
+
         .btn-login-main:hover {
             background-color: #143d6a;
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(13, 42, 74, 0.25);
         }
- 
+
     .btn-login-forgot {
         background-color: #0d2a4a;
         color: #ffffff !important;
@@ -46,18 +48,18 @@
         border: none;
         transition: all 0.3s ease;
     }
- 
+
         .btn-login-forgot:hover {
             background-color: #081a2e;
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(13, 42, 74, 0.25);
         }
- 
+
     .text-capslock {
         color: #0d2a4a;
     }
 </style>
- 
+
 <div class="login-bg"></div>
 <div class="login-bg-overlay"></div>
  
