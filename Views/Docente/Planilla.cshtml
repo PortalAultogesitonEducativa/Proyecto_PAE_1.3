@@ -219,6 +219,41 @@
                                                 <span class="badge bg-primary-subtle text-primary border border-primary-subtle ms-2">@gradoEst</span>
                                             }
                                         </div>
+                                        @{
+                                            var todasMejoras = ViewBag.AccionesMejora as List<ProyectoPAE.Models.AccionMejora> ?? new List<ProyectoPAE.Models.AccionMejora>();
+                                            var mejorasEst = todasMejoras.Where(m => m.IdEstudiante == estudiante.ID_Usuario).ToList();
+                                        }
+                                        @if (mejorasEst.Any())
+                                        {
+                                            <div class="mt-2 p-2 rounded-3 border accion-mejora-planilla-box" style="background: #fffdf5; border-color: #fde68a !important; font-weight: normal;">
+                                                @foreach (var mej in mejorasEst)
+                                                {
+                                                    string badgeSegColor = mej.EstadoSeguimiento == "Cumplido" ? "success" : mej.EstadoSeguimiento == "No Cumplido" ? "danger" : "warning";
+                                                    <div class="mb-1 pb-1 border-bottom border-light">
+                                                        <div class="d-flex align-items-center justify-content-between">
+                                                            <span class="badge bg-warning text-dark px-2 py-1" style="font-size: 0.72rem;">
+                                                                <i class="bi bi-arrow-up-right-circle me-1"></i> Acción de Mejora: @mej.Materia (P@(mej.Periodo))
+                                                            </span>
+                                                            <span class="badge bg-@badgeSegColor text-white" style="font-size: 0.7rem;">
+                                                                Seguimiento: @mej.EstadoSeguimiento
+                                                            </span>
+                                                        </div>
+                                                        <div class="text-muted small mt-1" style="font-size: 0.78rem;">
+                                                            <strong>Aspecto:</strong> @mej.AspectoMejorar
+                                                        </div>
+                                                        <div class="text-dark small" style="font-size: 0.78rem;">
+                                                            <strong>Compromiso:</strong> @mej.CompromisoEstudiante
+                                                        </div>
+                                                        @if (!string.IsNullOrEmpty(mej.ObservacionSeguimiento))
+                                                        {
+                                                            <div class="text-primary small mt-1" style="font-size: 0.76rem;">
+                                                                <strong>Docente Seguimiento:</strong> @mej.ObservacionSeguimiento
+                                                            </div>
+                                                        }
+                                                    </div>
+                                                }
+                                            </div>
+                                        }
                                     </td>
                                     <td>
                                         <div class="input-group input-group-sm nota-group mx-auto" style="width: 95px;">

@@ -38,6 +38,13 @@ public class EstudianteController : Controller
         double promedio = notas.Any() ? notas.Average(n => (double)n.Nota) : 0.0;
         ViewBag.PromedioGeneral = promedio;
 
+        _context.AsegurarEsquemaAccionesMejora();
+        var mejoras = _context.AccionesMejora
+            .Where(a => a.IdEstudiante == userId && a.Activo)
+            .OrderByDescending(a => a.FechaRegistro)
+            .ToList();
+        ViewBag.AccionesMejora = mejoras;
+
         return View(notas);
     }
 
@@ -430,5 +437,89 @@ public class EstudianteController : Controller
             .ToList();
 
         return Json(new { success = true, documentos = docs });
+    }
+
+    // ===============================================
+    // ACCIONES DE MEJORA Y SEGUIMIENTO (ESTUDIANTE)
+    // ===============================================
+
+    [HttpGet]
+    public IActionResult ObtenerAccionesMejoraEstudiante(string? materia)
+    {
+        _context.AsegurarEsquemaAccionesMejora();
+
+        var userId = HttpContext.Session.GetInt32("UserId");
+        if (userId == null)
+        {
+            return Json(new { success = false, message = "Sesión no válida." });
+        }
+
+        var query = _context.AccionesMejora
+            .Where(a => a.IdEstudiante == userId.Value && a.Activo);
+
+        if (!string.IsNullOrWhiteSpace(materia) && materia.ToLower() != "todas")
+        {
+            query = query.Where(a => a.Materia == materia);
+        }
+
+        var mejoras = query
+            .OrderByDescending(a => a.FechaRegistro)
+            .Select(a => new
+            {
+                idMejora = a.IdMejora,
+                idEstudiante = a.IdEstudiante,
+                nombreEstudiante = a.NombreEstudiante,
+                materia = a.Materia,
+                grado = a.Grado,
+                periodo = a.Periodo,
+                aspectoMejorar = a.AspectoMejorar,
+                compromisoEstudiante = a.CompromisoEstudiante,
+                fechaRegistro = a.FechaRegistro.ToString("dd/MM/yyyy"),
+                fechaCompromiso = a.FechaCompromiso.HasValue ? a.FechaCompromiso.Value.ToString("dd/MM/yyyy") : null,
+                estadoSeguimiento = a.EstadoSeguimiento,
+                observacionSeguimiento = a.ObservacionSeguimiento,
+                fechaSeguimiento = a.FechaSeguimiento.HasValue ? a.FechaSeguimiento.Value.ToString("dd/MM/yyyy HH:mm") : null,
+                respuestaEstudiante = a.RespuestaEstudiante,
+                fechaRespuestaEstudiante = a.FechaRespuestaEstudiante.HasValue ? a.FechaRespuestaEstudiante.Value.ToString("dd/MM/yyyy HH:mm") : null,
+                docente = a.Docente
+            })
+            .ToList();
+
+        return Json(new { success = true, mejoras = mejoras });
+    }
+
+    [HttpPost]
+    public IActionResult RegistrarAvanceMejora([FromBody] AvanceEstudianteMejoraDto dto)
+    {
+        _context.AsegurarEsquemaAccionesMejora();
+
+        var userId = HttpContext.Session.GetInt32("UserId");
+        if (userId == null)
+        {
+            return Json(new { success = false, message = "Sesión no válida." });
+        }
+
+        if (dto == null || dto.IdMejora <= 0 || string.IsNullOrWhiteSpace(dto.RespuestaEstudiante))
+        {
+            return Json(new { success = false, message = "Por favor escribe tu compromiso / avance de mejora." });
+        }
+
+        var mejora = _context.AccionesMejora.Find(dto.IdMejora);
+        if (mejora == null || !mejora.Activo)
+        {
+            return Json(new { success = false, message = "Acción de mejora no encontrada." });
+        }
+
+        if (mejora.IdEstudiante != userId.Value)
+        {
+            return Json(new { success = false, message = "No tienes permiso para modificar este registro." });
+        }
+
+        mejora.RespuestaEstudiante = dto.RespuestaEstudiante.Trim();
+        mejora.FechaRespuestaEstudiante = DateTime.Now;
+
+        _context.SaveChanges();
+
+        return Json(new { success = true, message = "¡Tu avance y compromiso han sido registrados con éxito!" });
     }
 }

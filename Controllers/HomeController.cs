@@ -366,11 +366,23 @@ namespace ProyectoPAE.Controllers
                         .OrderBy(m => m)
                         .ToList();
 
-                    if (!materiasActividades.Any())
+                    var materiasBD = _context.MATERIA.Select(m => m.nombre_materia).Distinct().OrderBy(m => m).ToList();
+                    if (!materiasBD.Any())
                     {
-                        materiasActividades = _context.MATERIA.Select(m => m.nombre_materia).Distinct().OrderBy(m => m).ToList();
+                        materiasBD = new List<string> { 
+                            "Matemáticas", 
+                            "Español y Literatura", 
+                            "Ciencias Naturales", 
+                            "Ciencias Sociales", 
+                            "Inglés", 
+                            "Tecnología e Informática", 
+                            "Educación Física", 
+                            "Ética y Valores" 
+                        };
                     }
-                    ViewBag.MateriasEstudiante = materiasActividades;
+
+                    var materiasEstudiante = materiasActividades.Union(materiasBD).Distinct().OrderBy(m => m).ToList();
+                    ViewBag.MateriasEstudiante = materiasEstudiante;
                 }
                 else
                 {
@@ -478,6 +490,11 @@ namespace ProyectoPAE.Controllers
                 .ToList();
 
             ViewBag.CursosAsistencia = cursosAsistencia;
+
+            var cursosDocenteLista = cursosAsistencia != null && cursosAsistencia.Any()
+                ? cursosAsistencia
+                : new List<string> { "601", "602", "701", "702", "801", "802", "901", "902", "1001", "1002", "1101", "1102" };
+            ViewBag.CursosDocente = cursosDocenteLista;
 
             return View();
         }

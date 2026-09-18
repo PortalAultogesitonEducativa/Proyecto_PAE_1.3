@@ -144,6 +144,10 @@ namespace ProyectoPAE.Controllers
                 }
             }
 
+            _context.AsegurarEsquemaAccionesMejora();
+            var mejorasActivas = _context.AccionesMejora.Where(a => a.Activo).ToList();
+            ViewBag.AccionesMejora = mejorasActivas;
+
             ViewBag.Grados = grados;
             ViewBag.Asignaturas = asignaturas;
 
@@ -891,6 +895,142 @@ namespace ProyectoPAE.Controllers
 
             _context.SaveChanges();
             return Json(new { success = true, message = "¡Citación enviada al padre/acudiente exitosamente!" });
+        }
+
+        // ===============================================
+        // GESTIÓN DE ACCIONES DE MEJORA Y SEGUIMIENTO (DOCENTE)
+        // ===============================================
+
+        [HttpGet]
+        public IActionResult ObtenerAccionesMejoraDocente(string? curso, string? materia)
+        {
+            _context.AsegurarEsquemaAccionesMejora();
+
+            var query = _context.AccionesMejora.Where(a => a.Activo);
+
+            if (!string.IsNullOrWhiteSpace(curso) && curso.ToLower() != "todos")
+            {
+                query = query.Where(a => a.Grado == curso);
+            }
+
+            if (!string.IsNullOrWhiteSpace(materia) && materia.ToLower() != "todas")
+            {
+                query = query.Where(a => a.Materia == materia);
+            }
+
+            var mejoras = query
+                .OrderByDescending(a => a.FechaRegistro)
+                .Select(a => new
+                {
+                    idMejora = a.IdMejora,
+                    idEstudiante = a.IdEstudiante,
+                    nombreEstudiante = a.NombreEstudiante,
+                    materia = a.Materia,
+                    grado = a.Grado,
+                    periodo = a.Periodo,
+                    aspectoMejorar = a.AspectoMejorar,
+                    compromisoEstudiante = a.CompromisoEstudiante,
+                    fechaRegistro = a.FechaRegistro.ToString("dd/MM/yyyy"),
+                    fechaCompromiso = a.FechaCompromiso.HasValue ? a.FechaCompromiso.Value.ToString("dd/MM/yyyy") : null,
+                    estadoSeguimiento = a.EstadoSeguimiento,
+                    observacionSeguimiento = a.ObservacionSeguimiento,
+                    fechaSeguimiento = a.FechaSeguimiento.HasValue ? a.FechaSeguimiento.Value.ToString("dd/MM/yyyy HH:mm") : null,
+                    respuestaEstudiante = a.RespuestaEstudiante,
+                    fechaRespuestaEstudiante = a.FechaRespuestaEstudiante.HasValue ? a.FechaRespuestaEstudiante.Value.ToString("dd/MM/yyyy HH:mm") : null,
+                    docente = a.Docente
+                })
+                .ToList();
+
+            return Json(new { success = true, mejoras = mejoras });
+        }
+
+        [HttpPost]
+        public IActionResult GuardarAccionMejora([FromBody] AccionMejoraRegistroDto dto)
+        {
+            _context.AsegurarEsquemaAccionesMejora();
+
+            if (dto == null || dto.IdEstudiante <= 0 || string.IsNullOrWhiteSpace(dto.Materia) || string.IsNullOrWhiteSpace(dto.AspectoMejorar) || string.IsNullOrWhiteSpace(dto.CompromisoEstudiante))
+            {
+                return Json(new { success = false, message = "Por favor complete todos los campos obligatorios: Estudiante, Asignatura, Aspecto a Mejorar y Compromiso." });
+            }
+
+            var userId = HttpContext.Session.GetInt32("UserId");
+            var nombreDocente = HttpContext.Session.GetString("NombreUsuario") ?? "Docente";
+
+            // Obtener nombre del estudiante si no viene en dto
+            string nombreEst = dto.NombreEstudiante ?? "";
+            if (string.IsNullOrWhiteSpace(nombreEst))
+            {
+                var est = _context.Usuarios.Find(dto.IdEstudiante);
+                if (est != null)
+                {
+                    nombreEst = $"{est.NOMBRES} {est.APELLIDOS}".Trim();
+                }
+            }
+
+            var nuevaMejora = new AccionMejora
+            {
+                IdEstudiante = dto.IdEstudiante,
+                NombreEstudiante = nombreEst,
+                IdDocente = userId,
+                Docente = nombreDocente,
+                Materia = dto.Materia.Trim(),
+                Grado = dto.Grado?.Trim(),
+                Periodo = dto.Periodo > 0 ? dto.Periodo : 1,
+                AspectoMejorar = dto.AspectoMejorar.Trim(),
+                CompromisoEstudiante = dto.CompromisoEstudiante.Trim(),
+                FechaRegistro = DateTime.Now,
+                FechaCompromiso = dto.FechaCompromiso,
+                EstadoSeguimiento = "En Proceso",
+                Activo = true
+            };
+
+            _context.AccionesMejora.Add(nuevaMejora);
+            _context.SaveChanges();
+
+            return Json(new { success = true, message = "¡Acción de mejora y compromiso registrados exitosamente!" });
+        }
+
+        [HttpPost]
+        public IActionResult ActualizarSeguimientoMejora([FromBody] SeguimientoMejoraDto dto)
+        {
+            _context.AsegurarEsquemaAccionesMejora();
+
+            if (dto == null || dto.IdMejora <= 0)
+            {
+                return Json(new { success = false, message = "Registro no válido." });
+            }
+
+            var mejora = _context.AccionesMejora.Find(dto.IdMejora);
+            if (mejora == null || !mejora.Activo)
+            {
+                return Json(new { success = false, message = "La acción de mejora no existe o fue eliminada." });
+            }
+
+            mejora.EstadoSeguimiento = string.IsNullOrWhiteSpace(dto.EstadoSeguimiento) ? "Cumplido" : dto.EstadoSeguimiento.Trim();
+            mejora.ObservacionSeguimiento = dto.ObservacionSeguimiento?.Trim();
+            mejora.FechaSeguimiento = DateTime.Now;
+
+            _context.SaveChanges();
+
+            return Json(new { success = true, message = "¡Seguimiento actualizado correctamente!" });
+        }
+
+        [HttpPost]
+        public IActionResult EliminarAccionMejora(int idMejora)
+        {
+            _context.AsegurarEsquemaAccionesMejora();
+
+            var mejora = _context.AccionesMejora.Find(idMejora);
+            if (mejora == null)
+            {
+                return Json(new { success = false, message = "Registro no encontrado." });
+            }
+
+            mejora.Activo = false;
+            _context.SaveChanges();
+
+            return Json(new { success = true, message = "Acción de mejora eliminada exitosamente." });
         }
     }
 }
