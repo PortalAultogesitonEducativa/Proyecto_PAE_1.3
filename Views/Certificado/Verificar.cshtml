@@ -1,0 +1,125 @@
+@model ProyectoPAE.Servicios.ResultadoVerificacion
+
+@{
+    ViewData["Title"] = "Verificar Certificado";
+}
+
+<div class="container mt-4">
+    <h2>Verificar autenticidad de un certificado</h2>
+    <p class="text-muted">Ingresa el código de verificación que aparece impreso en el certificado (ej: PAE-8F2A91C4).</p>
+
+    <form asp-action="VerificarCodigo" method="get" class="row g-2 mb-4">
+        <div class="col-auto">
+            <input type="text" name="codigo" class="form-control" placeholder="PAE-XXXXXXXX" required />
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary">Verificar</button>
+        </div>
+    </form>
+
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert alert-warning" asp-validation-summary="All"></div>
+    }
+
+    @if (Model != null && Model.Certificado != null)
+    {
+        if (Model.Valido)
+        {
+            <div class="alert alert-success">
+                <strong>✔ Certificado válido.</strong> @Model.Motivo
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-danger">
+                <strong>✘ Certificado no válido.</strong> @Model.Motivo
+            </div>
+        }
+
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    @Model.Certificado.Estudiante?.NOMBRES @Model.Certificado.Estudiante?.APELLIDOS
+                </h5>
+                <p class="card-text">
+                    <strong>Tipo:</strong> @Model.Certificado.TipoCertificado <br />
+                    <strong>Código:</strong> @Model.Certificado.CodigoVerificacion <br />
+                    <strong>Fecha de emisión:</strong> @Model.Certificado.FechaEmision.ToString("dd/MM/yyyy HH:mm") <br />
+                    <strong>Estado:</strong> @Model.Certificado.Estado
+                </p>
+
+                @if (Model.Certificado.TipoCertificado == "Matricula")
+                {
+                    var detalle = Model.Detalles.FirstOrDefault();
+                    var partesPeriodo = detalle?.Periodo?.Split('-');
+                    var anioMostrado = partesPeriodo != null && partesPeriodo.Length > 0 ? partesPeriodo[0] : "";
+                    var nombreEstudiante = Model.Certificado.Estudiante != null ? $"{Model.Certificado.Estudiante.NOMBRES} {Model.Certificado.Estudiante.APELLIDOS}" : "";
+                    var documentoEstudiante = Model.Certificado.Estudiante != null ? Model.Certificado.Estudiante.NUM_DOCUMENTO : "";
+
+                    <div class="my-4 p-4 border rounded bg-white shadow-sm" style="font-family: Arial, sans-serif; color: #000; line-height: 1.8;">
+                        <!-- Encabezado Estilo Ministerio de Educación -->
+                        <div class="text-center mb-4">
+                            <p class="mb-0 fw-bold text-secondary text-uppercase" style="font-size: 12px; letter-spacing: 0.5px;">Ministerio De Educación</p>
+                            <p class="text-muted mb-0" style="font-size: 11px;">Secretaría Regional Ministerial de Educación</p>
+                        </div>
+
+                        <!-- Título y Nombre de Colegio -->
+                        <h4 class="text-center fw-bold mb-1" style="font-size: 20px;">Certificado de Alumno Matrícula</h4>
+                        <p class="text-center fw-bold mb-4" style="font-size: 16px; text-decoration: underline;">@ViewBag.NombreColegio</p>
+                        
+                        <!-- Cuerpo de Constancia -->
+                        <p class="mb-3" style="font-size: 14px; text-align: justify; line-height: 1.8;">
+                            Se certifica que Don (a) <strong>@nombreEstudiante</strong> Rut; <strong>@documentoEstudiante</strong> asiste regularmente a este Establecimiento Educacional,
+                            cursando <strong>@(detalle?.Materia)</strong> con el registro N° <strong>@(detalle?.IdCalificacion)</strong> del año <strong>@anioMostrado</strong>.
+                        </p>
+                        <p class="mb-4" style="font-size: 14px; text-align: justify; line-height: 1.8;">
+                            Se entrega el presente certificado para acreditar que el estudiante pertenece al establecimiento educacional.
+                        </p>
+
+                        <!-- Firma Dirección -->
+                        <div class="text-center my-4 pt-2">
+                            <p class="mb-4 fw-bold" style="font-size: 13px; letter-spacing: 1px;">DIRECCIÓN</p>
+                            <p class="mb-0">_____________________________</p>
+                            <p class="mb-0 fw-bold" style="font-size: 14px;">@ViewBag.NombreEmisor</p>
+                            <p class="text-muted small mb-0" style="font-size: 11px;">Nombre, Apellidos, Firma y Timbre</p>
+                        </div>
+
+                        <!-- Fecha de Emisión -->
+                        <div class="text-start mt-4 pt-2 text-muted" style="font-size: 13px;">
+                            Expedido el @Model.Certificado.FechaEmision.ToString("dd 'de' MMMM 'de' yyyy").-
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Materia</th>
+                                <th>Periodo</th>
+                                <th>Nota Final</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var d in Model.Detalles)
+                            {
+                                <tr>
+                                    <td>@d.Materia</td>
+                                    <td>@d.Periodo</td>
+                                    <td>@d.NotaFinal</td>
+                                    <td>@d.EstadoNota</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+    }
+    else if (Model != null && !string.IsNullOrEmpty(Model.Motivo))
+    {
+        <div class="alert alert-danger">@Model.Motivo</div>
+    }
+</div>

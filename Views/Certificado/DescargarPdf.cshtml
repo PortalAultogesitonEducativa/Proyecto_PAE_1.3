@@ -1,0 +1,131 @@
+@model ProyectoPAE.Models.Certificado
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <style>
+        body { font-family: Arial, sans-serif; color: #222; padding: 30px 50px; }
+
+        /* ============================================================
+           ENCABEZADO / LOGO DEL COLEGIO
+           Por ahora el sistema es de un solo colegio, asi que este
+           bloque queda como texto fijo. Cuando se implemente multi-
+           tenant, reemplazar el bloque .encabezado por:
+             <img src="@ViewBag.LogoColegioUrl" style="height:70px;" />
+             <div>@ViewBag.NombreColegio</div>
+           usando el logo/nombre asociado a la institucion del
+           certificado (ej. desde una futura tabla COLEGIO).
+           ============================================================ */
+        .encabezado { text-align: center; margin-bottom: 10px; }
+        .nombre-institucion { font-size: 15px; font-weight: bold; color: #0d2a4a; margin: 0; }
+        .subtitulo-institucion { font-size: 12px; color: #555; margin: 4px 0 0 0; text-decoration: underline; }
+
+        h1 { text-align: center; color: #0d2a4a; font-size: 20px; margin: 30px 0 3px 0; }
+
+        .cuerpo { margin-top: 35px; font-size: 14px; text-align: justify; line-height: 1.9; }
+        .cuerpo b { color: #000; }
+
+        .cuerpo2 { margin-top: 25px; font-size: 14px; text-align: justify; line-height: 1.7; }
+
+        .firma { margin-top: 70px; font-size: 13px; }
+        .firma p { margin: 2px 0; }
+
+        .fecha { margin-top: 40px; font-size: 13px; }
+
+        table.notas { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13px; }
+        table.notas th, table.notas td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        table.notas th { background: #0d2a4a; color: white; }
+
+        .verificacion { margin-top: 50px; font-size: 10px; color: #888; border-top: 1px solid #eee; padding-top: 10px; text-align: center; }
+        .verificacion a { color: #0d6efd; }
+        .qr { text-align: center; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    @{
+        var esMatricula = Model.TipoCertificado == "Matricula";
+        var nombreEstudiante = Model.Estudiante != null ? $"{Model.Estudiante.NOMBRES} {Model.Estudiante.APELLIDOS}" : "";
+        var documentoEstudiante = Model.Estudiante != null ? Model.Estudiante.NUM_DOCUMENTO : "";
+    }
+
+    <div class="encabezado">
+        <p class="nombre-institucion">@(ViewBag.NombreColegio ?? "Institución Educativa")</p>
+        <p class="subtitulo-institucion">Sistema de Gestión PAE</p>
+    </div>
+
+    @if (esMatricula)
+    {
+        var detalle = Model.Detalles.FirstOrDefault();
+        var partesPeriodo = detalle?.Periodo?.Split('-');
+        var anioMostrado = partesPeriodo != null && partesPeriodo.Length > 0 ? partesPeriodo[0] : "";
+
+        <h1>Constancia de Alumno Matriculado</h1>
+
+        <div class="cuerpo">
+            Se certifica que Don(a) <b>@nombreEstudiante</b>, identificado(a) con documento N°
+            <b>@documentoEstudiante</b>, asiste regularmente a este Establecimiento Educacional,
+            cursando <b>@(detalle?.Materia)</b>, con matrícula N° <b>@(detalle?.IdCalificacion)</b>
+            del año <b>@anioMostrado</b>.
+        </div>
+
+        <div class="cuerpo2">
+            Se entrega la presente constancia para acreditar que el/la estudiante pertenece
+            al establecimiento educacional, con estado de matrícula <b>@(detalle?.EstadoNota)</b>.
+        </div>
+
+        <div class="firma">
+            <p>_____________________________</p>
+            <p><b>@ViewBag.NombreEmisor</b></p>
+            <p>Nombre, Apellidos, Firma y Sello</p>
+        </div>
+
+        <div class="fecha">
+            Expedido el @Model.FechaEmision.ToString("dd 'de' MMMM 'de' yyyy").-
+        </div>
+    }
+    else
+    {
+        <h1>Certificado de Calificaciones</h1>
+        <div class="cuerpo">
+            <p><b>Estudiante:</b> @nombreEstudiante</p>
+            <p><b>Fecha de expedición:</b> @Model.FechaEmision.ToString("dd 'de' MMMM 'de' yyyy, hh:mm tt")</p>
+        </div>
+        <table class="notas">
+            <thead>
+                <tr>
+                    <th>Materia</th>
+                    <th>Periodo</th>
+                    <th>Nota</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var d in Model.Detalles)
+                {
+                    <tr>
+                        <td>@d.Materia</td>
+                        <td>@d.Periodo</td>
+                        <td>@d.NotaFinal</td>
+                        <td>@d.EstadoNota</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <div class="firma">
+            <p>_____________________________</p>
+            <p><b>@ViewBag.NombreEmisor</b></p>
+            <p>Nombre, Apellidos, Firma y Sello</p>
+        </div>
+    }
+
+    <div class="qr">
+        <img src="data:image/png;base64,@ViewBag.QrBase64" width="100" height="100" />
+    </div>
+
+    <div class="verificacion">
+        Código de verificación: <b>@Model.CodigoVerificacion</b> — Verifica la autenticidad de este documento en
+        <a href="@ViewBag.UrlVerificacion">@ViewBag.UrlVerificacion</a>
+    </div>
+</body>
+</html>

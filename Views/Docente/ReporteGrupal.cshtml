@@ -1,0 +1,520 @@
+@model IEnumerable<dynamic>
+
+@{
+    ViewData["Title"] = "Reportes Generales de Calificaciones";
+    var idsMostrados = new HashSet<int>();
+    var cursosList = ViewBag.Cursos as IEnumerable<string> ?? new List<string>();
+    var materiasList = ViewBag.Materias as IEnumerable<string> ?? new List<string>();
+}
+
+<div class="container-fluid mt-4 px-4 pb-5" style="max-width: 1300px; margin: 0 auto;">
+
+    <!-- 1. Encabezado Institucional -->
+    <div class="card border-0 shadow-sm mb-4 rounded-3 overflow-hidden">
+        <div class="d-flex flex-wrap justify-content-between align-items-center px-4 py-3 text-white"
+             style="background: linear-gradient(135deg, #0d2a4a 0%, #2980b9 100%);">
+            <div class="d-flex align-items-center gap-3">
+                <div class="rounded-circle d-flex align-items-center justify-content-center"
+                     style="width:48px;height:48px;background:rgba(255,255,255,0.15);">
+                    <i class="bi bi-bar-chart-line fs-4 text-white"></i>
+                </div>
+                <div>
+                    <h4 class="mb-0 fw-bold">Reportes Generales de Calificaciones</h4>
+                    <span class="badge bg-light text-dark fw-bold mt-1 px-3 py-1" style="font-size:0.85rem;">
+                        <i class="bi bi-mortarboard-fill me-1 text-primary"></i> Estadísticas, Rendimiento y Boletines
+                    </span>
+                </div>
+            </div>
+            <div class="d-flex gap-2 mt-2 mt-sm-0">
+                <button onclick="window.print()" class="btn btn-outline-light btn-sm rounded-pill px-3 shadow-sm">
+                    <i class="bi bi-printer me-1"></i> Imprimir Reporte
+                </button>
+                <a href="@Url.Action("Dashboard", "Home")" class="btn btn-light btn-sm rounded-pill px-3 shadow-sm text-dark fw-bold">
+                    <i class="bi bi-arrow-left me-1"></i> Volver al Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. KPIs de Rendimiento Académico -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3 col-sm-6">
+            <div class="card border-0 shadow-sm p-3 rounded-3 h-100" style="border-left: 4px solid #2980b9 !important;">
+                <span class="text-muted small fw-semibold text-uppercase">Total Evaluaciones</span>
+                <h3 class="fw-bold mb-0 text-dark" id="kpiTotalNotas">0</h3>
+                <small class="text-muted">Registros filtrados</small>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="card border-0 shadow-sm p-3 rounded-3 h-100" style="border-left: 4px solid #0d6efd !important;">
+                <span class="text-muted small fw-semibold text-uppercase">Promedio General</span>
+                <h3 class="fw-bold mb-0 text-primary" id="kpiPromedio">0.0</h3>
+                <small class="text-muted">Escala 0.0 - 5.0</small>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="card border-0 shadow-sm p-3 rounded-3 h-100" style="border-left: 4px solid #198754 !important;">
+                <span class="text-muted small fw-semibold text-uppercase">Estudiantes Aprobados</span>
+                <h3 class="fw-bold mb-0 text-success" id="kpiAprobados">0 (0%)</h3>
+                <small class="text-muted">Nota final ≥ 3.0</small>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="card border-0 shadow-sm p-3 rounded-3 h-100" style="border-left: 4px solid #dc3545 !important;">
+                <span class="text-muted small fw-semibold text-uppercase">En Riesgo / Reprobados</span>
+                <h3 class="fw-bold mb-0 text-danger" id="kpiReprobados">0 (0%)</h3>
+                <small class="text-muted">Nota final &lt; 3.0</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Barra de Filtros: Buscador, Grado, Curso, Jornada, Materia y Periodo -->
+    <div class="card border-0 shadow-sm p-4 mb-4 rounded-3">
+        <h5 class="fw-bold text-dark mb-3"><i class="bi bi-funnel-fill text-primary me-2"></i>Filtros de Búsqueda y Análisis</h5>
+        <div class="row g-3 align-items-end">
+            <!-- Buscador por Estudiante -->
+            <div class="col-lg-3 col-md-6">
+                <label class="form-label small fw-bold text-dark mb-1">
+                    <i class="bi bi-search me-1 text-primary"></i>Buscar Estudiante
+                </label>
+                <div class="input-group">
+                    <span class="input-group-text bg-white text-muted border-end-0"><i class="bi bi-person"></i></span>
+                    <input type="text" class="form-control border-start-0 ps-0" id="filtroEstudianteReporte" placeholder="Nombre o apellido...">
+                </div>
+            </div>
+
+            <!-- Filtro Grado Nivel (6° a 11°) -->
+            <div class="col-lg-2 col-md-3 col-sm-6">
+                <label class="form-label small fw-bold text-dark mb-1">
+                    <i class="bi bi-mortarboard me-1 text-primary"></i>Grado
+                </label>
+                <select class="form-select" id="filtroGradoNivelReporte">
+                    <option value="todos">Todos los Grados</option>
+                    <option value="6">Grado 6°</option>
+                    <option value="7">Grado 7°</option>
+                    <option value="8">Grado 8°</option>
+                    <option value="9">Grado 9°</option>
+                    <option value="10">Grado 10°</option>
+                    <option value="11">Grado 11°</option>
+                </select>
+            </div>
+
+            <!-- Filtro Curso Específico -->
+            <div class="col-lg-2 col-md-3 col-sm-6">
+                <label class="form-label small fw-bold text-dark mb-1">
+                    <i class="bi bi-people me-1 text-primary"></i>Curso
+                </label>
+                <select class="form-select" id="filtroCursoReporte">
+                    <option value="todos">Todos los Cursos</option>
+                    @foreach (var c in cursosList)
+                    {
+                        <option value="@c">@c</option>
+                    }
+                </select>
+            </div>
+
+            <!-- Filtro Jornada (Mañana M / Tarde T) -->
+            <div class="col-lg-2 col-md-4 col-sm-6">
+                <label class="form-label small fw-bold text-dark mb-1">
+                    <i class="bi bi-clock-history me-1 text-primary"></i>Jornada
+                </label>
+                <select class="form-select" id="filtroJornadaReporte">
+                    <option value="todos">Todas las Jornadas</option>
+                    <option value="Mañana">Mañana (M)</option>
+                    <option value="Tarde">Tarde (T)</option>
+                </select>
+            </div>
+
+            <!-- Filtro Materia -->
+            <div class="col-lg-2 col-md-4 col-sm-6">
+                <label class="form-label small fw-bold text-dark mb-1">
+                    <i class="bi bi-book me-1 text-primary"></i>Materia
+                </label>
+                <select class="form-select" id="filtroMateriaReporte">
+                    <option value="todas">Todas las Materias</option>
+                    @foreach (var m in materiasList)
+                    {
+                        <option value="@m">@m</option>
+                    }
+                </select>
+            </div>
+
+            <!-- Filtro Periodo -->
+            <div class="col-lg-1 col-md-4 col-sm-6">
+                <label class="form-label small fw-bold text-dark mb-1">Periodo</label>
+                <select class="form-select" id="filtroPeriodoReporte">
+                    <option value="todos">Todos</option>
+                    <option value="1">1°</option>
+                    <option value="2">2°</option>
+                    <option value="3">3°</option>
+                    <option value="4">4°</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Gráfica Interactiva de Rendimiento -->
+    <div class="card border-0 shadow-sm p-4 mb-4 rounded-3">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold text-dark mb-0"><i class="bi bi-graph-up text-primary me-2"></i>Distribución de Calificaciones del Grupo</h5>
+            <small class="text-muted" id="infoGraficaReporte">Visualizando estudiantes filtrados</small>
+        </div>
+        <div style="position: relative; height: 280px; width: 100%;">
+            <canvas id="graficaNotas"></canvas>
+        </div>
+    </div>
+
+    <!-- 5. Tabla de Calificaciones con Paginación -->
+    <div class="card border-0 shadow-sm overflow-hidden mb-4 rounded-3">
+        <div class="p-3 border-bottom d-flex align-items-center justify-content-between bg-light">
+            <h5 class="fw-bold mb-0 text-dark" id="tituloTablaReporte">Detalle de Calificaciones</h5>
+            <span class="badge bg-primary rounded-pill px-3 py-2" id="badgeTotalFilas">0 registros</span>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="tablaReportes">
+                <thead class="table-dark">
+                    <tr>
+                        <th class="ps-3">Estudiante</th>
+                        <th>Curso</th>
+                        <th>Materia</th>
+                        <th class="text-center">Periodo</th>
+                        <th class="text-center" style="width: 130px;">Nota Final</th>
+                        <th class="text-center" style="width: 140px;">Estado</th>
+                        <th class="text-center" style="width: 120px;">Certificado</th>
+                    </tr>
+                </thead>
+                <tbody id="tbodyReportes">
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            string cursoEst = item.Curso ?? "";
+                            double notaNum = 0.0;
+                            try { notaNum = Convert.ToDouble(item.Nota); } catch {}
+                            string nombreEst = item.NombreEstudiante ?? "";
+                            string materiaEst = item.Materia ?? "";
+                            int periodoEst = item.Periodo != null ? (int)item.Periodo : 1;
+                            int idEst = (int)item.IdEstudiante;
+
+                            <tr class="fila-reporte"
+                                data-estudiante="@nombreEst.ToLower()"
+                                data-curso="@cursoEst.ToLower()"
+                                data-materia="@materiaEst.ToLower()"
+                                data-periodo="@periodoEst"
+                                data-nota="@notaNum.ToString("F1", System.Globalization.CultureInfo.InvariantCulture)">
+                                <td class="ps-3 fw-bold text-dark">@nombreEst</td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(cursoEst) && cursoEst != "Sin Curso")
+                                    {
+                                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle">@cursoEst</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">--</span>
+                                    }
+                                </td>
+                                <td><span class="badge bg-secondary-subtle text-secondary border">@materiaEst</span></td>
+                                <td class="text-center"><span class="badge bg-light text-dark border">P@(periodoEst)</span></td>
+                                <td class="text-center fw-bold fs-6 @(notaNum >= 3.0 ? "text-success" : "text-danger")">
+                                    @notaNum.ToString("F1")
+                                </td>
+                                <td class="text-center">
+                                    @if (notaNum >= 3.0)
+                                    {
+                                        <span class="badge bg-success"><i class="bi bi-check-circle-fill me-1"></i> Aprobado</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger"><i class="bi bi-x-circle-fill me-1"></i> Reprobado</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    @if (idsMostrados.Add(idEst))
+                                    {
+                                        <a asp-controller="Certificado" asp-action="Generar"
+                                           asp-route-idEstudiante="@idEst"
+                                           class="btn btn-sm btn-outline-primary rounded-pill px-3 shadow-sm" title="Generar Certificado Oficial">
+                                            <i class="bi bi-patch-check me-1"></i> Certificado
+                                        </a>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-5">
+                                <i class="bi bi-journal-x fs-1 d-block mb-2 text-secondary"></i>
+                                No hay calificaciones registradas para generar reportes.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="p-3 bg-light border-top d-flex justify-content-between align-items-center">
+            <small class="text-muted" id="infoPaginacionReporte">Mostrando resultados</small>
+            <ul class="pagination pagination-sm mb-0" id="paginacionReporte"></ul>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const inputBuscar = document.getElementById('filtroEstudianteReporte');
+        const selectGradoNivel = document.getElementById('filtroGradoNivelReporte');
+        const selectCurso = document.getElementById('filtroCursoReporte');
+        const selectJornada = document.getElementById('filtroJornadaReporte');
+        const selectMateria = document.getElementById('filtroMateriaReporte');
+        const selectPeriodo = document.getElementById('filtroPeriodoReporte');
+
+        const todasFilas = Array.from(document.querySelectorAll('#tbodyReportes .fila-reporte'));
+
+        let paginaActual = 1;
+        const porPagina = 15;
+        let chartInstance = null;
+
+        function getFilasFiltradas() {
+            const term = (inputBuscar ? inputBuscar.value : '').toLowerCase().trim();
+            const gradoNivel = (selectGradoNivel ? selectGradoNivel.value : 'todos').trim();
+            const valCurso = (selectCurso ? selectCurso.value : 'todos').toLowerCase().trim();
+            const valJornada = (selectJornada ? selectJornada.value : 'todos').toLowerCase().trim();
+            const valMateria = (selectMateria ? selectMateria.value : 'todas').toLowerCase().trim();
+            const valPeriodo = (selectPeriodo ? selectPeriodo.value : 'todos').trim();
+
+            return todasFilas.filter(fila => {
+                const est = fila.getAttribute('data-estudiante') || '';
+                const curso = fila.getAttribute('data-curso') || '';
+                const mat = fila.getAttribute('data-materia') || '';
+                const per = fila.getAttribute('data-periodo') || '';
+
+                // 1. Buscador estudiante
+                if (term && !est.includes(term)) return false;
+
+                // 2. Jornada (M = Mañana / T = Tarde)
+                if (valJornada !== 'todos') {
+                    const esManana = valJornada.includes('mañana') || valJornada.includes('manana') || valJornada.startsWith('m');
+                    const esTarde = valJornada.includes('tarde') || valJornada.startsWith('t');
+
+                    if (esManana) {
+                        const esM = curso.endsWith('m') || curso.includes(' m') || curso.includes('m');
+                        if (!esM && curso !== '') return false;
+                    } else if (esTarde) {
+                        const esT = curso.endsWith('t') || curso.includes(' t') || curso.includes('t');
+                        if (!esT && curso !== '') return false;
+                    }
+                }
+
+                // 3. Grado Nivel (6 a 11)
+                if (gradoNivel !== 'todos') {
+                    const digits = curso.replace(/\D/g, '');
+                    if (gradoNivel === '6' && !digits.startsWith('6')) return false;
+                    if (gradoNivel === '7' && !digits.startsWith('7')) return false;
+                    if (gradoNivel === '8' && !digits.startsWith('8')) return false;
+                    if (gradoNivel === '9' && !digits.startsWith('9')) return false;
+                    if (gradoNivel === '10' && !digits.startsWith('10')) return false;
+                    if (gradoNivel === '11' && !digits.startsWith('11')) return false;
+                }
+
+                // 4. Curso específico
+                if (valCurso !== 'todos') {
+                    if (curso !== valCurso && !curso.includes(valCurso)) return false;
+                }
+
+                // 5. Materia
+                if (valMateria !== 'todas') {
+                    if (mat !== valMateria && !mat.includes(valMateria)) return false;
+                }
+
+                // 6. Periodo
+                if (valPeriodo !== 'todos') {
+                    if (per !== valPeriodo) return false;
+                }
+
+                return true;
+            });
+        }
+
+        function actualizarKPIsyGrafico(filas) {
+            const total = filas.length;
+            let suma = 0;
+            let aprobados = 0;
+
+            const nombres = [];
+            const notas = [];
+
+            filas.forEach(f => {
+                const n = parseFloat(f.getAttribute('data-nota') || '0');
+                suma += n;
+                if (n >= 3.0) aprobados++;
+
+                // Solo para el gráfico, tomamos hasta 30 para legibilidad
+                if (nombres.length < 30) {
+                    const nom = f.querySelector('td:first-child')?.textContent.trim() || '';
+                    nombres.push(nom.length > 15 ? nom.substring(0, 15) + '...' : nom);
+                    notas.push(n);
+                }
+            });
+
+            const reprobados = total - aprobados;
+            const promedio = total > 0 ? (suma / total).toFixed(2) : '0.0';
+            const pctAprobados = total > 0 ? Math.round((aprobados / total) * 100) : 0;
+            const pctReprobados = total > 0 ? Math.round((reprobados / total) * 100) : 0;
+
+            document.getElementById('kpiTotalNotas').textContent = total;
+            document.getElementById('kpiPromedio').textContent = promedio;
+            document.getElementById('kpiAprobados').textContent = `${aprobados} (${pctAprobados}%)`;
+            document.getElementById('kpiReprobados').textContent = `${reprobados} (${pctReprobados}%)`;
+            document.getElementById('badgeTotalFilas').textContent = `${total} registros`;
+
+            // Actualizar Gráfico Chart.js
+            const ctx = document.getElementById('graficaNotas');
+            if (!ctx) return;
+
+            const colores = notas.map(n => n >= 3.0 ? 'rgba(39, 174, 96, 0.7)' : 'rgba(231, 76, 60, 0.7)');
+            const bordes = notas.map(n => n >= 3.0 ? '#1e7e34' : '#bd2130');
+
+            if (chartInstance) {
+                chartInstance.data.labels = nombres;
+                chartInstance.data.datasets[0].data = notas;
+                chartInstance.data.datasets[0].backgroundColor = colores;
+                chartInstance.data.datasets[0].borderColor = bordes;
+                chartInstance.update();
+            } else {
+                chartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: nombres,
+                        datasets: [{
+                            label: 'Nota Final',
+                            data: notas,
+                            backgroundColor: colores,
+                            borderColor: bordes,
+                            borderWidth: 1.5,
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 5.0,
+                                ticks: { stepSize: 1.0 }
+                            },
+                            x: {
+                                ticks: { maxRotation: 45, minRotation: 25 }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        function renderizar() {
+            const filtradas = getFilasFiltradas();
+            const total = filtradas.length;
+            const totalPags = Math.max(1, Math.ceil(total / porPagina));
+            if (paginaActual > totalPags) paginaActual = totalPags;
+
+            todasFilas.forEach(f => f.style.display = 'none');
+
+            const inicio = (paginaActual - 1) * porPagina;
+            const fin = Math.min(inicio + porPagina, total);
+            for (let i = inicio; i < fin; i++) {
+                filtradas[i].style.display = '';
+            }
+
+            const info = document.getElementById('infoPaginacionReporte');
+            if (info) {
+                if (total === 0) info.textContent = 'No se encontraron calificaciones con los filtros seleccionados.';
+                else info.textContent = `Mostrando ${inicio + 1} - ${fin} de ${total} registros`;
+            }
+
+            // Paginador
+            const ul = document.getElementById('paginacionReporte');
+            if (ul) {
+                ul.innerHTML = '';
+                if (totalPags > 1) {
+                    const liPrev = document.createElement('li');
+                    liPrev.className = `page-item ${paginaActual === 1 ? 'disabled' : ''}`;
+                    liPrev.innerHTML = `<a class="page-link" href="#">&laquo;</a>`;
+                    liPrev.onclick = (e) => { e.preventDefault(); if (paginaActual > 1) { paginaActual--; renderizar(); } };
+                    ul.appendChild(liPrev);
+
+                    for (let p = 1; p <= totalPags; p++) {
+                        if (p === 1 || p === totalPags || (p >= paginaActual - 1 && p <= paginaActual + 1)) {
+                            const li = document.createElement('li');
+                            li.className = `page-item ${p === paginaActual ? 'active' : ''}`;
+                            li.innerHTML = `<a class="page-link" href="#">${p}</a>`;
+                            li.onclick = (e) => { e.preventDefault(); paginaActual = p; renderizar(); };
+                            ul.appendChild(li);
+                        }
+                    }
+
+                    const liNext = document.createElement('li');
+                    liNext.className = `page-item ${paginaActual === totalPags ? 'disabled' : ''}`;
+                    liNext.innerHTML = `<a class="page-link" href="#">&raquo;</a>`;
+                    liNext.onclick = (e) => { e.preventDefault(); if (paginaActual < totalPags) { paginaActual++; renderizar(); } };
+                    ul.appendChild(liNext);
+                }
+            }
+
+            actualizarKPIsyGrafico(filtradas);
+        }
+
+        // Sincronizar select de cursos según Jornada y Grado
+        function filtrarOpcionesCursoReporte() {
+            if (!selectCurso) return;
+            const j = selectJornada ? selectJornada.value : 'todos';
+            const g = selectGradoNivel ? selectGradoNivel.value : 'todos';
+
+            const esM = j.toLowerCase().includes('mañana') || j.toLowerCase().startsWith('m');
+            const esT = j.toLowerCase().includes('tarde') || j.toLowerCase().startsWith('t');
+
+            Array.from(selectCurso.options).forEach((opt, idx) => {
+                if (idx === 0) return;
+                const txt = opt.text.trim();
+                let mostrar = true;
+
+                if (j !== 'todos') {
+                    if (esM && !(txt.endsWith('M') || txt.includes(' M') || txt.toLowerCase().includes('m'))) mostrar = false;
+                    if (esT && !(txt.endsWith('T') || txt.includes(' T') || txt.toLowerCase().includes('t'))) mostrar = false;
+                }
+
+                if (g !== 'todos') {
+                    const digits = txt.replace(/\D/g, '');
+                    if (!digits.startsWith(g)) mostrar = false;
+                }
+
+                opt.hidden = !mostrar;
+                opt.disabled = !mostrar;
+                opt.style.display = mostrar ? '' : 'none';
+            });
+        }
+
+        // Listeners
+        [inputBuscar, selectGradoNivel, selectCurso, selectJornada, selectMateria, selectPeriodo].forEach(el => {
+            if (!el) return;
+            const evt = el.tagName === 'INPUT' ? 'input' : 'change';
+            el.addEventListener(evt, function() {
+                if (el === selectJornada || el === selectGradoNivel) {
+                    filtrarOpcionesCursoReporte();
+                }
+                paginaActual = 1;
+                renderizar();
+            });
+        });
+
+        filtrarOpcionesCursoReporte();
+        renderizar();
+    });
+</script>

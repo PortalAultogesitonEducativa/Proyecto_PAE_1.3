@@ -1,0 +1,134 @@
+@model ProyectoPAE.Models.Certificado
+
+@{
+    ViewData["Title"] = "Certificado generado";
+}
+
+<div class="container mt-4">
+    <div class="card p-4 shadow-sm border-0">
+        @{
+            var esMatricula = Model.TipoCertificado == "Matricula";
+            var nombreEstudiante = Model.Estudiante != null ? $"{Model.Estudiante.NOMBRES} {Model.Estudiante.APELLIDOS}" : "";
+            var documentoEstudiante = Model.Estudiante != null ? Model.Estudiante.NUM_DOCUMENTO : "";
+        }
+
+        @if (esMatricula)
+        {
+            var detalle = Model.Detalles.FirstOrDefault();
+            var partesPeriodo = detalle?.Periodo?.Split('-');
+            var anioMostrado = partesPeriodo != null && partesPeriodo.Length > 0 ? partesPeriodo[0] : "";
+
+            <div class="p-4 mx-auto w-100" style="max-width: 800px; font-family: Arial, sans-serif; color: #000;">
+                
+                <!-- Encabezado Estilo Ministerio de Educación -->
+                <div class="text-center mb-5">
+                    <p class="mb-0 fw-bold text-secondary text-uppercase" style="font-size: 13px; letter-spacing: 0.5px;">Ministerio De Educación</p>
+                    <p class="text-muted mb-0" style="font-size: 12px;">Secretaría Regional Ministerial de Educación</p>
+                </div>
+
+                <!-- Título y Nombre de Colegio -->
+                <h3 class="text-center fw-bold mb-1" style="font-size: 24px;">Certificado de Alumno Matrícula</h3>
+                <p class="text-center fw-bold mb-5" style="font-size: 18px; text-decoration: underline;">@ViewBag.NombreColegio</p>
+                
+                <!-- Cuerpo de Constancia -->
+                <div class="mb-4" style="font-size: 16px; text-align: justify; line-height: 2.0;">
+                    Se certifica que Don (a) <strong>@nombreEstudiante</strong> Rut; <strong>@documentoEstudiante</strong> asiste regularmente a este Establecimiento Educacional,
+                    cursando <strong>@(detalle?.Materia)</strong> con el registro N° <strong>@(detalle?.IdCalificacion)</strong> del año <strong>@anioMostrado</strong>.
+                </div>
+
+                <div class="mb-5" style="font-size: 16px; text-align: justify; line-height: 1.8;">
+                    Se entrega el presente certificado para acreditar que el estudiante pertenece al establecimiento educacional.
+                </div>
+
+                <!-- Firma Dirección -->
+                <div class="text-center my-5 pt-3">
+                    <p class="mb-5 fw-bold" style="letter-spacing: 1px;">DIRECCIÓN</p>
+                    <p class="mb-0">_____________________________</p>
+                    <p class="mb-0 fw-bold">@ViewBag.NombreEmisor</p>
+                    <p class="text-muted small mb-0">Nombre, Apellidos, Firma y Timbre</p>
+                </div>
+
+                <!-- Fecha de Emisión -->
+                <div class="text-start mt-5 pt-3 text-muted" style="font-size: 14px;">
+                    Expedido el @Model.FechaEmision.ToString("dd 'de' MMMM 'de' yyyy").-
+                </div>
+
+                <hr class="mt-5 d-print-none" />
+
+                <!-- QR y Código para verificación pública (oculto en impresión para coincidir con la imagen) -->
+                <div class="d-flex justify-content-between align-items-center mt-4 d-print-none">
+                    <div>
+                        <p class="small text-muted mb-0">
+                            Código de verificación: <strong>@Model.CodigoVerificacion</strong> <br />
+                            Verifica la autenticidad de este documento en: <br />
+                            <a href="@ViewBag.UrlVerificacion" target="_blank">@ViewBag.UrlVerificacion</a>
+                        </p>
+                    </div>
+                    <div class="text-center">
+                        <img src="data:image/png;base64,@ViewBag.QrBase64" alt="QR de verificación" style="width:90px;height:90px;" />
+                        <p class="small text-muted mb-0">Escanea para verificar</p>
+                    </div>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <h3>@Model.TipoCertificado</h3>
+                    <p class="mb-1">
+                        <strong>Estudiante:</strong> @Model.Estudiante?.NOMBRES @Model.Estudiante?.APELLIDOS
+                    </p>
+                    <p class="mb-1"><strong>Fecha de emisión:</strong> @Model.FechaEmision.ToString("dd/MM/yyyy HH:mm")</p>
+                    <p class="mb-1"><strong>Código de verificación:</strong> @Model.CodigoVerificacion</p>
+                </div>
+
+                <div class="text-center">
+                    <img src="data:image/png;base64,@ViewBag.QrBase64" alt="QR de verificación" style="width:120px;height:120px;" />
+                    <p class="small text-muted mb-0">Escanea para verificar</p>
+                </div>
+            </div>
+
+            <hr />
+
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>Materia</th>
+                        <th>Periodo</th>
+                        <th>Nota Final</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var d in Model.Detalles)
+                    {
+                        <tr>
+                            <td>@d.Materia</td>
+                            <td>@d.Periodo</td>
+                            <td>@d.NotaFinal</td>
+                            <td>@d.EstadoNota</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <p class="small text-muted mt-2">
+                Verifica este certificado en:
+                <a href="@ViewBag.UrlVerificacion">@ViewBag.UrlVerificacion</a>
+            </p>
+        }
+
+        <div class="mt-4 gap-2 d-flex d-print-none justify-content-center">
+            <a href="@Url.Action("DescargarPdf", "Certificado", new { id = Model.IdCertificado })" class="btn btn-primary px-4">
+                <i class="bi bi-file-earmark-pdf-fill me-1"></i> Descargar PDF
+            </a>
+            <button class="btn btn-secondary px-4" onclick="window.print()">
+                <i class="bi bi-printer-fill me-1"></i> Imprimir
+            </button>
+            <a href="@Url.Action("Dashboard", "Home", new { rol = "admin" })" class="btn btn-outline-secondary px-4">
+                Volver al Panel
+            </a>
+        </div>
+    </div>
+</div>

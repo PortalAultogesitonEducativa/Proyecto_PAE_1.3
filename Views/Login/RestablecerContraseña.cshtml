@@ -1,0 +1,60 @@
+﻿@{
+    ViewData["Title"] = "Nueva contraseña";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-5" style="max-width:420px; margin:auto">
+    <h4>Establece tu nueva contraseña</h4>
+
+    @if (ViewBag.Error != null)
+    {
+        <div class="alert alert-danger">@ViewBag.Error</div>
+    }
+
+    <form method="post" action="/Login/GuardarNuevaContraseña">
+        <input type="hidden" name="token" value="@ViewBag.Token" />
+
+        <div class="mb-3">
+            <label>Nueva contraseña</label>
+            <div class="input-group">
+                <input type="password" id="nuevaPassword" name="nuevaPassword" class="form-control"
+                       placeholder="Ej: Sena1234!" minlength="8" required />
+                <button type="button" class="btn btn-outline-secondary" onclick="togglePassword('nuevaPassword', this)">
+                    <i class="bi bi-eye"></i>
+                </button>
+            </div>
+            <small class="text-muted">Debe tener mínimo 8 caracteres, mayúscula, minúscula, número y carácter especial.</small>
+        </div>
+
+        <div class="mb-3">
+            <label>Confirmar contraseña</label>
+            <div class="input-group">
+                <input type="password" id="confirmar" name="confirmar" class="form-control"
+                       minlength="8" required />
+                <button type="button" class="btn btn-outline-secondary" onclick="togglePassword('confirmar', this)">
+                    <i class="bi bi-eye"></i>
+                </button>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-success w-100">Guardar contraseña</button>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        function togglePassword(inputId, btn) {
+            const input = document.getElementById(inputId);
+            const icon = btn.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('bi-eye');
+                icon.classList.add('bi-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('bi-eye-slash');
+                icon.classList.add('bi-eye');
+            }
+        }
+    </script>
+}

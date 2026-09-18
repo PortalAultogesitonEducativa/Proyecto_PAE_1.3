@@ -1,0 +1,341 @@
+@model List<ProyectoPAE.Models.Calificacion>
+
+@{
+    ViewData["Title"] = "Mis Calificaciones";
+
+    // Agrupar por materia usando los nombres de propiedad correctos del modelo
+    var notasPorMateria = Model
+        .GroupBy(n => n.Materia ?? "Sin materia")
+        .Select(g =>
+        {
+            double promedio = g.Any() ? (double)g.Average(n => n.Nota) : 0.0;
+            return new
+            {
+                Materia = g.Key,
+                Notas = g.OrderBy(n => n.Periodo).ToList(),
+                Promedio = promedio,
+                Aprobado = promedio >= 3.0
+            };
+        })
+        .OrderBy(m => m.Materia)
+        .ToList();
+
+    double promedioGeneral = (double)(ViewBag.PromedioGeneral ?? 0.0);
+    int aprobadas = notasPorMateria.Count(m => m.Aprobado);
+    int reprobadas = notasPorMateria.Count(m => !m.Aprobado);
+    int totalMaterias = notasPorMateria.Count;
+
+    var mejorasEstudiante = ViewBag.AccionesMejora as List<ProyectoPAE.Models.AccionMejora> ?? new List<ProyectoPAE.Models.AccionMejora>();
+
+    Func<double, string> badgeDesempeno = (p) =>
+        p >= 4.6 ? "Superior" : p >= 4.0 ? "Alto" : p >= 3.0 ? "Básico" : "Bajo";
+    Func<double, string> colorBadge = (p) =>
+        p >= 4.6 ? "success" : p >= 4.0 ? "primary" : p >= 3.0 ? "warning" : "danger";
+}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<style>
+    .card-materia { transition: box-shadow .2s ease; }
+    .card-materia:hover { box-shadow: 0 6px 20px rgba(111,66,193,.15) !important; }
+    .accordion-button:not(.collapsed) { box-shadow: none !important; }
+    .accordion-button:focus { box-shadow: none !important; }
+    .progress { border-radius: 8px; }
+</style>
+
+<div class="container-fluid mt-4 px-3 pb-5" style="max-width: 1180px; margin: 0 auto;">
+
+    <!-- Encabezado institucional -->
+    <div class="card border-0 shadow-sm mb-4 rounded-4 overflow-hidden">
+        <div class="d-flex flex-wrap justify-content-between align-items-center px-4 py-3 text-white"
+             style="background: linear-gradient(135deg, #3b0764 0%, #6f42c1 100%);">
+            <div class="d-flex align-items-center gap-3">
+                <div class="rounded-circle d-flex align-items-center justify-content-center"
+                     style="width:50px;height:50px;background:rgba(255,255,255,.18);">
+                    <i class="bi bi-journal-check fs-3 text-white"></i>
+                </div>
+                <div>
+                    <h4 class="mb-0 fw-bold">Mis Calificaciones</h4>
+                    <small class="opacity-75">Reporte académico detallado por asignatura</small>
+                </div>
+            </div>
+            <a href="@Url.Action("Dashboard", "Home")" class="btn btn-outline-light btn-sm rounded-pill px-3 mt-2 mt-sm-0">
+                <i class="bi bi-arrow-left me-1"></i> Volver al Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm h-100 p-3 rounded-3" style="border-left:4px solid #6f42c1!important;">
+                <span class="text-muted small text-uppercase fw-semibold">Promedio General</span>
+                <h2 class="fw-bold mt-1 mb-0" style="color:#6f42c1;">@promedioGeneral.ToString("F2")</h2>
+                <span class="badge mt-1 bg-@colorBadge(promedioGeneral)">@badgeDesempeno(promedioGeneral)</span>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm h-100 p-3 rounded-3" style="border-left:4px solid #0d2a4a!important;">
+                <span class="text-muted small text-uppercase fw-semibold">Materias</span>
+                <h2 class="fw-bold mt-1 mb-0" style="color:#0d2a4a;">@totalMaterias</h2>
+                <span class="text-muted small">asignaturas</span>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm h-100 p-3 rounded-3" style="border-left:4px solid #27ae60!important;">
+                <span class="text-muted small text-uppercase fw-semibold">Aprobadas</span>
+                <h2 class="fw-bold mt-1 mb-0 text-success">@aprobadas</h2>
+                <span class="text-muted small">nota ≥ 3.0</span>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm h-100 p-3 rounded-3" style="border-left:4px solid #e74c3c!important;">
+                <span class="text-muted small text-uppercase fw-semibold">En Riesgo</span>
+                <h2 class="fw-bold mt-1 mb-0 text-danger">@reprobadas</h2>
+                <span class="text-muted small">nota &lt; 3.0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Acordeón por materia -->
+    @if (!notasPorMateria.Any())
+    {
+        <div class="card border-0 shadow-sm p-5 text-center rounded-4">
+            <i class="bi bi-journal-x display-4 text-muted mb-3"></i>
+            <h5 class="fw-bold text-secondary">Sin calificaciones registradas</h5>
+            <p class="text-muted small">Aún no se han registrado notas en tu perfil académico.</p>
+        </div>
+    }
+    else
+    {
+        <div class="accordion" id="accordionMaterias">
+            @foreach (var (materia, index) in notasPorMateria.Select((m, i) => (m, i)))
+            {
+                string collapseId = $"collapse-{index}";
+                string headingId  = $"heading-{index}";
+                bool expandido    = !materia.Aprobado; // expandir las que están en riesgo
+                string iconLetra  = materia.Materia.Length > 0 ? materia.Materia[0].ToString().ToUpper() : "?";
+                string bgHeader   = materia.Aprobado ? "#f0f9f4" : "#fff8f8";
+                string bgIcon     = materia.Aprobado ? "#27ae60" : "#e74c3c";
+
+                <div class="card border-0 shadow-sm rounded-4 mb-3 overflow-hidden card-materia">
+                    <div class="accordion-item border-0">
+                        <h2 class="accordion-header m-0" id="@headingId">
+                            <button class="accordion-button @(expandido ? "" : "collapsed") fw-bold py-3 px-4"
+                                    type="button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#@collapseId"
+                                    aria-expanded="@(expandido ? "true" : "false")"
+                                    aria-controls="@collapseId"
+                                    style="background:@bgHeader;">
+                                <div class="d-flex align-items-center gap-3 flex-grow-1 flex-wrap">
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold fs-5 text-white"
+                                         style="width:44px;height:44px;min-width:44px;background:@bgIcon;">
+                                        @iconLetra
+                                    </div>
+                                    <div>
+                                        <div class="text-dark fw-bold">@materia.Materia</div>
+                                        <div class="d-flex flex-wrap gap-1 mt-1">
+                                            <span class="badge bg-@colorBadge(materia.Promedio) rounded-pill">
+                                                Promedio: @materia.Promedio.ToString("F2")
+                                            </span>
+                                            @if (materia.Aprobado)
+                                            {
+                                                <span class="badge" style="background:#d1fae5;color:#065f46;">✓ Aprobado</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge" style="background:#fee2e2;color:#991b1b;">✗ Reprobado</span>
+                                            }
+                                            <span class="badge bg-secondary-subtle text-secondary">@materia.Notas.Count nota(s)</span>
+                                        </div>
+                                    </div>
+                                    <div class="ms-auto fw-bold fs-4 @(materia.Aprobado ? "text-success" : "text-danger") me-3">
+                                        @materia.Promedio.ToString("F1")
+                                    </div>
+                                </div>
+                            </button>
+                        </h2>
+                        <div id="@collapseId"
+                             class="accordion-collapse collapse @(expandido ? "show" : "")"
+                             aria-labelledby="@headingId">
+                            <div class="accordion-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="table-light">
+                                            <tr class="text-uppercase text-muted small">
+                                                <th class="px-4 py-3">Periodo</th>
+                                                <th class="px-4 py-3 text-center">Calificación</th>
+                                                <th class="px-4 py-3 text-center">Desempeño</th>
+                                                <th class="px-4 py-3">Fecha de Registro</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var cal in materia.Notas)
+                                            {
+                                                double n = (double)cal.Nota;
+                                                string colorN = colorBadge(n);
+                                                <tr>
+                                                    <td class="px-4 py-3">
+                                                        <div class="d-flex align-items-center gap-2">
+                                                            <div class="rounded-circle bg-secondary-subtle d-flex align-items-center justify-content-center small fw-bold"
+                                                                 style="width:30px;height:30px;">P@cal.Periodo</div>
+                                                            <span class="text-muted small">Periodo @cal.Periodo</span>
+                                                        </div>
+                                                    </td>
+                                                    <td class="px-4 py-3 text-center">
+                                                        <span class="badge bg-@colorN rounded-pill px-3 py-2 fs-6">@cal.Nota.ToString("F1")</span>
+                                                    </td>
+                                                    <td class="px-4 py-3 text-center">
+                                                        <span class="badge bg-@colorN small rounded-pill">@badgeDesempeno(n)</span>
+                                                    </td>
+                                                    <td class="px-4 py-3 text-muted small">@cal.FechaRegistro.ToString("dd MMM yyyy")</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                        <tfoot class="table-light">
+                                            <tr class="fw-semibold small text-muted text-uppercase">
+                                                <td class="px-4 py-2">Promedio Materia</td>
+                                                <td class="px-4 py-2 text-center">
+                                                    <span class="badge bg-@colorBadge(materia.Promedio) fs-6 px-3">@materia.Promedio.ToString("F2")</span>
+                                                </td>
+                                                <td class="px-4 py-2 text-center">
+                                                    <span class="fw-bold @(materia.Aprobado ? "text-success" : "text-danger")">
+                                                        @(materia.Aprobado ? "✓ Aprobado" : "✗ Reprobado")
+                                                    </span>
+                                                </td>
+                                                <td></td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+
+                                @{
+                                    var mejorasMat = mejorasEstudiante.Where(m => 
+                                        m.Materia.Trim().Equals(materia.Materia.Trim(), StringComparison.OrdinalIgnoreCase) ||
+                                        materia.Materia.Trim().StartsWith(m.Materia.Trim(), StringComparison.OrdinalIgnoreCase) ||
+                                        m.Materia.Trim().StartsWith(materia.Materia.Trim(), StringComparison.OrdinalIgnoreCase)
+                                    ).ToList();
+                                }
+
+                                @if (mejorasMat.Any())
+                                {
+                                    <div class="p-3 bg-light border-top">
+                                        <div class="d-flex align-items-center gap-2 mb-2">
+                                            <span class="badge bg-warning text-dark fw-bold px-3 py-1">
+                                                <i class="bi bi-arrow-up-right-circle-fill me-1"></i> Plan Pedagógico de Acción de Mejora & Seguimiento
+                                            </span>
+                                            <small class="text-muted">Mensajes y compromisos académicos establecidos con tu docente</small>
+                                        </div>
+
+                                        @foreach (var mej in mejorasMat)
+                                        {
+                                            string badgeColorSeg = mej.EstadoSeguimiento == "Cumplido" ? "success" : mej.EstadoSeguimiento == "No Cumplido" ? "danger" : "warning";
+
+                                            <div class="card border-0 shadow-sm rounded-3 mb-3 p-3" style="background: #ffffff; border-left: 5px solid #6f42c1 !important;">
+                                                <div class="d-flex flex-wrap justify-content-between align-items-center mb-2 gap-2">
+                                                    <div class="d-flex align-items-center gap-2">
+                                                        <span class="badge bg-purple text-white px-2 py-1" style="background-color:#6f42c1;">Periodo @mej.Periodo</span>
+                                                        <span class="small text-muted"><i class="bi bi-calendar-event me-1"></i>Registrado: @mej.FechaRegistro.ToString("dd/MM/yyyy")</span>
+                                                        @if (!string.IsNullOrEmpty(mej.Docente))
+                                                        {
+                                                            <span class="small text-muted"><i class="bi bi-person-fill me-1"></i>Docente: @mej.Docente</span>
+                                                        }
+                                                    </div>
+                                                    <span class="badge bg-@badgeColorSeg px-3 py-1">
+                                                        Seguimiento: @mej.EstadoSeguimiento
+                                                    </span>
+                                                </div>
+
+                                                <!-- FASE 1: ACCIÓN DE MEJORA Y COMPROMISO -->
+                                                <div class="p-3 rounded-3 mb-2" style="background-color: #f8f9fa; border: 1px solid #e9ecef;">
+                                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                                        <i class="bi bi-flag-fill text-warning"></i>
+                                                        <strong class="text-dark">Fase 1 • Acción de Mejora & Compromiso del Estudiante</strong>
+                                                    </div>
+                                                    <div class="mb-2">
+                                                        <span class="text-muted small fw-bold">Aspecto a mejorar establecido por el docente:</span>
+                                                        <p class="mb-1 text-dark">@mej.AspectoMejorar</p>
+                                                    </div>
+                                                    <div class="p-2 rounded bg-white border">
+                                                        <span class="text-primary small fw-bold"><i class="bi bi-check2-circle me-1"></i>Compromiso del Estudiante:</span>
+                                                        <p class="mb-0 text-dark fst-italic">"@mej.CompromisoEstudiante"</p>
+                                                    </div>
+                                                    @if (mej.FechaCompromiso.HasValue)
+                                                    {
+                                                        <small class="text-muted d-block mt-1"><i class="bi bi-alarm me-1"></i>Fecha límite de compromiso: @mej.FechaCompromiso.Value.ToString("dd/MM/yyyy")</small>
+                                                    }
+                                                </div>
+
+                                                <!-- CONECTOR VISUAL ⬇️ -->
+                                                <div class="text-center my-1">
+                                                    <span class="badge bg-light text-dark border px-3 py-1 shadow-sm fw-bold">
+                                                        <i class="bi bi-arrow-down-circle-fill text-primary me-1"></i> Seguimiento Posterior
+                                                    </span>
+                                                </div>
+
+                                                <!-- FASE 2: SEGUIMIENTO DOCENTE -->
+                                                <div class="p-3 rounded-3" style="background-color: #f0f7ff; border: 1px solid #cce5ff;">
+                                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                                        <i class="bi bi-clipboard2-check-fill text-primary"></i>
+                                                        <strong class="text-primary">Fase 2 • Seguimiento de Cumplimiento</strong>
+                                                    </div>
+                                                    <div class="mb-1">
+                                                        <span class="text-muted small fw-bold">Revisión del Docente:</span>
+                                                        <p class="mb-1 text-dark">
+                                                            @(string.IsNullOrEmpty(mej.ObservacionSeguimiento) ? "El docente aún no ha registrado la observación final de seguimiento." : mej.ObservacionSeguimiento)
+                                                        </p>
+                                                    </div>
+                                                    <div class="d-flex flex-wrap justify-content-between align-items-center mt-2 pt-1 border-top border-light">
+                                                        <small class="text-muted">Estado actual: <strong class="text-@badgeColorSeg">@mej.EstadoSeguimiento</strong></small>
+                                                        @if (mej.FechaSeguimiento.HasValue)
+                                                        {
+                                                            <small class="text-muted"><i class="bi bi-clock-history me-1"></i>Fecha de revisión: @mej.FechaSeguimiento.Value.ToString("dd/MM/yyyy HH:mm")</small>
+                                                        }
+                                                    </div>
+                                                </div>
+
+                                                @if (!string.IsNullOrEmpty(mej.RespuestaEstudiante))
+                                                {
+                                                    <div class="mt-2 p-2 rounded bg-light border">
+                                                        <span class="small fw-bold text-success"><i class="bi bi-chat-quote-fill me-1"></i>Tu Respuesta / Evidencia:</span>
+                                                        <p class="mb-0 small text-dark">@mej.RespuestaEstudiante</p>
+                                                    </div>
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Barra de progreso global -->
+        <div class="card border-0 shadow-sm p-4 mt-2 rounded-4">
+            <h6 class="fw-bold text-secondary mb-3">
+                <i class="bi bi-bar-chart-fill me-2 text-primary"></i>Resumen Visual del Rendimiento Académico
+            </h6>
+            @foreach (var mat in notasPorMateria)
+            {
+                double pct = (mat.Promedio / 5.0) * 100.0;
+                string barColor = colorBadge(mat.Promedio);
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="small fw-semibold text-dark">@mat.Materia</span>
+                        <span class="small fw-bold text-@barColor">@mat.Promedio.ToString("F2")</span>
+                    </div>
+                    <div class="progress" style="height:10px;">
+                        <div class="progress-bar bg-@barColor" role="progressbar"
+                             style="width:@pct.ToString("F0")%;"
+                             aria-valuenow="@pct.ToString("F0")" aria-valuemin="0" aria-valuemax="100">
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+</div>

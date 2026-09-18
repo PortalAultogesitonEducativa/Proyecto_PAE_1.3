@@ -1,0 +1,266 @@
+@{
+    ViewData["Title"] = "Iniciar Sesión";
+}
+<style>
+    .login-bg {
+        position: fixed;
+        top: -30px;
+        left: -30px;
+        right: -30px;
+        bottom: -30px;
+        background-image: url('@Url.Content("~/images/login-bg.jpg")');
+        background-size: cover;
+        background-position: center center;
+        background-repeat: no-repeat;
+        filter: blur(10px) brightness(0.85);
+        transform: scale(1.08);
+        z-index: -2;
+    }
+
+    .login-bg-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, rgba(13, 42, 74, 0.45) 0%, rgba(20, 61, 106, 0.3) 100%);
+        backdrop-filter: blur(2px);
+        z-index: -1;
+    }
+
+    .btn-login-main {
+        background-color: #0d2a4a;
+        border-radius: 10px;
+        border: none;
+        transition: all 0.3s ease;
+    }
+
+        .btn-login-main:hover {
+            background-color: #143d6a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(13, 42, 74, 0.25);
+        }
+
+    .btn-login-forgot {
+        background-color: #0d2a4a;
+        color: #ffffff !important;
+        border-radius: 10px;
+        border: none;
+        transition: all 0.3s ease;
+    }
+
+        .btn-login-forgot:hover {
+            background-color: #081a2e;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(13, 42, 74, 0.25);
+        }
+
+    .text-capslock {
+        color: #0d2a4a;
+    }
+</style>
+
+<div class="login-bg"></div>
+<div class="login-bg-overlay"></div>
+ 
+<div class="container my-5 py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card border-0 shadow-lg" style="border-radius: 20px; background-color: #fdf8f3;">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <img src="~/images/logo.png" alt="PAE" style="height: 80px;" class="mb-3">
+                        <h3 class="fw-bold" style="color: #0d2a4a;">Bienvenido a PAE</h3>
+                        <p class="text-muted small">Portal de Autogestión Educativa</p>
+                    </div>
+ 
+                    <form asp-action="Ingresar" asp-controller="Login" method="post">
+ 
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Usuario o Correo</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">
+                                    <i class="bi bi-person"></i>
+                                </span>
+                                <input type="text" name="correo"
+                                       class="form-control @(ViewBag.ErrorCorreo != null ? "is-invalid" : "")"
+                                       placeholder="correo@ejemplo.com" required>
+                            </div>
+                        </div>
+ 
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Contraseña</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light border-end-0">
+                                    <i class="bi bi-lock"></i>
+                                </span>
+                                <input type="password" id="passwordInput" name="password"
+                                       class="form-control bg-light border-start-0 border-end-0 @(ViewBag.ErrorPassword != null ? "is-invalid" : "")"
+                                       placeholder="••••••••" required>
+                                <button class="btn btn-light border border-start-0"
+                                        type="button" onclick="togglePassword()">
+                                    <i id="toggleIcon" class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                            <small id="capsLockWarning" class="text-capslock fw-bold d-none">
+                                <i class="bi bi-exclamation-triangle-fill me-1"></i>Bloq Mayús activado
+                            </small>
+                        </div>
+ 
+                        <div class="d-grid gap-3 mb-3">
+                            <button type="submit" class="btn btn-lg text-white btn-login-main">
+                                Ingresar al Sistema
+                            </button>
+                            <a href="/Login/OlvideContraseña"
+                               class="btn btn-lg text-white btn-login-forgot d-flex justify-content-center align-items-center">
+                                <i class="bi bi-question-circle me-2"></i> ¿Olvidó su contraseña?
+                            </a>
+                        </div>
+ 
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+ 
+@* {{!-- MODAL ERROR CORREO --}} *@
+@if (ViewBag.ErrorCorreo != null)
+{
+    <div class="modal fade show d-block" tabindex="-1"
+         style="background: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+                <div class="modal-header border-0"
+                     style="background-color: #E77A1F; border-radius: 16px 16px 0 0;">
+                    <h5 class="modal-title text-white w-100 text-center">
+                        <i class="bi bi-envelope-x-fill me-2"></i>Correo incorrecto
+                    </h5>
+                </div>
+                <div class="modal-body text-center px-4 py-4">
+                    <i class="bi bi-exclamation-circle-fill text-warning mb-3"
+                       style="font-size: 2.5rem;"></i>
+                    <p class="fw-bold mb-1">@ViewBag.ErrorCorreo</p>
+                    <p class="text-muted small">
+                        Verifica que el correo esté bien escrito e intenta de nuevo.
+                    </p>
+                </div>
+                <div class="modal-footer border-0 pt-0 px-4 pb-4">
+                    <button type="button" class="btn btn-warning w-100 text-white"
+                            style="border-radius: 10px;"
+                            onclick="cerrarModal(this)">
+                        <i class="bi bi-arrow-left me-2"></i>Volver a intentarlo
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+ 
+@* {{!-- MODAL ERROR CONTRASEÑA --}} *@
+@if (ViewBag.ErrorPassword != null)
+{
+    <div class="modal fade show d-block" tabindex="-1"
+         style="background: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+                <div class="modal-header border-0"
+                     style="background-color: #E77A1F border-radius: 16px 16px 0 0;">
+                    <h5 class="modal-title text-white w-100 text-center">
+                        <i class="bi bi-lock-fill me-2"></i>Contraseña incorrecta
+                    </h5>
+                </div>
+                <div class="modal-body text-center px-4 py-4">
+                    <i class="bi bi-shield-exclamation text-warning mb-3"
+                       style="font-size: 2.5rem;"></i>
+                    <p class="fw-bold mb-1">@ViewBag.ErrorPassword</p>
+                    <p class="text-muted small">
+                        Recuerda que después de 3 intentos fallidos
+                        tu cuenta será bloqueada por seguridad.
+                    </p>
+                </div>
+                <div class="modal-footer border-0 pt-0 px-4 pb-4">
+                    <button type="button" class="btn w-100 text-white"
+                            style="border-radius: 10px; background-color: #E77A1F;"
+                            onclick="cerrarModal(this)">
+                        <i class="bi bi-arrow-left me-2"></i>Volver a intentarlo
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+ 
+@* {{!-- MODAL CUENTA BLOQUEADA --}} *@
+@if (ViewBag.CuentaBloqueada == true)
+{
+    <div class="modal fade show d-block" tabindex="-1"
+         style="background: rgba(0,0,0,0.55);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+                <div class="modal-header border-0"
+                     style="background-color: #7f1d1d; border-radius: 16px 16px 0 0;">
+                    <h5 class="modal-title text-white w-100 text-center pb-2">
+                        <i class="bi bi-shield-lock-fill me-2"></i>Cuenta bloqueada
+                    </h5>
+                </div>
+                <div class="modal-body text-center px-4 py-4">
+                    <i class="bi bi-exclamation-circle-fill text-danger mb-3"
+                       style="font-size: 2.5rem;"></i>
+                    <p class="fw-bold mb-1">Demasiados intentos fallidos.</p>
+                    <p class="text-muted small">
+                        Tu cuenta fue bloqueada por seguridad. Te enviamos un correo
+                        con un enlace para restablecer tu contraseña y reactivar tu acceso.
+                    </p>
+                </div>
+                <div class="modal-footer border-0 pt-0 px-4 pb-4">
+                    <a href="/Login/OlvideContraseña"
+                       class="btn btn-danger w-100"
+                       style="border-radius: 10px;">
+                        <i class="bi bi-envelope me-2"></i>Ir a restablecer contraseña
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+ 
+<script>
+    function togglePassword() {
+        const passwordInput = document.getElementById('passwordInput');
+        const toggleIcon = document.getElementById('toggleIcon');
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            toggleIcon.classList.replace('bi-eye', 'bi-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            toggleIcon.classList.replace('bi-eye-slash', 'bi-eye');
+        }
+    }
+ 
+    function cerrarModal(btn) {
+        // Oculta el modal y quita el fondo oscuro
+        const modal = btn.closest('.modal');
+        modal.classList.remove('show', 'd-block');
+        modal.style.display = 'none';
+    }
+ 
+    // Aviso de Bloq Mayús activado en el campo de contraseña
+    (function() {
+        const passwordInput = document.getElementById('passwordInput');
+        const capsLockWarning = document.getElementById('capsLockWarning');
+ 
+        function checkCapsLock(event) {
+            if (typeof event.getModifierState === 'function') {
+                const activo = event.getModifierState('CapsLock');
+                capsLockWarning.classList.toggle('d-none', !activo);
+            }
+        }
+ 
+        passwordInput.addEventListener('keydown', checkCapsLock);
+        passwordInput.addEventListener('keyup', checkCapsLock);
+        passwordInput.addEventListener('blur', function() {
+            capsLockWarning.classList.add('d-none');
+        });
+    })();
+</script>

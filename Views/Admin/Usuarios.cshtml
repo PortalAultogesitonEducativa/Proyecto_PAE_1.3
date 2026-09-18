@@ -1,0 +1,646 @@
+@model IEnumerable<ProyectoPAE.Models.Usuario>
+
+<div class="container mt-4">
+    <div class="row g-3 mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="text-secondary m-0">
+                    <i class="bi bi-people-fill text-success me-2"></i>Gestión de Usuarios
+                </h2>
+                <!-- Botón Volver alineado a la derecha -->
+                <a href="@Url.Action("Dashboard", "Home")" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i> Volver
+                </a>
+            </div>
+            <hr />
+
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    @TempData["Error"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+            @if (TempData["Mensaje"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    @TempData["Mensaje"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+        </div>
+
+        <form method="get" asp-action="Usuarios" class="row g-3 mb-4">
+            <div class="col-md-10">
+                <input type="text" name="buscar" class="form-control" placeholder="Buscar por nombre o rol...">
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-success w-100">Buscar</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="text-secondary">Lista de Usuarios</h3>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalRegistroUsuario">
+            <i class="bi bi-person-plus-fill"></i> + Registrar Usuario
+        </button>
+    </div>
+
+    <table class="table table-striped table-hover align-middle">
+        <thead class="table-dark">
+            <tr>
+                <th>Nombre</th>
+                <th>Correo</th>
+                <th>Rol</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody id="tbodyUsuarios">
+            @if (Model != null && Model.Any())
+            {
+                foreach (var usuario in Model)
+                {
+                    // 2. LÓGICA DE COLORES PERSONALIZADOS SEGÚN EL PANEL
+                    string colorHex = "#6c757d"; // Gris por defecto
+                    string rolNormalizado = usuario.ROL?.ToLower() ?? "";
+
+                    if (rolNormalizado.Contains("admin")) { colorHex = "#e67e22"; }      // Naranja Admin
+                    else if (rolNormalizado.Contains("docente")) { colorHex = "#0d6efd"; } // Azul Docente
+                    else if (rolNormalizado.Contains("estudiante")) { colorHex = "#6f42c1"; } // Púrpura Estudiante
+                    else if (rolNormalizado.Contains("acudiente")) { colorHex = "#198754"; }  // Verde Acudiente
+
+                    <tr class="fila-usuario">
+                        <td>@usuario.NOMBRES @usuario.APELLIDOS</td>
+                        <td>@usuario.CORREO_ELECTRONICO</td>
+                        <td>
+                            <span class="badge text-white" style="background-color: @colorHex;">
+                                @usuario.ROL
+                            </span>
+                        </td>
+                        <td><span class="badge bg-success-subtle text-success border border-success-subtle">Activo</span></td>
+                        <td>
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-primary"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#modalCambiarRol"
+                                    data-bs-correo="@usuario.CORREO_ELECTRONICO"
+                                    data-bs-nombre="@usuario.NOMBRES @usuario.APELLIDOS"
+                                    data-bs-rol="@usuario.ROL">
+                                <i class="bi bi-pencil"></i> Cambiar Rol
+                            </button>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="5" class="text-center text-muted">No se encontraron usuarios disponibles.</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <!-- PAGINACIÓN CLIENT-SIDE USUARIOS -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-3 p-2 bg-light rounded border">
+        <p class="text-muted small mb-0" id="infoUsuariosPagina">Cargando...</p>
+        <nav aria-label="Paginación usuarios">
+            <ul class="pagination pagination-sm mb-0" id="paginacionUsuarios"></ul>
+        </nav>
+    </div>
+</div>
+
+<div class="modal fade" id="modalCambiarRol" tabindex="-1" aria-labelledby="modalCambiarRolLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form action="@Url.Action("ActualizarRol", "Admin")" method="post">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title" id="modalCambiarRolLabel"><i class="bi bi-shield-shaded me-2"></i>Modificar Permisos</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted">Vas a cambiar el rol del siguiente usuario:</p>
+                    <div class="alert alert-secondary">
+                        <strong id="editNombreUsuario">Cargando...</strong><br />
+                        <span id="editCorreoUsuario" class="small text-muted"></span>
+                    </div>
+
+                    <input type="hidden" name="CORREO_ELECTRONICO" id="editInputCorreo" />
+
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold">Selecciona el Nuevo Rol</label>
+                        <select name="NUEVO_ROL" id="editSelectRol" class="form-select" required>
+                            <option value="admin">Administrador</option>
+                            <option value="Docente">Docente</option>
+                            <option value="Estudiante">Estudiante</option>
+                            <option value="Acudiente">Acudiente</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-dark">Actualizar Rol</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="modalRegistroUsuario" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <form action="@Url.Action("RegistrarUsuario", "Admin")" method="post" id="formRegistroUsuario" novalidate>
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="modalLabel">Nuevo Registro de Usuario</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+
+                    <!-- Navegación por pestañas -->
+                    <ul class="nav nav-tabs mb-3" id="tabsRegistro" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-personal" type="button">Datos Personales</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-contacto" type="button">Contacto</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-academico" type="button">Rol / Académico</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-salud" type="button">Salud</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-acudientes" type="button">Acudientes</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-seguridad" type="button">Seguridad</button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content">
+
+                        <!-- ================= DATOS PERSONALES ================= -->
+                        <div class="tab-pane fade show active" id="tab-personal">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Nombres Completos</label>
+                                    <input type="text" name="NOMBRES" class="form-control" placeholder="Ej: Juan" required />
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Apellidos</label>
+                                    <input type="text" name="APELLIDOS" class="form-control" placeholder="Ej: Pérez" required />
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Tipo de Documento</label>
+                                    <select name="TIPO_DOCUMENTO" class="form-select" required>
+                                        <option value="" disabled selected>Seleccione...</option>
+                                        <option value="RC">Registro Civil</option>
+                                        <option value="TI">Tarjeta de Identidad</option>
+                                        <option value="CC">Cédula de Ciudadanía</option>
+                                        <option value="CE">Cédula de Extranjería</option>
+                                        <option value="PA">Pasaporte</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Número de Documento</label>
+                                    <input type="text" name="NUM_DOCUMENTO" class="form-control" required />
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Fecha de Nacimiento</label>
+                                    <input type="date" name="FECHA_NACIMIENTO" id="fechaNacimiento" class="form-control" required onchange="calcularEdad()" />
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Edad</label>
+                                    <input type="number" name="EDAD" id="edadCalculada" class="form-control" readonly />
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Género</label>
+                                    <select name="GENERO" class="form-select" required>
+                                        <option value="" disabled selected>Seleccione...</option>
+                                        <option value="M">Masculino</option>
+                                        <option value="F">Femenino</option>
+                                        <option value="O">Otro</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">Lugar de Nacimiento</label>
+                                    <input type="text" name="LUGAR_NACIMIENTO" class="form-control" placeholder="Ciudad" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ================= CONTACTO ================= -->
+                        <div class="tab-pane fade" id="tab-contacto">
+                            <div class="mb-3">
+                                <label class="form-label">Correo Institucional</label>
+                                <input type="email" name="CORREO_ELECTRONICO" class="form-control" placeholder="ejemplo@institucion.edu.co" required />
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Teléfono Fijo</label>
+                                    <input type="tel" name="TELEFONO_FIJO" class="form-control" />
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Celular</label>
+                                    <input type="tel" name="CELULAR" class="form-control" required />
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Dirección de Residencia</label>
+                                <input type="text" name="DIRECCION" class="form-control" placeholder="Calle, número, barrio" />
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Ciudad</label>
+                                    <input type="text" name="CIUDAD" class="form-control" />
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Barrio / Localidad</label>
+                                    <input type="text" name="BARRIO" class="form-control" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ================= ROL / ACADÉMICO ================= -->
+                        <div class="tab-pane fade" id="tab-academico">
+                            <div class="mb-3">
+                                <label class="form-label">Asignar Rol</label>
+                                <select name="ROL" id="selectRolAdmin" class="form-select" required onchange="toggleCamposPorRol()">
+                                    <option value="" disabled selected>Seleccione un rol...</option>
+                                    <option value="Estudiante">Estudiante</option>
+                                    <option value="Docente">Docente</option>
+                                    <option value="Coordinador" id="optCoordinador" disabled>Coordinador (Solo por ascenso/retiro)</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3" id="divAsignarCurso">
+                                <label class="form-label">Asignar a Curso (Grado)</label>
+                                <select name="CursoSeleccionado" id="selectCursoAdmin" class="form-select">
+                                    <option value="" disabled selected>Seleccione un grado...</option>
+                                    <option value="6">Grado 6°</option>
+                                    <option value="7">Grado 7°</option>
+                                    <option value="8">Grado 8°</option>
+                                    <option value="9">Grado 9°</option>
+                                    <option value="10">Grado 10°</option>
+                                    <option value="11">Grado 11°</option>
+                                </select>
+                                <small class="text-muted d-block">Se registrará automáticamente en la tabla MATRICULA.</small>
+                            </div>
+
+                            <div class="mb-3" id="divAreaDocente" style="display:none;">
+                                <label class="form-label">Área / Asignatura</label>
+                                <input type="text" name="AREA_ASIGNATURA" class="form-control" placeholder="Ej: Matemáticas" />
+                            </div>
+
+                            <div class="mb-3" id="divEstudianteAnterior" style="display:none;">
+                                <label class="form-label">Colegio de Procedencia</label>
+                                <input type="text" name="COLEGIO_PROCEDENCIA" class="form-control" />
+                            </div>
+                        </div>
+
+                        <!-- ================= SALUD ================= -->
+                        <div class="tab-pane fade" id="tab-salud">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Tipo de Sangre (RH)</label>
+                                    <select name="TIPO_SANGRE" class="form-select">
+                                        <option value="" disabled selected>Seleccione...</option>
+                                        <option value="O+">O+</option>
+                                        <option value="O-">O-</option>
+                                        <option value="A+">A+</option>
+                                        <option value="A-">A-</option>
+                                        <option value="B+">B+</option>
+                                        <option value="B-">B-</option>
+                                        <option value="AB+">AB+</option>
+                                        <option value="AB-">AB-</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">EPS / Seguridad Social</label>
+                                    <input type="text" name="EPS" class="form-control" />
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Alergias</label>
+                                <input type="text" name="ALERGIAS" class="form-control" placeholder="Ninguna, si no aplica" />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Condiciones Médicas / Discapacidad</label>
+                                <textarea name="CONDICIONES_MEDICAS" class="form-control" rows="2" placeholder="Ninguna, si no aplica"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Observaciones Generales</label>
+                                <textarea name="OBSERVACIONES" class="form-control" rows="2"></textarea>
+                            </div>
+                        </div>
+
+                        <!-- ================= ACUDIENTES ================= -->
+                        <div class="tab-pane fade" id="tab-acudientes">
+                            <div id="alertaAcudientes" class="alert alert-secondary" style="display:none;">
+                                Esta sección solo aplica para usuarios con rol <strong>Estudiante</strong>.
+                            </div>
+
+                            <div id="contenedorAcudientes">
+                                <div class="border rounded p-3 mb-3 acudiente-bloque">
+                                    <h6>Acudiente 1</h6>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-2">
+                                            <label class="form-label">Nombres Completos</label>
+                                            <input type="text" name="Acudientes[0].NOMBRES" class="form-control" />
+                                        </div>
+                                        <div class="col-md-6 mb-2">
+                                            <label class="form-label">Parentesco</label>
+                                            <select name="Acudientes[0].PARENTESCO" class="form-select">
+                                                <option value="" disabled selected>Seleccione...</option>
+                                                <option value="Padre">Padre</option>
+                                                <option value="Madre">Madre</option>
+                                                <option value="Abuelo/a">Abuelo/a</option>
+                                                <option value="Tio/a">Tío/a</option>
+                                                <option value="Hermano/a">Hermano/a</option>
+                                                <option value="Otro">Otro</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-4 mb-2">
+                                            <label class="form-label">Documento</label>
+                                            <input type="text" name="Acudientes[0].DOCUMENTO" class="form-control" />
+                                        </div>
+                                        <div class="col-md-4 mb-2">
+                                            <label class="form-label">Celular</label>
+                                            <input type="tel" name="Acudientes[0].CELULAR" class="form-control" />
+                                        </div>
+                                        <div class="col-md-4 mb-2">
+                                            <label class="form-label">Correo</label>
+                                            <input type="email" name="Acudientes[0].CORREO" class="form-control" />
+                                        </div>
+                                    </div>
+                                    <div class="form-check mt-2">
+                                        <input class="form-check-input" type="checkbox" name="Acudientes[0].ES_PRINCIPAL" value="true" checked>
+                                        <label class="form-check-label">Acudiente principal / responsable financiero</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="button" class="btn btn-outline-primary btn-sm" id="btnAgregarAcudiente">
+                                + Agregar otro acudiente
+                            </button>
+                        </div>
+
+                        <!-- ================= SEGURIDAD ================= -->
+                        <div class="tab-pane fade" id="tab-seguridad">
+                            <div class="mb-3">
+                                <label class="form-label">Contraseña Temporal</label>
+                                <input type="password" name="CONTRASEÑA" class="form-control" required />
+                                <small class="text-muted">El usuario deberá cambiarla en su primer inicio de sesión.</small>
+                            </div>
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" name="FORZAR_CAMBIO_CLAVE" value="true" checked>
+                                <label class="form-check-label">Forzar cambio de contraseña al primer ingreso</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="ESTADO_ACTIVO" value="true" checked>
+                                <label class="form-check-label">Usuario activo</label>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar Usuario</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleCamposPorRol() {
+        const rol = document.getElementById('selectRolAdmin').value;
+        const divCurso = document.getElementById('divAsignarCurso');
+        const selectCurso = document.getElementById('selectCursoAdmin');
+        const divArea = document.getElementById('divAreaDocente');
+        const divProcedencia = document.getElementById('divEstudianteAnterior');
+        const alertaAcudientes = document.getElementById('alertaAcudientes');
+        const contenedorAcudientes = document.getElementById('contenedorAcudientes');
+
+        const esEstudiante = rol === 'Estudiante';
+
+        divCurso.style.display = esEstudiante ? 'block' : 'none';
+        selectCurso.required = esEstudiante;
+        divProcedencia.style.display = esEstudiante ? 'block' : 'none';
+
+        divArea.style.display = rol === 'Docente' ? 'block' : 'none';
+
+        alertaAcudientes.style.display = esEstudiante ? 'none' : 'block';
+        contenedorAcudientes.style.display = esEstudiante ? 'block' : 'none';
+        document.getElementById('btnAgregarAcudiente').style.display = esEstudiante ? 'inline-block' : 'none';
+    }
+
+    function calcularEdad() {
+        const fecha = document.getElementById('fechaNacimiento').value;
+        if (!fecha) return;
+        const nacimiento = new Date(fecha);
+        const hoy = new Date();
+        let edad = hoy.getFullYear() - nacimiento.getFullYear();
+        const m = hoy.getMonth() - nacimiento.getMonth();
+        if (m < 0 || (m === 0 && hoy.getDate() < nacimiento.getDate())) edad--;
+        document.getElementById('edadCalculada').value = edad;
+    }
+
+    let contadorAcudientes = 1;
+    document.getElementById('btnAgregarAcudiente').addEventListener('click', function () {
+        const idx = contadorAcudientes;
+        const bloque = document.createElement('div');
+        bloque.className = 'border rounded p-3 mb-3 acudiente-bloque';
+        bloque.innerHTML = `
+            <div class="d-flex justify-content-between">
+                <h6>Acudiente ${idx + 1}</h6>
+                <button type="button" class="btn btn-sm btn-outline-danger btn-eliminar-acudiente">Eliminar</button>
+            </div>
+            <div class="row">
+                <div class="col-md-6 mb-2">
+                    <label class="form-label">Nombres Completos</label>
+                    <input type="text" name="Acudientes[${idx}].NOMBRES" class="form-control" />
+                </div>
+                <div class="col-md-6 mb-2">
+                    <label class="form-label">Parentesco</label>
+                    <select name="Acudientes[${idx}].PARENTESCO" class="form-select">
+                        <option value="" disabled selected>Seleccione...</option>
+                        <option value="Padre">Padre</option>
+                        <option value="Madre">Madre</option>
+                        <option value="Abuelo/a">Abuelo/a</option>
+                        <option value="Tio/a">Tío/a</option>
+                        <option value="Hermano/a">Hermano/a</option>
+                        <option value="Otro">Otro</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4 mb-2">
+                    <label class="form-label">Documento</label>
+                    <input type="text" name="Acudientes[${idx}].DOCUMENTO" class="form-control" />
+                </div>
+                <div class="col-md-4 mb-2">
+                    <label class="form-label">Celular</label>
+                    <input type="tel" name="Acudientes[${idx}].CELULAR" class="form-control" />
+                </div>
+                <div class="col-md-4 mb-2">
+                    <label class="form-label">Correo</label>
+                    <input type="email" name="Acudientes[${idx}].CORREO" class="form-control" />
+                </div>
+            </div>
+            <div class="form-check mt-2">
+                <input class="form-check-input" type="checkbox" name="Acudientes[${idx}].ES_PRINCIPAL" value="true">
+                <label class="form-check-label">Acudiente principal / responsable financiero</label>
+            </div>
+        `;
+        document.getElementById('contenedorAcudientes').appendChild(bloque);
+        bloque.querySelector('.btn-eliminar-acudiente').addEventListener('click', () => bloque.remove());
+        contadorAcudientes++;
+    });
+
+    document.getElementById('formRegistroUsuario').addEventListener('submit', function (e) {
+        const form = this;
+        const camposRequeridos = form.querySelectorAll('[required]');
+        let primerCampoInvalido = null;
+
+        for (const campo of camposRequeridos) {
+            if (!campo.value || campo.value.trim() === '') {
+                primerCampoInvalido = campo;
+                break;
+            }
+        }
+
+        if (primerCampoInvalido) {
+            e.preventDefault();
+
+            const tabPane = primerCampoInvalido.closest('.tab-pane');
+            if (tabPane) {
+                const boton = document.querySelector(`button[data-bs-target="#${tabPane.id}"]`);
+                if (boton) {
+                    bootstrap.Tab.getOrCreateInstance(boton).show();
+                }
+            }
+
+            setTimeout(() => {
+                primerCampoInvalido.focus();
+                primerCampoInvalido.classList.add('is-invalid');
+            }, 150);
+
+            return false;
+        }
+    });
+</script>
+
+<script>
+
+
+    // JS INTELIGENTE: Detecta a qué usuario le diste clic y llena el modal de edición automáticamente
+    const modalCambiarRol = document.getElementById('modalCambiarRol');
+    if (modalCambiarRol) {
+        modalCambiarRol.addEventListener('show.bs.modal', event => {
+            const boton = event.relatedTarget;
+
+            // Extraer la información de los atributos data-bs-*
+            const correo = boton.getAttribute('data-bs-correo');
+            const nombre = boton.getAttribute('data-bs-nombre');
+            const rolActual = boton.getAttribute('data-bs-rol');
+
+            // Asignar los datos a los elementos visuales dentro del modal
+            document.getElementById('editNombreUsuario').textContent = nombre;
+            document.getElementById('editCorreoUsuario').textContent = correo;
+            document.getElementById('editInputCorreo').value = correo;
+            document.getElementById('editSelectRol').value = rolActual;
+        });
+    }
+</script>
+
+<script>
+    // --- PAGINACIÓN CLIENT-SIDE USUARIOS (20 por página) ---
+    let usrPaginaActual = 1;
+    const USR_POR_PAGINA = 20;
+
+    function renderizarPaginacionUsuarios() {
+        const todasFilas = Array.from(document.querySelectorAll('#tbodyUsuarios tr.fila-usuario'));
+        const totalFilas = todasFilas.length;
+        const totalPaginas = Math.max(1, Math.ceil(totalFilas / USR_POR_PAGINA));
+
+        if (usrPaginaActual > totalPaginas) usrPaginaActual = totalPaginas;
+
+        // Ocultar todas las filas
+        todasFilas.forEach(f => f.style.display = 'none');
+
+        // Mostrar las de la página actual
+        const inicio = (usrPaginaActual - 1) * USR_POR_PAGINA;
+        const fin = Math.min(inicio + USR_POR_PAGINA, totalFilas);
+        for (let i = inicio; i < fin; i++) {
+            todasFilas[i].style.display = '';
+        }
+
+        // Info de paginación
+        const info = document.getElementById('infoUsuariosPagina');
+        if (info) {
+            if (totalFilas === 0) {
+                info.textContent = 'No hay usuarios para mostrar';
+            } else {
+                info.textContent = `Mostrando ${inicio + 1}–${fin} de ${totalFilas} usuarios`;
+            }
+        }
+
+        // Renderizar barra de botones
+        const ul = document.getElementById('paginacionUsuarios');
+        if (!ul) return;
+        ul.innerHTML = '';
+
+        if (totalPaginas <= 1) return;
+
+        const crearLi = (label, pagina, activo, disabled) => {
+            const li = document.createElement('li');
+            li.className = `page-item${activo ? ' active' : ''}${disabled ? ' disabled' : ''}`;
+            const a = document.createElement('a');
+            a.className = 'page-link';
+            a.innerHTML = label;
+            a.href = '#';
+            if (!disabled && !activo) {
+                a.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    usrPaginaActual = pagina;
+                    renderizarPaginacionUsuarios();
+                });
+            }
+            li.appendChild(a);
+            ul.appendChild(li);
+        };
+
+        crearLi('&laquo;', usrPaginaActual - 1, false, usrPaginaActual === 1);
+
+        const rango = 2;
+        for (let p = 1; p <= totalPaginas; p++) {
+            if (p === 1 || p === totalPaginas || (p >= usrPaginaActual - rango && p <= usrPaginaActual + rango)) {
+                crearLi(p, p, p === usrPaginaActual, false);
+            } else if (p === usrPaginaActual - rango - 1 || p === usrPaginaActual + rango + 1) {
+                crearLi('...', p, false, true);
+            }
+        }
+
+        crearLi('&raquo;', usrPaginaActual + 1, false, usrPaginaActual === totalPaginas);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        renderizarPaginacionUsuarios();
+    });
+</script>
