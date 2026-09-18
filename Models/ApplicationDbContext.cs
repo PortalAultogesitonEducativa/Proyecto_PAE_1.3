@@ -52,6 +52,9 @@ namespace ProyectoPAE.Models
         // --- OBSERVADOR DEL ALUMNO ---
         public DbSet<ObservacionEstudiante> ObservacionesEstudiante { get; set; }
 
+        // --- ACCIONES DE MEJORA Y SEGUIMIENTO ---
+        public DbSet<AccionMejora> AccionesMejora { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -288,6 +291,46 @@ namespace ProyectoPAE.Models
                     IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[ASISTENCIA]') AND name = 'justificacion')
                     BEGIN
                         ALTER TABLE [dbo].[ASISTENCIA] ADD [justificacion] NVARCHAR(MAX) NULL;
+                    END
+                ");
+            }
+            catch { }
+        }
+
+        public void AsegurarEsquemaAccionesMejora()
+        {
+            try
+            {
+                Database.ExecuteSqlRaw(@"
+                    IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'ACCION_MEJORA')
+                    BEGIN
+                        CREATE TABLE [dbo].[ACCION_MEJORA](
+                            [id_mejora] [int] IDENTITY(1,1) NOT NULL PRIMARY KEY,
+                            [id_estudiante] [int] NOT NULL,
+                            [nombre_estudiante] [nvarchar](150) NULL,
+                            [id_docente] [int] NULL,
+                            [docente] [nvarchar](150) NULL,
+                            [materia] [nvarchar](100) NOT NULL,
+                            [grado] [nvarchar](50) NULL,
+                            [periodo] [int] NOT NULL DEFAULT 1,
+                            [aspecto_mejorar] [nvarchar](max) NOT NULL,
+                            [compromiso_estudiante] [nvarchar](max) NOT NULL,
+                            [fecha_registro] [datetime] NOT NULL DEFAULT GETDATE(),
+                            [fecha_compromiso] [datetime] NULL,
+                            [estado_seguimiento] [nvarchar](50) NOT NULL DEFAULT 'En Proceso',
+                            [observacion_seguimiento] [nvarchar](max) NULL,
+                            [fecha_seguimiento] [datetime] NULL,
+                            [respuesta_estudiante] [nvarchar](max) NULL,
+                            [fecha_respuesta_estudiante] [datetime] NULL,
+                            [activo] [bit] NOT NULL DEFAULT 1
+                        );
+                    END
+                    ELSE
+                    BEGIN
+                        IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[ACCION_MEJORA]') AND name = 'respuesta_estudiante')
+                            ALTER TABLE [dbo].[ACCION_MEJORA] ADD [respuesta_estudiante] NVARCHAR(MAX) NULL;
+                        IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[ACCION_MEJORA]') AND name = 'fecha_respuesta_estudiante')
+                            ALTER TABLE [dbo].[ACCION_MEJORA] ADD [fecha_respuesta_estudiante] DATETIME NULL;
                     END
                 ");
             }

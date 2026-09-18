@@ -25,6 +25,8 @@
     int reprobadas = notasPorMateria.Count(m => !m.Aprobado);
     int totalMaterias = notasPorMateria.Count;
 
+    var mejorasEstudiante = ViewBag.AccionesMejora as List<ProyectoPAE.Models.AccionMejora> ?? new List<ProyectoPAE.Models.AccionMejora>();
+
     Func<double, string> badgeDesempeno = (p) =>
         p >= 4.6 ? "Superior" : p >= 4.0 ? "Alto" : p >= 3.0 ? "Básico" : "Bajo";
     Func<double, string> colorBadge = (p) =>
@@ -207,6 +209,103 @@
                                         </tfoot>
                                     </table>
                                 </div>
+
+                                @{
+                                    var mejorasMat = mejorasEstudiante.Where(m => 
+                                        m.Materia.Trim().Equals(materia.Materia.Trim(), StringComparison.OrdinalIgnoreCase) ||
+                                        materia.Materia.Trim().StartsWith(m.Materia.Trim(), StringComparison.OrdinalIgnoreCase) ||
+                                        m.Materia.Trim().StartsWith(materia.Materia.Trim(), StringComparison.OrdinalIgnoreCase)
+                                    ).ToList();
+                                }
+
+                                @if (mejorasMat.Any())
+                                {
+                                    <div class="p-3 bg-light border-top">
+                                        <div class="d-flex align-items-center gap-2 mb-2">
+                                            <span class="badge bg-warning text-dark fw-bold px-3 py-1">
+                                                <i class="bi bi-arrow-up-right-circle-fill me-1"></i> Plan Pedagógico de Acción de Mejora & Seguimiento
+                                            </span>
+                                            <small class="text-muted">Mensajes y compromisos académicos establecidos con tu docente</small>
+                                        </div>
+
+                                        @foreach (var mej in mejorasMat)
+                                        {
+                                            string badgeColorSeg = mej.EstadoSeguimiento == "Cumplido" ? "success" : mej.EstadoSeguimiento == "No Cumplido" ? "danger" : "warning";
+
+                                            <div class="card border-0 shadow-sm rounded-3 mb-3 p-3" style="background: #ffffff; border-left: 5px solid #6f42c1 !important;">
+                                                <div class="d-flex flex-wrap justify-content-between align-items-center mb-2 gap-2">
+                                                    <div class="d-flex align-items-center gap-2">
+                                                        <span class="badge bg-purple text-white px-2 py-1" style="background-color:#6f42c1;">Periodo @mej.Periodo</span>
+                                                        <span class="small text-muted"><i class="bi bi-calendar-event me-1"></i>Registrado: @mej.FechaRegistro.ToString("dd/MM/yyyy")</span>
+                                                        @if (!string.IsNullOrEmpty(mej.Docente))
+                                                        {
+                                                            <span class="small text-muted"><i class="bi bi-person-fill me-1"></i>Docente: @mej.Docente</span>
+                                                        }
+                                                    </div>
+                                                    <span class="badge bg-@badgeColorSeg px-3 py-1">
+                                                        Seguimiento: @mej.EstadoSeguimiento
+                                                    </span>
+                                                </div>
+
+                                                <!-- FASE 1: ACCIÓN DE MEJORA Y COMPROMISO -->
+                                                <div class="p-3 rounded-3 mb-2" style="background-color: #f8f9fa; border: 1px solid #e9ecef;">
+                                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                                        <i class="bi bi-flag-fill text-warning"></i>
+                                                        <strong class="text-dark">Fase 1 • Acción de Mejora & Compromiso del Estudiante</strong>
+                                                    </div>
+                                                    <div class="mb-2">
+                                                        <span class="text-muted small fw-bold">Aspecto a mejorar establecido por el docente:</span>
+                                                        <p class="mb-1 text-dark">@mej.AspectoMejorar</p>
+                                                    </div>
+                                                    <div class="p-2 rounded bg-white border">
+                                                        <span class="text-primary small fw-bold"><i class="bi bi-check2-circle me-1"></i>Compromiso del Estudiante:</span>
+                                                        <p class="mb-0 text-dark fst-italic">"@mej.CompromisoEstudiante"</p>
+                                                    </div>
+                                                    @if (mej.FechaCompromiso.HasValue)
+                                                    {
+                                                        <small class="text-muted d-block mt-1"><i class="bi bi-alarm me-1"></i>Fecha límite de compromiso: @mej.FechaCompromiso.Value.ToString("dd/MM/yyyy")</small>
+                                                    }
+                                                </div>
+
+                                                <!-- CONECTOR VISUAL ⬇️ -->
+                                                <div class="text-center my-1">
+                                                    <span class="badge bg-light text-dark border px-3 py-1 shadow-sm fw-bold">
+                                                        <i class="bi bi-arrow-down-circle-fill text-primary me-1"></i> Seguimiento Posterior
+                                                    </span>
+                                                </div>
+
+                                                <!-- FASE 2: SEGUIMIENTO DOCENTE -->
+                                                <div class="p-3 rounded-3" style="background-color: #f0f7ff; border: 1px solid #cce5ff;">
+                                                    <div class="d-flex align-items-center gap-2 mb-1">
+                                                        <i class="bi bi-clipboard2-check-fill text-primary"></i>
+                                                        <strong class="text-primary">Fase 2 • Seguimiento de Cumplimiento</strong>
+                                                    </div>
+                                                    <div class="mb-1">
+                                                        <span class="text-muted small fw-bold">Revisión del Docente:</span>
+                                                        <p class="mb-1 text-dark">
+                                                            @(string.IsNullOrEmpty(mej.ObservacionSeguimiento) ? "El docente aún no ha registrado la observación final de seguimiento." : mej.ObservacionSeguimiento)
+                                                        </p>
+                                                    </div>
+                                                    <div class="d-flex flex-wrap justify-content-between align-items-center mt-2 pt-1 border-top border-light">
+                                                        <small class="text-muted">Estado actual: <strong class="text-@badgeColorSeg">@mej.EstadoSeguimiento</strong></small>
+                                                        @if (mej.FechaSeguimiento.HasValue)
+                                                        {
+                                                            <small class="text-muted"><i class="bi bi-clock-history me-1"></i>Fecha de revisión: @mej.FechaSeguimiento.Value.ToString("dd/MM/yyyy HH:mm")</small>
+                                                        }
+                                                    </div>
+                                                </div>
+
+                                                @if (!string.IsNullOrEmpty(mej.RespuestaEstudiante))
+                                                {
+                                                    <div class="mt-2 p-2 rounded bg-light border">
+                                                        <span class="small fw-bold text-success"><i class="bi bi-chat-quote-fill me-1"></i>Tu Respuesta / Evidencia:</span>
+                                                        <p class="mb-0 small text-dark">@mej.RespuestaEstudiante</p>
+                                                    </div>
+                                                }
+                                            </div>
+                                        }
+                                    </div>
+                                }
                             </div>
                         </div>
                     </div>
