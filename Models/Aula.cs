@@ -8,13 +8,9 @@ namespace ProyectoPAE.Models
     {
         [Key]
         public int id_aula { get; set; }
-
         public string codigo_aula { get; set; } = string.Empty;
-
         public int capacidad { get; set; }
-
         public string tipo { get; set; } = string.Empty;
-
-        public string ubicacion { get; set; } = string.Empty;
+        public string? ubicacion { get; set; }
     }
 }
