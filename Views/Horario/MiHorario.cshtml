@@ -14,6 +14,7 @@
 *@
 
 @{
+<<<<<<< Updated upstream
     ViewData["Title"] = "Horario de Clases - Docente";
 
     var diasSemana = new[] { "Lunes", "Martes", "Miércoles", "Jueves", "Viernes" };
@@ -270,11 +271,153 @@
                 </div>
             }
 
+=======
+    ViewData["Title"] = "Horario de Clases - PAE";
+
+    // Detectar automáticamente si la jornada es Tarde ('T') o Mañana ('M') basándose en el nombre del curso (ej. "601 M")
+    string nombreCurso = ViewBag.NombreCurso as string ?? "";
+    bool esJornadaTarde = nombreCurso.ToUpper().Contains(" T") || nombreCurso.ToUpper().EndsWith("T");
+
+    // Bloques horarios exclusivos para la Jornada Mañana (6:00 am - 12:00 pm)
+    var bloquesMañana = new[] {
+        new { Inicio = new TimeSpan(6, 0, 0), Fin = new TimeSpan(7, 30, 0), Etiqueta = "06:00 - 07:30", EsReceso = false },
+        new { Inicio = new TimeSpan(7, 30, 0), Fin = new TimeSpan(9, 0, 0), Etiqueta = "07:30 - 09:00", EsReceso = false },
+        new { Inicio = new TimeSpan(9, 0, 0), Fin = new TimeSpan(9, 30, 0), Etiqueta = "09:00 - 09:30", EsReceso = true },
+        new { Inicio = new TimeSpan(9, 30, 0), Fin = new TimeSpan(10, 45, 0), Etiqueta = "09:30 - 10:45", EsReceso = false },
+        new { Inicio = new TimeSpan(10, 45, 0), Fin = new TimeSpan(12, 0, 0), Etiqueta = "10:45 - 12:00", EsReceso = false }
+    };
+
+    // Bloques horarios exclusivos para la Jornada Tarde (12:30 pm - 4:45 pm)
+    var bloquesTarde = new[] {
+        new { Inicio = new TimeSpan(12, 30, 0), Fin = new TimeSpan(13, 45, 0), Etiqueta = "12:30 - 13:45", EsReceso = false },
+        new { Inicio = new TimeSpan(13, 45, 0), Fin = new TimeSpan(15, 0, 0), Etiqueta = "13:45 - 15:00", EsReceso = false },
+        new { Inicio = new TimeSpan(15, 0, 0), Fin = new TimeSpan(15, 30, 0), Etiqueta = "15:00 - 15:30", EsReceso = true },
+        new { Inicio = new TimeSpan(15, 30, 0), Fin = new TimeSpan(16, 45, 0), Etiqueta = "15:30 - 16:45", EsReceso = false }
+    };
+
+    // Seleccionar el arreglo de bloques según la jornada detectada
+    var bloquesHorarios = esJornadaTarde ? bloquesTarde : bloquesMañana;
+
+    var diasSemana = new[] { "Lunes", "Martes", "Miércoles", "Jueves", "Viernes" };
+}
+
+<div class="container-fluid my-4 px-4">
+    <!-- ENCABEZADO Y ACCIONES -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold text-dark mb-1">Horario de Clases</h2>
+            <p class="text-muted mb-0">Semestre Académico Vigente • <span class="fw-semibold text-primary">@ViewBag.NombreCurso</span></p>
+        </div>
+        <div>
+            <button onclick="window.print()" class="btn btn-outline-secondary me-2">
+                <i class="bi bi-printer me-1"></i> Imprimir
+            </button>
+            <button class="btn btn-dark">
+                <i class="bi bi-file-earmark-pdf me-1"></i> Exportar PDF
+            </button>
+        </div>
+    </div>
+
+    <!-- TARJETAS DE RESUMEN SUPERIOR -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm p-3 h-100 bg-white rounded-3 border-start border-primary border-4">
+                <span class="text-muted small fw-bold text-uppercase">Carga Académica</span>
+                <h4 class="fw-bold text-dark mt-1 mb-0">@ViewBag.TotalMaterias Materias</h4>
+                <small class="text-success mt-2 d-block"><i class="bi bi-check-circle-fill"></i> Estudiante Regular</small>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm p-3 h-100 bg-white rounded-3">
+                <span class="text-muted small fw-bold text-uppercase">Clases Hoy</span>
+                <h4 class="fw-bold text-dark mt-1 mb-0">Activo</h4>
+                <small class="text-muted mt-2 d-block">Consulta tu programación diaria</small>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm p-3 h-100 bg-white rounded-3">
+                <span class="text-muted small fw-bold text-uppercase">Modalidad</span>
+                <h4 class="fw-bold text-dark mt-1 mb-0">Presencial</h4>
+                <small class="text-muted mt-2 d-block">Aulas y laboratorios asignados</small>
+            </div>
+>>>>>>> Stashed changes
+        </div>
+    </div>
+
+    <!-- TABLA DE HORARIO -->
+    <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+        <div class="card-body p-0">
+            @if (ViewBag.Mensaje != null)
+            {
+                <div class="alert alert-warning m-4 text-center fw-bold">
+                    @ViewBag.Mensaje
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive m-0">
+                    <table class="table table-bordered text-center align-middle mb-0">
+                        <thead class="table-light text-uppercase fs-7">
+                            <tr>
+                                <th style="width: 14%;" class="py-3">Hora</th>
+                                @foreach (var dia in diasSemana)
+                                {
+                                    <th style="width: 17.2%;" class="py-3">@dia</th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var bloque in bloquesHorarios)
+                            {
+                                @if (bloque.EsReceso)
+                                {
+                                    <!-- FILA DE DESCANSO / RECESO -->
+                                    <tr class="table-light">
+                                        <td class="fw-bold text-muted small">@bloque.Etiqueta</td>
+                                        <td colspan="5" class="text-muted text-uppercase fw-bold small py-2 bg-light text-secondary">
+                                            <i class="bi bi-cup-hot me-1"></i> DESCANSO / RECESO
+                                        </td>
+                                    </tr>
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td class="fw-bold bg-light text-dark small">@bloque.Etiqueta</td>
+
+<<<<<<< Updated upstream
+
+
+
+=======
+                                        @foreach (var diaNombre in diasSemana)
+                                        {
+                                            var clase = Model?.FirstOrDefault(h =>
+                                                h.DiaSemana != null && h.DiaSemana.Equals(diaNombre, StringComparison.OrdinalIgnoreCase) &&
+                                                h.HoraInicio == bloque.Inicio);
+
+                                            <td class="p-2" style="height: 90px; vertical-align: middle;">
+                                                @if (clase != null)
+                                                {
+                                                    <div class="p-2 rounded bg-white border border-light-subtle shadow-sm h-100 d-flex flex-column justify-content-center text-start border-start border-primary border-3">
+                                                        <span class="fw-bold text-dark text-truncate small" title="@clase.NombreMateria">@clase.NombreMateria</span>
+                                                        <small class="text-muted text-truncate d-block mt-1" style="font-size: 0.75rem;"><i class="bi bi-person"></i> @clase.NombreProfesor</small>
+                                                        <small class="text-secondary text-truncate d-block" style="font-size: 0.75rem;"><i class="bi bi-geo-alt"></i> @clase.NombreSalon</small>
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-black-50 small">-</span>
+                                                }
+                                            </td>
+                                        }
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
         </div>
     </div>
 </div>
-
-
-
-
-
+>>>>>>> Stashed changes

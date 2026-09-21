@@ -16,13 +16,15 @@ namespace ProyectoPAE.Models
 
         public int id_profesor { get; set; }
 
+        // ¡Nueva propiedad agregada!
+        public int id_materia { get; set; }
+
         public string dia { get; set; } = string.Empty;
 
         public TimeSpan hora_inicio { get; set; }
 
         public TimeSpan hora_fin { get; set; }
 
-        // Propiedades auxiliares para mostrar la hora formateada (HH:mm) en las vistas Razor
         [NotMapped]
         public string HoraInicioFormateada => hora_inicio.ToString(@"hh\:mm");
 
