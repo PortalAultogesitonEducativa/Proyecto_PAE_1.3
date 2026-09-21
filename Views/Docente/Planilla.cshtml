@@ -90,24 +90,8 @@
                 </div>
             </div>
 
-            <!-- Filtro por Grado Nivel (6 a 11) -->
-            <div class="col-lg-2 col-md-3 col-sm-6">
-                <label class="form-label fw-bold text-dark mb-1">
-                    <i class="bi bi-mortarboard me-1 text-primary"></i>Grado
-                </label>
-                <select class="form-select" id="selectGradoNivel">
-                    <option value="todos">Todos los Grados</option>
-                    <option value="6">Grado 6°</option>
-                    <option value="7">Grado 7°</option>
-                    <option value="8">Grado 8°</option>
-                    <option value="9">Grado 9°</option>
-                    <option value="10">Grado 10°</option>
-                    <option value="11">Grado 11°</option>
-                </select>
-            </div>
-
             <!-- Filtro por Curso / Grupo específico -->
-            <div class="col-lg-2 col-md-3 col-sm-6">
+            <div class="col-lg-3 col-md-4 col-sm-6">
                 <label class="form-label fw-bold text-dark mb-1">
                     <i class="bi bi-people me-1 text-primary"></i>Curso
                 </label>
@@ -122,24 +106,42 @@
                     }
                     else
                     {
-                        <option value="601">601</option>
-                        <option value="602">602</option>
-                        <option value="603">603</option>
-                        <option value="701">701</option>
-                        <option value="702">702</option>
-                        <option value="703">703</option>
-                        <option value="801">801</option>
-                        <option value="802">802</option>
-                        <option value="803">803</option>
-                        <option value="901">901</option>
-                        <option value="902">902</option>
-                        <option value="903">903</option>
-                        <option value="1001">1001</option>
-                        <option value="1002">1002</option>
-                        <option value="1003">1003</option>
-                        <option value="1101">1101</option>
-                        <option value="1102">1102</option>
-                        <option value="1103">1103</option>
+                        <option value="601 M">601 M</option>
+                        <option value="602 M">602 M</option>
+                        <option value="603 M">603 M</option>
+                        <option value="701 M">701 M</option>
+                        <option value="702 M">702 M</option>
+                        <option value="703 M">703 M</option>
+                        <option value="801 M">801 M</option>
+                        <option value="802 M">802 M</option>
+                        <option value="803 M">803 M</option>
+                        <option value="901 M">901 M</option>
+                        <option value="902 M">902 M</option>
+                        <option value="903 M">903 M</option>
+                        <option value="1001 M">1001 M</option>
+                        <option value="1002 M">1002 M</option>
+                        <option value="1003 M">1003 M</option>
+                        <option value="1101 M">1101 M</option>
+                        <option value="1102 M">1102 M</option>
+                        <option value="1103 M">1103 M</option>
+                        <option value="601 T">601 T</option>
+                        <option value="602 T">602 T</option>
+                        <option value="603 T">603 T</option>
+                        <option value="701 T">701 T</option>
+                        <option value="702 T">702 T</option>
+                        <option value="703 T">703 T</option>
+                        <option value="801 T">801 T</option>
+                        <option value="802 T">802 T</option>
+                        <option value="803 T">803 T</option>
+                        <option value="901 T">901 T</option>
+                        <option value="902 T">902 T</option>
+                        <option value="903 T">903 T</option>
+                        <option value="1001 T">1001 T</option>
+                        <option value="1002 T">1002 T</option>
+                        <option value="1003 T">1003 T</option>
+                        <option value="1101 T">1101 T</option>
+                        <option value="1102 T">1102 T</option>
+                        <option value="1103 T">1103 T</option>
                     }
                 </select>
             </div>
@@ -169,16 +171,9 @@
                             <option value="@nombre">@nombre</option>
                         }
                     }
-                    else if (ViewBag.Cursos != null)
-                    {
-                        foreach (var nombre in ViewBag.Cursos)
-                        {
-                            <option value="@nombre">@nombre</option>
-                        }
-                    }
                     else
                     {
-                        <option value="">Sin asignaturas disponibles</option>
+                        <option value="" disabled selected>*no hay asignaturas registradas para ingresar notas*</option>
                     }
                 </select>
             </div>
@@ -744,11 +739,9 @@
         const PLANILLA_POR_PAGINA = 20;
 
         const inputBuscarEst = document.getElementById('inputBuscarEstudiante');
-        const selectGradoNivel = document.getElementById('selectGradoNivel');
 
         function getFilasPlanillaFiltradas() {
             const term = (inputBuscarEst ? inputBuscarEst.value : '').toLowerCase().trim();
-            const gradoNivel = (selectGradoNivel ? selectGradoNivel.value : 'todos').trim();
             const valGrado = (selectGrado ? selectGrado.value : 'todos').toLowerCase().trim();
             const valJornada = (selectJornada ? selectJornada.value : 'todos').toLowerCase().trim();
 
@@ -776,16 +769,7 @@
                     }
                 }
 
-                // 3. Filtro por Grado Nivel (6 a 11)
-                if (gradoNivel !== 'todos') {
-                    const digits = gradoFila.replace(/\D/g, '');
-                    if (gradoNivel === '6' && !digits.startsWith('6')) return false;
-                    if (gradoNivel === '7' && !digits.startsWith('7')) return false;
-                    if (gradoNivel === '8' && !digits.startsWith('8')) return false;
-                    if (gradoNivel === '9' && !digits.startsWith('9')) return false;
-                    if (gradoNivel === '10' && !digits.startsWith('10')) return false;
-                    if (gradoNivel === '11' && !digits.startsWith('11')) return false;
-                }
+
 
                 // 4. Filtro por Curso Específico
                 if (valGrado !== 'todos' && valGrado !== '') {
@@ -882,8 +866,6 @@
             const esTarde = jornada.toLowerCase().includes('tarde') || jornada.toLowerCase().startsWith('t');
             const esTodosJornada = !jornada || jornada.toLowerCase() === 'todos';
 
-            const gradoNivel = selectGradoNivel ? selectGradoNivel.value : 'todos';
-
             let seleccionadoVisible = false;
 
             Array.from(selectGrado.options).forEach(opt => {
@@ -894,24 +876,16 @@
                 if (val === 'todos' || txt.toLowerCase().includes('todos')) {
                     mostrar = true;
                 } else {
-                    // Filtrar por jornada
+                    // Filtrar estrictamente por jornada (M vs T)
                     if (!esTodosJornada) {
-                        if (esManana && !(txt.endsWith('M') || txt.includes(' M') || val.endsWith('M') || txt.toLowerCase().includes('m'))) {
+                        const esOpcionM = txt.endsWith('M') || val.endsWith('M') || txt.includes(' M') || val.includes(' M');
+                        const esOpcionT = txt.endsWith('T') || val.endsWith('T') || txt.includes(' T') || val.includes(' T');
+
+                        if (esManana && !esOpcionM) {
                             mostrar = false;
-                        } else if (esTarde && !(txt.endsWith('T') || txt.includes(' T') || val.endsWith('T') || txt.toLowerCase().includes('t'))) {
+                        } else if (esTarde && !esOpcionT) {
                             mostrar = false;
                         }
-                    }
-
-                    // Filtrar por nivel de grado
-                    if (gradoNivel !== 'todos') {
-                        const digits = val.replace(/\D/g, '') || txt.replace(/\D/g, '');
-                        if (gradoNivel === '6' && !digits.startsWith('6')) mostrar = false;
-                        if (gradoNivel === '7' && !digits.startsWith('7')) mostrar = false;
-                        if (gradoNivel === '8' && !digits.startsWith('8')) mostrar = false;
-                        if (gradoNivel === '9' && !digits.startsWith('9')) mostrar = false;
-                        if (gradoNivel === '10' && !digits.startsWith('10')) mostrar = false;
-                        if (gradoNivel === '11' && !digits.startsWith('11')) mostrar = false;
                     }
                 }
 
@@ -935,13 +909,6 @@
         // Listeners para todos los filtros
         if (inputBuscarEst) {
             inputBuscarEst.addEventListener('input', filtrarPlanilla);
-        }
-
-        if (selectGradoNivel) {
-            selectGradoNivel.addEventListener('change', function() {
-                filtrarOpcionesCursos();
-                filtrarPlanilla();
-            });
         }
 
         if (selectJornada) {

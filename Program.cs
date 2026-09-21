@@ -3,10 +3,16 @@ using ProyectoPAE.Models;
 using ProyectoPAE.Services;
 using Rotativa.AspNetCore;
 using ProyectoPAE.Servicios;
+using Microsoft.AspNetCore.Localization;
+using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
-// Add services to the container.
-builder.Services.AddControllersWithViews();
+
+// Configuración de Localización (i18n: Español / Inglés)
+builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
+builder.Services.AddControllersWithViews()
+    .AddViewLocalization()
+    .AddDataAnnotationsLocalization();
 
 // Configuración de límites de formularios para planillas masivas de notas
 builder.Services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(options =>
@@ -35,6 +41,23 @@ builder.Services.AddScoped<ServicioEmail>();
 builder.Services.AddScoped<CertificadoService>();
 
 var app = builder.Build();
+
+// Configuración de idiomas soportados (Español e Inglés)
+var supportedCultures = new[]
+{
+    new CultureInfo("es"),
+    new CultureInfo("es-CO"),
+    new CultureInfo("en"),
+    new CultureInfo("en-US")
+};
+
+app.UseRequestLocalization(new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new RequestCulture("es"),
+    SupportedCultures = supportedCultures,
+    SupportedUICultures = supportedCultures
+});
+
 // Configuración de Rotativa para encontrar el ejecutable en wwwroot/Rotativa
 IWebHostEnvironment env = app.Services.GetRequiredService<IWebHostEnvironment>();
 RotativaConfiguration.Setup(env.WebRootPath, "Rotativa");

@@ -70,14 +70,14 @@
                 <div class="card-body p-5">
                     <div class="text-center mb-4">
                         <img src="~/images/logo.png" alt="PAE" style="height: 80px;" class="mb-3">
-                        <h3 class="fw-bold" style="color: #0d2a4a;">Bienvenido a PAE</h3>
-                        <p class="text-muted small">Portal de Autogestión Educativa</p>
+                        <h3 class="fw-bold" style="color: #0d2a4a;">@Localizer["Bienvenido"] a PAE</h3>
+                        <p class="text-muted small">@Localizer["PortalEducativo"]</p>
                     </div>
  
                     <form asp-action="Ingresar" asp-controller="Login" method="post">
  
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Usuario o Correo</label>
+                            <label class="form-label fw-bold">@Localizer["Usuario"]</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0">
                                     <i class="bi bi-person"></i>
@@ -89,7 +89,7 @@
                         </div>
  
                         <div class="mb-4">
-                            <label class="form-label fw-bold">Contraseña</label>
+                            <label class="form-label fw-bold">@Localizer["Contrasena"]</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-light border-end-0">
                                     <i class="bi bi-lock"></i>
@@ -109,7 +109,7 @@
  
                         <div class="d-grid gap-3 mb-3">
                             <button type="submit" class="btn btn-lg text-white btn-login-main">
-                                Ingresar al Sistema
+                                @Localizer["IniciarSesion"]
                             </button>
                             <a href="/Login/OlvideContraseña"
                                class="btn btn-lg text-white btn-login-forgot d-flex justify-content-center align-items-center">

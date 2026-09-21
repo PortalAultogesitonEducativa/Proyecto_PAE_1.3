@@ -70,19 +70,31 @@ namespace ProyectoPAE.Controllers
             List<string> grados = new List<string>();
             List<string> asignaturas = new List<string>();
 
+            // Todos los cursos disponibles (Mañana M y Tarde T)
+            grados = listaCursos
+                .Select(c => c.nombre_curso)
+                .Distinct()
+                .OrderBy(n => {
+                    var digits = new string(n.TakeWhile(char.IsDigit).ToArray());
+                    return int.TryParse(digits, out int num) ? num : 999999;
+                })
+                .ThenBy(n => n)
+                .ToList();
+
+            if (!grados.Any())
+            {
+                grados = new List<string> {
+                    "601 M", "602 M", "603 M", "701 M", "702 M", "703 M",
+                    "801 M", "802 M", "803 M", "901 M", "902 M", "903 M",
+                    "1001 M", "1002 M", "1003 M", "1101 M", "1102 M", "1103 M",
+                    "601 T", "602 T", "603 T", "701 T", "702 T", "703 T",
+                    "801 T", "802 T", "803 T", "901 T", "902 T", "903 T",
+                    "1001 T", "1002 T", "1003 T", "1101 T", "1102 T", "1103 T"
+                };
+            }
+
             if (rol == "admin")
             {
-                // El administrador puede acceder a todos los cursos y materias
-                grados = listaCursos
-                    .Select(c => c.nombre_curso)
-                    .Distinct()
-                    .OrderBy(n => {
-                        var digits = new string(n.TakeWhile(char.IsDigit).ToArray());
-                        return int.TryParse(digits, out int num) ? num : 999999;
-                    })
-                    .ThenBy(n => n)
-                    .ToList();
-
                 asignaturas = _context.MATERIA
                     .Select(m => m.nombre_materia)
                     .Distinct()
@@ -91,30 +103,11 @@ namespace ProyectoPAE.Controllers
             }
             else
             {
-                // Buscar profesor vinculado al usuario en sesión
                 var prof = _context.PROFESOR.FirstOrDefault(p => (p.id_usuario != null && p.id_usuario == userId) ||
                                                                (usuarioActual != null && !string.IsNullOrEmpty(p.email) && p.email.ToLower() == usuarioActual.CORREO_ELECTRONICO.ToLower()));
 
                 if (prof != null)
                 {
-                    // Cursos asignados en HORARIOS para este profesor
-                    var cursoIdsHorario = _context.HORARIOS
-                        .Where(h => h.id_profesor == prof.id_profesor)
-                        .Select(h => h.id_curso)
-                        .Distinct()
-                        .ToList();
-
-                    if (cursoIdsHorario.Any())
-                    {
-                        grados = listaCursos
-                            .Where(c => cursoIdsHorario.Contains(c.id_curso))
-                            .Select(c => c.nombre_curso)
-                            .Distinct()
-                            .OrderBy(n => n)
-                            .ToList();
-                    }
-
-                    // Materias asignadas en PROFESOR_MATERIA
                     var materiaIds = _context.PROFESOR_MATERIA
                         .Where(pm => pm.id_profesor == prof.id_profesor)
                         .Select(pm => pm.id_materia)
@@ -132,16 +125,6 @@ namespace ProyectoPAE.Controllers
                     }
                 }
 
-                // Fallback seguro si no hay asignaciones explícitas en base de datos
-                if (!grados.Any())
-                {
-                    grados = listaCursos.Select(c => c.nombre_curso).Distinct().OrderBy(n => n).ToList();
-                }
-
-                if (!asignaturas.Any())
-                {
-                    asignaturas = _context.MATERIA.Select(m => m.nombre_materia).Distinct().OrderBy(n => n).ToList();
-                }
             }
 
             _context.AsegurarEsquemaAccionesMejora();
@@ -413,27 +396,62 @@ namespace ProyectoPAE.Controllers
                 }
             }
 
+            // Buscar acudiente en la base de datos
+            string nombreAcudiente = "El aprendiz aún no registra acudientes";
+            string docAcudiente = "N/A";
+
+            int idEstConsulta = estLegacy?.id_estudiante ?? (userEst?.ID_Usuario ?? 0);
+            int idUserConsulta = userEst?.ID_Usuario ?? 0;
+
+            var relPadre = _context.ESTUDIANTE_PADRE.FirstOrDefault(ep => (idEstConsulta > 0 && ep.ID_ESTUDIANTE == idEstConsulta) || (idUserConsulta > 0 && ep.ID_ESTUDIANTE == idUserConsulta));
+            if (relPadre != null)
+            {
+                var padreObj = _context.PADRE_TUTOR.FirstOrDefault(p => p.id_padre == relPadre.ID_PADRE);
+                if (padreObj != null)
+                {
+                    nombreAcudiente = $"{padreObj.nombre} {padreObj.apellido}".Trim();
+                    if (padreObj.id_usuario.HasValue)
+                    {
+                        var uPadre = _context.Usuarios.Find(padreObj.id_usuario.Value);
+                        if (uPadre != null && !string.IsNullOrEmpty(uPadre.NUM_DOCUMENTO))
+                        {
+                            docAcudiente = uPadre.NUM_DOCUMENTO;
+                        }
+                    }
+                }
+                else
+                {
+                    var userPadre = _context.Usuarios.FirstOrDefault(u => u.ID_Usuario == relPadre.ID_PADRE);
+                    if (userPadre != null)
+                    {
+                        nombreAcudiente = $"{userPadre.NOMBRES} {userPadre.APELLIDOS}".Trim();
+                        if (string.IsNullOrEmpty(nombreAcudiente)) nombreAcudiente = userPadre.NOMBRE_USUARIO;
+                        docAcudiente = !string.IsNullOrEmpty(userPadre.NUM_DOCUMENTO) ? userPadre.NUM_DOCUMENTO : "N/A";
+                    }
+                }
+            }
+
             var vm = new ObservadorPdfViewModel
             {
-                Institucion = "INSTITUCIÓN EDUCATIVA SOR MARÍA JULIANA",
-                Sede = "SEDE: SOR MARÍA JULIANA",
+                Institucion = "PORTAL DE AUTOGESTIÓN EDUCATIVA",
+                Sede = "SEDE PRINCIPAL",
                 Titulo = "OBSERVADOR DEL ALUMNO",
                 Ciudad = "Cartago",
                 Jornada = "Mañana",
                 Grupo = !string.IsNullOrEmpty(curso) ? curso : "601 M",
                 AnoLectivo = DateTime.Now.Year.ToString(),
-                DirGrupo = "Claudia Milena Londoño C.",
+                DirGrupo = "Docente Encargado",
                 Calendario = "A",
                 EstudianteNombre = userEst != null ? $"{userEst.NOMBRES} {userEst.APELLIDOS}".Trim() : (estLegacy != null ? $"{estLegacy.nombre} {estLegacy.apellido}".Trim() : "Estudiante Institucional"),
                 Codigo = estLegacy?.codigo_estudiante ?? (userEst != null ? $"EST-{userEst.ID_Usuario:D4}" : "04644"),
                 MatriculaNo = estLegacy != null ? $"{estLegacy.id_estudiante:D4}" : "4644",
                 LugarNacimiento = "Cartago",
                 FechaNacimiento = estLegacy != null && estLegacy.fecha_inscripcion != default ? estLegacy.fecha_inscripcion.ToString("dd 'de' MMMM 'de' yyyy", new System.Globalization.CultureInfo("es-ES")) : "14 de Julio de 2008",
-                Identificacion = userEst?.NUM_DOCUMENTO != null ? $"T.I. {userEst.NUM_DOCUMENTO} de Cartago" : "T.I. 9507141911 de Cartago",
-                Acudiente = "LUIS MARTINEZ",
-                IdentificacionAcudiente = "C.C. 10.123.456",
-                Direccion = userEst?.DIRECCION ?? (estLegacy != null && !string.IsNullOrEmpty(estLegacy.email) ? "Carrera 19C No. 14 - 20" : "Carrera 19C No. 14 - 20"),
-                Telefonos = userEst?.TELEFONO ?? "314 41 64"
+                Identificacion = userEst?.NUM_DOCUMENTO != null ? $"T.I. {userEst.NUM_DOCUMENTO}" : "T.I. Documento en trámite",
+                Acudiente = nombreAcudiente,
+                IdentificacionAcudiente = docAcudiente,
+                Direccion = userEst?.DIRECCION ?? (estLegacy != null && !string.IsNullOrEmpty(estLegacy.email) ? estLegacy.email : "Sin Dirección"),
+                Telefonos = userEst?.TELEFONO ?? "N/A"
             };
 
             // Buscar matrícula para grupo y jornada reales
@@ -1096,6 +1114,36 @@ namespace ProyectoPAE.Controllers
             };
 
             _context.AccionesMejora.Add(nuevaMejora);
+
+            // Generar notificaciones automáticas para estudiante y acudiente
+            try
+            {
+                var notifEstudiante = new Notificacion
+                {
+                    Titulo = $"Nueva Acción de Mejora: {dto.Materia}",
+                    Mensaje = $"Se ha registrado un seguimiento/compromiso de mejora en {dto.Materia}. Aspecto a mejorar: {dto.AspectoMejorar.Trim()}. Compromiso: {dto.CompromisoEstudiante.Trim()}",
+                    RolDestino = $"user_{dto.IdEstudiante}",
+                    ID_UsuarioEmisor = userId ?? 1,
+                    FechaCreacion = DateTime.Now,
+                    Activa = true,
+                    Prioridad = "alta"
+                };
+                _context.Notificaciones.Add(notifEstudiante);
+
+                var notifAcudiente = new Notificacion
+                {
+                    Titulo = $"Acción de Mejora Registrada - {nombreEst}",
+                    Mensaje = $"Estimado acudiente, se registró una acción de mejora para su acudido(a) {nombreEst} en la asignatura {dto.Materia}. Aspecto: {dto.AspectoMejorar.Trim()}",
+                    RolDestino = "acudiente",
+                    ID_UsuarioEmisor = userId ?? 1,
+                    FechaCreacion = DateTime.Now,
+                    Activa = true,
+                    Prioridad = "alta"
+                };
+                _context.Notificaciones.Add(notifAcudiente);
+            }
+            catch { }
+
             _context.SaveChanges();
 
             return Json(new { success = true, message = "¡Acción de mejora y compromiso registrados exitosamente!" });

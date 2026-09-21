@@ -401,8 +401,10 @@
 
         <div id="admin-certificados" class="d-none">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h3 style="color: #e67e22;"><i class="bi bi-file-earmark-pdf-fill me-2"></i>Certificados</h3>
-                <button class="btn btn-outline-secondary btn-sm" onclick="volverAdmin()">Volver</button>
+                <h3 style="color: #e67e22;"><i class="bi bi-file-earmark-pdf-fill me-2"></i>Certificados y Reportes Generales</h3>
+                <a href="@Url.Action("Dashboard", "Home")" class="btn btn-outline-secondary btn-sm rounded-pill px-3 shadow-sm">
+                    <i class="bi bi-arrow-left me-1"></i> Volver al Dashboard
+                </a>
             </div>
 
             @if (TempData["ErrorMatricula"] != null)
@@ -413,19 +415,70 @@
                 </div>
             }
 
-            <div class="card border-0 shadow-sm p-4">
-                <h5 class="mb-3">Constancia de Matrícula</h5>
-                <form action="@Url.Action("GenerarMatricula", "Certificado")" method="get" class="row g-3 align-items-end">
-                    <div class="col-md-6">
-                        <label class="form-label small">Número de documento del estudiante (TI / CC)</label>
-                        <input type="text" name="numeroDocumento" class="form-control" placeholder="Ej: 1122334455" required />
+            <div class="row g-4">
+                <!-- Constancia de Matrícula -->
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm p-4 h-100 rounded-3">
+                        <h5 class="mb-3 text-dark fw-bold"><i class="bi bi-card-heading text-primary me-2"></i>Constancia de Matrícula</h5>
+                        <form action="@Url.Action("GenerarMatricula", "Certificado")" method="get" class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label small fw-bold">Seleccionar Estudiante Matriculado</label>
+                                <select class="form-select" id="selectEstudianteMatriculaCert" onchange="const docInput = document.getElementById('inputDocCertMat'); if(this.value){ docInput.value = this.value; }">
+                                    <option value="">-- Seleccione un estudiante --</option>
+                                    @if (ViewBag.EstudiantesAsistencia != null)
+                                    {
+                                        foreach (var est in (IEnumerable<ProyectoPAE.Models.Usuario>)ViewBag.EstudiantesAsistencia)
+                                        {
+                                            if (est.ROL != null && est.ROL.Trim().ToLower() == "estudiante")
+                                            {
+                                                <option value="@est.NUM_DOCUMENTO">@est.NOMBRES @est.APELLIDOS (@(est.NUM_DOCUMENTO ?? "Sin Doc"))</option>
+                                            }
+                                        }
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label small fw-bold">Número de Documento (TI / CC)</label>
+                                <input type="text" name="numeroDocumento" id="inputDocCertMat" class="form-control" placeholder="Ej: 1122334455" required />
+                            </div>
+                            <div class="col-12 mt-3">
+                                <button type="submit" class="btn btn-warning text-white w-100 fw-bold shadow-sm">
+                                    <i class="bi bi-file-earmark-pdf me-2"></i>Generar Constancia de Matrícula
+                                </button>
+                            </div>
+                        </form>
                     </div>
-                    <div class="col-md-6">
-                        <button type="submit" class="btn btn-warning text-white w-100">
-                            <i class="bi bi-file-earmark-pdf me-2"></i>Generar Constancia
-                        </button>
+                </div>
+
+                <!-- Reporte General y Certificados Academicos -->
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm p-4 h-100 rounded-3">
+                        <h5 class="mb-3 text-dark fw-bold"><i class="bi bi-file-earmark-text text-success me-2"></i>Reporte General de Calificaciones</h5>
+                        <form action="@Url.Action("Generar", "Certificado")" method="get" class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label small fw-bold">Estudiante Registrado (Solo Estudiantes)</label>
+                                <select class="form-select" name="idEstudiante" required>
+                                    <option value="">-- Seleccione un estudiante --</option>
+                                    @if (ViewBag.EstudiantesAsistencia != null)
+                                    {
+                                        foreach (var est in (IEnumerable<ProyectoPAE.Models.Usuario>)ViewBag.EstudiantesAsistencia)
+                                        {
+                                            if (est.ROL != null && est.ROL.Trim().ToLower() == "estudiante")
+                                            {
+                                                <option value="@est.ID_Usuario">@est.NOMBRES @est.APELLIDOS</option>
+                                            }
+                                        }
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-12 mt-4">
+                                <button type="submit" class="btn btn-primary w-100 fw-bold shadow-sm">
+                                    <i class="bi bi-bar-chart-line me-2"></i>Generar Certificado y Reporte PDF
+                                </button>
+                            </div>
+                        </form>
                     </div>
-                </form>
+                </div>
             </div>
         </div>
 
@@ -818,19 +871,7 @@
                             <input type="text" class="form-control border-start-0 ps-0" id="inputBuscarEstudianteObservador" placeholder="Nombre o apellido..." oninput="filtrarEstudiantesObservador()">
                         </div>
                     </div>
-                    <div class="col-lg-2 col-md-3 col-sm-6">
-                        <label class="form-label small fw-bold">Grado</label>
-                        <select class="form-select" id="selectGradoNivelObservador" onchange="filtrarOpcionesCursosObservador(); filtrarEstudiantesObservador();">
-                            <option value="todos">Todos los Grados</option>
-                            <option value="6">Grado 6°</option>
-                            <option value="7">Grado 7°</option>
-                            <option value="8">Grado 8°</option>
-                            <option value="9">Grado 9°</option>
-                            <option value="10">Grado 10°</option>
-                            <option value="11">Grado 11°</option>
-                        </select>
-                    </div>
-                    <div class="col-lg-2 col-md-3 col-sm-6">
+                    <div class="col-lg-3 col-md-4 col-sm-6">
                         <label class="form-label small fw-bold">Curso / Grupo</label>
                         <select class="form-select" id="selectCursoObservador" onchange="filtrarEstudiantesObservador()">
                             <option value="todos">Todos los Cursos</option>
@@ -1010,25 +1051,13 @@
                         </div>
                     </div>
 
-                    <!-- 3. Grado Nivel -->
-                    <div class="col-lg-2 col-md-4 col-sm-6">
-                        <label class="form-label fw-bold small text-dark"><i class="bi bi-mortarboard me-1 text-primary"></i>Grado</label>
-                        <select class="form-select" id="selectGradoNivelAsistencia" onchange="filtrarOpcionesCursosAsistencia(); filtrarAsistenciaPorCursoYJornada();">
-                            <option value="todos">Todos los Grados</option>
-                            <option value="6">Grado 6°</option>
-                            <option value="7">Grado 7°</option>
-                            <option value="8">Grado 8°</option>
-                            <option value="9">Grado 9°</option>
-                            <option value="10">Grado 10°</option>
-                            <option value="11">Grado 11°</option>
-                        </select>
-                    </div>
 
-                    <!-- 4. Seleccionar Grupo / Curso -->
+
+                    <!-- 4. Seleccionar Grupo / Curso del Grado -->
                     <div class="col-lg-2 col-md-4 col-sm-6">
                         <label class="form-label fw-bold small text-dark"><i class="bi bi-people me-1 text-primary"></i>Curso</label>
                         <select class="form-select" id="selectGrupoAsistencia" onchange="filtrarAsistenciaPorCursoYJornada()">
-                            <option value="todos">Todos los Cursos</option>
+                            <option value="todos" selected>Todos los Cursos de 6°</option>
                             @if (ViewBag.CursosAsistencia != null && ((IEnumerable<string>)ViewBag.CursosAsistencia).Any())
                             {
                                 foreach (var c in (IEnumerable<string>)ViewBag.CursosAsistencia)
@@ -1052,7 +1081,7 @@
                     <!-- 5. Seleccionar Jornada (Mañana / Tarde) -->
                     <div class="col-lg-3 col-md-4 col-sm-6">
                         <label class="form-label fw-bold small text-dark"><i class="bi bi-clock-history me-1 text-primary"></i>Jornada</label>
-                        <select class="form-select" id="selectJornadaAsistencia" onchange="filtrarOpcionesCursosAsistencia(); filtrarAsistenciaPorCursoYJornada();">
+                        <select class="form-select" id="selectJornadaAsistencia" onchange="cambiarGradoNivelAsistencia()">
                             <option value="todos">Todas las Jornadas</option>
                             <option value="Mañana" selected>Mañana (M)</option>
                             <option value="Tarde">Tarde (T)</option>
@@ -4902,7 +4931,9 @@
 
         // Función para guardar asistencias con validación de calificados y confirmación SweetAlert2
         window.guardarAsistenciaYObservaciones = function() {
-            const filas = document.querySelectorAll('#tablaAsistencia tbody tr');
+            // SOLO procesar filas VISIBLES (no las ocultas por filtros de curso/jornada)
+            const todasFilas = document.querySelectorAll('#tablaAsistencia tbody tr');
+            const filas = Array.from(todasFilas).filter(f => f.style.display !== 'none' && f.offsetParent !== null);
             let sinCalificar = [];
 
             filas.forEach(fila => {
@@ -4958,7 +4989,11 @@
                         }
                     });
 
-                    fetch('@Url.Action("GuardarControlAsistencia", "Docente")', {
+                    // Obtener la fecha seleccionada si hay un date picker, o usar hoy
+                    const fechaInput = document.getElementById('fechaAsistencia');
+                    const fechaParam = fechaInput && fechaInput.value ? '?fecha=' + fechaInput.value : '';
+
+                    fetch('@Url.Action("GuardarControlAsistencia", "Docente")' + fechaParam, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -5004,27 +5039,24 @@
         window.filtrarOpcionesCursosObservador = function() {
             const selectCurso = document.getElementById('selectCursoObservador');
             const selectJornada = document.getElementById('selectJornadaObservador');
-            const selectGradoNivel = document.getElementById('selectGradoNivelObservador');
             if (!selectCurso) return;
 
             const j = selectJornada ? selectJornada.value : 'todos';
-            const g = selectGradoNivel ? selectGradoNivel.value : 'todos';
-            const esM = j.toLowerCase().includes('mañana') || j.toLowerCase().includes('manana') || j.toLowerCase().startsWith('m');
-            const esT = j.toLowerCase().includes('tarde') || j.toLowerCase().startsWith('t');
+            const esM = j.toLowerCase().includes('mañana') || j.toLowerCase().includes('manana') || j.toLowerCase() === 'm';
+            const esT = j.toLowerCase().includes('tarde') || j.toLowerCase() === 't';
 
             Array.from(selectCurso.options).forEach((opt, idx) => {
                 if (idx === 0) return;
                 const txt = opt.text.trim();
+                const val = opt.value.trim();
                 let mostrar = true;
 
                 if (j !== 'todos') {
-                    if (esM && !(txt.endsWith('M') || txt.includes(' M') || txt.toLowerCase().includes('m'))) mostrar = false;
-                    if (esT && !(txt.endsWith('T') || txt.includes(' T') || txt.toLowerCase().includes('t'))) mostrar = false;
-                }
+                    const esOpcionM = txt.endsWith('M') || val.endsWith('M') || txt.includes(' M') || val.includes(' M');
+                    const esOpcionT = txt.endsWith('T') || val.endsWith('T') || txt.includes(' T') || val.includes(' T');
 
-                if (g !== 'todos') {
-                    const digits = txt.replace(/\D/g, '');
-                    if (!digits.startsWith(g)) mostrar = false;
+                    if (esM && !esOpcionM) mostrar = false;
+                    if (esT && !esOpcionT) mostrar = false;
                 }
 
                 opt.hidden = !mostrar;
@@ -5232,21 +5264,38 @@
         window.descargarObservadorDocentePdf = function() {
             const selectEst = document.getElementById('selectEstudianteObservacion');
             const selectCurso = document.getElementById('selectCursoObservador');
+            const baseUrl = '@Url.Action("DescargarObservadorPdf", "Docente")';
 
-            let url = '@Url.Action("DescargarObservadorPdf", "Docente")';
-            const params = [];
-            if (selectEst && selectEst.value) {
-                params.push(`idEstudiante=${selectEst.value}`);
+            if (typeof Swal !== 'undefined') {
+                Swal.fire({
+                    title: 'Descargar Observador del Alumno',
+                    text: 'Selecciona una opción para generar el reporte en PDF:',
+                    icon: 'question',
+                    showCancelButton: true,
+                    showDenyButton: true,
+                    confirmButtonText: '<i class="bi bi-person-badge me-1"></i> Estudiante Seleccionado',
+                    denyButtonText: '<i class="bi bi-people me-1"></i> Curso Seleccionado',
+                    cancelButtonText: 'Cancelar',
+                    confirmButtonColor: '#0b3c5d',
+                    denyButtonColor: '#2980b9'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        if (selectEst && selectEst.value) {
+                            window.open(`${baseUrl}?idEstudiante=${selectEst.value}`, '_blank');
+                        } else {
+                            Swal.fire('Selección Requerida', 'Por favor selecciona un estudiante del listado para descargar su informe.', 'warning');
+                        }
+                    } else if (result.isDenied) {
+                        const cursoVal = (selectCurso && selectCurso.value && selectCurso.value !== 'todos') ? selectCurso.value : '';
+                        window.open(`${baseUrl}?curso=${encodeURIComponent(cursoVal)}`, '_blank');
+                    }
+                });
+            } else {
+                let params = [];
+                if (selectEst && selectEst.value) params.push(`idEstudiante=${selectEst.value}`);
+                else if (selectCurso && selectCurso.value && selectCurso.value !== 'todos') params.push(`curso=${encodeURIComponent(selectCurso.value)}`);
+                window.open(baseUrl + (params.length ? '?' + params.join('&') : ''), '_blank');
             }
-            if (selectCurso && selectCurso.value && selectCurso.value !== 'todos') {
-                params.push(`curso=${encodeURIComponent(selectCurso.value)}`);
-            }
-
-            if (params.length > 0) {
-                url += '?' + params.join('&');
-            }
-
-            window.open(url, '_blank');
         };
 
         // Función para enviar Citación a Padres desde Docente
@@ -5335,37 +5384,43 @@
             renderizarPaginacionAsistencia();
         };
 
-        window.filtrarOpcionesCursosAsistencia = function() {
+        window.cambiarGradoNivelAsistencia = function() {
             const selectGrupo = document.getElementById('selectGrupoAsistencia');
             const selectJornada = document.getElementById('selectJornadaAsistencia');
-            const selectGradoNivel = document.getElementById('selectGradoNivelAsistencia');
             if (!selectGrupo) return;
 
             const j = selectJornada ? selectJornada.value : 'todos';
-            const g = selectGradoNivel ? selectGradoNivel.value : 'todos';
-            const esM = j.toLowerCase().includes('mañana') || j.toLowerCase().includes('manana') || j.toLowerCase().startsWith('m');
-            const esT = j.toLowerCase().includes('tarde') || j.toLowerCase().startsWith('t');
+            const esM = j.toLowerCase().includes('mañana') || j.toLowerCase().includes('manana') || j.toLowerCase() === 'm';
+            const esT = j.toLowerCase().includes('tarde') || j.toLowerCase() === 't';
 
             Array.from(selectGrupo.options).forEach((opt, idx) => {
-                if (idx === 0) return;
+                if (idx === 0) {
+                    opt.text = 'Todos los Cursos';
+                    return;
+                }
                 const txt = opt.text.trim();
+                const val = opt.value.trim();
                 let mostrar = true;
 
                 if (j !== 'todos') {
-                    if (esM && !(txt.endsWith('M') || txt.includes(' M') || txt.toLowerCase().includes('m'))) mostrar = false;
-                    if (esT && !(txt.endsWith('T') || txt.includes(' T') || txt.toLowerCase().includes('t'))) mostrar = false;
-                }
+                    const esOpcionM = txt.endsWith('M') || val.endsWith('M') || txt.includes(' M') || val.includes(' M');
+                    const esOpcionT = txt.endsWith('T') || val.endsWith('T') || txt.includes(' T') || val.includes(' T');
 
-                if (g !== 'todos') {
-                    const digits = txt.replace(/\D/g, '');
-                    if (!digits.startsWith(g)) mostrar = false;
+                    if (esM && !esOpcionM) mostrar = false;
+                    if (esT && !esOpcionT) mostrar = false;
                 }
 
                 opt.hidden = !mostrar;
                 opt.disabled = !mostrar;
                 opt.style.display = mostrar ? '' : 'none';
             });
+
+            selectGrupo.selectedIndex = 0;
+            paginaActualAsistencia = 1;
+            renderizarPaginacionAsistencia();
         };
+
+        window.filtrarOpcionesCursosAsistencia = window.cambiarGradoNivelAsistencia;
 
         window.renderizarPaginacionAsistencia = function() {
             const inputBuscar = document.getElementById('inputBuscarEstudianteAsistencia');
@@ -5374,7 +5429,7 @@
             const selectJornada = document.getElementById('selectJornadaAsistencia');
 
             const term = (inputBuscar ? inputBuscar.value : '').toLowerCase().trim();
-            const gradoNivel = (selectGradoNivel ? selectGradoNivel.value : 'todos').trim();
+            const gradoNivel = (selectGradoNivel ? selectGradoNivel.value : '6').trim();
             const cursoSeleccionado = (selectGrupo ? selectGrupo.value : 'todos').trim().toLowerCase();
             const jornadaSeleccionada = (selectJornada ? selectJornada.value : 'todos').trim().toLowerCase();
 
@@ -5413,6 +5468,16 @@
                 return true;
             });
 
+            // Ordenar alfabéticamente por curso y luego por nombre
+            filasFiltradas.sort((a, b) => {
+                const cA = a.getAttribute('data-curso') || '';
+                const cB = b.getAttribute('data-curso') || '';
+                if (cA !== cB) return cA.localeCompare(cB);
+                const nA = (a.querySelector('td:first-child')?.textContent || '').trim();
+                const nB = (b.querySelector('td:first-child')?.textContent || '').trim();
+                return nA.localeCompare(nB);
+            });
+
             const totalItems = filasFiltradas.length;
             const totalPaginas = Math.ceil(totalItems / itemsPorPaginaAsistencia) || 1;
             if (paginaActualAsistencia > totalPaginas) paginaActualAsistencia = totalPaginas;
@@ -5426,9 +5491,9 @@
             const infoP = document.getElementById('infoAsistenciaPagina');
             if (infoP) {
                 if (totalItems === 0) {
-                    infoP.textContent = 'Mostrando 0 estudiantes para los filtros seleccionados.';
+                    infoP.textContent = `Mostrando 0 estudiantes de Grado ${gradoNivel}°.`;
                 } else {
-                    infoP.textContent = `Mostrando ${inicio + 1} - ${Math.min(fin, totalItems)} de ${totalItems} estudiantes (Página ${paginaActualAsistencia} de ${totalPaginas})`;
+                    infoP.textContent = `Mostrando ${inicio + 1} - ${Math.min(fin, totalItems)} de ${totalItems} estudiantes de Grado ${gradoNivel}° (Página ${paginaActualAsistencia} de ${totalPaginas})`;
                 }
             }
 
@@ -5904,7 +5969,11 @@
 
         // Inicializar paginación de asistencia y mejoras al cargar la página
         setTimeout(function() {
-            renderizarPaginacionAsistencia();
+            if (typeof cambiarGradoNivelAsistencia === 'function') {
+                cambiarGradoNivelAsistencia();
+            } else {
+                renderizarPaginacionAsistencia();
+            }
             actualizarBadgesCursosMejoras();
         }, 300);
     });

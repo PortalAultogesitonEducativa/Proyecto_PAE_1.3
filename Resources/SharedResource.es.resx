@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="0" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Inicio" xml:space="preserve">
+    <value>Inicio</value>
+  </data>
+  <data name="Dashboard" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+  <data name="Horarios" xml:space="preserve">
+    <value>Horarios</value>
+  </data>
+  <data name="Perfil" xml:space="preserve">
+    <value>Perfil</value>
+  </data>
+  <data name="CerrarSesion" xml:space="preserve">
+    <value>Cerrar Sesión</value>
+  </data>
+  <data name="ControlAsistencia" xml:space="preserve">
+    <value>Control de Asistencia</value>
+  </data>
+  <data name="PlanillaNotas" xml:space="preserve">
+    <value>Planilla de Notas</value>
+  </data>
+  <data name="SeguimientoMejoras" xml:space="preserve">
+    <value>Seguimiento de Mejoras</value>
+  </data>
+  <data name="ReporteGeneral" xml:space="preserve">
+    <value>Reporte General y Certificados</value>
+  </data>
+  <data name="ObservadorAlumno" xml:space="preserve">
+    <value>Observador del Alumno</value>
+  </data>
+  <data name="Guardar" xml:space="preserve">
+    <value>Guardar</value>
+  </data>
+  <data name="Buscar" xml:space="preserve">
+    <value>Buscar</value>
+  </data>
+  <data name="Filtrar" xml:space="preserve">
+    <value>Filtrar</value>
+  </data>
+  <data name="Estudiante" xml:space="preserve">
+    <value>Estudiante</value>
+  </data>
+  <data name="Docente" xml:space="preserve">
+    <value>Docente</value>
+  </data>
+  <data name="Asignatura" xml:space="preserve">
+    <value>Asignatura / Materia</value>
+  </data>
+  <data name="Jornada" xml:space="preserve">
+    <value>Jornada</value>
+  </data>
+  <data name="Curso" xml:space="preserve">
+    <value>Curso</value>
+  </data>
+  <data name="Periodo" xml:space="preserve">
+    <value>Periodo</value>
+  </data>
+  <data name="Acciones" xml:space="preserve">
+    <value>Acciones</value>
+  </data>
+  <data name="DescargarPDF" xml:space="preserve">
+    <value>Descargar PDF</value>
+  </data>
+  <data name="VolverDashboard" xml:space="preserve">
+    <value>Volver al Dashboard</value>
+  </data>
+  <data name="IniciarSesion" xml:space="preserve">
+    <value>Iniciar Sesión</value>
+  </data>
+  <data name="Usuario" xml:space="preserve">
+    <value>Usuario / Documento</value>
+  </data>
+  <data name="Contrasena" xml:space="preserve">
+    <value>Contraseña</value>
+  </data>
+  <data name="PortalEducativo" xml:space="preserve">
+    <value>Portal de Autogestión Educativa</value>
+  </data>
+  <data name="Bienvenido" xml:space="preserve">
+    <value>Bienvenido</value>
+  </data>
+  <data name="Idioma" xml:space="preserve">
+    <value>Idioma</value>
+  </data>
+</root>

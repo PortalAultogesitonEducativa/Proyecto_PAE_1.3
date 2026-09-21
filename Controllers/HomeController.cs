@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System;
+using Microsoft.AspNetCore.Localization;
 
 namespace ProyectoPAE.Controllers
 {
@@ -476,6 +477,14 @@ namespace ProyectoPAE.Controllers
                     }
                 }
             }
+
+            // Ordenar estudiantes primero por su Curso/Grado y luego alfabéticamente por Apellidos y Nombres
+            estudiantesAsistencia = estudiantesAsistencia
+                .OrderBy(u => estudianteGradosMap.ContainsKey(u.ID_Usuario) ? estudianteGradosMap[u.ID_Usuario] : "ZZZ")
+                .ThenBy(u => u.APELLIDOS)
+                .ThenBy(u => u.NOMBRES)
+                .ToList();
+            ViewBag.EstudiantesAsistencia = estudiantesAsistencia;
             ViewBag.EstudianteGradosMap = estudianteGradosMap;
 
             // 9. Cargar lista de cursos/grados para Control de Asistencia y Observador
@@ -495,6 +504,27 @@ namespace ProyectoPAE.Controllers
                 ? cursosAsistencia
                 : new List<string> { "601", "602", "701", "702", "801", "802", "901", "902", "1001", "1002", "1101", "1102" };
             ViewBag.CursosDocente = cursosDocenteLista;
+
+            var listaMaterias = _context.MATERIA.Select(m => m.nombre_materia).Distinct().OrderBy(m => m).ToList();
+            if (!listaMaterias.Any())
+            {
+                listaMaterias = new List<string> {
+                    "Matemáticas",
+                    "Español y Literatura",
+                    "Ciencias Naturales",
+                    "Ciencias Sociales",
+                    "Inglés",
+                    "Tecnología e Informática",
+                    "Educación Física",
+                    "Ética y Valores",
+                    "Artes",
+                    "Religión",
+                    "Filosofía",
+                    "Física",
+                    "Química"
+                };
+            }
+            ViewBag.Asignaturas = listaMaterias;
 
             return View();
         }
@@ -870,6 +900,23 @@ namespace ProyectoPAE.Controllers
                 citaciones = citaciones,
                 observaciones = observaciones
             });
+        }
+
+        [HttpPost]
+        public IActionResult SetLanguage(string culture, string returnUrl)
+        {
+            Response.Cookies.Append(
+                CookieRequestCultureProvider.DefaultCookieName,
+                CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(culture)),
+                new CookieOptions { Expires = DateTimeOffset.UtcNow.AddYears(1) }
+            );
+
+            if (string.IsNullOrEmpty(returnUrl) || !Url.IsLocalUrl(returnUrl))
+            {
+                returnUrl = "~/";
+            }
+
+            return LocalRedirect(returnUrl);
         }
     }
 

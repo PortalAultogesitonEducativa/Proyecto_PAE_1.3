@@ -147,8 +147,8 @@ namespace ProyectoPAE.Controllers
 
             HttpContext.Session.SetInt32("UserId", user.ID_Usuario);
             HttpContext.Session.SetString("UserIdStr", user.ID_Usuario.ToString());
-            HttpContext.Session.SetString("NombreUsuario", user.NOMBRES ?? user.NOMBRE_USUARIO);
-            HttpContext.Session.SetString("UserRol", user.ROL.ToLower().Trim());
+            HttpContext.Session.SetString("NombreUsuario", !string.IsNullOrWhiteSpace(user.NOMBRES) ? user.NOMBRES : (!string.IsNullOrWhiteSpace(user.NOMBRE_USUARIO) ? user.NOMBRE_USUARIO : "Usuario"));
+            HttpContext.Session.SetString("UserRol", (!string.IsNullOrWhiteSpace(user.ROL) ? user.ROL : "docente").ToLower().Trim());
 
             return RedirectToAction("Dashboard", "Home");
         }

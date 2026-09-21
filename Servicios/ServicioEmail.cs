@@ -1,4 +1,4 @@
-﻿using MailKit.Net.Smtp;
+using MailKit.Net.Smtp;
 using MimeKit;
 using Microsoft.Extensions.Configuration;
 
@@ -48,15 +48,23 @@ namespace ProyectoPAE.Services
                 </div>"
             };
 
-            using var smtp = new SmtpClient();
-            smtp.Connect(
-                _config["Email:Servidor"],
-                int.Parse(_config["Email:Puerto"]),
-                MailKit.Security.SecureSocketOptions.StartTls
-            );
-            smtp.Authenticate(_config["Email:Remitente"], _config["Email:Password"]);
-            smtp.Send(mensaje);
-            smtp.Disconnect(true);
+            try
+            {
+                using var smtp = new SmtpClient();
+                smtp.Timeout = 5000;
+                smtp.Connect(
+                    _config["Email:Servidor"],
+                    int.Parse(_config["Email:Puerto"]),
+                    MailKit.Security.SecureSocketOptions.StartTls
+                );
+                smtp.Authenticate(_config["Email:Remitente"], _config["Email:Password"]);
+                smtp.Send(mensaje);
+                smtp.Disconnect(true);
+            }
+            catch
+            {
+                // Silenciar excepciones de envío de correo para no bloquear el flujo de la aplicación
+            }
         }
     }
 }
