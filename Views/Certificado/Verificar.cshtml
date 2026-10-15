@@ -5,7 +5,14 @@
 }
 
 <div class="container mt-4">
-    <h2>Verificar autenticidad de un certificado</h2>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="fw-bold m-0" style="color: var(--pae-primary);">
+            <i class="bi bi-shield-check me-2" style="color: var(--pae-secondary);"></i>Verificar Certificado
+        </h2>
+        <button onclick="history.back()" class="btn btn-pae-volver">
+            Volver
+        </button>
+    </div>
     <p class="text-muted">Ingresa el código de verificación que aparece impreso en el certificado (ej: PAE-8F2A91C4).</p>
 
     <form asp-action="VerificarCodigo" method="get" class="row g-2 mb-4">

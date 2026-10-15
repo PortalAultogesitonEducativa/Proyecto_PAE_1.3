@@ -19,10 +19,10 @@
 
 <div class="container-fluid mt-4 px-4 pb-5" style="max-width: 1300px; margin: 0 auto;">
 
-    <!-- 1. Encabezado Institucional con Degradado Azul -->
+    <!-- 1. Encabezado Institucional con Degradado Azul PAE -->
     <div class="card border-0 shadow-sm mb-4 rounded-3 overflow-hidden">
         <div class="d-flex flex-wrap justify-content-between align-items-center px-4 py-3 text-white"
-             style="background: linear-gradient(135deg, #0d2a4a 0%, #2980b9 100%);">
+             style="background: var(--pae-gradient-primary);">
             <div class="d-flex align-items-center gap-3">
                 <div class="rounded-circle d-flex align-items-center justify-content-center"
                      style="width:48px;height:48px;background:rgba(255,255,255,0.15);">
@@ -35,8 +35,8 @@
                     </span>
                 </div>
             </div>
-            <a href="@Url.Action("Dashboard", "Home")" class="btn btn-outline-light btn-sm rounded-pill px-3 shadow-sm mt-2 mt-sm-0">
-                <i class="bi bi-arrow-left me-1"></i> Volver al Dashboard
+            <a href="@Url.Action("Dashboard", "Home")" class="btn btn-pae-volver">
+                Volver
             </a>
         </div>
     </div>

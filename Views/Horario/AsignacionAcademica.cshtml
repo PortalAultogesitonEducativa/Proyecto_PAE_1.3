@@ -1,13 +1,16 @@
-﻿@{
+@{
     ViewData["Title"] = "Asignación Académica - PAE";
 }
 
 <div class="container my-4">
     <div class="card shadow-sm border-0">
-        <div class="card-header bg-primary text-white p-3">
+        <div class="card-header bg-primary text-white p-3 d-flex justify-content-between align-items-center">
             <h4 class="mb-0 fw-normal">
-                <i class="bi bi-calendar-plus"></i> Asignación Académica de Horarios
+                <i class="bi bi-calendar-plus me-2"></i>Asignación Académica de Horarios
             </h4>
+            <a href="@Url.Action("Dashboard", "Home")" class="btn btn-pae-volver">
+                Volver
+            </a>
         </div>
 
         <div class="card-body p-4">

@@ -44,7 +44,6 @@
     <div class="container d-flex justify-content-between align-items-center">
         <!-- Título a la izquierda con logo de PAE -->
         <span class="d-flex align-items-center gap-2">
-            <img src="~/images/logo.png" alt="Logo PAE" style="height: 32px; width: auto; object-fit: contain; background: white; border-radius: 6px; padding: 2px;" class="shadow-sm" />
             <span style="letter-spacing: 0.5px;"><i class="bi bi-mortarboard-fill me-2"></i>SISTEMA DE GESTIÓN PAE</span>
         </span>
 
@@ -151,7 +150,7 @@
         <div id="admin-matricula" class="d-none">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h3 style="color: #e67e22;"><i class="bi bi-clipboard-check me-2"></i>Matrículas</h3>
-                <button class="btn btn-outline-secondary btn-sm" onclick="volverAdmin()">Volver</button>
+                <button class="btn btn-pae-volver" onclick="volverAdmin()">Volver</button>
             </div>
 
             <!-- Resumen (datos reales de MATRICULA) -->
@@ -457,8 +456,8 @@
                     </h3>
                     <p class="text-muted small mb-0">Indicadores institucionales de rendimiento académico, convivencia, permanencia y matrículas.</p>
                 </div>
-                <button class="btn btn-outline-secondary rounded-pill px-4" onclick="volverAdmin()">
-                    <i class="bi bi-arrow-left me-1"></i> Volver al Dashboard
+                <button class="btn btn-pae-volver" onclick="volverAdmin()">
+                    Volver
                 </button>
             </div>
 
@@ -786,9 +785,10 @@
             </div>
         </div>
 
-        <!-- ============================================================== -->
+          <!-- ============================================================== -->
         <!-- 2. MÓDULOS INDEPENDIENTES Y COMPONENTES OCULTOS (DOCENTE)      -->
         <!-- ============================================================== -->
+
 
         <!-- MÓDULO: OBSERVADOR DEL ALUMNO & CITACIONES (DOCENTE) -->
         <div id="docente-observaciones" class="d-none">
@@ -807,6 +807,7 @@
                 </div>
             </div>
 
+
             <!-- 1. Filtros Previos: Curso, Jornada y Tipo de Nota -->
             <div class="card border-0 shadow-sm p-4 mb-4 rounded-3">
                 <h5 class="fw-bold text-dark mb-3"><i class="bi bi-funnel-fill text-primary me-2"></i>Filtros de Búsqueda y Selección</h5>
@@ -814,10 +815,10 @@
                     <div class="col-md-3">
                         <label class="form-label small fw-bold">Curso / Grado</label>
                         <select class="form-select" id="selectCursoObservador" onchange="filtrarEstudiantesObservador()">
-                            <option value="todos">Todos los Cursos</option>
-                            @if (ViewBag.CursosAsistencia != null)
+                            <option value="todos">Todos mis Cursos</option>
+                            @if (ViewBag.CursosDocente != null)
                             {
-                                foreach (var c in (IEnumerable<string>)ViewBag.CursosAsistencia)
+                                foreach (var c in (IEnumerable<string>)ViewBag.CursosDocente)
                                 {
                                     <option value="@c">@c</option>
                                 }
@@ -859,11 +860,13 @@
                 </div>
             </div>
 
+
             <!-- 2. Formulario Dinámico de Registro según Tipo de Nota -->
             <div class="row g-4 mb-4">
                 <div class="col-lg-7">
                     <div class="card border-0 shadow-sm p-4 h-100 rounded-3" style="border-top: 4px solid #2980b9 !important;">
                         <h5 class="fw-bold mb-3 text-dark"><i class="bi bi-journal-plus text-primary me-2"></i>Registrar Anotación en Observador</h5>
+
 
                         <!-- Periodo Lectivo -->
                         <div class="mb-3">
@@ -876,6 +879,7 @@
                             </select>
                         </div>
 
+
                         <!-- BLOQUE 1: Para notas Positivas / Mérito (1 Campo) -->
                         <div id="bloqueNotaPositiva">
                             <div class="mb-3">
@@ -884,6 +888,7 @@
                             </div>
                         </div>
 
+
                         <!-- BLOQUE 2: Para notas Negativas / Seguimiento Académico / Llamado de Atención (3 Campos) -->
                         <div id="bloqueNotaNegativa" class="d-none">
                             <div class="mb-3">
@@ -891,16 +896,19 @@
                                 <textarea class="form-control" id="txtDescripcionSuceso" rows="3" placeholder="Detalle lo sucedido, fecha/hora y hechos ocurridos en el aula o institución..."></textarea>
                             </div>
 
+
                             <div class="mb-3">
                                 <label class="form-label small fw-semibold text-warning text-dark"><i class="bi bi-arrow-up-right-circle-fill me-1 text-warning"></i>2. Aspectos a Mejorar del Estudiante <span class="text-danger">*</span></label>
                                 <textarea class="form-control" id="txtAspectosMejorar" rows="3" placeholder="Especifique los compromisos pedagógicos, pautas de comportamiento y acciones de mejora a adoptar..."></textarea>
                             </div>
+
 
                             <div class="mb-3">
                                 <label class="form-label small fw-semibold text-primary"><i class="bi bi-person-badge-fill me-1"></i>3. Quién le Pone la Nota / Docente que Registra <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="txtQuienRegistra" value="@nombre" placeholder="Nombre completo o cargo del docente/directivo" />
                             </div>
                         </div>
+
 
                         <div class="text-end mt-3">
                             <button type="button" class="btn text-white fw-bold px-4 shadow-sm" style="background-color: #2980b9;" onclick="guardarObservacionDocente()">
@@ -910,21 +918,25 @@
                     </div>
                 </div>
 
+
                 <!-- 3. Formulario de Citación a Padres -->
                 <div class="col-lg-5">
                     <div class="card border-0 shadow-sm p-4 h-100 rounded-3" style="border-top: 4px solid #27ae60 !important;">
                         <h5 class="fw-bold mb-3 text-dark"><i class="bi bi-envelope-paper-fill text-success me-2"></i>Enviar Citación Oficial a Acudiente</h5>
                         <p class="text-muted small">Notifica formalmente al padre de familia o tutor legal sobre novedades académicas o citaciones presenciales.</p>
 
+
                         <div class="mb-3">
                             <label class="form-label small fw-semibold">Asunto de la Citación <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="txtAsuntoCitacion" placeholder="Ej: Citación sobre rendimiento académico - Periodo 1" />
                         </div>
 
+
                         <div class="mb-3">
                             <label class="form-label small fw-semibold">Mensaje y Fecha/Hora de Citación <span class="text-danger">*</span></label>
                             <textarea class="form-control" id="txtMensajeCitacion" rows="4" placeholder="Estimado acudiente, se solicita su presencia el día..."></textarea>
                         </div>
+
 
                         <button type="button" class="btn btn-success fw-bold w-100 mt-auto text-white" onclick="guardarCitacionDocente()">
                             <i class="bi bi-send-fill me-1"></i> Enviar Citación al Acudiente
@@ -932,6 +944,7 @@
                     </div>
                 </div>
             </div>
+
 
             <!-- 4. Historial de Observaciones del Estudiante Seleccionado -->
             <div class="card border-0 shadow-sm p-4 rounded-3">
@@ -961,6 +974,7 @@
             </div>
         </div>
 
+
         <!-- MÓDULO: CONTROL DE ASISTENCIA (DOCENTE) -->
         <div id="docente-asistencia" class="d-none">
             <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
@@ -973,6 +987,7 @@
                 </button>
             </div>
 
+
             <!-- Filtros: Fecha, Grupo (Curso), Jornada y Botón Rápido -->
             <div class="card border-0 shadow-sm p-4 mb-4 rounded-3">
                 <div class="row g-3 align-items-end">
@@ -982,31 +997,21 @@
                         <input type="date" class="form-control" id="inputFechaAsistencia" value="@DateTime.Now.ToString("yyyy-MM-dd")">
                     </div>
 
+
                     <!-- 2. Seleccionar Grupo / Curso -->
                     <div class="col-md-3">
                         <label class="form-label fw-bold small text-dark"><i class="bi bi-mortarboard me-1 text-primary"></i>Curso / Grupo <span class="text-danger">*</span></label>
                         <select class="form-select" id="selectGrupoAsistencia" onchange="filtrarAsistenciaPorCursoYJornada()">
-                            <option value="todos">Todos los Cursos</option>
-                            @if (ViewBag.CursosAsistencia != null && ((IEnumerable<string>)ViewBag.CursosAsistencia).Any())
+                            <option value="todos">Todos mis Cursos</option>
+                            @if (ViewBag.CursosDocente != null && ((IEnumerable<string>)ViewBag.CursosDocente).Any())
                             {
-                                foreach (var c in (IEnumerable<string>)ViewBag.CursosAsistencia)
+                                foreach (var c in (IEnumerable<string>)ViewBag.CursosDocente)
                                 {
                                     <option value="@c">@c</option>
                                 }
                             }
-                            else
-                            {
-                                <option value="601 M">601 M</option>
-                                <option value="602 M">602 M</option>
-                                <option value="701 M">701 M</option>
-                                <option value="801 M">801 M</option>
-                                <option value="901 M">901 M</option>
-                                <option value="1001 M">1001 M</option>
-                                <option value="1101 M">1101 M</option>
-                            }
                         </select>
-                    </div>
-
+                    </div>1
                     <!-- 3. Seleccionar Jornada (Mañana / Tarde) -->
                     <div class="col-md-3">
                         <label class="form-label fw-bold small text-dark"><i class="bi bi-clock-history me-1 text-primary"></i>Jornada</label>
@@ -1470,8 +1475,8 @@
                         <button class="btn text-white btn-sm shadow-sm px-3 rounded-pill" style="background-color: #2980b9;" data-bs-toggle="modal" data-bs-target="#modalCrearActividad">
                             <i class="bi bi-plus-circle me-1"></i> Nueva Actividad
                         </button>
-                        <button class="btn btn-outline-secondary btn-sm rounded-pill px-4 shadow-sm" onclick="volverDocenteActividades()">
-                            <i class="bi bi-arrow-left me-1"></i> Volver al Menú Principal
+                        <button class="btn btn-pae-volver" onclick="volverDocenteActividades()">
+                            <i class="bi bi-arrow-left me-1"></i> Volver
                         </button>
                     </div>
                 </div>
@@ -1791,8 +1796,8 @@
                         <p class="text-muted small mb-0">Selecciona un curso para gestionar los compromisos de mejora pedagógica y registrar el seguimiento de cumplimiento de los estudiantes.</p>
                     </div>
                     <div class="d-flex gap-2">
-                        <button class="btn btn-outline-secondary btn-sm rounded-pill px-4 shadow-sm" onclick="volverDocente()">
-                            <i class="bi bi-arrow-left me-1"></i> Volver al Menú Principal
+                        <button class="btn btn-pae-volver" onclick="volverDocente()">
+                            <i class="bi bi-arrow-left me-1"></i> Volver
                         </button>
                     </div>
                 </div>
@@ -2116,8 +2121,8 @@
                     </h3>
                     <p class="text-muted small mb-0">Consulta el registro diario de asistencia escolar, justificaciones y fallas.</p>
                 </div>
-                <button class="btn btn-outline-secondary btn-sm rounded-pill px-4 shadow-sm" onclick="volverAcudiente()">
-                    <i class="bi bi-arrow-left me-1"></i> Volver al Menú Principal
+                <button class="btn btn-pae-volver" onclick="volverAcudiente()">
+                    <i class="bi bi-arrow-left me-1"></i> Volver
                 </button>
             </div>
 
@@ -2190,8 +2195,8 @@
                     </h3>
                     <p class="text-muted small mb-0">Revisa los llamados, citaciones institucionales y avisos enviados por los profesores.</p>
                 </div>
-                <button class="btn btn-outline-secondary btn-sm rounded-pill px-4 shadow-sm" onclick="volverAcudiente()">
-                    <i class="bi bi-arrow-left me-1"></i> Volver al Menú Principal
+                <button class="btn btn-pae-volver" onclick="volverAcudiente()">
+                    <i class="bi bi-arrow-left me-1"></i> Volver
                 </button>
             </div>
 
@@ -2234,8 +2239,8 @@
                     </h3>
                     <p class="text-muted small mb-0">Seguimiento integral, méritos y observaciones de comportamiento registradas por el cuerpo docente.</p>
                 </div>
-                <button class="btn btn-outline-secondary btn-sm rounded-pill px-4 shadow-sm" onclick="volverAcudiente()">
-                    <i class="bi bi-arrow-left me-1"></i> Volver al Menú Principal
+                <button class="btn btn-pae-volver" onclick="volverAcudiente()">
+                    <i class="bi bi-arrow-left me-1"></i> Volver
                 </button>
             </div>
 
@@ -2386,8 +2391,8 @@
                         </h3>
                         <p class="text-muted small mb-0">Selecciona tu materia para entrar a su aula virtual, consultar tareas, fechas límite y avisos docentes.</p>
                     </div>
-                    <button class="btn btn-outline-secondary btn-sm rounded-pill px-4 shadow-sm" onclick="volverEstudiante()">
-                        <i class="bi bi-arrow-left me-1"></i> Volver al Menú Principal
+                    <button class="btn btn-pae-volver" onclick="volverEstudiante()">
+                        <i class="bi bi-arrow-left me-1"></i> Volver
                     </button>
                 </div>
 
@@ -3011,8 +3016,8 @@
                         </h3>
                         <p class="text-muted small mb-0">Selecciona tu asignatura para consultar tus compromisos académicos, aspectos a mejorar y el estado de seguimiento docente.</p>
                     </div>
-                    <button class="btn btn-outline-secondary btn-sm rounded-pill px-4 shadow-sm" onclick="volverEstudiante()">
-                        <i class="bi bi-arrow-left me-1"></i> Volver al Menú Principal
+                    <button class="btn btn-pae-volver" onclick="volverEstudiante()">
+                        <i class="bi bi-arrow-left me-1"></i> Volver
                     </button>
                 </div>
 
