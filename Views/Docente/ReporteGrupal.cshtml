@@ -1,18 +1,59 @@
 @model IEnumerable<dynamic>
 
 @{
+    ViewData["Title"] = "Reporte de Calificaciones";
     var idsMostrados = new HashSet<int>();
+
+    // Asignación de colores distintivos y llamativos por cada materia
+    string ObtenerColorMateria(string materia)
+    {
+        if (string.IsNullOrWhiteSpace(materia)) return "#6c757d";
+        string mat = materia.ToLower();
+        
+        if (mat.Contains("matemátic") || mat.Contains("matematic") || mat.Contains("álgebra") || mat.Contains("geometr")) 
+            return "#e65100"; // Naranja vivo para Matemáticas
+        if (mat.Contains("español") || mat.Contains("lengu") || mat.Contains("literatur") || mat.Contains("castellano")) 
+            return "#d35400"; // Ámbar tostado para Español
+        if (mat.Contains("inglés") || mat.Contains("ingles") || mat.Contains("idioma") || mat.Contains("french")) 
+            return "#8e44ad"; // Púrpura / Violeta para Inglés
+        if (mat.Contains("cienc") || mat.Contains("biolog") || mat.Contains("químic") || mat.Contains("quimic") || mat.Contains("físic") || mat.Contains("fisic")) 
+            return "#16a085"; // Teal / Verde azulado para Ciencias
+        if (mat.Contains("social") || mat.Contains("histor") || mat.Contains("geograf")) 
+            return "#c0392b"; // Rojo ladrillo para Sociales
+        if (mat.Contains("tecnolog") || mat.Contains("informát") || mat.Contains("sistem") || mat.Contains("comput")) 
+            return "#0288d1"; // Cyan / Azul para Tecnología
+        if (mat.Contains("art") || mat.Contains("músic") || mat.Contains("music") || mat.Contains("danz")) 
+            return "#e91e63"; // Rosa para Artes
+        if (mat.Contains("física") || mat.Contains("deport") || mat.Contains("educación física")) 
+            return "#27ae60"; // Verde para Ed. Física
+        if (mat.Contains("étic") || mat.Contains("etic") || mat.Contains("relig") || mat.Contains("filosof")) 
+            return "#f39c12"; // Mostaza / Oro para Ética
+
+        // Paleta determinística para cualquier otra materia
+        string[] paletaExtra = new[] { "#1e88e5", "#8e44ad", "#16a085", "#d35400", "#c0392b", "#0288d1", "#27ae60", "#e91e63" };
+        int hash = Math.Abs(materia.GetHashCode());
+        return paletaExtra[hash % paletaExtra.Length];
+    }
 }
 
 <div class="container mt-4">
-    <div class="card shadow border-0">
-        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-            <h4 class="mb-0"><i class="bi bi-file-earmark-bar-graph me-2"></i>Reporte de Calificaciones</h4>
-            <button onclick="window.print()" class="btn btn-sm btn-light">
-                <i class="bi bi-printer me-1"></i> Imprimir PDF
-            </button>
+    <!-- Encabezado con Botón Volver y Acciones -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex align-items-center gap-3">
+            <a href="@Url.Action("Dashboard", "Home")" class="btn btn-pae-volver">
+                Volver
+            </a>
+            <h2 class="fw-bold m-0" style="color: var(--pae-primary);">
+                <i class="bi bi-file-earmark-bar-graph me-2" style="color: var(--pae-secondary);"></i>Reporte de Calificaciones
+            </h2>
         </div>
-        <div class="card-body">
+        <button onclick="window.print()" class="btn btn-outline-secondary">
+            <i class="bi bi-printer me-1"></i> Imprimir PDF
+        </button>
+    </div>
+
+    <div class="card shadow border-0">
+        <div class="card-body p-4">
 
             <div class="row mb-5 justify-content-center">
                 <div class="col-md-8">
@@ -37,17 +78,22 @@
                         {
                             <tr>
                                 <td>@item.NombreEstudiante</td>
-                                <td><span class="badge bg-secondary">@item.Materia</span></td>
+                                <td>
+                                    <span class="badge text-white px-3 py-1 rounded-2 fw-semibold shadow-sm"
+                                          style="background-color: @ObtenerColorMateria((string)item.Materia); font-size: 0.84rem;">
+                                        @item.Materia
+                                    </span>
+                                </td>
                                 <td>@item.Periodo °</td>
                                 <td class="text-center fw-bold">@Convert.ToDouble(item.Nota).ToString("F1")</td>
                                 <td>
                                     @if (Convert.ToDouble(item.Nota) >= 3.0)
                                     {
-                                        <span class="text-success"><i class="bi bi-check-circle-fill me-1"></i> Aprobado</span>
+                                        <span class="text-success fw-semibold"><i class="bi bi-check-circle-fill me-1"></i> Aprobado</span>
                                     }
                                     else
                                     {
-                                        <span class="text-danger"><i class="bi bi-x-circle-fill me-1"></i> Reprobado</span>
+                                        <span class="text-danger fw-semibold"><i class="bi bi-x-circle-fill me-1"></i> Reprobado</span>
                                     }
                                 </td>
                                 <td>
@@ -58,7 +104,7 @@
                                     {
                                         <a asp-controller="Certificado" asp-action="Generar"
                                            asp-route-idEstudiante="@idEst"
-                                           class="btn btn-sm btn-outline-primary">
+                                           class="btn btn-sm btn-outline-secondary">
                                             <i class="bi bi-patch-check me-1"></i> Generar
                                         </a>
                                     }
@@ -84,21 +130,21 @@
     const bordes = notas.map(n => n >= 3.0 ? 'rgba(39, 174, 96, 1)' : 'rgba(231, 76, 60, 1)');
 
     new Chart(ctx, {
-    type: 'bar',
-    data: {
-    labels: nombres,
-    datasets: [{
-    label: 'Calificación Final',
-    data: notas,
-    backgroundColor: 'rgba(39, 174, 96, 0.5)',
-    borderColor: 'rgba(39, 174, 96, 1)',
-    borderWidth: 1
-    }]
-    },
-    options: {
-    scales: {
-    y: { beginAtZero: true, max: 5 }
-    }
-    }
+        type: 'bar',
+        data: {
+            labels: nombres,
+            datasets: [{
+                label: 'Calificación Final',
+                data: notas,
+                backgroundColor: 'rgba(39, 174, 96, 0.5)',
+                borderColor: 'rgba(39, 174, 96, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: { beginAtZero: true, max: 5 }
+            }
+        }
     });
 </script>

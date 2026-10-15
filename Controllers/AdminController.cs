@@ -538,7 +538,7 @@ namespace ProyectoPAE.Controllers
 
 
         [HttpPost]
-        public async Task<IActionResult> CrearNotificacion(string titulo, string mensaje, string rolDestino)
+        public async Task<IActionResult> CrearNotificacion(string titulo, string mensaje, string rolDestino, string? prioridad, DateTime? fechaExpiracion)
         {
             var rol = HttpContext.Session.GetString("UserRol");
             if (string.IsNullOrEmpty(rol) || rol.ToLower() != "admin")
@@ -566,6 +566,8 @@ namespace ProyectoPAE.Controllers
                 Titulo = titulo.Trim(),
                 Mensaje = mensaje.Trim(),
                 RolDestino = rolDestino.Trim().ToLower(),
+                Prioridad = string.IsNullOrWhiteSpace(prioridad) ? "leve" : prioridad.Trim().ToLower(),
+                FechaExpiracion = fechaExpiracion,
                 FechaCreacion = DateTime.Now,
                 ID_UsuarioEmisor = idUsuarioSession.Value,
                 Activa = true

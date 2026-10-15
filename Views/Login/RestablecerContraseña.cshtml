@@ -1,4 +1,4 @@
-﻿@{
+@{
     ViewData["Title"] = "Nueva contraseña";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
@@ -37,7 +37,10 @@
             </div>
         </div>
 
-        <button type="submit" class="btn btn-success w-100">Guardar contraseña</button>
+        <div class="d-flex flex-column gap-2 mt-4">
+            <button type="submit" class="btn btn-primary w-100">Guardar contraseña</button>
+            <a href="/Login" class="btn btn-pae-volver w-100">Volver</a>
+        </div>
     </form>
 </div>
 

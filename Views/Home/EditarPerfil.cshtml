@@ -1,9 +1,12 @@
-﻿@model ProyectoPAE.Models.Usuario
+@model ProyectoPAE.Models.Usuario
 
 <div class="container mt-5">
     <div class="card shadow-lg border-0">
-        <div class="card-header bg-dark text-white p-3">
+        <div class="card-header bg-primary text-white p-3 d-flex justify-content-between align-items-center">
             <h4 class="mb-0"><i class="bi bi-pencil-square me-2"></i>Editar Mi Perfil</h4>
+            <a asp-action="Perfil" class="btn btn-pae-volver">
+                Volver
+            </a>
         </div>
         <div class="card-body p-4">
             <form asp-action="ActualizarPerfil" method="post">
@@ -22,9 +25,9 @@
                     </div>
                 </div>
 
-                <div class="mt-4 d-flex justify-content-end">
-                    <a asp-action="Perfil" class="btn btn-outline-secondary me-2">Cancelar</a>
-                    <button type="submit" class="btn btn-success px-4">Guardar Cambios</button>
+                <div class="mt-4 d-flex justify-content-end gap-2">
+                    <a asp-action="Perfil" class="btn btn-pae-volver">Volver</a>
+                    <button type="submit" class="btn btn-primary px-4">Guardar Cambios</button>
                 </div>
             </form>
         </div>

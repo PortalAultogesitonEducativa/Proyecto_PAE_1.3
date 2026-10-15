@@ -1,28 +1,84 @@
+/* ==========================================================================
+   PAE - PORTAL DE AUTOGESTIÓN EDUCATIVA
+   SISTEMA CENTRALIZADO DE COLORES Y BOTONES GLOBALES
+   ========================================================================== */
+
+:root {
+    /* --- PALETA INSTITUCIONAL PRINCIPAL --- */
+    --pae-primary: #0d2a4a;          /* Azul Oscuro PAE Institucional */
+    --pae-primary-hover: #081d33;    /* Azul Oscuro más profundo para hover */
+    --pae-primary-light: #184370;    /* Azul Oscuro medio */
+    --pae-primary-subtle: #e8eef5;   /* Fondo muy tenue con matiz azul PAE */
+    --pae-primary-rgb: 13, 42, 74;
+
+    /* --- COLOR SECUNDARIO / ACENTO --- */
+    --pae-secondary: #e67e22;        /* Naranja Institucional PAE */
+    --pae-secondary-hover: #cf6d17;  /* Naranja oscuro para hover */
+    --pae-secondary-light: #fef5ec;  /* Naranja tenue */
+    --pae-secondary-rgb: 230, 126, 34;
+
+    /* --- COLORES SEMÁNTICOS --- */
+    --pae-success: #198754;          /* Verde Guardar / Aprobado / Éxito */
+    --pae-success-hover: #146c43;
+    --pae-danger: #dc3545;           /* Rojo Eliminar / Peligro */
+    --pae-danger-hover: #b02a37;
+    --pae-warning: #f39c12;          /* Amarillo/Naranja Advertencia */
+    --pae-warning-hover: #d68910;
+    --pae-info: #0d2a4a;             /* Info alineado con Azul PAE */
+    --pae-info-hover: #081d33;
+    --pae-neutral: #6c757d;          /* Gris Volver / Cancelar */
+    --pae-neutral-hover: #5a6268;
+
+    /* --- FONDOS Y SUPERFICIES --- */
+    --pae-bg: #f9f3ee;               /* Fondo general crema suave */
+    --pae-bg-card: #ffffff;          /* Fondo tarjetas */
+    --pae-bg-input: #ffffff;
+
+    /* --- TIPOGRAFÍA --- */
+    --pae-text: #2c3e50;
+    --pae-text-dark: #0d2a4a;
+    --pae-text-muted: #6c757d;
+    --pae-border: #dee2e6;
+
+    /* --- DEGRADADOS INSTITUCIONALES --- */
+    --pae-gradient-primary: linear-gradient(135deg, #0d2a4a 0%, #1a3d66 100%);
+    --pae-gradient-secondary: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+    --pae-gradient-hero: linear-gradient(135deg, #0d2a4a 0%, #143d6a 100%);
+
+    /* --- RADIOS Y SOMBRAS --- */
+    --pae-radius-sm: 6px;
+    --pae-radius: 10px;
+    --pae-radius-lg: 16px;
+    --pae-radius-pill: 50px;
+    --pae-shadow-sm: 0 2px 6px rgba(13, 42, 74, 0.06);
+    --pae-shadow: 0 4px 14px rgba(13, 42, 74, 0.10);
+    --pae-shadow-hover: 0 6px 20px rgba(13, 42, 74, 0.18);
+    --pae-transition: all 0.25s ease-in-out;
+}
+
+/* ==========================================================================
+   ESTILOS BASE Y REINICIO
+   ========================================================================== */
 html {
-  font-size: 14px;
+    font-size: 14px;
+    height: 100%;
 }
 
 @media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
-}
-
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-  height: 100%;
+    html {
+        font-size: 16px;
+    }
 }
 
 body {
-    background-color: #f9f3ee;
+    background-color: var(--pae-bg);
+    color: var(--pae-text);
     margin: 0;
     padding: 0;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 .main-wrapper {
@@ -37,7 +93,356 @@ footer.footer {
     width: 100%;
 }
 
-/* ─── FILTROS DE ACCESIBILIDAD PARA DALTONISMO ─── */
+/* Enlaces globales */
+a {
+    color: var(--pae-primary);
+    text-decoration: none;
+    transition: var(--pae-transition);
+}
+
+a:hover {
+    color: var(--pae-secondary);
+}
+
+/* Foco accesible */
+.btn:focus, 
+.btn:active:focus, 
+.btn-link.nav-link:focus, 
+.form-control:focus, 
+.form-select:focus,
+.form-check-input:focus {
+    border-color: var(--pae-primary) !important;
+    box-shadow: 0 0 0 0.2rem rgba(13, 42, 74, 0.25) !important;
+}
+
+/* ==========================================================================
+   UNIFICACIÓN DE CLASES UTILITARIAS BOOTSTRAP CON LA PALETA PAE
+   ========================================================================== */
+.bg-primary {
+    background-color: var(--pae-primary) !important;
+}
+
+.text-primary {
+    color: var(--pae-primary) !important;
+}
+
+.border-primary {
+    border-color: var(--pae-primary) !important;
+}
+
+.bg-pae-primary {
+    background-color: var(--pae-primary) !important;
+}
+
+.text-pae-primary {
+    color: var(--pae-primary) !important;
+}
+
+.bg-pae-secondary {
+    background-color: var(--pae-secondary) !important;
+}
+
+.text-pae-secondary {
+    color: var(--pae-secondary) !important;
+}
+
+/* ==========================================================================
+   ESTANDARIZACIÓN GLOBAL DE BOTONES
+   ========================================================================== */
+.btn {
+    border-radius: var(--pae-radius);
+    font-weight: 500;
+    padding: 0.5rem 1.15rem;
+    transition: var(--pae-transition);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    box-shadow: var(--pae-shadow-sm);
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--pae-shadow);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+.btn-sm {
+    padding: 0.35rem 0.75rem;
+    font-size: 0.875rem;
+    border-radius: var(--pae-radius-sm);
+}
+
+.btn-lg {
+    padding: 0.75rem 1.6rem;
+    font-size: 1.1rem;
+    border-radius: var(--pae-radius-lg);
+}
+
+/* --- 1. BOTÓN PRINCIPAL / GUARDAR (Azul Oscuro PAE o Verde Semántico) --- */
+.btn-primary,
+.btn-pae-primary {
+    background-color: var(--pae-primary) !important;
+    border-color: var(--pae-primary) !important;
+    color: #ffffff !important;
+}
+
+.btn-primary:hover,
+.btn-pae-primary:hover {
+    background-color: var(--pae-primary-hover) !important;
+    border-color: var(--pae-primary-hover) !important;
+    color: #ffffff !important;
+}
+
+.btn-outline-primary,
+.btn-pae-outline-primary {
+    background-color: transparent !important;
+    border-color: var(--pae-primary) !important;
+    color: var(--pae-primary) !important;
+}
+
+.btn-outline-primary:hover,
+.btn-pae-outline-primary:hover {
+    background-color: var(--pae-primary) !important;
+    border-color: var(--pae-primary) !important;
+    color: #ffffff !important;
+}
+
+/* --- BOTÓN GUARDAR ESPECÍFICO (Éxito verde uniforme o Azul PAE) --- */
+.btn-pae-guardar,
+.btn-pae-save {
+    background-color: var(--pae-success) !important;
+    border-color: var(--pae-success) !important;
+    color: #ffffff !important;
+}
+
+.btn-pae-guardar:hover,
+.btn-pae-save:hover {
+    background-color: var(--pae-success-hover) !important;
+    border-color: var(--pae-success-hover) !important;
+    color: #ffffff !important;
+}
+
+/* --- 2. BOTÓN EDITAR / MODIFICAR --- */
+.btn-pae-edit,
+.btn-pae-editar {
+    background-color: var(--pae-secondary) !important;
+    border-color: var(--pae-secondary) !important;
+    color: #ffffff !important;
+}
+
+.btn-pae-edit:hover,
+.btn-pae-editar:hover {
+    background-color: var(--pae-secondary-hover) !important;
+    border-color: var(--pae-secondary-hover) !important;
+    color: #ffffff !important;
+}
+
+.btn-pae-outline-edit,
+.btn-pae-outline-editar {
+    background-color: transparent !important;
+    border-color: var(--pae-secondary) !important;
+    color: var(--pae-secondary) !important;
+}
+
+.btn-pae-outline-edit:hover,
+.btn-pae-outline-editar:hover {
+    background-color: var(--pae-secondary) !important;
+    border-color: var(--pae-secondary) !important;
+    color: #ffffff !important;
+}
+
+/* --- 3. BOTÓN ELIMINAR / ACCIÓN PELIGROSA --- */
+.btn-danger,
+.btn-pae-danger,
+.btn-pae-eliminar,
+.btn-pae-delete {
+    background-color: var(--pae-danger) !important;
+    border-color: var(--pae-danger) !important;
+    color: #ffffff !important;
+}
+
+.btn-danger:hover,
+.btn-pae-danger:hover,
+.btn-pae-eliminar:hover,
+.btn-pae-delete:hover {
+    background-color: var(--pae-danger-hover) !important;
+    border-color: var(--pae-danger-hover) !important;
+    color: #ffffff !important;
+}
+
+.btn-outline-danger,
+.btn-pae-outline-danger {
+    background-color: transparent !important;
+    border-color: var(--pae-danger) !important;
+    color: var(--pae-danger) !important;
+}
+
+.btn-outline-danger:hover,
+.btn-pae-outline-danger:hover {
+    background-color: var(--pae-danger) !important;
+    border-color: var(--pae-danger) !important;
+    color: #ffffff !important;
+}
+
+/* --- 4. BOTÓN CANCELAR / VOLVER (ESTILO UNIFICADO GLOBAL) --- */
+.btn-secondary,
+.btn-pae-cancel,
+.btn-pae-cancelar {
+    background-color: var(--pae-neutral) !important;
+    border-color: var(--pae-neutral) !important;
+    color: #ffffff !important;
+}
+
+.btn-secondary:hover,
+.btn-pae-cancel:hover,
+.btn-pae-cancelar:hover {
+    background-color: var(--pae-neutral-hover) !important;
+    border-color: var(--pae-neutral-hover) !important;
+    color: #ffffff !important;
+}
+
+.btn-outline-secondary,
+.btn-pae-outline-cancel {
+    background-color: transparent !important;
+    border-color: var(--pae-neutral) !important;
+    color: var(--pae-neutral) !important;
+}
+
+.btn-outline-secondary:hover,
+.btn-pae-outline-cancel:hover {
+    background-color: var(--pae-neutral) !important;
+    border-color: var(--pae-neutral) !important;
+    color: #ffffff !important;
+}
+
+/* BOTÓN VOLVER GLOBAL - IDÉNTICO EN TODAS LAS PANTALLAS */
+.btn-pae-volver,
+.btn-volver-global {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.35rem !important;
+    padding: 0.35rem 0.95rem !important;
+    font-size: 0.88rem !important;
+    font-weight: 500 !important;
+    color: #334155 !important;
+    background-color: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 8px !important;
+    text-decoration: none !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+    transition: all 0.2s ease-in-out !important;
+}
+
+.btn-pae-volver:hover,
+.btn-volver-global:hover {
+    color: #0d2a4a !important;
+    background-color: #f1f5f9 !important;
+    border-color: #94a3b8 !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 3px 8px rgba(13, 42, 74, 0.08) !important;
+}
+
+/* --- 5. BOTÓN BUSCAR / FILTRAR --- */
+.btn-pae-search,
+.btn-pae-buscar {
+    background-color: var(--pae-primary) !important;
+    border-color: var(--pae-primary) !important;
+    color: #ffffff !important;
+}
+
+.btn-pae-search:hover,
+.btn-pae-buscar:hover {
+    background-color: var(--pae-primary-hover) !important;
+    border-color: var(--pae-primary-hover) !important;
+    color: #ffffff !important;
+}
+
+/* --- 6. BOTÓN ACTUALIZAR / REFRESCAR --- */
+.btn-pae-update,
+.btn-pae-actualizar {
+    background-color: var(--pae-secondary) !important;
+    border-color: var(--pae-secondary) !important;
+    color: #ffffff !important;
+}
+
+.btn-pae-update:hover,
+.btn-pae-actualizar:hover {
+    background-color: var(--pae-secondary-hover) !important;
+    border-color: var(--pae-secondary-hover) !important;
+    color: #ffffff !important;
+}
+
+/* --- 7. BOTÓN GENERAR / REPORTES / PDF --- */
+.btn-pae-generate,
+.btn-pae-generar {
+    background-color: var(--pae-primary) !important;
+    border-color: var(--pae-primary) !important;
+    color: #ffffff !important;
+}
+
+.btn-pae-generate:hover,
+.btn-pae-generar:hover {
+    background-color: var(--pae-primary-hover) !important;
+    border-color: var(--pae-primary-hover) !important;
+    color: #ffffff !important;
+}
+
+/* Botón admin unificado */
+.btn-admin-solido {
+    background-color: var(--pae-primary) !important;
+    border-color: var(--pae-primary) !important;
+    color: #ffffff !important;
+    border-radius: var(--pae-radius);
+    transition: var(--pae-transition);
+}
+
+.btn-admin-solido:hover {
+    background-color: var(--pae-primary-hover) !important;
+    transform: translateY(-2px);
+    box-shadow: var(--pae-shadow);
+}
+
+/* ==========================================================================
+   CABECERAS, TARJETAS Y COMPONENTES VISUALES
+   ========================================================================== */
+.pae-header-card {
+    background: var(--pae-gradient-primary);
+    color: #ffffff;
+    border: 0;
+    border-radius: var(--pae-radius-lg);
+    box-shadow: var(--pae-shadow);
+}
+
+.card {
+    border-radius: var(--pae-radius-lg);
+    border: 1px solid rgba(13, 42, 74, 0.08);
+}
+
+.card-header {
+    border-top-left-radius: var(--pae-radius-lg) !important;
+    border-top-right-radius: var(--pae-radius-lg) !important;
+}
+
+/* Badges */
+.badge.bg-primary,
+.badge.badge-pae {
+    background-color: var(--pae-primary) !important;
+    color: #ffffff !important;
+}
+
+.badge.bg-secondary {
+    background-color: var(--pae-secondary) !important;
+    color: #ffffff !important;
+}
+
+/* ==========================================================================
+   ACCESIBILIDAD Y DALTONISMO
+   ========================================================================== */
 html.filtro-protanopia {
     filter: url('#protanopia-filter') !important;
 }
@@ -54,7 +459,6 @@ html.filtro-acromatopsia {
     filter: grayscale(100%) !important;
 }
 
-/* Botón y Widget flotante de Accesibilidad */
 .accesibilidad-widget {
     position: fixed;
     bottom: 20px;
@@ -66,42 +470,113 @@ html.filtro-acromatopsia {
     width: 48px;
     height: 48px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #1b2a47 0%, #0d2a4a 100%);
+    background: var(--pae-gradient-primary);
     color: #ffffff;
-    border: 2px solid #e67e22;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    border: 2px solid var(--pae-secondary);
+    box-shadow: var(--pae-shadow);
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 1.4rem;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: var(--pae-transition);
 }
 
 .accesibilidad-btn:hover {
     transform: scale(1.1) rotate(10deg);
-    box-shadow: 0 6px 16px rgba(230, 126, 34, 0.4);
-    background: #e67e22;
+    box-shadow: var(--pae-shadow-hover);
+    background: var(--pae-secondary);
     color: #ffffff;
 }
 
 .accesibilidad-menu {
     width: 290px;
-    border-radius: 1rem;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    border-radius: var(--pae-radius-lg);
+    box-shadow: var(--pae-shadow);
     border: 1px solid rgba(0,0,0,0.1);
 }
 
 .accesibilidad-item {
     font-size: 0.85rem;
     padding: 0.5rem 0.8rem;
-    border-radius: 0.5rem;
+    border-radius: var(--pae-radius-sm);
     transition: background-color 0.2s;
     cursor: pointer;
 }
 
 .accesibilidad-item:hover, .accesibilidad-item.active {
-    background-color: #fff3e0;
-    color: #e67e22;
+    background-color: var(--pae-secondary-light);
+    color: var(--pae-secondary);
     font-weight: 600;
+}
+
+/* ==========================================================================
+   TARJETAS DE MATERIAS Y CURSOS - DASHBOARD
+   ========================================================================== */
+
+/* Efecto hover general para tarjetas clickeables */
+.card-hover {
+    transition: transform 0.22s ease, box-shadow 0.22s ease !important;
+    cursor: pointer;
+}
+
+.card-hover:hover {
+    transform: translateY(-5px) !important;
+    box-shadow: 0 8px 24px rgba(13, 42, 74, 0.16) !important;
+}
+
+/* Tarjeta limpia de docente (cursos/grupos) */
+.card-docente-limpia {
+    background-color: #ffffff;
+    border-radius: 14px !important;
+    border: 1px solid rgba(41, 128, 185, 0.15) !important;
+}
+
+.card-docente-limpia:hover {
+    border-color: rgba(41, 128, 185, 0.45) !important;
+    box-shadow: 0 8px 24px rgba(41, 128, 185, 0.18) !important;
+}
+
+/* Tarjeta limpia de estudiante (materias/asignaturas) */
+.card-estudiante-limpia {
+    background-color: #ffffff;
+    border-radius: 14px !important;
+    border: 1px solid rgba(111, 66, 193, 0.15) !important;
+}
+
+.card-estudiante-limpia:hover {
+    border-color: rgba(111, 66, 193, 0.45) !important;
+    box-shadow: 0 8px 24px rgba(111, 66, 193, 0.18) !important;
+}
+
+/* Botón de acción de docente (solido) */
+.btn-docente-solido {
+    background-color: #2980b9 !important;
+    border-color: #2980b9 !important;
+    color: #ffffff !important;
+    border-radius: var(--pae-radius) !important;
+    transition: var(--pae-transition) !important;
+}
+
+.btn-docente-solido:hover {
+    background-color: #1f6fa3 !important;
+    border-color: #1f6fa3 !important;
+    transform: translateY(-2px) !important;
+    box-shadow: var(--pae-shadow) !important;
+}
+
+/* Botón de acción de estudiante (solido) */
+.btn-estudiante-solido {
+    background-color: #6f42c1 !important;
+    border-color: #6f42c1 !important;
+    color: #ffffff !important;
+    border-radius: var(--pae-radius) !important;
+    transition: var(--pae-transition) !important;
+}
+
+.btn-estudiante-solido:hover {
+    background-color: #5a32a3 !important;
+    border-color: #5a32a3 !important;
+    transform: translateY(-2px) !important;
+    box-shadow: var(--pae-shadow) !important;
 }

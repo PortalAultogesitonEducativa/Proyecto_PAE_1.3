@@ -3,11 +3,11 @@
 <div class="container mt-4">
     <!-- CABECERA CON BOTÓN VOLVER (aporte de Andrés) -->
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold m-0" style="color: #0d2a4a;">
-            <i class="bi bi-person-badge-fill me-2"></i>Perfil de Usuario
+        <h2 class="fw-bold m-0" style="color: var(--pae-primary);">
+            <i class="bi bi-person-badge-fill me-2" style="color: var(--pae-secondary);"></i>Perfil de Usuario
         </h2>
-        <button onclick="history.back()" class="btn text-white px-3 shadow-sm" style="background-color: #0d2a4a; border-radius: 8px;">
-            <i class="bi bi-arrow-left me-1"></i> Volver
+        <button onclick="history.back()" class="btn btn-pae-volver">
+            Volver
         </button>
     </div>
 
@@ -52,7 +52,7 @@
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <div>
                             <label class="text-muted small d-block">Rol en el Sistema</label>
-                            <span class="badge bg-info text-dark fs-6">@Model.ROL.ToUpper()</span>
+                            <span class="badge text-white fs-6" style="background-color: var(--pae-primary);">@Model.ROL.ToUpper()</span>
                         </div>
                         <div class="text-end">
                             <label class="text-muted small d-block">Estado</label>
@@ -109,9 +109,9 @@
 <div class="modal fade" id="modalNotificacionesPerfil" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border-0 shadow-lg rounded-4">
-            <div class="modal-header text-white" style="background: linear-gradient(135deg, #1b2a47 0%, #2c3e50 100%);">
+            <div class="modal-header text-white" style="background: var(--pae-gradient-primary);">
                 <h5 class="modal-title fw-bold">
-                    <i class="bi bi-bell-fill me-2" style="color: #e67e22;"></i> Comunicados y Avisos Institucionales
+                    <i class="bi bi-bell-fill me-2" style="color: var(--pae-secondary);"></i> Comunicados y Avisos Institucionales
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
