@@ -1,0 +1,181 @@
+@model ProyectoPAE.Models.SupervisionDocentesViewModel
+@{
+    ViewData["Title"] = "Supervisión docente";
+}
+
+<div class="container py-4">
+
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+        <h2 class="mb-0" style="color: #e67e22;">
+            <i class="bi bi-clipboard-data-fill me-2"></i>Supervisión docente
+        </h2>
+        <a href="@Url.Action("Dashboard", "Home")" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i>Volver al panel
+        </a>
+    </div>
+
+    <p class="text-muted">
+        Vista de solo lectura. Aquí se revisa la carga académica y el trabajo registrado de cada docente;
+        las notas, la asistencia y las observaciones siguen siendo responsabilidad del docente.
+    </p>
+
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm h-100 text-center p-3" style="border-top: 4px solid #0d6efd !important;">
+                <div class="fs-3 fw-bold">@Model.Docentes.Count</div>
+                <div class="small text-muted">Docentes activos</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm h-100 text-center p-3" style="border-top: 4px solid #198754 !important;">
+                <div class="fs-3 fw-bold">@Model.TotalClases</div>
+                <div class="small text-muted">Clases asignadas</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm h-100 text-center p-3" style="border-top: 4px solid #6f42c1 !important;">
+                <div class="fs-3 fw-bold">@Model.TotalActividadesVigentes</div>
+                <div class="small text-muted">Actividades vigentes</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm h-100 text-center p-3" style="border-top: 4px solid #dc3545 !important;">
+                <div class="fs-3 fw-bold">@Model.TotalEntregasSinCalificar</div>
+                <div class="small text-muted">Entregas sin calificar</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex flex-wrap gap-2 mb-3">
+        <a href="@Url.Action("ReporteGrupal", "Docente")" class="btn btn-warning btn-sm text-white">
+            <i class="bi bi-bar-chart-line-fill me-1"></i>Reporte grupal de notas
+        </a>
+        <a href="@Url.Action("AsignacionAcademica", "Horario")" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-diagram-3-fill me-1"></i>Asignación académica
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <div class="input-group mb-3" style="max-width: 360px;">
+                <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                <input type="text" id="buscarDocente" class="form-control" placeholder="Buscar docente por nombre o correo" />
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Docente</th>
+                            <th class="text-center">Clases</th>
+                            <th>Materias</th>
+                            <th>Cursos</th>
+                            <th class="text-center">Actividades</th>
+                            <th class="text-center">Sin calificar</th>
+                            <th>Última actividad</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbodyDocentes">
+                        @if (Model.Docentes.Any())
+                        {
+                            foreach (var d in Model.Docentes)
+                            {
+                                <tr class="fila-docente">
+                                    <td>
+                                        <div class="fw-semibold">@d.Nombre</div>
+                                        <div class="small text-muted">@d.Correo</div>
+                                    </td>
+                                    <td class="text-center">@d.Clases</td>
+                                    <td>
+                                        @if (d.Materias.Any())
+                                        {
+                                            foreach (var materia in d.Materias)
+                                            {
+                                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle me-1 mb-1">@materia</span>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted small">—</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (d.Cursos.Any())
+                                        {
+                                            @string.Join(", ", d.Cursos)
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted small">—</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle" title="Vigentes">@d.ActividadesVigentes vigentes</span>
+                                        @if (d.ActividadesVencidas > 0)
+                                        {
+                                            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle" title="Con fecha límite vencida">@d.ActividadesVencidas vencidas</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        @if (d.EntregasSinCalificar > 0)
+                                        {
+                                            <span class="badge bg-danger">@d.EntregasSinCalificar</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">0</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (d.UltimaActividad.HasValue)
+                                        {
+                                            @d.UltimaActividad.Value.ToString("dd/MM/yyyy")
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted small">Sin actividades</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (d.Clases == 0)
+                                        {
+                                            <span class="badge bg-warning text-dark">Sin clases asignadas</span>
+                                        }
+                                        else if (d.EntregasSinCalificar > 0)
+                                        {
+                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Calificaciones pendientes</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle">Al día</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="8" class="text-center text-muted py-4">No hay docentes activos registrados.</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <p class="small text-muted mt-3 mb-0">
+        Estudiantes activos en el sistema: @Model.TotalEstudiantes. Los docentes sin clases asignadas se resuelven desde Asignación académica.
+    </p>
+</div>
+
+<script>
+    document.getElementById('buscarDocente').addEventListener('input', function () {
+        const texto = this.value.toLowerCase().trim();
+        document.querySelectorAll('#tbodyDocentes .fila-docente').forEach(function (fila) {
+            fila.style.display = fila.textContent.toLowerCase().includes(texto) ? '' : 'none';
+        });
+    });
+</script>

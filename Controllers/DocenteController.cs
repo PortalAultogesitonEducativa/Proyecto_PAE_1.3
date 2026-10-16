@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using ProyectoPAE.Models;
+using ProyectoPAE.Servicios;
 using Microsoft.EntityFrameworkCore;
 using Rotativa.AspNetCore;
 
@@ -163,6 +164,7 @@ namespace ProyectoPAE.Controllers
         /// <param name="Periodo">Número de periodo lectivo</param>
         /// <returns>Redirección a la vista de Planilla con mensaje de éxito o error</returns>
         [HttpPost]
+        [RequierePermiso(Permisos.GestionarClases)]
         public IActionResult GuardarNota(int? ID_Estudiante, string Materia, string Nota, int? Periodo)
         {
             try
@@ -248,6 +250,7 @@ namespace ProyectoPAE.Controllers
         /// <summary>
         /// Genera la vista de reporte grupal con el listado de calificaciones por materia.
         /// </summary>
+        [RequierePermiso(Permisos.ConsultarSeguimiento)]
         public IActionResult ReporteGrupal(string materia, int? cursoId)
         {
             // Consultamos las notas incluyendo los datos del estudiante
@@ -276,6 +279,7 @@ namespace ProyectoPAE.Controllers
         /// <summary>
         /// Genera y descarga el reporte del observador en formato PDF usando Rotativa con el formato institucional Sor María Juliana.
         /// </summary>
+        [RequierePermiso(Permisos.ConsultarSeguimiento)]
         public IActionResult DescargarObservadorPdf(int? idEstudiante, string? curso)
         {
             _context.AsegurarEsquemaObservador();
@@ -440,6 +444,7 @@ namespace ProyectoPAE.Controllers
         }
 
         [HttpGet]
+        [RequierePermiso(Permisos.ConsultarSeguimiento)]
         public IActionResult ObtenerInscritosCursoExtra(int idCurso)
         {
             _context.AsegurarEsquemaExtracurriculares();
@@ -485,6 +490,7 @@ namespace ProyectoPAE.Controllers
         }
 
         [HttpPost]
+        [RequierePermiso(Permisos.GestionarClases)]
         public IActionResult CambiarEstadoCursoExtra(int idCurso, bool activo)
         {
             _context.AsegurarEsquemaExtracurriculares();
@@ -502,6 +508,7 @@ namespace ProyectoPAE.Controllers
         }
 
         [HttpPost]
+        [RequierePermiso(Permisos.GestionarClases)]
         public IActionResult EliminarCursoExtra(int idCurso)
         {
             _context.AsegurarEsquemaExtracurriculares();
@@ -640,6 +647,7 @@ namespace ProyectoPAE.Controllers
         }
 
         [HttpGet]
+        [RequierePermiso(Permisos.ConsultarSeguimiento)]
         public IActionResult ObtenerEntregasActividad(int idActividad)
         {
             _context.AsegurarEsquemaActividades();
@@ -764,6 +772,7 @@ namespace ProyectoPAE.Controllers
         }
 
         [HttpPost]
+        [RequierePermiso(Permisos.GestionarClases)]
         public IActionResult EliminarActividad(int idActividad)
         {
             _context.AsegurarEsquemaActividades();
@@ -781,6 +790,7 @@ namespace ProyectoPAE.Controllers
         }
 
         [HttpPost]
+        [RequierePermiso(Permisos.GestionarClases)]
         public IActionResult GuardarControlAsistencia([FromBody] List<AsistenciaItemDto> registros, DateTime? fecha)
         {
             _context.AsegurarEsquemaObservador();
@@ -822,6 +832,7 @@ namespace ProyectoPAE.Controllers
         }
 
         [HttpPost]
+        [RequierePermiso(Permisos.GestionarClases)]
         public IActionResult RegistrarObservacion([FromBody] ObservacionRegistroDto dto)
         {
             _context.AsegurarEsquemaObservador();
@@ -850,6 +861,7 @@ namespace ProyectoPAE.Controllers
         }
 
         [HttpGet]
+        [RequierePermiso(Permisos.ConsultarSeguimiento)]
         public IActionResult ObtenerObservacionesEstudiante(int idEstudiante)
         {
             _context.AsegurarEsquemaObservador();
@@ -874,6 +886,7 @@ namespace ProyectoPAE.Controllers
         }
 
         [HttpPost]
+        [RequierePermiso(Permisos.GestionarClases)]
         public IActionResult RegistrarCitacion([FromBody] CitacionRegistroDto dto)
         {
             _context.AsegurarEsquemaObservador();
@@ -902,6 +915,7 @@ namespace ProyectoPAE.Controllers
         // ===============================================
 
         [HttpGet]
+        [RequierePermiso(Permisos.ConsultarSeguimiento)]
         public IActionResult ObtenerAccionesMejoraDocente(string? curso, string? materia)
         {
             _context.AsegurarEsquemaAccionesMejora();
@@ -945,6 +959,7 @@ namespace ProyectoPAE.Controllers
         }
 
         [HttpPost]
+        [RequierePermiso(Permisos.GestionarClases)]
         public IActionResult GuardarAccionMejora([FromBody] AccionMejoraRegistroDto dto)
         {
             _context.AsegurarEsquemaAccionesMejora();
@@ -992,6 +1007,7 @@ namespace ProyectoPAE.Controllers
         }
 
         [HttpPost]
+        [RequierePermiso(Permisos.GestionarClases)]
         public IActionResult ActualizarSeguimientoMejora([FromBody] SeguimientoMejoraDto dto)
         {
             _context.AsegurarEsquemaAccionesMejora();
@@ -1010,13 +1026,13 @@ namespace ProyectoPAE.Controllers
             mejora.EstadoSeguimiento = string.IsNullOrWhiteSpace(dto.EstadoSeguimiento) ? "Cumplido" : dto.EstadoSeguimiento.Trim();
             mejora.ObservacionSeguimiento = dto.ObservacionSeguimiento?.Trim();
             mejora.FechaSeguimiento = DateTime.Now;
-
             _context.SaveChanges();
 
             return Json(new { success = true, message = "¡Seguimiento actualizado correctamente!" });
         }
 
         [HttpPost]
+        [RequierePermiso(Permisos.GestionarClases)]
         public IActionResult EliminarAccionMejora(int idMejora)
         {
             _context.AsegurarEsquemaAccionesMejora();

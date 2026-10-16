@@ -6,6 +6,7 @@
 @{
     var nombre = Context.Session.GetString("NombreUsuario");
     var rolReal = Context.Session.GetString("UserRol"); // Rol original de la sesión
+    bool esCoordinador = ProyectoPAE.Servicios.Permisos.NormalizarRol(rolReal) == "coordinador";
     var rep = ViewBag.ReportesPro as ProyectoPAE.Models.ReportesProViewModel ?? new ProyectoPAE.Models.ReportesProViewModel();
     var cursosExtraDocente = ViewBag.CursosExtraDocente as List<ProyectoPAE.Models.ExtraCursoItemViewModel> ?? new List<ProyectoPAE.Models.ExtraCursoItemViewModel>();
     var cursosExtraEstudiante = ViewBag.CursosExtraEstudiante as List<ProyectoPAE.Models.ExtraCursoItemViewModel> ?? new List<ProyectoPAE.Models.ExtraCursoItemViewModel>();
@@ -28,13 +29,12 @@
         const rolActivo = inputRol ? inputRol.value.toLowerCase().trim() : '';
 
         if (selector && rolActivo) {
-            // Asigna la opción seleccionada según el rol activo
             selector.value = rolActivo;
+        }
 
-            // Cambia el panel visible
-            if (typeof switchRole === "function") {
-                switchRole();
-            }
+        // Cambia el panel visible para cualquier rol (incluido coordinador)
+        if (typeof switchRole === "function") {
+            switchRole();
         }
     });
 </script>
@@ -69,81 +69,261 @@
 
     <div id="panel-admin" class="role-panel d-none">
 
+        <!-- ─── BARRA LATERAL IZQUIERDA: ADMINISTRADOR (REQUERIMIENTO 1.3) ─── -->
+        <aside id="sidebar-admin" class="pae-sidebar-lateral d-none">
+            <div class="pae-sidebar-card">
+                <div class="pae-sidebar-header d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-shield-lock-fill fs-5" style="color: #e67e22;"></i>
+                        <div>
+                            <div class="fw-bold small">@(esCoordinador ? "Módulos Coordinación" : "Módulos Admin")</div>
+                            <span class="text-white-50" style="font-size: 0.72rem;">Navegación Rápida</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-2 border-bottom bg-light">
+                    <button type="button" class="btn btn-outline-secondary btn-sm w-100 text-start d-flex align-items-center justify-content-between py-1.5 px-2" onclick="volverAdmin()" title="Regresar al menú principal de tarjetas">
+                        <span><i class="bi bi-grid-fill me-2" style="color: #e67e22;"></i><strong>Inicio (Cuadros)</strong></span>
+                        <i class="bi bi-arrow-left small"></i>
+                    </button>
+                </div>
+
+                <div class="pae-sidebar-nav">
+                    @if (esCoordinador)
+                    {
+                        <button type="button" class="pae-sidebar-nav-item" onclick="location.href='@Url.Action("Supervision", "Coordinador")'">
+                            <i class="bi bi-clipboard-data-fill"></i>
+                            <span>Supervisión Docente</span>
+                        </button>
+                        <button type="button" class="pae-sidebar-nav-item" data-subid="admin-asignacion" onclick="verAsignacion()">
+                            <i class="bi bi-diagram-3-fill"></i>
+                            <span>Asignación Académica</span>
+                        </button>
+                        <button type="button" class="pae-sidebar-nav-item" onclick="location.href='@Url.Action("ReporteGrupal", "Docente")'">
+                            <i class="bi bi-bar-chart-line-fill"></i>
+                            <span>Reporte Grupal</span>
+                        </button>
+                        <button type="button" class="pae-sidebar-nav-item" data-subid="admin-matricula" onclick="verMatricula()">
+                            <i class="bi bi-clipboard-check"></i>
+                            <span>Matrículas</span>
+                        </button>
+                        <button type="button" class="pae-sidebar-nav-item" data-subid="admin-certificados" onclick="verCertificados()">
+                            <i class="bi bi-file-earmark-pdf-fill"></i>
+                            <span>Certificados</span>
+                        </button>
+                        <button type="button" class="pae-sidebar-nav-item" data-subid="admin-reportes" onclick="verReportes()">
+                            <i class="bi bi-graph-up-arrow"></i>
+                            <span>Reportes Pro</span>
+                        </button>
+                    }
+                    else
+                    {
+                        <button type="button" class="pae-sidebar-nav-item" data-subid="admin-matricula" onclick="verMatricula()">
+                            <i class="bi bi-clipboard-check"></i>
+                            <span>Matrículas</span>
+                        </button>
+                        <button type="button" class="pae-sidebar-nav-item" data-subid="admin-usuarios" onclick="location.href='@Url.Action("Usuarios", "Admin")'">
+                            <i class="bi bi-people-fill"></i>
+                            <span>Gestión de Usuarios</span>
+                        </button>
+                        <button type="button" class="pae-sidebar-nav-item" onclick="location.href='@Url.Action("Supervision", "Coordinador")'">
+                            <i class="bi bi-clipboard-data-fill"></i>
+                            <span>Supervisión Docente</span>
+                        </button>
+                        <button type="button" class="pae-sidebar-nav-item" data-subid="admin-certificados" onclick="verCertificados()">
+                            <i class="bi bi-file-earmark-pdf-fill"></i>
+                            <span>Certificados</span>
+                        </button>
+                        <button type="button" class="pae-sidebar-nav-item" data-subid="admin-notificaciones" onclick="location.href='@Url.Action("Notificaciones", "Admin")'">
+                            <i class="bi bi-megaphone-fill"></i>
+                            <span>Notificaciones</span>
+                        </button>
+                        <button type="button" class="pae-sidebar-nav-item" data-subid="admin-asignacion" onclick="verAsignacion()">
+                            <i class="bi bi-diagram-3-fill"></i>
+                            <span>Asignación Académica</span>
+                        </button>
+                        <button type="button" class="pae-sidebar-nav-item" data-subid="admin-reportes" onclick="verReportes()">
+                            <i class="bi bi-graph-up-arrow"></i>
+                            <span>Reportes Pro</span>
+                        </button>
+                    }
+                </div>
+
+                <div class="p-2 border-top bg-light">
+                    <button type="button" class="btn btn-sm btn-outline-primary w-100 py-1.5" onclick="abrirModalAyudaContextual('admin-matricula')" style="font-size: 0.8rem;">
+                        <i class="bi bi-question-circle-fill text-warning me-1"></i> Ayuda del Módulo
+                    </button>
+                </div>
+            </div>
+        </aside>
+
         <div id="admin-main">
-            <h2 class="mb-4" style="color: #e67e22;"><i class="bi bi-gear-fill me-2"></i>Gestión Administrativa</h2>
+            <h2 class="mb-4" style="color: #e67e22;">
+                <i class="bi bi-gear-fill me-2"></i>@(esCoordinador ? "Gestión Académica y Coordinación" : "Gestión Administrativa")
+            </h2>
 
             <div class="row">
-                <!-- 1. Matrículas -->
-                <div class="col-md-4 mb-4">
-                    <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-admin-limpia" 
-                         style="border-top: 4px solid #e67e22 !important; cursor: pointer;" 
-                         onclick="verMatricula()">
-                        <i class="bi bi-clipboard-check fs-2 mb-2" style="color: #e67e22;"></i>
-                        <h5 style="color: #e67e22; font-weight: bold;">Matrículas</h5>
-                        <p class="small text-muted mb-3" style="min-height: 44px; display: flex; align-items: center; justify-content: center;">Consulta y gestiona las matrículas registradas.</p>
-                        <button class="btn btn-admin-solido btn-sm mt-auto w-100 text-white">Ver Matrículas</button>
+                @if (esCoordinador)
+                {
+                    <!-- 1. Supervisión Docente -->
+                    <div class="col-md-4 mb-4">
+                        <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-admin-limpia" 
+                             style="border-top: 4px solid #e67e22 !important; cursor: pointer;" 
+                             onclick="location.href='@Url.Action("Supervision", "Coordinador")'">
+                            <i class="bi bi-clipboard-data-fill fs-2 mb-2" style="color: #e67e22;"></i>
+                            <h5 style="color: #e67e22; font-weight: bold;">Supervisión Docente</h5>
+                            <p class="small text-muted mb-3" style="min-height: 44px; display: flex; align-items: center; justify-content: center;">Revisa la carga académica, clases, actividades y entregas de profesores.</p>
+                            <a href="@Url.Action("Supervision", "Coordinador")" class="btn btn-admin-solido btn-sm mt-auto w-100 text-white">Supervisar Docentes</a>
+                        </div>
                     </div>
-                </div>
 
-                <!-- 2. Gestión de Usuarios -->
-                <div class="col-md-4 mb-4">
-                    <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-admin-limpia" 
-                         style="border-top: 4px solid #e67e22 !important; cursor: pointer;" 
-                         onclick="location.href='@Url.Action("Usuarios", "Admin")'">
-                        <i class="bi bi-people-fill fs-2 mb-2" style="color: #e67e22;"></i>
-                        <h5 style="color: #e67e22; font-weight: bold;">Gestión de Usuarios</h5>
-                        <p class="small text-muted mb-3" style="min-height: 44px; display: flex; align-items: center; justify-content: center;">Administra estudiantes, docentes y acudientes.</p>
-                        <a href="@Url.Action("Usuarios", "Admin")" class="btn btn-admin-solido btn-sm mt-auto w-100 text-white">Ver Usuarios</a>
+                    <!-- 2. Asignación Académica -->
+                    <div class="col-md-4 mb-4">
+                        <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-admin-limpia" 
+                             style="border-top: 4px solid #e67e22 !important; cursor: pointer;" 
+                             onclick="verAsignacion()">
+                            <i class="bi bi-diagram-3-fill fs-2 mb-2" style="color: #e67e22;"></i>
+                            <h5 style="color: #e67e22; font-weight: bold;">Asignación Académica</h5>
+                            <p class="small text-muted mb-3" style="min-height: 44px; display: flex; align-items: center; justify-content: center;">Gestiona materias, cursos y horarios de los docentes.</p>
+                            <button class="btn btn-admin-solido btn-sm mt-auto w-100 text-white">Ver Asignación</button>
+                        </div>
                     </div>
-                </div>
 
-                <!-- 3. Certificados -->
-                <div class="col-md-4 mb-4">
-                    <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-admin-limpia" 
-                         style="border-top: 4px solid #e67e22 !important; cursor: pointer;" 
-                         onclick="verCertificados()">
-                        <i class="bi bi-file-earmark-pdf-fill fs-2 mb-2" style="color: #e67e22;"></i>
-                        <h5 style="color: #e67e22; font-weight: bold;">Certificados</h5>
-                        <p class="small text-muted mb-3" style="min-height: 44px; display: flex; align-items: center; justify-content: center;">Genera y descarga certificados oficiales.</p>
-                        <button class="btn btn-admin-solido btn-sm mt-auto w-100 text-white">Ver Certificados</button>
+                    <!-- 3. Reporte Grupal de Notas -->
+                    <div class="col-md-4 mb-4">
+                        <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-admin-limpia" 
+                             style="border-top: 4px solid #e67e22 !important; cursor: pointer;" 
+                             onclick="location.href='@Url.Action("ReporteGrupal", "Docente")'">
+                            <i class="bi bi-bar-chart-line-fill fs-2 mb-2" style="color: #e67e22;"></i>
+                            <h5 style="color: #e67e22; font-weight: bold;">Reporte Grupal de Notas</h5>
+                            <p class="small text-muted mb-3" style="min-height: 44px; display: flex; align-items: center; justify-content: center;">Monitorea calificaciones y rendimiento académico por grupos.</p>
+                            <a href="@Url.Action("ReporteGrupal", "Docente")" class="btn btn-admin-solido btn-sm mt-auto w-100 text-white">Ver Notas Grupales</a>
+                        </div>
                     </div>
-                </div>
 
-                <!-- 4. Notificaciones -->
-                <div class="col-md-4 mb-4">
-                    <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-admin-limpia" 
-                         style="border-top: 4px solid #e67e22 !important; cursor: pointer;" 
-                         onclick="location.href='@Url.Action("Notificaciones", "Admin")'">
-                        <i class="bi bi-megaphone-fill fs-2 mb-2" style="color: #e67e22;"></i>
-                        <h5 style="color: #e67e22; font-weight: bold;">Notificaciones</h5>
-                        <p class="small text-muted mb-3" style="min-height: 44px; display: flex; align-items: center; justify-content: center;">Envía comunicados a toda la institución.</p>
-                        <a href="@Url.Action("Notificaciones", "Admin")" class="btn btn-admin-solido btn-sm mt-auto w-100 text-white">Ver Notificaciones</a>
+                    <!-- 4. Matrículas -->
+                    <div class="col-md-4 mb-4">
+                        <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-admin-limpia" 
+                             style="border-top: 4px solid #e67e22 !important; cursor: pointer;" 
+                             onclick="verMatricula()">
+                            <i class="bi bi-clipboard-check fs-2 mb-2" style="color: #e67e22;"></i>
+                            <h5 style="color: #e67e22; font-weight: bold;">Matrículas</h5>
+                            <p class="small text-muted mb-3" style="min-height: 44px; display: flex; align-items: center; justify-content: center;">Consulta y gestiona las matrículas registradas.</p>
+                            <button class="btn btn-admin-solido btn-sm mt-auto w-100 text-white">Ver Matrículas</button>
+                        </div>
                     </div>
-                </div>
 
-                <!-- 5. Asignación Académica -->
-                <div class="col-md-4 mb-4">
-                    <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-admin-limpia" 
-                         style="border-top: 4px solid #e67e22 !important; cursor: pointer;" 
-                         onclick="verAsignacion()">
-                        <i class="bi bi-diagram-3-fill fs-2 mb-2" style="color: #e67e22;"></i>
-                        <h5 style="color: #e67e22; font-weight: bold;">Asignación Académica</h5>
-                        <p class="small text-muted mb-3" style="min-height: 44px; display: flex; align-items: center; justify-content: center;">Asigna materias y grupos a los docentes.</p>
-                        <button class="btn btn-admin-solido btn-sm mt-auto w-100 text-white">Ver Asignación</button>
+                    <!-- 5. Certificados -->
+                    <div class="col-md-4 mb-4">
+                        <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-admin-limpia" 
+                             style="border-top: 4px solid #e67e22 !important; cursor: pointer;" 
+                             onclick="verCertificados()">
+                            <i class="bi bi-file-earmark-pdf-fill fs-2 mb-2" style="color: #e67e22;"></i>
+                            <h5 style="color: #e67e22; font-weight: bold;">Certificados</h5>
+                            <p class="small text-muted mb-3" style="min-height: 44px; display: flex; align-items: center; justify-content: center;">Genera y descarga certificados oficiales.</p>
+                            <button class="btn btn-admin-solido btn-sm mt-auto w-100 text-white">Ver Certificados</button>
+                        </div>
                     </div>
-                </div>
 
-                <!-- 6. Reportes Pro -->
-                <div class="col-md-4 mb-4">
-                    <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-admin-limpia" 
-                         style="border-top: 4px solid #e67e22 !important; cursor: pointer;" 
-                         onclick="verReportes()">
-                        <i class="bi bi-graph-up-arrow fs-2 mb-2" style="color: #e67e22;"></i>
-                        <h5 style="color: #e67e22; font-weight: bold;">Reportes Pro</h5>
-                        <p class="small text-muted mb-3" style="min-height: 44px; display: flex; align-items: center; justify-content: center;">Estadísticas generales de la institución.</p>
-                        <button class="btn btn-admin-solido btn-sm mt-auto w-100 text-white">Ver Reportes</button>
+                    <!-- 6. Reportes Pro -->
+                    <div class="col-md-4 mb-4">
+                        <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-admin-limpia" 
+                             style="border-top: 4px solid #e67e22 !important; cursor: pointer;" 
+                             onclick="verReportes()">
+                            <i class="bi bi-graph-up-arrow fs-2 mb-2" style="color: #e67e22;"></i>
+                            <h5 style="color: #e67e22; font-weight: bold;">Reportes Pro</h5>
+                            <p class="small text-muted mb-3" style="min-height: 44px; display: flex; align-items: center; justify-content: center;">Estadísticas de matrícula, promedios y aprobación institucional.</p>
+                            <button class="btn btn-admin-solido btn-sm mt-auto w-100 text-white">Ver Reportes</button>
+                        </div>
                     </div>
-                </div>
+                }
+                else
+                {
+                    <!-- 1. Matrículas -->
+                    <div class="col-md-4 mb-4">
+                        <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-admin-limpia" 
+                             style="border-top: 4px solid #e67e22 !important; cursor: pointer;" 
+                             onclick="verMatricula()">
+                            <i class="bi bi-clipboard-check fs-2 mb-2" style="color: #e67e22;"></i>
+                            <h5 style="color: #e67e22; font-weight: bold;">Matrículas</h5>
+                            <p class="small text-muted mb-3" style="min-height: 44px; display: flex; align-items: center; justify-content: center;">Consulta y gestiona las matrículas registradas.</p>
+                            <button class="btn btn-admin-solido btn-sm mt-auto w-100 text-white">Ver Matrículas</button>
+                        </div>
+                    </div>
+
+                    <!-- 2. Gestión de Usuarios -->
+                    <div class="col-md-4 mb-4">
+                        <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-admin-limpia" 
+                             style="border-top: 4px solid #e67e22 !important; cursor: pointer;" 
+                             onclick="location.href='@Url.Action("Usuarios", "Admin")'">
+                            <i class="bi bi-people-fill fs-2 mb-2" style="color: #e67e22;"></i>
+                            <h5 style="color: #e67e22; font-weight: bold;">Gestión de Usuarios</h5>
+                            <p class="small text-muted mb-3" style="min-height: 44px; display: flex; align-items: center; justify-content: center;">Administra estudiantes, docentes y acudientes.</p>
+                            <a href="@Url.Action("Usuarios", "Admin")" class="btn btn-admin-solido btn-sm mt-auto w-100 text-white">Ver Usuarios</a>
+                        </div>
+                    </div>
+
+                    <!-- 3. Supervisión Docente -->
+                    <div class="col-md-4 mb-4">
+                        <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-admin-limpia" 
+                             style="border-top: 4px solid #e67e22 !important; cursor: pointer;" 
+                             onclick="location.href='@Url.Action("Supervision", "Coordinador")'">
+                            <i class="bi bi-clipboard-data-fill fs-2 mb-2" style="color: #e67e22;"></i>
+                            <h5 style="color: #e67e22; font-weight: bold;">Supervisión Docente</h5>
+                            <p class="small text-muted mb-3" style="min-height: 44px; display: flex; align-items: center; justify-content: center;">Supervisa carga docente, materias y entregas de actividades.</p>
+                            <a href="@Url.Action("Supervision", "Coordinador")" class="btn btn-admin-solido btn-sm mt-auto w-100 text-white">Supervisar Docentes</a>
+                        </div>
+                    </div>
+
+                    <!-- 4. Certificados -->
+                    <div class="col-md-4 mb-4">
+                        <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-admin-limpia" 
+                             style="border-top: 4px solid #e67e22 !important; cursor: pointer;" 
+                             onclick="verCertificados()">
+                            <i class="bi bi-file-earmark-pdf-fill fs-2 mb-2" style="color: #e67e22;"></i>
+                            <h5 style="color: #e67e22; font-weight: bold;">Certificados</h5>
+                            <p class="small text-muted mb-3" style="min-height: 44px; display: flex; align-items: center; justify-content: center;">Genera y descarga certificados oficiales.</p>
+                            <button class="btn btn-admin-solido btn-sm mt-auto w-100 text-white">Ver Certificados</button>
+                        </div>
+                    </div>
+
+                    <!-- 5. Notificaciones -->
+                    <div class="col-md-4 mb-4">
+                        <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-admin-limpia" 
+                             style="border-top: 4px solid #e67e22 !important; cursor: pointer;" 
+                             onclick="location.href='@Url.Action("Notificaciones", "Admin")'">
+                            <i class="bi bi-megaphone-fill fs-2 mb-2" style="color: #e67e22;"></i>
+                            <h5 style="color: #e67e22; font-weight: bold;">Notificaciones</h5>
+                            <p class="small text-muted mb-3" style="min-height: 44px; display: flex; align-items: center; justify-content: center;">Envía comunicados a toda la institución.</p>
+                            <a href="@Url.Action("Notificaciones", "Admin")" class="btn btn-admin-solido btn-sm mt-auto w-100 text-white">Ver Notificaciones</a>
+                        </div>
+                    </div>
+
+                    <!-- 6. Asignación Académica -->
+                    <div class="col-md-4 mb-4">
+                        <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-admin-limpia" 
+                             style="border-top: 4px solid #e67e22 !important; cursor: pointer;" 
+                             onclick="verAsignacion()">
+                            <i class="bi bi-diagram-3-fill fs-2 mb-2" style="color: #e67e22;"></i>
+                            <h5 style="color: #e67e22; font-weight: bold;">Asignación Académica</h5>
+                            <p class="small text-muted mb-3" style="min-height: 44px; display: flex; align-items: center; justify-content: center;">Asigna materias y grupos a los docentes.</p>
+                            <button class="btn btn-admin-solido btn-sm mt-auto w-100 text-white">Ver Asignación</button>
+                        </div>
+                    </div>
+
+                    <!-- 7. Reportes Pro -->
+                    <div class="col-md-4 mb-4">
+                        <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-admin-limpia" 
+                             style="border-top: 4px solid #e67e22 !important; cursor: pointer;" 
+                             onclick="verReportes()">
+                            <i class="bi bi-graph-up-arrow fs-2 mb-2" style="color: #e67e22;"></i>
+                            <h5 style="color: #e67e22; font-weight: bold;">Reportes Pro</h5>
+                            <p class="small text-muted mb-3" style="min-height: 44px; display: flex; align-items: center; justify-content: center;">Estadísticas generales de la institución.</p>
+                            <button class="btn btn-admin-solido btn-sm mt-auto w-100 text-white">Ver Reportes</button>
+                        </div>
+                    </div>
+                }
             </div>
         </div>
 
@@ -679,6 +859,61 @@
 
 
     <div id="panel-docente" class="role-panel d-none">
+
+        <!-- ─── BARRA LATERAL IZQUIERDA: DOCENTE (REQUERIMIENTO 1.3) ─── -->
+        <aside id="sidebar-docente" class="pae-sidebar-lateral d-none">
+            <div class="pae-sidebar-card">
+                <div class="pae-sidebar-header d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-person-workspace fs-5" style="color: #e67e22;"></i>
+                        <div>
+                            <div class="fw-bold small">Módulos Docente</div>
+                            <span class="text-white-50" style="font-size: 0.72rem;">Navegación Rápida</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-2 border-bottom bg-light">
+                    <button type="button" class="btn btn-outline-secondary btn-sm w-100 text-start d-flex align-items-center justify-content-between py-1.5 px-2" onclick="volverDocente()" title="Regresar al menú principal de tarjetas">
+                        <span><i class="bi bi-grid-fill me-2" style="color: #e67e22;"></i><strong>Inicio (Cuadros)</strong></span>
+                        <i class="bi bi-arrow-left small"></i>
+                    </button>
+                </div>
+
+                <div class="pae-sidebar-nav">
+                    <button type="button" class="pae-sidebar-nav-item" data-subid="docente-planilla" onclick="location.href='@Url.Action("Planilla", "Docente")'">
+                        <i class="bi bi-table"></i>
+                        <span>Planilla de Notas</span>
+                    </button>
+                    <button type="button" class="pae-sidebar-nav-item" data-subid="docente-asistencia" onclick="verAsistencia()">
+                        <i class="bi bi-calendar-check-fill"></i>
+                        <span>Registro de Asistencia</span>
+                    </button>
+                    <button type="button" class="pae-sidebar-nav-item" data-subid="docente-observaciones" onclick="verObservaciones()">
+                        <i class="bi bi-journal-bookmark-fill"></i>
+                        <span>Observador del Alumno</span>
+                    </button>
+                    <button type="button" class="pae-sidebar-nav-item" data-subid="docente-actividades" onclick="verActividadesDocente()">
+                        <i class="bi bi-easel2-fill"></i>
+                        <span>Actividades y Classroom</span>
+                    </button>
+                    <button type="button" class="pae-sidebar-nav-item" data-subid="docente-mejoras" onclick="verModuloMejorasDocente()">
+                        <i class="bi bi-arrow-up-right-circle-fill"></i>
+                        <span>Planes de Apoyo</span>
+                    </button>
+                    <button type="button" class="pae-sidebar-nav-item" data-subid="docente-cursosextra" onclick="verCursosExtraDocente()">
+                        <i class="bi bi-stars"></i>
+                        <span>Cursos Extracurriculares</span>
+                    </button>
+                </div>
+
+                <div class="p-2 border-top bg-light">
+                    <button type="button" class="btn btn-sm btn-outline-primary w-100 py-1.5" onclick="abrirModalAyudaContextual('docente-planilla')" style="font-size: 0.8rem;">
+                        <i class="bi bi-question-circle-fill text-warning me-1"></i> Ayuda del Módulo
+                    </button>
+                </div>
+            </div>
+        </aside>
 
         <!--  -->
         <!-- 1. MENÚ PRINCIPAL DE TARJETA (DOCENTE MAIN) -->
@@ -2020,6 +2255,54 @@
     </div> <!-- Cierre definitivo del panel-docente general -->
 
     <div id="panel-acudiente" class="role-panel d-none">
+
+        <!-- ─── BARRA LATERAL IZQUIERDA: ACUDIENTE (REQUERIMIENTO 1.3) ─── -->
+        <aside id="sidebar-acudiente" class="pae-sidebar-lateral d-none">
+            <div class="pae-sidebar-card">
+                <div class="pae-sidebar-header d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-people-fill fs-5" style="color: #e67e22;"></i>
+                        <div>
+                            <div class="fw-bold small">Módulos Acudiente</div>
+                            <span class="text-white-50" style="font-size: 0.72rem;">Navegación Rápida</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-2 border-bottom bg-light">
+                    <button type="button" class="btn btn-outline-secondary btn-sm w-100 text-start d-flex align-items-center justify-content-between py-1.5 px-2" onclick="volverAcudiente()" title="Regresar al menú principal de tarjetas">
+                        <span><i class="bi bi-grid-fill me-2" style="color: #e67e22;"></i><strong>Inicio (Cuadros)</strong></span>
+                        <i class="bi bi-arrow-left small"></i>
+                    </button>
+                </div>
+
+                <div class="pae-sidebar-nav">
+                    <button type="button" class="pae-sidebar-nav-item" data-subid="acudiente-calificaciones" onclick="verCalificacionesAcudiente()">
+                        <i class="bi bi-card-checklist"></i>
+                        <span>Calificaciones del Hijo</span>
+                    </button>
+                    <button type="button" class="pae-sidebar-nav-item" data-subid="acudiente-asistencia" onclick="verAsistenciaAcudiente()">
+                        <i class="bi bi-clock-history"></i>
+                        <span>Control de Asistencia</span>
+                    </button>
+                    <button type="button" class="pae-sidebar-nav-item" data-subid="acudiente-citaciones" onclick="verCitacionesAcudiente()">
+                        <i class="bi bi-envelope-paper-fill"></i>
+                        <span>Citaciones a Padres</span>
+                    </button>
+                    <button type="button" class="pae-sidebar-nav-item" data-subid="acudiente-observador" onclick="verObservadorAcudiente()">
+                        <i class="bi bi-file-person-fill"></i>
+                        <span>Observador del Estudiante</span>
+                    </button>
+                </div>
+
+                <div class="p-2 border-top bg-light">
+                    <button type="button" class="btn btn-sm btn-outline-primary w-100 py-1.5" onclick="abrirModalAyudaContextual('acudiente-calificaciones')" style="font-size: 0.8rem;">
+                        <i class="bi bi-question-circle-fill text-warning me-1"></i> Ayuda del Módulo
+                    </button>
+                </div>
+            </div>
+        </aside>
+
         <!-- 1. MENÚ PRINCIPAL ACUDIENTE -->
         <div id="acudiente-main">
             <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
@@ -2279,6 +2562,58 @@
     </div>
 
     <div id="panel-estudiante" class="role-panel d-none">
+
+        <!-- ─── BARRA LATERAL IZQUIERDA: ESTUDIANTE (REQUERIMIENTO 1.3) ─── -->
+        <aside id="sidebar-estudiante" class="pae-sidebar-lateral d-none">
+            <div class="pae-sidebar-card">
+                <div class="pae-sidebar-header d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-mortarboard-fill fs-5" style="color: #e67e22;"></i>
+                        <div>
+                            <div class="fw-bold small">Módulos Estudiante</div>
+                            <span class="text-white-50" style="font-size: 0.72rem;">Navegación Rápida</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-2 border-bottom bg-light">
+                    <button type="button" class="btn btn-outline-secondary btn-sm w-100 text-start d-flex align-items-center justify-content-between py-1.5 px-2" onclick="volverEstudiante()" title="Regresar al menú principal de tarjetas">
+                        <span><i class="bi bi-grid-fill me-2" style="color: #e67e22;"></i><strong>Inicio (Cuadros)</strong></span>
+                        <i class="bi bi-arrow-left small"></i>
+                    </button>
+                </div>
+
+                <div class="pae-sidebar-nav">
+                    <button type="button" class="pae-sidebar-nav-item" data-subid="estudiante-horario" onclick="location.href='@Url.Action("MiHorario", "Horario")'">
+                        <i class="bi bi-calendar3"></i>
+                        <span>Mi Horario</span>
+                    </button>
+                    <button type="button" class="pae-sidebar-nav-item" data-subid="estudiante-calificaciones" onclick="verCalificacionesEstudiante()">
+                        <i class="bi bi-award-fill"></i>
+                        <span>Mis Calificaciones</span>
+                    </button>
+                    <button type="button" class="pae-sidebar-nav-item" data-subid="estudiante-actividades" onclick="verActividadesEstudiante()">
+                        <i class="bi bi-journal-check"></i>
+                        <span>Tareas y Classroom</span>
+                    </button>
+                    <button type="button" class="pae-sidebar-nav-item" data-subid="estudiante-cursosextra" onclick="verCursosExtra()">
+                        <i class="bi bi-star-fill"></i>
+                        <span>Cursos Extra</span>
+                    </button>
+                    <button type="button" class="pae-sidebar-nav-item" data-subid="estudiante-mejoras" onclick="verModuloMejoras()">
+                        <i class="bi bi-shield-check"></i>
+                        <span>Planes de Nivelación</span>
+                    </button>
+                </div>
+
+                <div class="p-2 border-top bg-light">
+                    <button type="button" class="btn btn-sm btn-outline-primary w-100 py-1.5" onclick="abrirModalAyudaContextual('estudiante-calificaciones')" style="font-size: 0.8rem;">
+                        <i class="bi bi-question-circle-fill text-warning me-1"></i> Ayuda del Módulo
+                    </button>
+                </div>
+            </div>
+        </aside>
+
         <div id="estudiante-main">
             <h2 class="mb-4" style="color: #6f42c1;"><i class="bi bi-mortarboard-fill me-2"></i>Mi Panel Académico</h2>
 
@@ -3156,13 +3491,22 @@
 
         subs.forEach(id => {
             const el = document.getElementById(id);
-            if (el) el.classList.add('d-none');
+            if (el) {
+                el.classList.add('d-none');
+                el.classList.remove('submodulo-activo');
+            }
         });
 
         panelesPrincipales.forEach(id => {
             const p = document.getElementById(id);
-            if (p) p.classList.add('d-none');
+            if (p) {
+                p.classList.add('d-none');
+                p.classList.remove('panel-con-sidebar');
+            }
         });
+
+        // Ocultar todas las barras laterales por defecto
+        document.querySelectorAll('.pae-sidebar-lateral').forEach(s => s.classList.add('d-none'));
     }
 
     /**
@@ -3188,6 +3532,8 @@
             role = 'acudiente';
         } else if (role === 'profesor') {
             role = 'docente';
+        } else if (role === 'coordinador') {
+            role = 'admin'; // El coordinador utiliza el panel académico-administrativo adaptado
         }
 
         ocultarTodo();
@@ -3195,9 +3541,7 @@
         const panel = document.getElementById('panel-' + role);
         if (panel) {
             panel.classList.remove('d-none');
-
-            const subMain = document.getElementById(role + '-main');
-            if (subMain) subMain.classList.remove('d-none');
+            mostrarSubpanel('panel-' + role, role + '-main');
 
             if (role === 'estudiante') {
                 cargarActividadesEstudiante();
@@ -3208,13 +3552,13 @@
     // --- FUNCIONES DE NAVEGACIÓN ADMINISTRADOR ---
     function verMatricula() { ocultarTodo(); mostrarSubpanel('panel-admin', 'admin-matricula'); }
     function verCertificados() { ocultarTodo(); mostrarSubpanel('panel-admin', 'admin-certificados'); }
-    function verNotificaciones() { ocultarTodo(); mostrarSubpanel('panel-admin', 'admin-notificaciones'); }
+    function verNotificaciones() { location.href = '@Url.Action("Notificaciones", "Admin")'; }
     function verAsignacion() { location.href = '@Url.Action("AsignacionAcademica", "Horario")'; }
     function verReportes() { ocultarTodo(); mostrarSubpanel('panel-admin', 'admin-reportes'); }
     function volverAdmin() { ocultarTodo(); mostrarSubpanel('panel-admin', 'admin-main'); }
 
     // --- FUNCIONES DE NAVEGACIÓN DOCENTE ---
-    function verPlanilla() { ocultarTodo(); mostrarSubpanel('panel-docente', 'docente-planilla'); }
+    function verPlanilla() { location.href = '@Url.Action("Planilla", "Docente")'; }
     function verAsistencia() { ocultarTodo(); mostrarSubpanel('panel-docente', 'docente-asistencia'); }
     function verObservaciones() { ocultarTodo(); mostrarSubpanel('panel-docente', 'docente-observaciones'); }
     function verModuloMejorasDocente() { ocultarTodo(); mostrarSubpanel('panel-docente', 'docente-mejoras'); }
@@ -3261,8 +3605,31 @@
     function mostrarSubpanel(panelId, subId) {
         const panel = document.getElementById(panelId);
         const sub = document.getElementById(subId);
-        if (panel) panel.classList.remove('d-none');
-        if (sub) sub.classList.remove('d-none');
+        if (!panel || !sub) return;
+
+        panel.classList.remove('d-none');
+        sub.classList.remove('d-none');
+
+        const esMain = subId.endsWith('-main');
+        const role = panelId.replace('panel-', '');
+        const sidebar = document.getElementById('sidebar-' + role);
+
+        if (esMain) {
+            panel.classList.remove('panel-con-sidebar');
+            if (sidebar) sidebar.classList.add('d-none');
+            document.querySelectorAll('.submodulo-activo').forEach(el => el.classList.remove('submodulo-activo'));
+        } else {
+            panel.classList.add('panel-con-sidebar');
+            if (sidebar) {
+                sidebar.classList.remove('d-none');
+                sidebar.querySelectorAll('.pae-sidebar-nav-item').forEach(btn => {
+                    const match = (btn.getAttribute('data-subid') === subId);
+                    btn.classList.toggle('active', match);
+                });
+            }
+            sub.classList.add('submodulo-activo');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
     }
 
     // ===============================================

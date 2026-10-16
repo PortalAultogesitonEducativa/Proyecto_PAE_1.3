@@ -30,6 +30,7 @@ namespace ProyectoPAE.Controllers
 
         // GET: /Certificado/Generar/5
         [HttpGet]
+        [RequierePermiso(Permisos.GenerarCertificados)]
         public async Task<IActionResult> Generar(int idEstudiante)
         {
             var estudiante = await _context.Usuarios.FindAsync(idEstudiante);
@@ -46,6 +47,7 @@ namespace ProyectoPAE.Controllers
         // POST: /Certificado/Generar
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [RequierePermiso(Permisos.GenerarCertificados)]
         public async Task<IActionResult> Generar(int idEstudiante, List<int> idsCalificacion, string tipoCertificado)
         {
             if (idsCalificacion == null || idsCalificacion.Count == 0)
@@ -77,6 +79,7 @@ namespace ProyectoPAE.Controllers
 
         // GET: /Certificado/GenerarMatricula?numeroDocumento=1122334455
         [HttpGet]
+        [RequierePermiso(Permisos.GenerarCertificadoMatricula)]
         public async Task<IActionResult> GenerarMatricula(string numeroDocumento)
         {
             if (string.IsNullOrWhiteSpace(numeroDocumento))
@@ -125,6 +128,7 @@ namespace ProyectoPAE.Controllers
 
         // GET: /Certificado/Confirmacion/3
         [HttpGet]
+        [RequierePermiso(Permisos.VerCertificados)]
         public async Task<IActionResult> Confirmacion(int id)
         {
             var certificado = await _context.Certificados
@@ -154,6 +158,7 @@ namespace ProyectoPAE.Controllers
         // GET: /Certificado/DescargarPdf/3
         // Genera el mismo certificado que Confirmacion, pero como PDF descargable.
         [HttpGet]
+        [RequierePermiso(Permisos.VerCertificados)]
         public async Task<IActionResult> DescargarPdf(int id)
         {
             var certificado = await _context.Certificados

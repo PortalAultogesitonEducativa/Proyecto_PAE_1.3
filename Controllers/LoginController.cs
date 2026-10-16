@@ -26,6 +26,7 @@ namespace ProyectoPAE.Controllers
             {
                 if (rol == "admin") return RedirectToAction("Usuarios", "Admin");
                 if (rol == "docente") return RedirectToAction("Planilla", "Docente");
+                if (rol == "coordinador") return RedirectToAction("Dashboard", "Home");
                 // Dentro del método de validación de LoginController.cs
                 if (rol == "estudiante")
                 {
