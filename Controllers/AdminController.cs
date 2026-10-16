@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProyectoPAE.Models;
+using ProyectoPAE.Servicios;
 using Rotativa.AspNetCore;
 
 
@@ -22,16 +23,9 @@ namespace ProyectoPAE.Controllers
 
 
         // RF 1.4: Buscar y visualizar usuarios
+        [RequierePermiso(Permisos.AdministrarUsuarios)]
         public IActionResult Usuarios(string buscar)
         {
-            // Seguridad: Solo si es admin puede entrar
-            var rol = HttpContext.Session.GetString("UserRol");
-
-
-            if (rol != "admin")
-            {
-                return RedirectToAction("Dashboard", "Home");
-            }
 
 
             // Traemos todos los usuarios
@@ -52,6 +46,7 @@ namespace ProyectoPAE.Controllers
 
 
         [HttpPost]
+        [RequierePermiso(Permisos.AdministrarUsuarios)]
         public IActionResult RegistrarEstudiante(Usuario nuevoEstudiante, int CursoSeleccionado)
         {
             // 1. Comprobar si el correo ya existe
@@ -146,6 +141,7 @@ namespace ProyectoPAE.Controllers
 
 
         [HttpPost]
+        [RequierePermiso(Permisos.AdministrarUsuarios)]
         public async Task<IActionResult> RegistrarUsuario(RegistroUsuarioViewModel model)
         {
             if (model.ROL == "Estudiante" && model.CursoSeleccionado == null)
@@ -412,6 +408,7 @@ namespace ProyectoPAE.Controllers
 
 
         [HttpPost]
+        [RequierePermiso(Permisos.GestionarMatriculas)]
         public IActionResult RenovarMatricula(int idEstudiante)
         {
             // Buscamos la matrícula más reciente de este estudiante
@@ -441,36 +438,111 @@ namespace ProyectoPAE.Controllers
 
             return RedirectToAction("Usuarios");
         }
+        /// <summary>
+        /// Ascenso / retiro de coordinador. Solo mueve a un usuario entre los roles docente y coordinador;
+        /// los demás roles quedan fuera porque tienen datos que dependen de su rol (matrícula, acudientes).
+        /// </summary>
         [HttpPost]
+        [ValidateAntiForgeryToken]
+        [RequierePermiso(Permisos.AdministrarUsuarios)]
         public IActionResult CambiarRol(int idUsuario, string nuevoRol)
         {
             var usuario = _context.Usuarios.Find(idUsuario);
-
-
-            // REGLAS DE ORO:
-            // 1. No se puede editar al Admin Principal (ID 1).
-            // 2. El nuevo rol no puede ser 'admin'.
-            // 3. Solo permitimos cambiar a quienes son docentes o coordinadores.
-
-
-            if (usuario != null && usuario.ID_Usuario != 1 && nuevoRol != "admin")
+            if (usuario == null)
             {
-                if (usuario.ROL == "docente" || usuario.ROL == "coordinador")
-                {
-                    usuario.ROL = nuevoRol;
-                    _context.SaveChanges();
-                }
+                TempData["Error"] = "No se encontró el usuario.";
+                return RedirectToAction("Usuarios");
             }
 
+            // 1. No se puede editar al Admin Principal (ID 1).
+            if (usuario.ID_Usuario == 1)
+            {
+                TempData["Error"] = "El administrador principal no se puede modificar.";
+                return RedirectToAction("Usuarios");
+            }
+
+            var rolActual = Permisos.NormalizarRol(usuario.ROL);
+            var rolNuevo = Permisos.NormalizarRol(nuevoRol);
+
+            // 2. Solo se permite pasar entre docente y coordinador.
+            var rolesPermitidos = new[] { "docente", "coordinador" };
+            if (!rolesPermitidos.Contains(rolActual) || !rolesPermitidos.Contains(rolNuevo))
+            {
+                TempData["Error"] = "Solo se puede cambiar el rol entre docente y coordinador.";
+                return RedirectToAction("Usuarios");
+            }
+
+            if (rolActual == rolNuevo)
+            {
+                TempData["Mensaje"] = $"{usuario.NOMBRES} {usuario.APELLIDOS} ya tiene el rol {rolNuevo}.";
+                return RedirectToAction("Usuarios");
+            }
+
+            // 3. Verificamos si tiene clases asignadas para informar al administrador
+            bool tieneClases = false;
+            if (rolNuevo == "coordinador")
+            {
+                var idsProfesor = _context.PROFESOR
+                    .Where(p => p.id_usuario == usuario.ID_Usuario)
+                    .Select(p => p.id_profesor)
+                    .ToList();
+
+                tieneClases = idsProfesor.Count > 0 &&
+                              _context.HORARIOS.Any(h => idsProfesor.Contains(h.id_profesor));
+            }
+
+            usuario.ROL = rolNuevo;
+
+            // 4. Guardamos los cambios del usuario en la base de datos
+            try
+            {
+                _context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Error al actualizar el rol en la base de datos: " + ex.Message;
+                return RedirectToAction("Usuarios");
+            }
+
+            // 5. Aviso al usuario afectado (usa el mecanismo de notificaciones del sistema)
+            try
+            {
+                _context.AsegurarEsquemaNotificaciones();
+                _context.Notificaciones.Add(new Notificacion
+                {
+                    Titulo = "Tu rol fue actualizado",
+                    Mensaje = $"Tu rol en el sistema ahora es {rolNuevo}. Cierra sesión y vuelve a ingresar para ver tu nuevo panel.",
+                    RolDestino = $"user_{usuario.ID_Usuario}",
+                    FechaCreacion = DateTime.Now,
+                    ID_UsuarioEmisor = HttpContext.Session.GetInt32("UserId") ?? 1,
+                    Activa = true,
+                    Prioridad = "leve"
+                });
+                _context.SaveChanges();
+            }
+            catch { }
+
+            if (rolNuevo == "coordinador")
+            {
+                TempData["Mensaje"] = tieneClases
+                    ? $"{usuario.NOMBRES} {usuario.APELLIDOS} fue ascendido a Coordinador exitosamente. (Nota: Aún tiene clases en Horarios, puedes reasignarlas en Asignación Académica)."
+                    : $"{usuario.NOMBRES} {usuario.APELLIDOS} fue ascendido a Coordinador exitosamente.";
+            }
+            else
+            {
+                TempData["Mensaje"] = $"{usuario.NOMBRES} {usuario.APELLIDOS} volvió a tener el rol de Docente.";
+            }
 
             return RedirectToAction("Usuarios");
         }
         // 1. Acción para ver la lista
+        [RequierePermiso(Permisos.VerReportes)]
         public IActionResult ListaEstudiantes()
         {
             var estudiantes = _context.ESTUDIANTE.ToList(); // Trae todos los de la DB
             return View(estudiantes);
         }
+        [RequierePermiso(Permisos.VerReportes)]
         public IActionResult DescargarReportePro(int id)
         {
             // 1. Buscamos al estudiante
@@ -518,13 +590,9 @@ namespace ProyectoPAE.Controllers
 
         // --- GESTIÓN DE NOTIFICACIONES / COMUNICADOS POR ROL ---
         [HttpGet]
+        [RequierePermiso(Permisos.EnviarNotificaciones)]
         public async Task<IActionResult> Notificaciones()
         {
-            var rol = HttpContext.Session.GetString("UserRol");
-            if (string.IsNullOrEmpty(rol) || rol.ToLower() != "admin")
-            {
-                return RedirectToAction("Dashboard", "Home");
-            }
 
 
             var lista = await _context.Notificaciones
@@ -538,13 +606,9 @@ namespace ProyectoPAE.Controllers
 
 
         [HttpPost]
-        public async Task<IActionResult> CrearNotificacion(string titulo, string mensaje, string rolDestino, string? prioridad, DateTime? fechaExpiracion)
+        [RequierePermiso(Permisos.EnviarNotificaciones)]
+        public async Task<IActionResult> CrearNotificacion(string titulo, string mensaje, string rolDestino)
         {
-            var rol = HttpContext.Session.GetString("UserRol");
-            if (string.IsNullOrEmpty(rol) || rol.ToLower() != "admin")
-            {
-                return RedirectToAction("Dashboard", "Home");
-            }
 
 
             int? idUsuarioSession = HttpContext.Session.GetInt32("UserId");
@@ -566,8 +630,6 @@ namespace ProyectoPAE.Controllers
                 Titulo = titulo.Trim(),
                 Mensaje = mensaje.Trim(),
                 RolDestino = rolDestino.Trim().ToLower(),
-                Prioridad = string.IsNullOrWhiteSpace(prioridad) ? "leve" : prioridad.Trim().ToLower(),
-                FechaExpiracion = fechaExpiracion,
                 FechaCreacion = DateTime.Now,
                 ID_UsuarioEmisor = idUsuarioSession.Value,
                 Activa = true
@@ -584,13 +646,9 @@ namespace ProyectoPAE.Controllers
 
 
         [HttpPost]
+        [RequierePermiso(Permisos.EnviarNotificaciones)]
         public async Task<IActionResult> EliminarNotificacion(int id)
         {
-            var rol = HttpContext.Session.GetString("UserRol");
-            if (string.IsNullOrEmpty(rol) || rol.ToLower() != "admin")
-            {
-                return RedirectToAction("Dashboard", "Home");
-            }
 
 
             var notificacion = await _context.Notificaciones.FindAsync(id);
@@ -613,11 +671,9 @@ namespace ProyectoPAE.Controllers
 
         /// <summary>Actualiza el grado y el estado de una matrícula existente.</summary>
         [HttpPost]
+        [RequierePermiso(Permisos.GestionarMatriculas)]
         public async Task<IActionResult> EditarMatricula(int idMatricula, int idCurso, string estado)
         {
-            var rol = HttpContext.Session.GetString("UserRol");
-            if (rol != "admin")
-                return RedirectToAction("Dashboard", "Home");
 
 
             var matricula = await _context.Matriculas.FindAsync(idMatricula);
@@ -640,11 +696,9 @@ namespace ProyectoPAE.Controllers
 
         /// <summary>Cambia únicamente el estado de una matrícula.</summary>
         [HttpPost]
+        [RequierePermiso(Permisos.GestionarMatriculas)]
         public async Task<IActionResult> CambiarEstadoMatricula(int idMatricula, string nuevoEstado)
         {
-            var rol = HttpContext.Session.GetString("UserRol");
-            if (rol != "admin")
-                return RedirectToAction("Dashboard", "Home");
 
 
             var matricula = await _context.Matriculas.FindAsync(idMatricula);
@@ -666,11 +720,9 @@ namespace ProyectoPAE.Controllers
 
         /// <summary>Elimina permanentemente una matrícula de la base de datos.</summary>
         [HttpPost]
+        [RequierePermiso(Permisos.EliminarMatriculas)]
         public async Task<IActionResult> EliminarMatricula(int idMatricula)
         {
-            var rol = HttpContext.Session.GetString("UserRol");
-            if (rol != "admin")
-                return RedirectToAction("Dashboard", "Home");
 
 
             var matricula = await _context.Matriculas.FindAsync(idMatricula);

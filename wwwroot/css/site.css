@@ -211,34 +211,40 @@ a:hover {
     color: #ffffff !important;
 }
 
-/* --- BOTÓN GUARDAR ESPECÍFICO (Éxito verde uniforme o Azul PAE) --- */
+/* --- BOTÓN GUARDAR ESPECÍFICO (Éxito verde uniforme - Acción Positiva) --- */
 .btn-pae-guardar,
-.btn-pae-save {
+.btn-pae-save,
+.btn-guardar {
     background-color: var(--pae-success) !important;
     border-color: var(--pae-success) !important;
     color: #ffffff !important;
 }
 
 .btn-pae-guardar:hover,
-.btn-pae-save:hover {
+.btn-pae-save:hover,
+.btn-guardar:hover {
     background-color: var(--pae-success-hover) !important;
     border-color: var(--pae-success-hover) !important;
     color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(25, 135, 84, 0.35) !important;
 }
 
-/* --- 2. BOTÓN EDITAR / MODIFICAR --- */
+/* --- 2. BOTÓN EDITAR / MODIFICAR (Naranja Institucional PAE) --- */
 .btn-pae-edit,
-.btn-pae-editar {
+.btn-pae-editar,
+.btn-editar {
     background-color: var(--pae-secondary) !important;
     border-color: var(--pae-secondary) !important;
     color: #ffffff !important;
 }
 
 .btn-pae-edit:hover,
-.btn-pae-editar:hover {
+.btn-pae-editar:hover,
+.btn-editar:hover {
     background-color: var(--pae-secondary-hover) !important;
     border-color: var(--pae-secondary-hover) !important;
     color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(230, 126, 34, 0.35) !important;
 }
 
 .btn-pae-outline-edit,
@@ -255,11 +261,12 @@ a:hover {
     color: #ffffff !important;
 }
 
-/* --- 3. BOTÓN ELIMINAR / ACCIÓN PELIGROSA --- */
+/* --- 3. BOTÓN ELIMINAR / ACCIÓN PELIGROSA (Rojo Peligro Diferenciado) --- */
 .btn-danger,
 .btn-pae-danger,
 .btn-pae-eliminar,
-.btn-pae-delete {
+.btn-pae-delete,
+.btn-eliminar {
     background-color: var(--pae-danger) !important;
     border-color: var(--pae-danger) !important;
     color: #ffffff !important;
@@ -268,10 +275,12 @@ a:hover {
 .btn-danger:hover,
 .btn-pae-danger:hover,
 .btn-pae-eliminar:hover,
-.btn-pae-delete:hover {
+.btn-pae-delete:hover,
+.btn-eliminar:hover {
     background-color: var(--pae-danger-hover) !important;
     border-color: var(--pae-danger-hover) !important;
     color: #ffffff !important;
+    box-shadow: 0 4px 14px rgba(220, 53, 69, 0.45) !important;
 }
 
 .btn-outline-danger,
@@ -286,12 +295,14 @@ a:hover {
     background-color: var(--pae-danger) !important;
     border-color: var(--pae-danger) !important;
     color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3) !important;
 }
 
 /* --- 4. BOTÓN CANCELAR / VOLVER (ESTILO UNIFICADO GLOBAL) --- */
 .btn-secondary,
 .btn-pae-cancel,
-.btn-pae-cancelar {
+.btn-pae-cancelar,
+.btn-cancelar {
     background-color: var(--pae-neutral) !important;
     border-color: var(--pae-neutral) !important;
     color: #ffffff !important;
@@ -299,7 +310,8 @@ a:hover {
 
 .btn-secondary:hover,
 .btn-pae-cancel:hover,
-.btn-pae-cancelar:hover {
+.btn-pae-cancelar:hover,
+.btn-cancelar:hover {
     background-color: var(--pae-neutral-hover) !important;
     border-color: var(--pae-neutral-hover) !important;
     color: #ffffff !important;
@@ -347,49 +359,58 @@ a:hover {
     box-shadow: 0 3px 8px rgba(13, 42, 74, 0.08) !important;
 }
 
-/* --- 5. BOTÓN BUSCAR / FILTRAR --- */
+/* --- 5. BOTÓN BUSCAR / FILTRAR (Azul Oscuro PAE) --- */
 .btn-pae-search,
-.btn-pae-buscar {
+.btn-pae-buscar,
+.btn-buscar {
     background-color: var(--pae-primary) !important;
     border-color: var(--pae-primary) !important;
     color: #ffffff !important;
 }
 
 .btn-pae-search:hover,
-.btn-pae-buscar:hover {
+.btn-pae-buscar:hover,
+.btn-buscar:hover {
     background-color: var(--pae-primary-hover) !important;
     border-color: var(--pae-primary-hover) !important;
     color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(13, 42, 74, 0.3) !important;
 }
 
-/* --- 6. BOTÓN ACTUALIZAR / REFRESCAR --- */
+/* --- 6. BOTÓN ACTUALIZAR / REFRESCAR (Azul Medio Institucional) --- */
 .btn-pae-update,
-.btn-pae-actualizar {
-    background-color: var(--pae-secondary) !important;
-    border-color: var(--pae-secondary) !important;
+.btn-pae-actualizar,
+.btn-actualizar {
+    background-color: var(--pae-primary-light) !important;
+    border-color: var(--pae-primary-light) !important;
     color: #ffffff !important;
 }
 
 .btn-pae-update:hover,
-.btn-pae-actualizar:hover {
-    background-color: var(--pae-secondary-hover) !important;
-    border-color: var(--pae-secondary-hover) !important;
+.btn-pae-actualizar:hover,
+.btn-actualizar:hover {
+    background-color: var(--pae-primary) !important;
+    border-color: var(--pae-primary) !important;
     color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(24, 67, 112, 0.35) !important;
 }
 
-/* --- 7. BOTÓN GENERAR / REPORTES / PDF --- */
+/* --- 7. BOTÓN GENERAR / REPORTES / PDF (Degradado Institucional) --- */
 .btn-pae-generate,
-.btn-pae-generar {
-    background-color: var(--pae-primary) !important;
+.btn-pae-generar,
+.btn-generar {
+    background: var(--pae-gradient-primary) !important;
     border-color: var(--pae-primary) !important;
     color: #ffffff !important;
 }
 
 .btn-pae-generate:hover,
-.btn-pae-generar:hover {
-    background-color: var(--pae-primary-hover) !important;
-    border-color: var(--pae-primary-hover) !important;
+.btn-pae-generar:hover,
+.btn-generar:hover {
+    background: linear-gradient(135deg, #081d33 0%, #0d2a4a 100%) !important;
+    border-color: #081d33 !important;
     color: #ffffff !important;
+    box-shadow: 0 4px 14px rgba(13, 42, 74, 0.35) !important;
 }
 
 /* Botón admin unificado */
@@ -405,6 +426,135 @@ a:hover {
     background-color: var(--pae-primary-hover) !important;
     transform: translateY(-2px);
     box-shadow: var(--pae-shadow);
+}
+
+/* ==========================================================================
+   LAYOUT CON BARRA LATERAL DINÁMICA (REQUERIMIENTO 1.3 Y 1.4)
+   ========================================================================== */
+.panel-con-sidebar {
+    display: flex !important;
+    gap: 1.5rem;
+    align-items: flex-start;
+}
+
+.pae-sidebar-lateral {
+    width: 270px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 20px;
+    z-index: 100;
+}
+
+.pae-sidebar-card {
+    background: #ffffff;
+    border-radius: 14px;
+    border: 1px solid rgba(13, 42, 74, 0.1);
+    box-shadow: 0 4px 18px rgba(13, 42, 74, 0.06);
+    overflow: hidden;
+}
+
+.pae-sidebar-header {
+    background: linear-gradient(135deg, #0d2a4a 0%, #1a3d66 100%);
+    color: #ffffff;
+    padding: 1rem 1.15rem;
+}
+
+.pae-sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 0.85rem;
+}
+
+.pae-sidebar-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.65rem 0.85rem;
+    border-radius: 8px;
+    color: #334155;
+    font-weight: 500;
+    font-size: 0.9rem;
+    text-decoration: none;
+    border: 1px solid transparent;
+    transition: all 0.2s ease-in-out;
+    background: transparent;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+}
+
+.pae-sidebar-nav-item i {
+    font-size: 1.15rem;
+    color: #64748b;
+    transition: color 0.2s ease-in-out;
+}
+
+.pae-sidebar-nav-item:hover {
+    background-color: #f1f5f9;
+    color: #0d2a4a;
+}
+
+.pae-sidebar-nav-item:hover i {
+    color: #e67e22;
+}
+
+.pae-sidebar-nav-item.active {
+    background: linear-gradient(90deg, rgba(230, 126, 34, 0.14) 0%, rgba(230, 126, 34, 0.04) 100%);
+    color: #0d2a4a;
+    font-weight: 600;
+    border-left: 4px solid #e67e22;
+    border-color: rgba(230, 126, 34, 0.3);
+}
+
+.pae-sidebar-nav-item.active i {
+    color: #e67e22;
+}
+
+.submodulo-activo {
+    flex: 1;
+    min-width: 0;
+    width: 100%;
+    animation: fadeInSubmodulo 0.25s ease-in-out;
+}
+
+@keyframes fadeInSubmodulo {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* En dispositivos móviles y tablets (<992px) */
+@media (max-width: 991.98px) {
+    .panel-con-sidebar {
+        flex-direction: column !important;
+        gap: 1rem;
+    }
+
+    .pae-sidebar-lateral {
+        width: 100% !important;
+        position: static !important;
+    }
+
+    .pae-sidebar-nav {
+        flex-direction: row;
+        overflow-x: auto;
+        padding: 0.5rem;
+        gap: 0.5rem;
+        white-space: nowrap;
+    }
+
+    .pae-sidebar-nav-item {
+        flex-shrink: 0;
+        width: auto;
+        font-size: 0.85rem;
+        padding: 0.5rem 0.75rem;
+    }
 }
 
 /* ==========================================================================

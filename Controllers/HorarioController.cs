@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ProyectoPAE.Models;
+using ProyectoPAE.Servicios;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,6 +26,7 @@ namespace ProyectoPAE.Controllers
         // VISTA: ASIGNACIÓN ACADÉMICA
         // =========================================================================
         [HttpGet]
+        [RequierePermiso(Permisos.AsignarAcademica)]
         public async Task<IActionResult> AsignacionAcademica()
         {
             try
@@ -49,6 +51,7 @@ namespace ProyectoPAE.Controllers
         // 1. ENDPOINT AJAX: MATERIAS QUE DICTA EL DOCENTE (filtradas por su curso)
         // =========================================================================
         [HttpGet]
+        [RequierePermiso(Permisos.AsignarAcademica)]
         public async Task<JsonResult> ObtenerMateriasPorDocente(int idProfesor, int idCurso)
         {
             var query = from pm in _context.PROFESOR_MATERIA
@@ -78,6 +81,7 @@ namespace ProyectoPAE.Controllers
         // 2. ENDPOINT AJAX: AULAS RECOMENDADAS SEGÚN LA MATERIA
         // =========================================================================
         [HttpGet]
+        [RequierePermiso(Permisos.AsignarAcademica)]
         public JsonResult ObtenerAulasPorMateria(int idMateria)
         {
             var materia = _context.MATERIA.Find(idMateria);
@@ -139,6 +143,7 @@ namespace ProyectoPAE.Controllers
         // 3. ENDPOINT AJAX: ESTUDIANTES POR CURSO
         // ============================================================================
         [HttpGet]
+        [RequierePermiso(Permisos.AsignarAcademica)]
         public async Task<JsonResult> ObtenerEstudiantesPorCurso(int idCurso)
         {
             var estudiantes = await (from m in _context.Matriculas
@@ -159,6 +164,7 @@ namespace ProyectoPAE.Controllers
         // 4. ENDPOINT AJAX: MATERIAS POR CURSO (usado en la pestaña Alumnos)
         // ============================================================================
         [HttpGet]
+        [RequierePermiso(Permisos.AsignarAcademica)]
         public async Task<JsonResult> ObtenerMateriasPorCurso(int idCurso)
         {
             var materias = await (from cm in _context.CURSO_MATERIA
@@ -178,6 +184,7 @@ namespace ProyectoPAE.Controllers
         // 5. GUARDAR ASIGNACIÓN DE DOCENTE (con validación de choques)
         // =========================================================================
         [HttpPost]
+        [RequierePermiso(Permisos.AsignarAcademica)]
         public async Task<IActionResult> GuardarAsignacionDocente(
             int id_profesor, int id_curso, int id_materia, int id_aula,
             string dia, TimeSpan hora_inicio, TimeSpan hora_fin)
@@ -250,6 +257,7 @@ namespace ProyectoPAE.Controllers
         // 6. ENDPOINT AJAX: DOCENTES QUE DICTAN UNA MATERIA (para la pestaña Alumnos)
         // =========================================================================
         [HttpGet]
+        [RequierePermiso(Permisos.AsignarAcademica)]
         public async Task<JsonResult> ObtenerDocentesPorMateria(int idMateria)
         {
             var docentes = await (from pm in _context.PROFESOR_MATERIA

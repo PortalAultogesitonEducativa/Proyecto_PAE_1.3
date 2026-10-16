@@ -64,34 +64,58 @@
             {
                 foreach (var usuario in Model)
                 {
-                    // 2. LÓGICA DE COLORES PERSONALIZADOS SEGÚN EL PANEL
+                    // LÓGICA DE COLORES PERSONALIZADOS SEGÚN EL PANEL
                     string colorHex = "#6c757d"; // Gris por defecto
-                    string rolNormalizado = usuario.ROL?.ToLower() ?? "";
+                    string rolNormalizado = ProyectoPAE.Servicios.Permisos.NormalizarRol(usuario.ROL);
 
-                    if (rolNormalizado.Contains("admin")) { colorHex = "#e67e22"; }      // Naranja Admin
-                    else if (rolNormalizado.Contains("docente")) { colorHex = "#0d6efd"; } // Azul Docente
-                    else if (rolNormalizado.Contains("estudiante")) { colorHex = "#6f42c1"; } // Púrpura Estudiante
-                    else if (rolNormalizado.Contains("acudiente")) { colorHex = "#198754"; }  // Verde Acudiente
+                    if (rolNormalizado == "admin") { colorHex = "#e67e22"; }             // Naranja Admin
+                    else if (rolNormalizado == "coordinador") { colorHex = "#d35400"; }   // Naranja Oscuro Coordinador
+                    else if (rolNormalizado == "docente") { colorHex = "#0d6efd"; }       // Azul Docente
+                    else if (rolNormalizado == "estudiante") { colorHex = "#6f42c1"; }    // Púrpura Estudiante
+                    else if (rolNormalizado == "acudiente") { colorHex = "#198754"; }     // Verde Acudiente
+
+                    // REGLA: Solo se permite cambiar el rol entre docente y coordinador, y nunca al admin principal (ID 1).
+                    bool esModificable = usuario.ID_Usuario != 1 && (rolNormalizado == "docente" || rolNormalizado == "coordinador");
 
                     <tr class="fila-usuario">
-                        <td>@usuario.NOMBRES @usuario.APELLIDOS</td>
+                        <td>
+                            <div class="fw-semibold">@usuario.NOMBRES @usuario.APELLIDOS</div>
+                            @if (usuario.ID_Usuario == 1)
+                            {
+                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle small" style="font-size: 0.7rem;">Admin Principal</span>
+                            }
+                        </td>
                         <td>@usuario.CORREO_ELECTRONICO</td>
                         <td>
                             <span class="badge text-white" style="background-color: @colorHex;">
-                                @usuario.ROL
+                                @(rolNormalizado == "coordinador" ? "Coordinador" : (usuario.ROL ?? "Sin Rol"))
                             </span>
                         </td>
                         <td><span class="badge bg-success-subtle text-success border border-success-subtle">Activo</span></td>
                         <td>
-                            <button type="button"
-                                    class="btn btn-sm btn-outline-primary"
-                                    data-bs-toggle="modal"
-                                    data-bs-target="#modalCambiarRol"
-                                    data-bs-correo="@usuario.CORREO_ELECTRONICO"
-                                    data-bs-nombre="@usuario.NOMBRES @usuario.APELLIDOS"
-                                    data-bs-rol="@usuario.ROL">
-                                <i class="bi bi-pencil"></i> Cambiar Rol
-                            </button>
+                            @if (esModificable)
+                            {
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-primary"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#modalCambiarRol"
+                                        data-bs-id="@usuario.ID_Usuario"
+                                        data-bs-correo="@usuario.CORREO_ELECTRONICO"
+                                        data-bs-nombre="@usuario.NOMBRES @usuario.APELLIDOS"
+                                        data-bs-rol="@rolNormalizado"
+                                        title="Gestionar ascenso a Coordinador o rol docente">
+                                    <i class="bi bi-person-gear me-1"></i>Cambiar Rol
+                                </button>
+                            }
+                            else
+                            {
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-secondary opacity-75"
+                                        disabled
+                                        title="@(usuario.ID_Usuario == 1 ? "El administrador principal no se puede modificar." : "Rol protegido del sistema. Solo se permite ascenso/retiro entre Docente y Coordinador.")">
+                                    <i class="bi bi-lock-fill me-1"></i>Bloqueado
+                                </button>
+                            }
                         </td>
                     </tr>
                 }
@@ -117,33 +141,41 @@
 <div class="modal fade" id="modalCambiarRol" tabindex="-1" aria-labelledby="modalCambiarRolLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form action="@Url.Action("ActualizarRol", "Admin")" method="post">
+            <form action="@Url.Action("CambiarRol", "Admin")" method="post">
+                @Html.AntiForgeryToken()
                 <div class="modal-header bg-dark text-white">
-                    <h5 class="modal-title" id="modalCambiarRolLabel"><i class="bi bi-shield-shaded me-2"></i>Modificar Permisos</h5>
+                    <h5 class="modal-title" id="modalCambiarRolLabel"><i class="bi bi-shield-shaded me-2"></i>Gestión de Rol y Coordinación</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <p class="text-muted">Vas a cambiar el rol del siguiente usuario:</p>
-                    <div class="alert alert-secondary">
-                        <strong id="editNombreUsuario">Cargando...</strong><br />
-                        <span id="editCorreoUsuario" class="small text-muted"></span>
+                    <p class="text-muted">Vas a actualizar el rol del siguiente usuario:</p>
+                    <div class="alert alert-secondary d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong id="editNombreUsuario">Cargando...</strong><br />
+                            <span id="editCorreoUsuario" class="small text-muted"></span>
+                        </div>
+                        <span id="badgeRolActual" class="badge bg-primary text-uppercase"></span>
                     </div>
 
-                    <input type="hidden" name="CORREO_ELECTRONICO" id="editInputCorreo" />
+                    <input type="hidden" name="idUsuario" id="editInputIdUsuario" />
+
+                    <div class="alert alert-warning small py-2 mb-3">
+                        <i class="bi bi-info-circle-fill me-1"></i>
+                        <strong>Regla de negocio:</strong> Solo se permite ascender a <strong>Coordinador</strong> o regresar a <strong>Docente</strong>. 
+                        Un docente con clases asignadas debe ser reasignado previamente en <em>Asignación Académica</em>.
+                    </div>
 
                     <div class="mb-3">
-                        <label class="form-label font-weight-bold">Selecciona el Nuevo Rol</label>
-                        <select name="NUEVO_ROL" id="editSelectRol" class="form-select" required>
-                            <option value="admin">Administrador</option>
-                            <option value="Docente">Docente</option>
-                            <option value="Estudiante">Estudiante</option>
-                            <option value="Acudiente">Acudiente</option>
+                        <label class="form-label fw-bold">Selecciona el Nuevo Rol</label>
+                        <select name="nuevoRol" id="editSelectRol" class="form-select" required>
+                            <option value="coordinador">Coordinador (Supervisión docente y académica)</option>
+                            <option value="docente">Docente (Carga académica, notas y planilla)</option>
                         </select>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-dark">Actualizar Rol</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check2-circle me-1"></i>Guardar Cambio</button>
                 </div>
             </form>
         </div>
@@ -558,15 +590,27 @@
             const boton = event.relatedTarget;
 
             // Extraer la información de los atributos data-bs-*
+            const id = boton.getAttribute('data-bs-id');
             const correo = boton.getAttribute('data-bs-correo');
             const nombre = boton.getAttribute('data-bs-nombre');
-            const rolActual = boton.getAttribute('data-bs-rol');
+            const rolActual = (boton.getAttribute('data-bs-rol') || '').toLowerCase().trim();
 
             // Asignar los datos a los elementos visuales dentro del modal
             document.getElementById('editNombreUsuario').textContent = nombre;
             document.getElementById('editCorreoUsuario').textContent = correo;
-            document.getElementById('editInputCorreo').value = correo;
-            document.getElementById('editSelectRol').value = rolActual;
+            document.getElementById('editInputIdUsuario').value = id;
+
+            const badgeRol = document.getElementById('badgeRolActual');
+            if (badgeRol) {
+                badgeRol.textContent = rolActual === 'coordinador' ? 'Coordinador' : 'Docente';
+                badgeRol.className = rolActual === 'coordinador' ? 'badge bg-warning text-dark' : 'badge bg-primary';
+            }
+
+            // Sugerir la opción opuesta (si es docente ofrecer ascender a coordinador; si es coordinador ofrecer docente)
+            const selectRol = document.getElementById('editSelectRol');
+            if (selectRol) {
+                selectRol.value = (rolActual === 'docente') ? 'coordinador' : 'docente';
+            }
         });
     }
 </script>

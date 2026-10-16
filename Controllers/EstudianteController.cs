@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using ProyectoPAE.Models;
+using ProyectoPAE.Servicios;
 using Microsoft.EntityFrameworkCore;
 
 public class EstudianteController : Controller
@@ -9,24 +10,27 @@ public class EstudianteController : Controller
     // Solo debe existir una versión de este método en el archivo
     public IActionResult MisNotas(int? idEstudiante)
     {
-        int userId;
-        // Intentamos obtener el ID de la sesión del usuario actual
-        var userIdStr = HttpContext.Session.GetString("UserIdStr");
+        var rolSesion = Permisos.RolActual(HttpContext);
+        var idSesion = HttpContext.Session.GetInt32("UserId");
 
+        // Sin sesión válida: al login
+        if (string.IsNullOrEmpty(rolSesion) || !idSesion.HasValue)
+            return RedirectToAction("Index", "Login");
+
+        int userId;
         if (idEstudiante.HasValue)
         {
-            // CASO ACUDIENTE: Se usa el ID del hijo pasado por la URL
+            // Acudiente consultando a su hijo, o personal académico consultando a un estudiante.
+            // Un estudiante solo puede ver sus propias notas y un acudiente solo las de sus hijos.
+            if (!AccesoEstudiantes.PuedeVerEstudiante(_context, HttpContext, idEstudiante.Value))
+                return RedirectToAction("Dashboard", "Home");
+
             userId = idEstudiante.Value;
-        }
-        else if (int.TryParse(userIdStr, out int sessionUserId))
-        {
-            // CASO ESTUDIANTE: Se usa el ID de quien inició sesión
-            userId = sessionUserId;
         }
         else
         {
-            // Si no hay ID ni sesión, redirigir al Login
-            return RedirectToAction("Index", "Login");
+            // Estudiante: sus propias notas
+            userId = idSesion.Value;
         }
 
         // Consulta a la base de datos filtrando por el ID determinado
@@ -53,6 +57,7 @@ public class EstudianteController : Controller
     // ===============================================
 
     [HttpPost]
+    [RequierePermiso(Permisos.ParticiparComoEstudiante)]
     public IActionResult InscribirseCursoExtra(int idCurso)
     {
         _context.AsegurarEsquemaExtracurriculares();
@@ -138,14 +143,16 @@ public class EstudianteController : Controller
         _context.ExtraInscripciones.Add(nuevaInscripcion);
         _context.SaveChanges();
 
-        return Json(new { 
-            success = true, 
+        return Json(new
+        {
+            success = true,
             message = $"¡Te has inscrito exitosamente a '{curso.Nombre}'! Cupos restantes: {curso.CuposDisponibles}.",
             cuposDisponibles = curso.CuposDisponibles
         });
     }
 
     [HttpPost]
+    [RequierePermiso(Permisos.ParticiparComoEstudiante)]
     public IActionResult CancelarInscripcionCursoExtra(int idInscripcion)
     {
         _context.AsegurarEsquemaExtracurriculares();
@@ -183,9 +190,10 @@ public class EstudianteController : Controller
 
         _context.SaveChanges();
 
-        return Json(new { 
-            success = true, 
-            message = "Has cancelado tu inscripción. El cupo ha sido liberado exitosamente." 
+        return Json(new
+        {
+            success = true,
+            message = "Has cancelado tu inscripción. El cupo ha sido liberado exitosamente."
         });
     }
 
@@ -197,6 +205,7 @@ public class EstudianteController : Controller
     /// Retorna las actividades activas con el estado de entrega del estudiante (JSON).
     /// </summary>
     [HttpGet]
+    [RequierePermiso(Permisos.UsarPanelEstudiante)]
     public IActionResult ObtenerActividades()
     {
         _context.AsegurarEsquemaActividades();
@@ -251,6 +260,7 @@ public class EstudianteController : Controller
     /// Recibe la entrega de un estudiante para una actividad (archivo + comentario).
     /// </summary>
     [HttpPost]
+    [RequierePermiso(Permisos.ParticiparComoEstudiante)]
     public async Task<IActionResult> SubirEntregaActividad(int idActividad, string? comentario, IFormFile? archivo)
     {
         _context.AsegurarEsquemaActividades();
@@ -344,6 +354,7 @@ public class EstudianteController : Controller
     // ===============================================
 
     [HttpPost]
+    [RequierePermiso(Permisos.ParticiparComoEstudiante)]
     public async Task<IActionResult> SubirDocumentoExtraCurso(int idInscripcion, string tipoDocumento, IFormFile? archivo)
     {
         _context.AsegurarEsquemaExtracurriculares();
@@ -421,6 +432,20 @@ public class EstudianteController : Controller
     [HttpGet]
     public IActionResult ObtenerDocumentosInscripcion(int idInscripcion)
     {
+        var rol = Permisos.RolActual(HttpContext);
+        var idSesion = HttpContext.Session.GetInt32("UserId");
+
+        if (string.IsNullOrEmpty(rol) || !idSesion.HasValue)
+            return new JsonResult(new { success = false, message = "Sesión no válida." }) { StatusCode = 401 };
+
+        // Personal académico ve cualquier inscripción; el estudiante solo las suyas.
+        bool esPersonal = rol == "admin" || rol == "docente" || rol == "coordinador";
+        bool esDueno = rol == "estudiante" &&
+                       _context.ExtraInscripciones.Any(i => i.IdExtraInscripcion == idInscripcion && i.IdEstudiante == idSesion.Value);
+
+        if (!esPersonal && !esDueno)
+            return new JsonResult(new { success = false, message = "No tienes permiso para ver estos documentos." }) { StatusCode = 403 };
+
         _context.AsegurarEsquemaExtracurriculares();
 
         var docs = _context.ExtraDocumentosInscripciones
@@ -444,6 +469,7 @@ public class EstudianteController : Controller
     // ===============================================
 
     [HttpGet]
+    [RequierePermiso(Permisos.UsarPanelEstudiante)]
     public IActionResult ObtenerAccionesMejoraEstudiante(string? materia)
     {
         _context.AsegurarEsquemaAccionesMejora();
@@ -489,6 +515,7 @@ public class EstudianteController : Controller
     }
 
     [HttpPost]
+    [RequierePermiso(Permisos.ParticiparComoEstudiante)]
     public IActionResult RegistrarAvanceMejora([FromBody] AvanceEstudianteMejoraDto dto)
     {
         _context.AsegurarEsquemaAccionesMejora();

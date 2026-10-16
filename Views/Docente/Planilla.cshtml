@@ -17,7 +17,12 @@
     var estGrados = ViewBag.EstudianteGrados as Dictionary<int, string>;
 }
 
-<div class="container-fluid mt-4 px-4 pb-5" style="max-width: 1300px; margin: 0 auto;">
+<div class="container-fluid mt-4 px-4 pb-5">
+    <div class="panel-con-sidebar">
+
+        @await Html.PartialAsync("_SidebarDocente")
+
+        <div class="submodulo-activo">
 
     <!-- 1. Encabezado Institucional con Degradado Azul PAE -->
     <div class="card border-0 shadow-sm mb-4 rounded-3 overflow-hidden">
@@ -35,9 +40,6 @@
                     </span>
                 </div>
             </div>
-            <a href="@Url.Action("Dashboard", "Home")" class="btn btn-pae-volver">
-                Volver
-            </a>
         </div>
     </div>
 
@@ -1031,6 +1033,6 @@
     });
 </script>
 
-
-
-
+        </div><!-- /.submodulo-activo -->
+    </div><!-- /.panel-con-sidebar -->
+</div><!-- /.container-fluid -->

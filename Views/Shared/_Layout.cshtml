@@ -10,7 +10,8 @@
         <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
         <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11">
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script>
             (function () {
                 var f = localStorage.getItem('pae_filtro_daltonismo');
                 if (f && f !== 'normal') {
@@ -70,6 +71,12 @@
                             @if (Context.Session.GetString("NombreUsuario") != null)
                             {
                                 string userRolLayout = (Context.Session.GetString("UserRol") ?? "").Trim().ToLower();
+
+                                <!-- Botón de Ayuda Global (Requerimiento 1.5) -->
+                                <button type="button" class="btn btn-outline-secondary btn-sm me-3 rounded-pill px-3 d-flex align-items-center" onclick="abrirModalAyudaGlobal()" title="Centro de Ayuda e Instrucciones del Sistema">
+                                    <i class="bi bi-question-circle-fill text-warning me-1"></i>
+                                    <span class="d-none d-sm-inline">Ayuda</span>
+                                </button>
 
                                 @* Campana de notificaciones — sólo para roles que reciben notifs (no admin) *@
                                 if (userRolLayout != "admin")
@@ -550,6 +557,90 @@
             }
 
             document.addEventListener('DOMContentLoaded', actualizarUIFiltros);
+        </script>
+
+        <!-- ─── MODAL DE AYUDA E INSTRUCCIONES PAE (REQUERIMIENTO 1.5) ─────────────────────────── -->
+        <div class="modal fade" id="modalAyudaPAE" tabindex="-1" aria-labelledby="ayudaModalTitulo" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                    <div class="modal-header text-white py-3 px-4" style="background: var(--pae-gradient-primary);">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-warning text-dark px-2.5 py-1 rounded-pill fw-semibold" id="ayudaModalRol">Guía</span>
+                            <h5 class="modal-title mb-0 fw-bold" id="ayudaModalTitulo">
+                                <i class="bi bi-question-circle-fill text-warning me-2"></i>Centro de Ayuda PAE
+                            </h5>
+                        </div>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4 bg-light">
+                        <!-- Tarjeta: ¿Qué hace este módulo? -->
+                        <div class="card border-0 shadow-sm rounded-3 mb-3 p-3 bg-white">
+                            <h6 class="fw-bold mb-2" style="color: var(--pae-primary);">
+                                <i class="bi bi-info-circle-fill text-primary me-2"></i>¿Qué puedes hacer en este módulo?
+                            </h6>
+                            <p class="text-secondary mb-0 small" id="ayudaModalQueHace" style="line-height: 1.5;">
+                                Selecciona o interactúa con el módulo activo para visualizar las funciones detalladas.
+                            </p>
+                        </div>
+
+                        <!-- Tarjeta: Instrucciones paso a paso -->
+                        <div class="card border-0 shadow-sm rounded-3 mb-3 p-3 bg-white">
+                            <h6 class="fw-bold mb-2" style="color: var(--pae-primary);">
+                                <i class="bi bi-list-ol text-success me-2"></i>Instrucciones paso a paso
+                            </h6>
+                            <ul class="list-unstyled mb-0 small text-secondary" id="ayudaModalPasos">
+                                <li>Cargando instrucciones...</li>
+                            </ul>
+                        </div>
+
+                        <!-- Tarjeta: Consejos y buenas prácticas -->
+                        <div class="card border-0 shadow-sm rounded-3 p-3 bg-white" style="border-left: 4px solid #e67e22 !important;">
+                            <h6 class="fw-bold mb-1" style="color: #e67e22;">
+                                <i class="bi bi-lightbulb-fill me-2"></i>Consejo Útil
+                            </h6>
+                            <p class="text-secondary mb-0 small" id="ayudaModalConsejo">
+                                Verifica siempre los datos antes de presionar Guardar.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-white border-top px-4 py-3 justify-content-between">
+                        <span class="small text-muted"><i class="bi bi-shield-check text-success me-1"></i>Soporte Técnico PAE &bull; v1.3</span>
+                        <button type="button" class="btn btn-primary px-4 rounded-3" data-bs-dismiss="modal">
+                            Entendido
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ─── FEEDBACK COMUNICATIVO Y ALERTAS GLOBALES (REQUERIMIENTO 1.6) ───────────── -->
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                @if (TempData["Exito"] != null)
+                {
+                    <text>
+                        if (window.PAE && typeof PAE.toast === 'function') {
+                            PAE.toast("@Html.Raw(TempData["Exito"]?.ToString()?.Replace("\"", "\\\""))", 'success');
+                        }
+                    </text>
+                }
+                @if (TempData["Mensaje"] != null)
+                {
+                    <text>
+                        if (window.PAE && typeof PAE.toast === 'function') {
+                            PAE.toast("@Html.Raw(TempData["Mensaje"]?.ToString()?.Replace("\"", "\\\""))", 'info');
+                        }
+                    </text>
+                }
+                @if (TempData["Error"] != null)
+                {
+                    <text>
+                        if (window.PAE && typeof PAE.error === 'function') {
+                            PAE.error("@Html.Raw(TempData["Error"]?.ToString()?.Replace("\"", "\\\""))");
+                        }
+                    </text>
+                }
+            });
         </script>
     </body>
 </html>

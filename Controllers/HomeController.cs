@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using ProyectoPAE.Models;
+using ProyectoPAE.Servicios;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -45,9 +46,8 @@ namespace ProyectoPAE.Controllers
             return View(courses);
         }
 
-        // --- MÉTODO DASHBOARD ACTUALIZADO PARA PADRES ---
-        // --- MÉTODO DASHBOARD ACTUALIZADO PARA SOPORTAR NAVEGACIÓN Y ROLES ---
-        public IActionResult Dashboard(string rol = null)
+        // --- MÉTODO DASHBOARD UNIFICADO (Roles, Navegación y Reportes Pro) ---
+        public IActionResult Dashboard(string? rol = null)
         {
             var nombreUsuario = HttpContext.Session.GetString("NombreUsuario");
             var rolSesion = HttpContext.Session.GetString("UserRol");
@@ -59,18 +59,19 @@ namespace ProyectoPAE.Controllers
                 return RedirectToAction("Index", "Login");
             }
 
-            // 3. Determinamos el rol a mostrar y lo convertimos SIEMPRE a minúsculas (.ToLower())
-            // Esto evita fallos si la base de datos o el parámetro trae mayúsculas como "Docente" o "ADMINISTRADOR"
-            string rolActivo = !string.IsNullOrEmpty(rol) ? rol.Trim().ToLower() : rolSesion.Trim().ToLower();
+            // 3. Determinamos el rol usando normalización robusta y soporte para "ver como" (Admin)
+            string rolSesionNormalizado = Permisos.NormalizarRol(rolSesion);
+            string rolActivo = (!string.IsNullOrEmpty(rol) && rolSesionNormalizado == "admin")
+                ? Permisos.NormalizarRol(rol)
+                : rolSesionNormalizado;
             if (rolActivo == "profesor") rolActivo = "docente";
 
             ViewBag.Nombre = nombreUsuario;
-            ViewBag.Rol = rolActivo; // Se enviará limpio (ej: "docente", "admin", "acudiente")
+            ViewBag.Rol = rolActivo; // Se envía limpio (ej: "docente", "admin", "acudiente", "coordinador")
 
             // 4. Lógica específica para el ACUDIENTE
             if (rolActivo == "acudiente")
             {
-                // Usamos TryParse para evitar errores de formato (FormatException)
                 if (int.TryParse(userIdStr, out int userId))
                 {
                     _context.AsegurarEsquemaObservador();
@@ -161,13 +162,12 @@ namespace ProyectoPAE.Controllers
                 }
                 else
                 {
-                    // Si el ID llega corrupto, lo mandamos a re-identificarse
                     return RedirectToAction("Index", "Login");
                 }
             }
 
-            // 5. Lógica específica para el ADMIN: datos reales de matrículas
-            if (rolActivo == "admin")
+            // 5. Lógica específica para el ADMIN y el COORDINADOR (Matrículas y Reportes Pro)
+            if (rolActivo == "admin" || rolActivo == "coordinador")
             {
                 var anioActual = DateTime.Now.Year;
 
@@ -271,12 +271,11 @@ namespace ProyectoPAE.Controllers
                 ViewBag.ReportesPro = repPro;
             }
 
-            // 6. Lógica específica para el ESTUDIANTE: Cargar el horario según su curso y cursos extracurriculares
+            // 6. Lógica específica para el ESTUDIANTE
             if (rolActivo == "estudiante")
             {
                 if (int.TryParse(userIdStr, out int userId))
                 {
-                    // 1. Buscar la entidad Estudiante vinculada al id_usuario en sesión o por correo
                     var usuarioActual = _context.Usuarios.Find(userId);
                     var estudiante = _context.ESTUDIANTE
                         .FirstOrDefault(e => e.id_usuario == userId || (usuarioActual != null && e.email == usuarioActual.CORREO_ELECTRONICO));
@@ -285,7 +284,6 @@ namespace ProyectoPAE.Controllers
 
                     if (estudiante != null)
                     {
-                        // 2. Buscar la matrícula activa para conocer su id_curso
                         var matriculaActiva = _context.Matriculas
                             .FirstOrDefault(m => m.id_estudiante == estudiante.id_estudiante && m.estado != null && (m.estado.ToLower() == "activa" || m.estado.ToLower() == "activo"));
 
@@ -293,7 +291,6 @@ namespace ProyectoPAE.Controllers
                         {
                             gradoEstudiante = matriculaActiva.id_curso;
 
-                            // 3. Obtener el horario registrado para ese curso en la tabla HORARIO
                             var horarioEstudiante = _context.HORARIOS
                                 .Where(h => h.id_curso == matriculaActiva.id_curso)
                                 .OrderBy(h => h.dia)
@@ -318,7 +315,6 @@ namespace ProyectoPAE.Controllers
                         .ToList();
 
                     var todosDocsSubidos = _context.ExtraDocumentosInscripciones.ToList();
-
                     var todosCursosExtra = _context.ExtraCursos
                         .OrderByDescending(c => c.Activo)
                         .ThenBy(c => c.FechaInicio)
@@ -369,15 +365,15 @@ namespace ProyectoPAE.Controllers
                     var materiasBD = _context.MATERIA.Select(m => m.nombre_materia).Distinct().OrderBy(m => m).ToList();
                     if (!materiasBD.Any())
                     {
-                        materiasBD = new List<string> { 
-                            "Matemáticas", 
-                            "Español y Literatura", 
-                            "Ciencias Naturales", 
-                            "Ciencias Sociales", 
-                            "Inglés", 
-                            "Tecnología e Informática", 
-                            "Educación Física", 
-                            "Ética y Valores" 
+                        materiasBD = new List<string> {
+                            "Matemáticas",
+                            "Español y Literatura",
+                            "Ciencias Naturales",
+                            "Ciencias Sociales",
+                            "Inglés",
+                            "Tecnología e Informática",
+                            "Educación Física",
+                            "Ética y Valores"
                         };
                     }
 
@@ -662,15 +658,12 @@ namespace ProyectoPAE.Controllers
             _context.AsegurarEsquemaNotificaciones();
 
             string rolSesion = (HttpContext.Session.GetString("UserRol") ?? "").Trim().ToLower();
-            // Admin solo ve sus propias notificaciones gestionadas en /Admin/Notificaciones
-            // Para el navbar mostramos notifs dirigidas al rol del usuario
             string rolNotif = rolSesion;
             if (rolNotif == "profesor") rolNotif = "docente";
-            if (rolNotif == "admin") rolNotif = "admin_skip"; // admin no recibe notifs
+            if (rolNotif == "admin") rolNotif = "admin_skip"; 
 
             string userTarget = $"user_{userId}";
 
-            // Notificaciones leídas por este usuario
             var leidasIds = _context.NotificacionesLeidas
                 .Where(nl => nl.ID_Usuario == userId.Value)
                 .Select(nl => nl.ID_Notificacion)
@@ -740,11 +733,7 @@ namespace ProyectoPAE.Controllers
         public IActionResult Cursos() => View();
         public IActionResult Blog() => View();
 
-        // ─── MÉTODOS PRIVADOS (aporte de Andrés) ────────────────────────────
-
-        // Verifica la contraseña ingresada contra la almacenada.
-        // Soporta ambos casos presentes en la base de datos actual:
-        // contraseñas hasheadas con BCrypt y contraseñas en texto plano (legado).
+        // ─── MÉTODOS PRIVADOS (Aportes de Andrés y Nicolás) ────────────────────────
         private bool VerificarPassword(string passwordIngresada, string passwordAlmacenada)
         {
             try
@@ -791,6 +780,18 @@ namespace ProyectoPAE.Controllers
         [HttpGet]
         public IActionResult ObtenerDetallesHijoAcudiente(int idEstudiante)
         {
+            // Validación de seguridad de acceso para acudientes (aporte de Andrés)
+            if (!AccesoEstudiantes.PuedeVerEstudiante(_context, HttpContext, idEstudiante))
+            {
+                bool sinSesion = string.IsNullOrEmpty(Permisos.RolActual(HttpContext));
+                return new JsonResult(new
+                {
+                    success = false,
+                    message = sinSesion ? "Sesión no válida." : "No tienes permiso para ver los datos de este estudiante."
+                })
+                { StatusCode = sinSesion ? 401 : 403 };
+            }
+
             _context.AsegurarEsquemaObservador();
 
             // Notas / Promedio
@@ -873,7 +874,7 @@ namespace ProyectoPAE.Controllers
         }
     }
 
-    // ─── CLASES AUXILIARES (aporte de Andrés) ──────────────────────────────
+    // ─── CLASES AUXILIARES ──────────────────────────────
     public class ValidarContrasenaRequest
     {
         public string ContrasenaActual { get; set; }

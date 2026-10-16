@@ -60,6 +60,11 @@ namespace ProyectoPAE.Models
         {
             base.OnModelCreating(modelBuilder);
 
+            // Informar a EF Core que GU_Usuario tiene triggers de base de datos
+            // para que no use la cláusula OUTPUT en INSERT/UPDATE.
+            modelBuilder.Entity<Usuario>()
+                .ToTable("GU_Usuario", tb => tb.HasTrigger("trg_GU_Usuario_InvalidarTokensPorDesactivacion"));
+
             // ESTUDIANTE_PADRE no tiene PK propia en la base de datos:
             // se usa la combinación de ID_PADRE + ID_ESTUDIANTE como clave compuesta.
             modelBuilder.Entity<EstudiantePadre>()

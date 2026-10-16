@@ -1,0 +1,76 @@
+@* Barra lateral de navegación - Panel Docente *@
+@using Microsoft.AspNetCore.Http
+
+@{
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+
+    string ActiveIf(string ctrl, string act)
+        => (currentController.Equals(ctrl, StringComparison.OrdinalIgnoreCase)
+            && currentAction.Equals(act, StringComparison.OrdinalIgnoreCase))
+            ? " active" : "";
+}
+
+<aside class="pae-sidebar-lateral">
+    <div class="pae-sidebar-card">
+        <div class="pae-sidebar-header d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-person-workspace fs-5" style="color: #e67e22;"></i>
+                <div>
+                    <div class="fw-bold small">Módulos Docente</div>
+                    <span class="text-white-50" style="font-size: 0.72rem;">Navegación Rápida</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-2 border-bottom bg-light">
+            <a href="@Url.Action("Dashboard", "Home")"
+               class="btn btn-outline-secondary btn-sm w-100 text-start d-flex align-items-center justify-content-between py-1 px-2"
+               title="Regresar al panel principal">
+                <span><i class="bi bi-grid-fill me-2" style="color: #e67e22;"></i><strong>Inicio (Cuadros)</strong></span>
+                <i class="bi bi-arrow-left small"></i>
+            </a>
+        </div>
+
+        <div class="pae-sidebar-nav">
+            <a href="@Url.Action("Planilla", "Docente")"
+               class="pae-sidebar-nav-item@(ActiveIf("Docente","Planilla"))">
+                <i class="bi bi-table"></i>
+                <span>Planilla de Notas</span>
+            </a>
+            <a href="@Url.Action("Dashboard", "Home")"
+               class="pae-sidebar-nav-item">
+                <i class="bi bi-calendar-check-fill"></i>
+                <span>Registro de Asistencia</span>
+            </a>
+            <a href="@Url.Action("Dashboard", "Home")"
+               class="pae-sidebar-nav-item">
+                <i class="bi bi-journal-bookmark-fill"></i>
+                <span>Observador del Alumno</span>
+            </a>
+            <a href="@Url.Action("Dashboard", "Home")"
+               class="pae-sidebar-nav-item">
+                <i class="bi bi-easel2-fill"></i>
+                <span>Actividades y Classroom</span>
+            </a>
+            <a href="@Url.Action("Dashboard", "Home")"
+               class="pae-sidebar-nav-item">
+                <i class="bi bi-arrow-up-right-circle-fill"></i>
+                <span>Planes de Apoyo</span>
+            </a>
+            <a href="@Url.Action("Dashboard", "Home")"
+               class="pae-sidebar-nav-item">
+                <i class="bi bi-stars"></i>
+                <span>Cursos Extracurriculares</span>
+            </a>
+        </div>
+
+        <div class="p-2 border-top bg-light">
+            <button type="button" class="btn btn-sm btn-outline-primary w-100 py-1"
+                    onclick="if(typeof abrirModalAyudaGlobal==='function') abrirModalAyudaGlobal();"
+                    style="font-size: 0.8rem;">
+                <i class="bi bi-question-circle-fill text-warning me-1"></i> Ayuda del Módulo
+            </button>
+        </div>
+    </div>
+</aside>
