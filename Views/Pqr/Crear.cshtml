@@ -1,0 +1,111 @@
+@model ProyectoPAE.Models.PqrCrearViewModel
+@{
+    ViewData["Title"] = "Radicar PQR - Solicitud de Atención";
+    string rolActual = ProyectoPAE.Servicios.Permisos.RolActual(Context);
+}
+
+<div class="container-fluid py-3 px-md-4">
+    <div class="panel-con-sidebar">
+        @if (rolActual == "admin" || rolActual == "coordinador")
+        {
+            @await Html.PartialAsync("_SidebarAdmin")
+        }
+        else if (rolActual == "docente")
+        {
+            @await Html.PartialAsync("_SidebarDocente")
+        }
+        else if (rolActual == "acudiente" || rolActual == "padre")
+        {
+            @await Html.PartialAsync("_SidebarAcudiente")
+        }
+        else
+        {
+            @await Html.PartialAsync("_SidebarEstudiante")
+        }
+
+        <main class="submodulo-activo flex-grow-1" role="main" aria-label="Radicación de PQR">
+            <div class="card pae-header-card border-0 mb-4 p-4 shadow-sm" style="background: linear-gradient(135deg, #0d2a4a 0%, #1a3d66 100%);">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                    <div class="text-white">
+                        <h2 class="h3 fw-bold mb-1 text-white">
+                            <i class="bi bi-file-earmark-plus-fill me-2" style="color: #e67e22;"></i>Radicar Solicitud PQR
+                        </h2>
+                        <p class="text-white-50 mb-0 small">
+                            Diligencia los datos correspondientes para formalizar tu solicitud ante la institución educativa.
+                        </p>
+                    </div>
+                    <div>
+                        <a href="@Url.Action("Index", "Pqr")" class="btn btn-outline-light rounded-pill px-3">
+                            <i class="bi bi-arrow-left me-1"></i> Volver a Solicitudes
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0 d-flex align-items-center gap-2" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill fs-5 text-danger"></i>
+                    <div>@TempData["Error"]</div>
+                    <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+                </div>
+            }
+
+            <div class="card border-0 shadow-sm rounded-4 p-4">
+                <form asp-action="Crear" method="post" id="formCrearDirectoPqr" onsubmit="validarEnvioPqr(event)">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="Tipo" class="form-label fw-bold small text-dark"></label>
+                            <select asp-for="Tipo" class="form-select" required>
+                                <option value="Petición">Petición</option>
+                                <option value="Queja">Queja</option>
+                                <option value="Reclamo">Reclamo</option>
+                            </select>
+                            <span asp-validation-for="Tipo" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="Asunto" class="form-label fw-bold small text-dark"></label>
+                            <input asp-for="Asunto" class="form-control" placeholder="Título resumido de tu requerimiento" required minlength="5" maxlength="200" />
+                            <span asp-validation-for="Asunto" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-12">
+                            <label asp-for="Descripcion" class="form-label fw-bold small text-dark"></label>
+                            <textarea asp-for="Descripcion" rows="6" class="form-control" placeholder="Detalla los hechos, antecedentes y solicitud concreta..." required minlength="10" maxlength="4000"></textarea>
+                            <span asp-validation-for="Descripcion" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-12 d-flex justify-content-between pt-3 border-top">
+                            <a href="@Url.Action("Index", "Pqr")" class="btn btn-outline-secondary rounded-pill px-4">Cancelar</a>
+                            <button type="submit" id="btnSubmitPqrDirecto" class="btn btn-warning text-dark fw-bold rounded-pill px-4 shadow-sm">
+                                <i class="bi bi-send-fill me-1"></i> Radicar Solicitud
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function validarEnvioPqr(e) {
+            const btn = document.getElementById('btnSubmitPqrDirecto');
+            if (btn && btn.disabled) {
+                e.preventDefault();
+                return false;
+            }
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Radicando...';
+            }
+            return true;
+        }
+    </script>
+}

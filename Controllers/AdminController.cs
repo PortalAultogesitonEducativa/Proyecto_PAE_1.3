@@ -680,7 +680,7 @@ namespace ProyectoPAE.Controllers
             if (matricula == null)
             {
                 TempData["ErrorMatriculas"] = "No se encontró la matrícula indicada.";
-                return RedirectToAction("Dashboard", "Home", new { rol = "admin" });
+                return RedirectToAction("Dashboard", "Home", new { rol = "admin", seccion = "matricula" });
             }
 
 
@@ -690,7 +690,7 @@ namespace ProyectoPAE.Controllers
 
 
             TempData["MensajeMatriculas"] = "Matrícula actualizada correctamente.";
-            return RedirectToAction("Dashboard", "Home", new { rol = "admin" });
+            return RedirectToAction("Dashboard", "Home", new { rol = "admin", seccion = "matricula" });
         }
 
 
@@ -714,7 +714,7 @@ namespace ProyectoPAE.Controllers
             }
 
 
-            return RedirectToAction("Dashboard", "Home", new { rol = "admin" });
+            return RedirectToAction("Dashboard", "Home", new { rol = "admin", seccion = "matricula" });
         }
 
 
@@ -738,7 +738,7 @@ namespace ProyectoPAE.Controllers
             }
 
 
-            return RedirectToAction("Dashboard", "Home", new { rol = "admin" });
+            return RedirectToAction("Dashboard", "Home", new { rol = "admin", seccion = "matricula" });
         }
     }
 }

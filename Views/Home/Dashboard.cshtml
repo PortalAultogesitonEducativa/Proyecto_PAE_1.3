@@ -116,6 +116,10 @@
                             <i class="bi bi-graph-up-arrow"></i>
                             <span>Reportes Pro</span>
                         </button>
+                        <button type="button" class="pae-sidebar-nav-item" onclick="location.href='@Url.Action("Index", "Pqr")'">
+                            <i class="bi bi-chat-heart-fill"></i>
+                            <span>Módulo PQR</span>
+                        </button>
                     }
                     else
                     {
@@ -146,6 +150,10 @@
                         <button type="button" class="pae-sidebar-nav-item" data-subid="admin-reportes" onclick="verReportes()">
                             <i class="bi bi-graph-up-arrow"></i>
                             <span>Reportes Pro</span>
+                        </button>
+                        <button type="button" class="pae-sidebar-nav-item" onclick="location.href='@Url.Action("Index", "Pqr")'">
+                            <i class="bi bi-chat-heart-fill"></i>
+                            <span>Módulo PQR</span>
                         </button>
                     }
                 </div>
@@ -234,7 +242,19 @@
                             <i class="bi bi-graph-up-arrow fs-2 mb-2" style="color: #e67e22;"></i>
                             <h5 style="color: #e67e22; font-weight: bold;">Reportes Pro</h5>
                             <p class="small text-muted mb-3" style="min-height: 44px; display: flex; align-items: center; justify-content: center;">Estadísticas de matrícula, promedios y aprobación institucional.</p>
-                            <button class="btn btn-admin-solido btn-sm mt-auto w-100 text-white">Ver Reportes</button>
+                            <button class="btn btn-admin-solido btn-sm mt-auto w-100 text-white" onclick="event.stopPropagation(); verReportes();">Ver Reportes</button>
+                        </div>
+                    </div>
+
+                    <!-- 7. Módulo PQR -->
+                    <div class="col-md-4 mb-4">
+                        <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-admin-limpia" 
+                             style="border-top: 4px solid #e67e22 !important; cursor: pointer;" 
+                             onclick="location.href='@Url.Action("Index", "Pqr")'">
+                            <i class="bi bi-chat-heart-fill fs-2 mb-2" style="color: #e67e22;"></i>
+                            <h5 style="color: #e67e22; font-weight: bold;">Módulo PQR</h5>
+                            <p class="small text-muted mb-3" style="min-height: 44px; display: flex; align-items: center; justify-content: center;">Gestiona y responde las solicitudes, quejas y reclamos de la comunidad educativa.</p>
+                            <a href="@Url.Action("Index", "Pqr")" class="btn btn-admin-solido btn-sm mt-auto w-100 text-white" onclick="event.stopPropagation()">Gestionar PQR</a>
                         </div>
                     </div>
                 }
@@ -320,7 +340,19 @@
                             <i class="bi bi-graph-up-arrow fs-2 mb-2" style="color: #e67e22;"></i>
                             <h5 style="color: #e67e22; font-weight: bold;">Reportes Pro</h5>
                             <p class="small text-muted mb-3" style="min-height: 44px; display: flex; align-items: center; justify-content: center;">Estadísticas generales de la institución.</p>
-                            <button class="btn btn-admin-solido btn-sm mt-auto w-100 text-white">Ver Reportes</button>
+                            <button class="btn btn-admin-solido btn-sm mt-auto w-100 text-white" onclick="event.stopPropagation(); verReportes();">Ver Reportes</button>
+                        </div>
+                    </div>
+
+                    <!-- 8. Módulo PQR -->
+                    <div class="col-md-4 mb-4">
+                        <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-admin-limpia" 
+                             style="border-top: 4px solid #e67e22 !important; cursor: pointer;" 
+                             onclick="location.href='@Url.Action("Index", "Pqr")'">
+                            <i class="bi bi-chat-heart-fill fs-2 mb-2" style="color: #e67e22;"></i>
+                            <h5 style="color: #e67e22; font-weight: bold;">Módulo PQR</h5>
+                            <p class="small text-muted mb-3" style="min-height: 44px; display: flex; align-items: center; justify-content: center;">Gestiona y responde las solicitudes, quejas y reclamos de la comunidad educativa.</p>
+                            <a href="@Url.Action("Index", "Pqr")" class="btn btn-admin-solido btn-sm mt-auto w-100 text-white" onclick="event.stopPropagation()">Gestionar PQR</a>
                         </div>
                     </div>
                 }
@@ -905,6 +937,14 @@
                         <i class="bi bi-stars"></i>
                         <span>Cursos Extracurriculares</span>
                     </button>
+                    <button type="button" class="pae-sidebar-nav-item" onclick="location.href='@Url.Action("MiHorario", "Horario")'">
+                        <i class="bi bi-calendar3"></i>
+                        <span>Mi Horario</span>
+                    </button>
+                    <button type="button" class="pae-sidebar-nav-item" onclick="location.href='@Url.Action("Index", "Pqr")'">
+                        <i class="bi bi-chat-heart-fill"></i>
+                        <span>Módulo PQR</span>
+                    </button>
                 </div>
 
                 <div class="p-2 border-top bg-light">
@@ -1014,7 +1054,19 @@
                         <i class="bi bi-journal-check fs-2 mb-2" style="color: #2980b9;"></i>
                         <h5 style="color: #2980b9; font-weight: bold;">Actividades y Tareas</h5>
                         <p class="small text-muted mb-3" style="min-height: 44px; display: flex; align-items: center; justify-content: center;">Crea talleres, recibe entregas y califica en aula virtual.</p>
-                        <button class="btn btn-docente-solido btn-sm mt-auto w-100 text-white">Gestionar Tareas</button>
+                        <button class="btn btn-docente-solido btn-sm mt-auto w-100 text-white" type="button">Gestionar Tareas</button>
+                    </div>
+                </div>
+
+                <!-- 9. Tarjeta: Módulo PQR -->
+                <div class="col-md-4 mb-4">
+                    <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-docente-limpia" 
+                         style="border-top: 4px solid #2980b9 !important; cursor: pointer;"
+                         onclick="location.href='@Url.Action("Index", "Pqr")'">
+                        <i class="bi bi-chat-heart-fill fs-2 mb-2" style="color: #2980b9;"></i>
+                        <h5 style="color: #2980b9; font-weight: bold;">Módulo PQR</h5>
+                        <p class="small text-muted mb-3" style="min-height: 44px; display: flex; align-items: center; justify-content: center;">Radica y consulta peticiones, quejas o reclamos ante la institución.</p>
+                        <a href="@Url.Action("Index", "Pqr")" class="btn btn-docente-solido btn-sm mt-auto w-100 text-white" onclick="event.stopPropagation()">Acceder a PQR</a>
                     </div>
                 </div>
             </div>
@@ -2293,6 +2345,10 @@
                         <i class="bi bi-file-person-fill"></i>
                         <span>Observador del Estudiante</span>
                     </button>
+                    <button type="button" class="pae-sidebar-nav-item" onclick="location.href='@Url.Action("Index", "Pqr")'">
+                        <i class="bi bi-chat-heart-fill"></i>
+                        <span>Módulo PQR</span>
+                    </button>
                 </div>
 
                 <div class="p-2 border-top bg-light">
@@ -2387,9 +2443,25 @@
                         <p class="small text-muted mb-3" style="min-height: 44px; display: flex; align-items: center; justify-content: center;">
                             Anotaciones: <strong id="lblObservadorHijo" class="text-warning ms-1">@(ViewBag.TotalObservaciones ?? 0)</strong>
                         </p>
-                        <button class="btn btn-acudiente-solido btn-sm mt-auto w-100 text-white">
+                        <button class="btn btn-acudiente-solido btn-sm mt-auto w-100 text-white" type="button">
                             Ver Observador
                         </button>
+                    </div>
+                </div>
+
+                <!-- 5. Módulo PQR -->
+                <div class="col-md-3 col-sm-6 mb-4">
+                    <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-acudiente-limpia" 
+                         style="border-top: 4px solid #27ae60 !important; cursor: pointer;"
+                         onclick="location.href='@Url.Action("Index", "Pqr")'">
+                        <i class="bi bi-chat-heart-fill fs-2 mb-2" style="color: #27ae60;"></i>
+                        <h5 style="color: #27ae60; font-weight: bold;">Módulo PQR</h5>
+                        <p class="small text-muted mb-3" style="min-height: 44px; display: flex; align-items: center; justify-content: center;">
+                            Radica peticiones, quejas o reclamos ante directivas.
+                        </p>
+                        <a href="@Url.Action("Index", "Pqr")" class="btn btn-acudiente-solido btn-sm mt-auto w-100 text-white" onclick="event.stopPropagation()">
+                            Acceder a PQR
+                        </a>
                     </div>
                 </div>
             </div>
@@ -2600,6 +2672,10 @@
                         <i class="bi bi-star-fill"></i>
                         <span>Cursos Extra</span>
                     </button>
+                    <button type="button" class="pae-sidebar-nav-item" onclick="location.href='@Url.Action("Index", "Pqr")'">
+                        <i class="bi bi-chat-heart-fill"></i>
+                        <span>Módulo PQR</span>
+                    </button>
                     <button type="button" class="pae-sidebar-nav-item" data-subid="estudiante-mejoras" onclick="verModuloMejoras()">
                         <i class="bi bi-shield-check"></i>
                         <span>Planes de Nivelación</span>
@@ -2680,7 +2756,21 @@
                         <i class="bi bi-arrow-up-right-circle fs-2 mb-2" style="color: #6f42c1;"></i>
                         <h5 style="color: #6f42c1; font-weight: bold;">Mis Mejoras</h5>
                         <p class="small text-muted">Seguimiento y cumplimiento de tus acciones de mejora.</p>
-                        <button class="btn btn-estudiante-solido btn-sm mt-auto w-100 text-white">Ver Mejoras</button>
+                        <button class="btn btn-estudiante-solido btn-sm mt-auto w-100 text-white" type="button">Ver Mejoras</button>
+                    </div>
+                </div>
+
+                <!-- 6. Módulo PQR -->
+                <div class="col-md-4 mb-4">
+                    <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-estudiante-limpia"
+                         style="border-top: 4px solid #6f42c1 !important; cursor: pointer;"
+                         onclick="location.href='@Url.Action("Index", "Pqr")'">
+                        <i class="bi bi-chat-heart-fill fs-2 mb-2" style="color: #6f42c1;"></i>
+                        <h5 style="color: #6f42c1; font-weight: bold;">Módulo PQR</h5>
+                        <p class="small text-muted">Radica y consulta tus solicitudes, peticiones o inquietudes escolares.</p>
+                        <a href="@Url.Action("Index", "Pqr")" class="btn btn-estudiante-solido btn-sm mt-auto w-100 text-white" onclick="event.stopPropagation()">
+                            Acceder a PQR
+                        </a>
                     </div>
                 </div>
             </div>
@@ -3541,54 +3631,73 @@
         const panel = document.getElementById('panel-' + role);
         if (panel) {
             panel.classList.remove('d-none');
-            mostrarSubpanel('panel-' + role, role + '-main');
 
-            if (role === 'estudiante') {
+            // Leer sección desde query string (?seccion=...) o sessionStorage
+            const urlParams = new URLSearchParams(window.location.search);
+            const seccionUrl = (urlParams.get('seccion') || '').toLowerCase().trim();
+            const subGuardado = sessionStorage.getItem('pae_submodulo_' + role);
+
+            let targetSubId = role + '-main';
+
+            if (seccionUrl) {
+                const candidato = role + '-' + seccionUrl;
+                if (document.getElementById(candidato)) {
+                    targetSubId = candidato;
+                }
+            } else if (subGuardado && document.getElementById(subGuardado)) {
+                targetSubId = subGuardado;
+            }
+
+            mostrarSubpanel('panel-' + role, targetSubId, false);
+
+            if (role === 'estudiante' && targetSubId === 'estudiante-actividades') {
                 cargarActividadesEstudiante();
+            } else if (role === 'docente' && targetSubId === 'docente-actividades') {
+                cargarActividadesDocente();
             }
         }
     }
 
     // --- FUNCIONES DE NAVEGACIÓN ADMINISTRADOR ---
-    function verMatricula() { ocultarTodo(); mostrarSubpanel('panel-admin', 'admin-matricula'); }
-    function verCertificados() { ocultarTodo(); mostrarSubpanel('panel-admin', 'admin-certificados'); }
+    function verMatricula() { ocultarTodo(); mostrarSubpanel('panel-admin', 'admin-matricula', true); }
+    function verCertificados() { ocultarTodo(); mostrarSubpanel('panel-admin', 'admin-certificados', true); }
     function verNotificaciones() { location.href = '@Url.Action("Notificaciones", "Admin")'; }
     function verAsignacion() { location.href = '@Url.Action("AsignacionAcademica", "Horario")'; }
-    function verReportes() { ocultarTodo(); mostrarSubpanel('panel-admin', 'admin-reportes'); }
-    function volverAdmin() { ocultarTodo(); mostrarSubpanel('panel-admin', 'admin-main'); }
+    function verReportes() { ocultarTodo(); mostrarSubpanel('panel-admin', 'admin-reportes', true); }
+    function volverAdmin() { ocultarTodo(); mostrarSubpanel('panel-admin', 'admin-main', true); }
 
     // --- FUNCIONES DE NAVEGACIÓN DOCENTE ---
     function verPlanilla() { location.href = '@Url.Action("Planilla", "Docente")'; }
-    function verAsistencia() { ocultarTodo(); mostrarSubpanel('panel-docente', 'docente-asistencia'); }
-    function verObservaciones() { ocultarTodo(); mostrarSubpanel('panel-docente', 'docente-observaciones'); }
-    function verModuloMejorasDocente() { ocultarTodo(); mostrarSubpanel('panel-docente', 'docente-mejoras'); }
-    function verCursosExtraDocente() { ocultarTodo(); mostrarSubpanel('panel-docente', 'docente-cursosextra'); }
+    function verAsistencia() { ocultarTodo(); mostrarSubpanel('panel-docente', 'docente-asistencia', true); }
+    function verObservaciones() { ocultarTodo(); mostrarSubpanel('panel-docente', 'docente-observaciones', true); }
+    function verModuloMejorasDocente() { ocultarTodo(); mostrarSubpanel('panel-docente', 'docente-mejoras', true); }
+    function verCursosExtraDocente() { ocultarTodo(); mostrarSubpanel('panel-docente', 'docente-cursosextra', true); }
     function verActividadesDocente() { 
         ocultarTodo(); 
-        mostrarSubpanel('panel-docente', 'docente-actividades'); 
+        mostrarSubpanel('panel-docente', 'docente-actividades', true); 
         const vCursos = document.getElementById('vistaCursosDocente');
         const vClass = document.getElementById('vistaClassroomDocenteCurso');
         if (vCursos) vCursos.classList.remove('d-none');
         if (vClass) vClass.classList.add('d-none');
         cargarActividadesDocente(); 
     }
-    function volverDocenteActividades() { ocultarTodo(); mostrarSubpanel('panel-docente', 'docente-main'); }
-    function volverDocente() { ocultarTodo(); mostrarSubpanel('panel-docente', 'docente-main'); }
+    function volverDocenteActividades() { volverDocente(); }
+    function volverDocente() { ocultarTodo(); mostrarSubpanel('panel-docente', 'docente-main', true); }
 
     // --- FUNCIONES DE NAVEGACIÓN ESTUDIANTE ---
-    function verCalificacionesEstudiante() { ocultarTodo(); mostrarSubpanel('panel-estudiante', 'estudiante-calificaciones'); }
+    function verCalificacionesEstudiante() { location.href = '@Url.Action("MisNotas", "Estudiante")'; }
     function verActividadesEstudiante() { 
         ocultarTodo(); 
-        mostrarSubpanel('panel-estudiante', 'estudiante-actividades'); 
+        mostrarSubpanel('panel-estudiante', 'estudiante-actividades', true); 
         const vMat = document.getElementById('vistaMateriasEstudiante');
         const vClass = document.getElementById('vistaClassroomMateria');
         if (vMat) vMat.classList.remove('d-none');
         if (vClass) vClass.classList.add('d-none');
         cargarActividadesEstudiante(); 
     }
-    function verCursosExtra() { ocultarTodo(); mostrarSubpanel('panel-estudiante', 'estudiante-cursosextra'); }
-    function verModuloMejoras() { ocultarTodo(); mostrarSubpanel('panel-estudiante', 'estudiante-mejoras'); }
-    function volverEstudiante() { ocultarTodo(); mostrarSubpanel('panel-estudiante', 'estudiante-main'); }
+    function verCursosExtra() { ocultarTodo(); mostrarSubpanel('panel-estudiante', 'estudiante-cursosextra', true); }
+    function verModuloMejoras() { ocultarTodo(); mostrarSubpanel('panel-estudiante', 'estudiante-mejoras', true); }
+    function volverEstudiante() { ocultarTodo(); mostrarSubpanel('panel-estudiante', 'estudiante-main', true); }
 
     // --- FUNCIONES DE NAVEGACIÓN ACUDIENTE ---
     function verCalificacionesAcudiente() {
@@ -3597,27 +3706,39 @@
             location.href = `/Estudiante/MisNotas?idEstudiante=${selectHijo.value}`;
         }
     }
-    function verAsistenciaAcudiente() { ocultarTodo(); mostrarSubpanel('panel-acudiente', 'acudiente-asistencia'); }
-    function verCitacionesAcudiente() { ocultarTodo(); mostrarSubpanel('panel-acudiente', 'acudiente-citaciones'); }
-    function verObservadorAcudiente() { ocultarTodo(); mostrarSubpanel('panel-acudiente', 'acudiente-observador'); }
-    function volverAcudiente() { ocultarTodo(); mostrarSubpanel('panel-acudiente', 'acudiente-main'); }
+    function verAsistenciaAcudiente() { ocultarTodo(); mostrarSubpanel('panel-acudiente', 'acudiente-asistencia', true); }
+    function verCitacionesAcudiente() { ocultarTodo(); mostrarSubpanel('panel-acudiente', 'acudiente-citaciones', true); }
+    function verObservadorAcudiente() { ocultarTodo(); mostrarSubpanel('panel-acudiente', 'acudiente-observador', true); }
+    function volverAcudiente() { ocultarTodo(); mostrarSubpanel('panel-acudiente', 'acudiente-main', true); }
 
-    function mostrarSubpanel(panelId, subId) {
+    function mostrarSubpanel(panelId, subId, actualizarHistorial = true) {
         const panel = document.getElementById(panelId);
         const sub = document.getElementById(subId);
         if (!panel || !sub) return;
 
-        panel.classList.remove('d-none');
-        sub.classList.remove('d-none');
-
-        const esMain = subId.endsWith('-main');
         const role = panelId.replace('panel-', '');
         const sidebar = document.getElementById('sidebar-' + role);
+        const esMain = subId.endsWith('-main');
+
+        // Ocultar todos los subpaneles del panel actual
+        panel.querySelectorAll('[id^="' + role + '-"]').forEach(el => {
+            el.classList.add('d-none');
+            el.classList.remove('submodulo-activo');
+        });
+
+        panel.classList.remove('d-none');
+        sub.classList.remove('d-none');
 
         if (esMain) {
             panel.classList.remove('panel-con-sidebar');
             if (sidebar) sidebar.classList.add('d-none');
-            document.querySelectorAll('.submodulo-activo').forEach(el => el.classList.remove('submodulo-activo'));
+            sessionStorage.removeItem('pae_submodulo_' + role);
+
+            if (actualizarHistorial) {
+                const url = new URL(window.location.href);
+                url.searchParams.delete('seccion');
+                window.history.pushState({ panelId, subId }, '', url.pathname + (url.search ? url.search : ''));
+            }
         } else {
             panel.classList.add('panel-con-sidebar');
             if (sidebar) {
@@ -3628,9 +3749,41 @@
                 });
             }
             sub.classList.add('submodulo-activo');
+            sessionStorage.setItem('pae_submodulo_' + role, subId);
+
+            if (actualizarHistorial) {
+                const seccion = subId.replace(role + '-', '');
+                const url = new URL(window.location.href);
+                url.searchParams.set('seccion', seccion);
+                window.history.pushState({ panelId, subId }, '', url.toString());
+            }
+
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     }
+
+    // Soporte para navegación Atrás / Adelante del navegador
+    window.addEventListener('popstate', function (event) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const seccion = (urlParams.get('seccion') || '').toLowerCase().trim();
+        const selector = document.getElementById('roleSelector');
+        const inputRol = document.getElementById('rolOculto');
+        let role = (selector?.value || inputRol?.value || 'admin').toLowerCase().trim();
+        if (role === 'administrador' || role === 'coordinador') role = 'admin';
+        else if (role === 'profesor') role = 'docente';
+        else if (role === 'padre') role = 'acudiente';
+
+        if (seccion) {
+            const subId = role + '-' + seccion;
+            if (document.getElementById(subId)) {
+                ocultarTodo();
+                mostrarSubpanel('panel-' + role, subId, false);
+                return;
+            }
+        }
+        ocultarTodo();
+        mostrarSubpanel('panel-' + role, role + '-main', false);
+    });
 
     // ===============================================
     // AJAX: GESTIÓN DE ACTIVIDADES Y AULA CLASSROOM (DOCENTE)
@@ -4128,27 +4281,32 @@
     }
 
     function eliminarActividadDocente(idActividad) {
-        if (!confirm('¿Estás seguro de eliminar esta actividad?')) return;
+        PAE.confirmar('¿Está seguro de que desea eliminar esta actividad? Esta acción no se puede deshacer.', function () {
+            const formData = new FormData();
+            formData.append('idActividad', idActividad);
 
-        const formData = new FormData();
-        formData.append('idActividad', idActividad);
+            PAE.cargando('Eliminando actividad...');
 
-        fetch('@Url.Action("EliminarActividad", "Docente")', {
-            method: 'POST',
-            body: formData
-        })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    cargarActividadesDocente();
-                } else {
-                    alert(data.message);
-                }
+            fetch('@Url.Action("EliminarActividad", "Docente")', {
+                method: 'POST',
+                body: formData
             })
-            .catch(err => {
-                console.error(err);
-                alert('Error al eliminar actividad.');
-            });
+                .then(res => res.json())
+                .then(data => {
+                    PAE.cerrarCargando();
+                    if (data.success) {
+                        PAE.notificarExito('La actividad fue eliminada correctamente.');
+                        cargarActividadesDocente();
+                    } else {
+                        PAE.notificarError(data.message || 'No fue posible eliminar la actividad.');
+                    }
+                })
+                .catch(err => {
+                    PAE.cerrarCargando();
+                    console.error(err);
+                    PAE.notificarError('No fue posible eliminar la actividad. Inténtelo nuevamente.');
+                });
+        }, 'Confirmar eliminación', 'Sí, eliminar');
     }
 
     // ===============================================
@@ -4719,101 +4877,123 @@
     // 3. Docente: Cambiar estado activo/pausado
     function cambiarEstadoCursoExtra(idCurso, activo) {
         const accion = activo ? 'activar' : 'pausar';
-        if (!confirm(`¿Estás seguro de que deseas ${accion} este curso extracurricular?`)) return;
+        PAE.confirmar(`¿Está seguro de que desea ${accion} este curso extracurricular?`, function () {
+            const formData = new FormData();
+            formData.append('idCurso', idCurso);
+            formData.append('activo', activo);
 
-        const formData = new FormData();
-        formData.append('idCurso', idCurso);
-        formData.append('activo', activo);
+            PAE.cargando('Actualizando estado del curso...');
 
-        fetch('@Url.Action("CambiarEstadoCursoExtra", "Docente")', {
-            method: 'POST',
-            body: formData
-        })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    alert(data.message);
-                    window.location.reload();
-                } else {
-                    alert('Error: ' + data.message);
-                }
+            fetch('@Url.Action("CambiarEstadoCursoExtra", "Docente")', {
+                method: 'POST',
+                body: formData
             })
-            .catch(err => console.error(err));
+                .then(res => res.json())
+                .then(data => {
+                    PAE.cerrarCargando();
+                    if (data.success) {
+                        PAE.notificarExito(data.message || 'Estado actualizado correctamente.');
+                        setTimeout(() => window.location.reload(), 1200);
+                    } else {
+                        PAE.notificarError(data.message || 'No fue posible actualizar el estado.');
+                    }
+                })
+                .catch(err => {
+                    PAE.cerrarCargando();
+                    console.error(err);
+                    PAE.notificarError('No fue posible actualizar el estado del curso.');
+                });
+        }, 'Confirmar cambio de estado', 'Sí, continuar');
     }
 
     // 4. Docente: Eliminar curso
     function eliminarCursoExtra(idCurso) {
-        if (!confirm('¿Deseas eliminar este curso extracurricular? Si tiene alumnos inscritos se marcará como inactivo para proteger el historial.')) return;
+        PAE.confirmar('¿Desea eliminar este curso extracurricular? Si tiene alumnos inscritos se marcará como inactivo para proteger el historial.', function () {
+            const formData = new FormData();
+            formData.append('idCurso', idCurso);
 
-        const formData = new FormData();
-        formData.append('idCurso', idCurso);
+            PAE.cargando('Eliminando curso...');
 
-        fetch('@Url.Action("EliminarCursoExtra", "Docente")', {
-            method: 'POST',
-            body: formData
-        })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    alert(data.message);
-                    window.location.reload();
-                } else {
-                    alert('Error: ' + data.message);
-                }
+            fetch('@Url.Action("EliminarCursoExtra", "Docente")', {
+                method: 'POST',
+                body: formData
             })
-            .catch(err => console.error(err));
+                .then(res => res.json())
+                .then(data => {
+                    PAE.cerrarCargando();
+                    if (data.success) {
+                        PAE.notificarExito(data.message || 'Curso eliminado correctamente.');
+                        setTimeout(() => window.location.reload(), 1200);
+                    } else {
+                        PAE.notificarError(data.message || 'No fue posible eliminar el curso.');
+                    }
+                })
+                .catch(err => {
+                    PAE.cerrarCargando();
+                    console.error(err);
+                    PAE.notificarError('No fue posible eliminar el curso.');
+                });
+        }, 'Confirmar eliminación', 'Sí, eliminar');
     }
 
     // 5. Estudiante: Inscribirse a un curso
     function inscribirseEstudiante(idCurso, nombreCurso) {
-        if (!confirm(`¿Confirmas tu inscripción al curso '${nombreCurso}'?`)) return;
+        PAE.confirmar(`¿Confirma su inscripción al curso "${nombreCurso}"?`, function () {
+            const formData = new FormData();
+            formData.append('idCurso', idCurso);
 
-        const formData = new FormData();
-        formData.append('idCurso', idCurso);
+            PAE.cargando('Registrando inscripción...');
 
-        fetch('@Url.Action("InscribirseCursoExtra", "Estudiante")', {
-            method: 'POST',
-            body: formData
-        })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    alert(data.message);
-                    window.location.reload();
-                } else {
-                    alert('Aviso: ' + data.message);
-                }
+            fetch('@Url.Action("InscribirseCursoExtra", "Estudiante")', {
+                method: 'POST',
+                body: formData
             })
-            .catch(err => {
-                console.error(err);
-                alert('Ocurrió un error al intentar inscribirte.');
-            });
+                .then(res => res.json())
+                .then(data => {
+                    PAE.cerrarCargando();
+                    if (data.success) {
+                        PAE.notificarExito(data.message || 'Inscripción registrada correctamente.');
+                        setTimeout(() => window.location.reload(), 1200);
+                    } else {
+                        PAE.notificarError(data.message || 'No fue posible completar la inscripción.');
+                    }
+                })
+                .catch(err => {
+                    PAE.cerrarCargando();
+                    console.error(err);
+                    PAE.notificarError('Ocurrió un error al intentar inscribirte.');
+                });
+        }, 'Confirmar inscripción', 'Sí, inscribirme');
     }
 
     // 6. Estudiante: Cancelar inscripción
     function cancelarInscripcionEstudiante(idInscripcion, nombreCurso) {
-        if (!confirm(`¿Estás seguro de cancelar tu inscripción a '${nombreCurso}'? Tu cupo será liberado para otro compañero.`)) return;
+        PAE.confirmar(`¿Está seguro de cancelar su inscripción a "${nombreCurso}"? Su cupo será liberado.`, function () {
+            const formData = new FormData();
+            formData.append('idInscripcion', idInscripcion);
 
-        const formData = new FormData();
-        formData.append('idInscripcion', idInscripcion);
+            PAE.cargando('Cancelando inscripción...');
 
-        fetch('@Url.Action("CancelarInscripcionCursoExtra", "Estudiante")', {
-            method: 'POST',
-            body: formData
-        })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    alert(data.message);
-                    window.location.reload();
-                } else {
-                    alert('Error: ' + data.message);
-                }
+            fetch('@Url.Action("CancelarInscripcionCursoExtra", "Estudiante")', {
+                method: 'POST',
+                body: formData
             })
-            .catch(err => {
-                console.error(err);
-                alert('Ocurrió un error al intentar cancelar la inscripción.');
-            });
+                .then(res => res.json())
+                .then(data => {
+                    PAE.cerrarCargando();
+                    if (data.success) {
+                        PAE.notificarExito(data.message || 'Inscripción cancelada.');
+                        setTimeout(() => window.location.reload(), 1200);
+                    } else {
+                        PAE.notificarError(data.message || 'No fue posible cancelar la inscripción.');
+                    }
+                })
+                .catch(err => {
+                    PAE.cerrarCargando();
+                    console.error(err);
+                    PAE.notificarError('Ocurrió un error al intentar cancelar la inscripción.');
+                });
+        }, 'Confirmar cancelación', 'Sí, cancelar inscripción');
     }
 
     // --- FILTRADO + PAGINACIÓN DE MATRÍCULAS (20 por página) ---

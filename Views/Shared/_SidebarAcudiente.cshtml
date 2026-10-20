@@ -1,0 +1,78 @@
+@* Barra lateral de navegación - Panel Acudiente / Padres *@
+@using Microsoft.AspNetCore.Http
+
+@{
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    var currentSeccion = Context.Request.Query["seccion"].ToString().ToLowerInvariant();
+
+    string ActiveIf(string ctrl, string act, string? seccion = null)
+    {
+        if (!currentController.Equals(ctrl, StringComparison.OrdinalIgnoreCase))
+            return "";
+
+        if (!currentAction.Equals(act, StringComparison.OrdinalIgnoreCase))
+            return "";
+
+        if (seccion != null)
+        {
+            return currentSeccion == seccion ? " active" : "";
+        }
+
+        return string.IsNullOrEmpty(currentSeccion) ? " active" : "";
+    }
+}
+
+<aside class="pae-sidebar-lateral" aria-label="Menú lateral acudiente">
+    <div class="pae-sidebar-card shadow-sm border-0">
+        <div class="pae-sidebar-header d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-people-fill fs-5" style="color: #27ae60;"></i>
+                <div>
+                    <div class="fw-bold small">Módulos Acudiente</div>
+                    <span class="text-white-50" style="font-size: 0.72rem;">Navegación Rápida</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-2 border-bottom bg-light">
+            <a href="@Url.Action("Dashboard", "Home")"
+               class="btn btn-outline-secondary btn-sm w-100 text-start d-flex align-items-center justify-content-between py-1 px-2"
+               title="Regresar al panel principal">
+                <span><i class="bi bi-grid-fill me-2" style="color: #27ae60;"></i><strong>Inicio (Cuadros)</strong></span>
+                <i class="bi bi-arrow-left small"></i>
+            </a>
+        </div>
+
+        <div class="pae-sidebar-nav">
+            <a href="@Url.Action("Dashboard", "Home", new { seccion = "asistencia" })"
+               class="pae-sidebar-nav-item@(ActiveIf("Home","Dashboard","asistencia"))">
+                <i class="bi bi-clock-history"></i>
+                <span>Control de Asistencia</span>
+            </a>
+            <a href="@Url.Action("Dashboard", "Home", new { seccion = "citaciones" })"
+               class="pae-sidebar-nav-item@(ActiveIf("Home","Dashboard","citaciones"))">
+                <i class="bi bi-envelope-paper-fill"></i>
+                <span>Citaciones a Padres</span>
+            </a>
+            <a href="@Url.Action("Dashboard", "Home", new { seccion = "observador" })"
+               class="pae-sidebar-nav-item@(ActiveIf("Home","Dashboard","observador"))">
+                <i class="bi bi-file-person-fill"></i>
+                <span>Observador del Estudiante</span>
+            </a>
+            <a href="@Url.Action("Index", "Pqr")"
+               class="pae-sidebar-nav-item@(ActiveIf("Pqr","Index"))">
+                <i class="bi bi-chat-heart-fill"></i>
+                <span>Módulo PQR</span>
+            </a>
+        </div>
+
+        <div class="p-2 border-top bg-light">
+            <button type="button" class="btn btn-sm btn-outline-primary w-100 py-1"
+                    onclick="if(typeof abrirModalAyudaGlobal==='function') abrirModalAyudaGlobal();"
+                    style="font-size: 0.8rem;">
+                <i class="bi bi-question-circle-fill text-warning me-1"></i> Ayuda del Módulo
+            </button>
+        </div>
+    </div>
+</aside>
