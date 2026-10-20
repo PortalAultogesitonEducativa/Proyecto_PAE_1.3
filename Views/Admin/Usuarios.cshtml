@@ -1,18 +1,21 @@
 @model IEnumerable<ProyectoPAE.Models.Usuario>
 
-<div class="container mt-4">
-    <div class="row g-3 mb-4">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
-                <h2 class="fw-bold m-0" style="color: var(--pae-primary);">
-                    <i class="bi bi-people-fill me-2" style="color: var(--pae-secondary);"></i>Gestión de Usuarios
-                </h2>
-                <!-- Botón Volver alineado a la derecha -->
-                <a href="@Url.Action("Dashboard", "Home")" class="btn btn-pae-volver">
-                    Volver
-                </a>
-            </div>
-            <hr />
+<div class="container-fluid py-3 px-md-4">
+    <div class="panel-con-sidebar">
+        @await Html.PartialAsync("_SidebarAdmin")
+        <main class="submodulo-activo flex-grow-1" role="main" aria-label="Gestión de Usuarios">
+            <div class="card border-0 shadow-sm p-3 p-md-4 bg-white rounded-3">
+                <div class="row g-3 mb-4">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h2 class="fw-bold m-0" style="color: var(--pae-primary);">
+                                <i class="bi bi-people-fill me-2" style="color: var(--pae-secondary);"></i>Gestión de Usuarios
+                            </h2>
+                            <a href="@Url.Action("Dashboard", "Home")" class="btn btn-pae-volver">
+                                Volver al Panel
+                            </a>
+                        </div>
+                        <hr />
 
             @if (TempData["Error"] != null)
             {
@@ -135,6 +138,9 @@
         <nav aria-label="Paginación usuarios">
             <ul class="pagination pagination-sm mb-0" id="paginacionUsuarios"></ul>
         </nav>
+    </div>
+            </div>
+        </main>
     </div>
 </div>
 

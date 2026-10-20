@@ -56,6 +56,9 @@ namespace ProyectoPAE.Models
         // --- ACCIONES DE MEJORA Y SEGUIMIENTO ---
         public DbSet<AccionMejora> AccionesMejora { get; set; }
 
+        // --- SISTEMA PQR (PETICIONES, QUEJAS Y RECLAMOS) ---
+        public DbSet<Pqr> PQRs { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

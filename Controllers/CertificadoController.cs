@@ -85,7 +85,7 @@ namespace ProyectoPAE.Controllers
             if (string.IsNullOrWhiteSpace(numeroDocumento))
             {
                 TempData["ErrorMatricula"] = "Debes ingresar el número de documento del estudiante.";
-                return RedirectToAction("Dashboard", "Home", new { rol = "admin" });
+                return RedirectToAction("Dashboard", "Home", new { rol = "admin", seccion = "certificados" });
             }
 
             var usuario = await _context.Usuarios.FirstOrDefaultAsync(u =>
@@ -95,7 +95,7 @@ namespace ProyectoPAE.Controllers
             if (usuario == null)
             {
                 TempData["ErrorMatricula"] = $"No se encontró ningún estudiante matriculado con el número de documento '{numeroDocumento}'.";
-                return RedirectToAction("Dashboard", "Home", new { rol = "admin" });
+                return RedirectToAction("Dashboard", "Home", new { rol = "admin", seccion = "certificados" });
             }
 
             var idUsuarioEmisor = HttpContext.Session.GetInt32("UserId") ?? 1;
@@ -122,7 +122,7 @@ namespace ProyectoPAE.Controllers
             catch (InvalidOperationException ex)
             {
                 TempData["ErrorMatricula"] = ex.Message;
-                return RedirectToAction("Dashboard", "Home", new { rol = "admin" });
+                return RedirectToAction("Dashboard", "Home", new { rol = "admin", seccion = "certificados" });
             }
         }
 

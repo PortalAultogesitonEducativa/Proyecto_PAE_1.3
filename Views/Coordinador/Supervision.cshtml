@@ -3,16 +3,19 @@
     ViewData["Title"] = "Supervisión docente";
 }
 
-<div class="container py-4">
-
-    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
-        <h2 class="mb-0" style="color: #e67e22;">
-            <i class="bi bi-clipboard-data-fill me-2"></i>Supervisión docente
-        </h2>
-        <a href="@Url.Action("Dashboard", "Home")" class="btn btn-outline-secondary btn-sm">
-            <i class="bi bi-arrow-left me-1"></i>Volver al panel
-        </a>
-    </div>
+<div class="container-fluid py-3 px-md-4">
+    <div class="panel-con-sidebar">
+        @await Html.PartialAsync("_SidebarAdmin")
+        <main class="submodulo-activo flex-grow-1" role="main" aria-label="Supervisión docente">
+            <div class="card border-0 shadow-sm p-3 p-md-4 bg-white rounded-3">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                    <h2 class="mb-0" style="color: #e67e22;">
+                        <i class="bi bi-clipboard-data-fill me-2"></i>Supervisión docente
+                    </h2>
+                    <a href="@Url.Action("Dashboard", "Home")" class="btn btn-pae-volver">
+                        Volver al Panel
+                    </a>
+                </div>
 
     <p class="text-muted">
         Vista de solo lectura. Aquí se revisa la carga académica y el trabajo registrado de cada docente;
@@ -169,6 +172,9 @@
     <p class="small text-muted mt-3 mb-0">
         Estudiantes activos en el sistema: @Model.TotalEstudiantes. Los docentes sin clases asignadas se resuelven desde Asignación académica.
     </p>
+            </div>
+        </main>
+    </div>
 </div>
 
 <script>

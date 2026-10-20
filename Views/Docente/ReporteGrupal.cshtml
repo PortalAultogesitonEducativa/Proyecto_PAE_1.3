@@ -36,17 +36,33 @@
     }
 }
 
-<div class="container mt-4">
-    <!-- Encabezado con Botón Volver y Acciones -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div class="d-flex align-items-center gap-3">
-            <a href="@Url.Action("Dashboard", "Home")" class="btn btn-pae-volver">
-                Volver
-            </a>
-            <h2 class="fw-bold m-0" style="color: var(--pae-primary);">
-                <i class="bi bi-file-earmark-bar-graph me-2" style="color: var(--pae-secondary);"></i>Reporte de Calificaciones
-            </h2>
-        </div>
+@using Microsoft.AspNetCore.Http
+@{
+    var rolReporte = Context.Session.GetString("UserRol")?.ToLower() ?? "";
+    bool esAdminCoord = (rolReporte == "admin" || rolReporte == "administrador" || rolReporte == "coordinador");
+}
+
+<div class="container-fluid py-3 px-md-4">
+    <div class="panel-con-sidebar">
+        @if (esAdminCoord)
+        {
+            @await Html.PartialAsync("_SidebarAdmin")
+        }
+        else
+        {
+            @await Html.PartialAsync("_SidebarDocente")
+        }
+        <main class="submodulo-activo flex-grow-1" role="main" aria-label="Reporte de Calificaciones">
+            <!-- Encabezado con Botón Volver y Acciones -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="d-flex align-items-center gap-3">
+                    <a href="@Url.Action("Dashboard", "Home")" class="btn btn-pae-volver">
+                        Volver al Panel
+                    </a>
+                    <h2 class="fw-bold m-0" style="color: var(--pae-primary);">
+                        <i class="bi bi-file-earmark-bar-graph me-2" style="color: var(--pae-secondary);"></i>Reporte de Calificaciones
+                    </h2>
+                </div>
         <button onclick="window.print()" class="btn btn-outline-secondary">
             <i class="bi bi-printer me-1"></i> Imprimir PDF
         </button>
@@ -115,6 +131,8 @@
                 </table>
             </div>
         </div>
+    </div>
+        </main>
     </div>
 </div>
 

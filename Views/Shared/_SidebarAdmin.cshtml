@@ -1,23 +1,37 @@
-@* Barra lateral de navegación - Panel Administrador *@
+@* Barra lateral de navegación - Panel Administrador / Coordinador *@
 @using Microsoft.AspNetCore.Http
 
 @{
     var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
     var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    var currentSeccion = Context.Request.Query["seccion"].ToString().ToLowerInvariant();
+    var rolSesion = Context.Session.GetString("UserRol");
+    bool esCoordinador = ProyectoPAE.Servicios.Permisos.NormalizarRol(rolSesion) == "coordinador";
 
-    string ActiveIf(string ctrl, string act)
-        => (currentController.Equals(ctrl, StringComparison.OrdinalIgnoreCase)
-            && currentAction.Equals(act, StringComparison.OrdinalIgnoreCase))
-            ? " active" : "";
+    string ActiveIf(string ctrl, string act, string? seccion = null)
+    {
+        if (!currentController.Equals(ctrl, StringComparison.OrdinalIgnoreCase))
+            return "";
+
+        if (!currentAction.Equals(act, StringComparison.OrdinalIgnoreCase))
+            return "";
+
+        if (seccion != null)
+        {
+            return currentSeccion == seccion ? " active" : "";
+        }
+
+        return string.IsNullOrEmpty(currentSeccion) ? " active" : "";
+    }
 }
 
-<aside class="pae-sidebar-lateral">
-    <div class="pae-sidebar-card">
+<aside class="pae-sidebar-lateral" aria-label="Menú lateral de navegación administrativa">
+    <div class="pae-sidebar-card shadow-sm border-0">
         <div class="pae-sidebar-header d-flex align-items-center justify-content-between">
             <div class="d-flex align-items-center gap-2">
                 <i class="bi bi-shield-lock-fill fs-5" style="color: #e67e22;"></i>
                 <div>
-                    <div class="fw-bold small">Módulos Admin</div>
+                    <div class="fw-bold small">@(esCoordinador ? "Módulos Coordinación" : "Módulos Admin")</div>
                     <span class="text-white-50" style="font-size: 0.72rem;">Navegación Rápida</span>
                 </div>
             </div>
@@ -33,36 +47,87 @@
         </div>
 
         <div class="pae-sidebar-nav">
-            <a href="@Url.Action("Dashboard", "Home")"
-               class="pae-sidebar-nav-item">
-                <i class="bi bi-clipboard-check"></i>
-                <span>Matrículas</span>
-            </a>
-            <a href="@Url.Action("Usuarios", "Admin")"
-               class="pae-sidebar-nav-item@(ActiveIf("Admin","Usuarios"))">
-                <i class="bi bi-people-fill"></i>
-                <span>Gestión de Usuarios</span>
-            </a>
-            <a href="@Url.Action("Dashboard", "Home")"
-               class="pae-sidebar-nav-item">
-                <i class="bi bi-file-earmark-pdf-fill"></i>
-                <span>Certificados</span>
-            </a>
-            <a href="@Url.Action("Notificaciones", "Admin")"
-               class="pae-sidebar-nav-item@(ActiveIf("Admin","Notificaciones"))">
-                <i class="bi bi-megaphone-fill"></i>
-                <span>Notificaciones</span>
-            </a>
-            <a href="@Url.Action("AsignacionAcademica", "Horario")"
-               class="pae-sidebar-nav-item@(ActiveIf("Horario","AsignacionAcademica"))">
-                <i class="bi bi-diagram-3-fill"></i>
-                <span>Asignación Académica</span>
-            </a>
-            <a href="@Url.Action("Dashboard", "Home")"
-               class="pae-sidebar-nav-item">
-                <i class="bi bi-graph-up-arrow"></i>
-                <span>Reportes Pro</span>
-            </a>
+            @if (esCoordinador)
+            {
+                <a href="@Url.Action("Supervision", "Coordinador")"
+                   class="pae-sidebar-nav-item@(ActiveIf("Coordinador","Supervision"))">
+                    <i class="bi bi-clipboard-data-fill"></i>
+                    <span>Supervisión Docente</span>
+                </a>
+                <a href="@Url.Action("AsignacionAcademica", "Horario")"
+                   class="pae-sidebar-nav-item@(ActiveIf("Horario","AsignacionAcademica"))">
+                    <i class="bi bi-diagram-3-fill"></i>
+                    <span>Asignación Académica</span>
+                </a>
+                <a href="@Url.Action("ReporteGrupal", "Docente")"
+                   class="pae-sidebar-nav-item@(ActiveIf("Docente","ReporteGrupal"))">
+                    <i class="bi bi-bar-chart-line-fill"></i>
+                    <span>Reporte Grupal</span>
+                </a>
+                <a href="@Url.Action("Dashboard", "Home", new { seccion = "matricula" })"
+                   class="pae-sidebar-nav-item@(ActiveIf("Home","Dashboard","matricula"))">
+                    <i class="bi bi-clipboard-check"></i>
+                    <span>Matrículas</span>
+                </a>
+                <a href="@Url.Action("Dashboard", "Home", new { seccion = "certificados" })"
+                   class="pae-sidebar-nav-item@(ActiveIf("Home","Dashboard","certificados"))">
+                    <i class="bi bi-file-earmark-pdf-fill"></i>
+                    <span>Certificados</span>
+                </a>
+                <a href="@Url.Action("Dashboard", "Home", new { seccion = "reportes" })"
+                   class="pae-sidebar-nav-item@(ActiveIf("Home","Dashboard","reportes"))">
+                    <i class="bi bi-graph-up-arrow"></i>
+                    <span>Reportes Pro</span>
+                </a>
+                <a href="@Url.Action("Index", "Pqr")"
+                   class="pae-sidebar-nav-item@(ActiveIf("Pqr","Index"))">
+                    <i class="bi bi-chat-heart-fill"></i>
+                    <span>Módulo PQR</span>
+                </a>
+            }
+            else
+            {
+                <a href="@Url.Action("Dashboard", "Home", new { seccion = "matricula" })"
+                   class="pae-sidebar-nav-item@(ActiveIf("Home","Dashboard","matricula"))">
+                    <i class="bi bi-clipboard-check"></i>
+                    <span>Matrículas</span>
+                </a>
+                <a href="@Url.Action("Usuarios", "Admin")"
+                   class="pae-sidebar-nav-item@(ActiveIf("Admin","Usuarios"))">
+                    <i class="bi bi-people-fill"></i>
+                    <span>Gestión de Usuarios</span>
+                </a>
+                <a href="@Url.Action("Supervision", "Coordinador")"
+                   class="pae-sidebar-nav-item@(ActiveIf("Coordinador","Supervision"))">
+                    <i class="bi bi-clipboard-data-fill"></i>
+                    <span>Supervisión Docente</span>
+                </a>
+                <a href="@Url.Action("Dashboard", "Home", new { seccion = "certificados" })"
+                   class="pae-sidebar-nav-item@(ActiveIf("Home","Dashboard","certificados"))">
+                    <i class="bi bi-file-earmark-pdf-fill"></i>
+                    <span>Certificados</span>
+                </a>
+                <a href="@Url.Action("Notificaciones", "Admin")"
+                   class="pae-sidebar-nav-item@(ActiveIf("Admin","Notificaciones"))">
+                    <i class="bi bi-megaphone-fill"></i>
+                    <span>Notificaciones</span>
+                </a>
+                <a href="@Url.Action("AsignacionAcademica", "Horario")"
+                   class="pae-sidebar-nav-item@(ActiveIf("Horario","AsignacionAcademica"))">
+                    <i class="bi bi-diagram-3-fill"></i>
+                    <span>Asignación Académica</span>
+                </a>
+                <a href="@Url.Action("Dashboard", "Home", new { seccion = "reportes" })"
+                   class="pae-sidebar-nav-item@(ActiveIf("Home","Dashboard","reportes"))">
+                    <i class="bi bi-graph-up-arrow"></i>
+                    <span>Reportes Pro</span>
+                </a>
+                <a href="@Url.Action("Index", "Pqr")"
+                   class="pae-sidebar-nav-item@(ActiveIf("Pqr","Index"))">
+                    <i class="bi bi-chat-heart-fill"></i>
+                    <span>Módulo PQR</span>
+                </a>
+            }
         </div>
 
         <div class="p-2 border-top bg-light">

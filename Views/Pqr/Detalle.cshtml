@@ -1,0 +1,99 @@
+@model ProyectoPAE.Models.Pqr
+@{
+    ViewData["Title"] = $"Detalle PQR - {Model.CodigoRadicado}";
+    bool esGestor = ViewBag.EsGestor ?? false;
+    string rolActual = ProyectoPAE.Servicios.Permisos.RolActual(Context);
+}
+
+<div class="container-fluid py-3 px-md-4">
+    <div class="panel-con-sidebar">
+        @if (rolActual == "admin" || rolActual == "coordinador")
+        {
+            @await Html.PartialAsync("_SidebarAdmin")
+        }
+        else if (rolActual == "docente")
+        {
+            @await Html.PartialAsync("_SidebarDocente")
+        }
+        else if (rolActual == "acudiente" || rolActual == "padre")
+        {
+            @await Html.PartialAsync("_SidebarAcudiente")
+        }
+        else
+        {
+            @await Html.PartialAsync("_SidebarEstudiante")
+        }
+
+        <main class="submodulo-activo flex-grow-1" role="main" aria-label="Detalle de solicitud PQR">
+            <div class="card pae-header-card border-0 mb-4 p-4 shadow-sm" style="background: linear-gradient(135deg, #0d2a4a 0%, #1a3d66 100%);">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                    <div class="text-white">
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <span class="badge bg-warning text-dark px-2.5 py-1 rounded-pill fw-bold">@Model.CodigoRadicado</span>
+                            <small class="text-white-50">Fecha: @Model.FechaRegistro.ToString("dd/MM/yyyy HH:mm")</small>
+                        </div>
+                        <h2 class="h3 fw-bold mb-1 text-white">
+                            <i class="bi bi-file-earmark-text-fill me-2" style="color: #e67e22;"></i>@Model.Asunto
+                        </h2>
+                    </div>
+                    <div>
+                        <a href="@Url.Action("Index", "Pqr")" class="btn btn-outline-light rounded-pill px-3">
+                            <i class="bi bi-arrow-left me-1"></i> Volver al Listado
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-1.5 rounded-pill">
+                        Tipo: @Model.Tipo
+                    </span>
+                    <span class="badge bg-warning text-dark px-3 py-1.5 rounded-pill">
+                        Estado: @Model.Estado
+                    </span>
+                </div>
+
+                <div class="mb-4">
+                    <h6 class="fw-bold text-dark">Descripción de la Solicitud:</h6>
+                    <div class="p-3 bg-light rounded-3 text-secondary" style="white-space: pre-line; line-height: 1.6;">
+                        @Model.Descripcion
+                    </div>
+                </div>
+
+                <div class="row g-3 small text-muted border-top pt-3">
+                    <div class="col-md-6">
+                        <strong>Solicitante:</strong> @Model.NombreUsuario (@Model.RolUsuario)
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <strong>Fecha de radicación:</strong> @Model.FechaRegistro.ToString("f")
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sección de Respuesta -->
+            <div class="card border-0 shadow-sm rounded-4 p-4 mb-4" style="border-left: 5px solid #198754 !important;">
+                <h5 class="fw-bold text-success mb-3">
+                    <i class="bi bi-patch-check-fill me-2"></i>Respuesta y Seguimiento Institucional
+                </h5>
+
+                @if (!string.IsNullOrWhiteSpace(Model.Respuesta))
+                {
+                    <div class="p-3 bg-success-subtle rounded-3 text-dark mb-3" style="white-space: pre-line; line-height: 1.6;">
+                        @Model.Respuesta
+                    </div>
+                    <div class="small text-muted d-flex justify-content-between">
+                        <span><i class="bi bi-shield-check me-1 text-success"></i>Atendido por: @(Model.RespondidoPor ?? "Administración")</span>
+                        <span><i class="bi bi-clock-history me-1"></i>@(Model.FechaRespuesta?.ToString("f") ?? "")</span>
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-light border text-secondary mb-0">
+                        <i class="bi bi-hourglass-split text-warning me-2"></i>Esta solicitud se encuentra actualmente en proceso de revisión por parte de la coordinación o administración institucional.
+                    </div>
+                }
+            </div>
+        </main>
+    </div>
+</div>

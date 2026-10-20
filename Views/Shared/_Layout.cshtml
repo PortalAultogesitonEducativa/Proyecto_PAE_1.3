@@ -13,7 +13,9 @@
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         <script>
             (function () {
-                var f = localStorage.getItem('pae_filtro_daltonismo');
+                var userId = '@(Context.Session.GetString("UserIdStr") ?? "anon")';
+                var storageKey = 'pae_filtro_daltonismo_' + userId;
+                var f = localStorage.getItem(storageKey) || localStorage.getItem('pae_filtro_daltonismo') || 'normal';
                 if (f && f !== 'normal') {
                     document.documentElement.classList.add('filtro-' + f);
                 }
@@ -21,6 +23,7 @@
         </script>
     </head>
     <body>
+        <div id="pae-live-announcer" class="visually-hidden" aria-live="polite" aria-atomic="true"></div>
         <header>
             <nav class="navbar navbar-expand-md navbar-light border-bottom box-shadow mb-3" style="background-color: #ffffff;">
                 <div class="container">
@@ -73,10 +76,15 @@
                                 string userRolLayout = (Context.Session.GetString("UserRol") ?? "").Trim().ToLower();
 
                                 <!-- Botón de Ayuda Global (Requerimiento 1.5) -->
-                                <button type="button" class="btn btn-outline-secondary btn-sm me-3 rounded-pill px-3 d-flex align-items-center" onclick="abrirModalAyudaGlobal()" title="Centro de Ayuda e Instrucciones del Sistema">
+                                <button type="button" class="btn btn-outline-secondary btn-sm me-2 rounded-pill px-3 d-flex align-items-center" onclick="abrirModalAyudaGlobal()" title="Centro de Ayuda e Instrucciones del Sistema">
                                     <i class="bi bi-question-circle-fill text-warning me-1"></i>
                                     <span class="d-none d-sm-inline">Ayuda</span>
                                 </button>
+
+                                <a href="@Url.Action("Index", "Pqr")" class="btn btn-outline-warning text-dark btn-sm me-3 rounded-pill px-3 d-flex align-items-center" title="Módulo de Peticiones, Quejas y Reclamos">
+                                    <i class="bi bi-chat-heart-fill text-warning me-1"></i>
+                                    <span class="d-none d-sm-inline">PQR</span>
+                                </a>
 
                                 @* Campana de notificaciones — sólo para roles que reciben notifs (no admin) *@
                                 if (userRolLayout != "admin")
@@ -123,6 +131,11 @@
                                         <li>
                                             <a class="dropdown-item py-2" asp-controller="Home" asp-action="Perfil">
                                                 <i class="bi bi-person-badge me-2"></i> Ver Mi Perfil
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item py-2" asp-controller="Pqr" asp-action="Index">
+                                                <i class="bi bi-chat-heart-fill me-2 text-warning"></i> Mis Solicitudes PQR
                                             </a>
                                         </li>
                                         <li><hr class="dropdown-divider"></li>
@@ -448,7 +461,7 @@
         </style>
 
         <!-- FILTROS SVG DE ACCESIBILIDAD PARA DALTONISMO -->
-        <svg style="display: none; width: 0; height: 0;" aria-hidden="true">
+        <svg style="position: absolute; width: 0; height: 0; overflow: hidden; pointer-events: none; opacity: 0;" aria-hidden="true">
             <defs>
                 <!-- Protanopía (Rojo-Ciego) -->
                 <filter id="protanopia-filter">
@@ -528,21 +541,59 @@
         </div>
 
         <script>
+            function obtenerStorageKeyDaltonismo() {
+                var userId = '@(Context.Session.GetString("UserIdStr") ?? "anon")';
+                return 'pae_filtro_daltonismo_' + userId;
+            }
+
             function aplicarFiltroDaltonismo(tipo) {
                 const root = document.documentElement;
-                root.classList.remove('filtro-normal', 'filtro-protanopia', 'filtro-deuteranopia', 'filtro-tritanopia', 'filtro-acromatopsia');
+                const body = document.body;
+                const storageKey = obtenerStorageKeyDaltonismo();
+                const clasesFiltro = ['filtro-normal', 'filtro-protanopia', 'filtro-deuteranopia', 'filtro-tritanopia', 'filtro-acromatopsia'];
 
-                if (tipo && tipo !== 'normal') {
-                    root.classList.add('filtro-' + tipo);
-                    localStorage.setItem('pae_filtro_daltonismo', tipo);
-                } else {
-                    localStorage.setItem('pae_filtro_daltonismo', 'normal');
+                root.classList.remove(...clasesFiltro);
+                if (body) body.classList.remove(...clasesFiltro);
+
+                const filtroValido = (tipo && tipo !== 'normal') ? tipo : 'normal';
+
+                if (filtroValido !== 'normal') {
+                    root.classList.add('filtro-' + filtroValido);
+                    if (body) body.classList.add('filtro-' + filtroValido);
                 }
+
+                localStorage.setItem(storageKey, filtroValido);
+                localStorage.setItem('pae_filtro_daltonismo', filtroValido);
+
                 actualizarUIFiltros();
+
+                if (window.PAE && typeof PAE.toast === 'function') {
+                    const nombres = {
+                        'normal': 'Visión Normal (Filtros desactivados)',
+                        'deuteranopia': 'Modo Deuteranopía activado',
+                        'protanopia': 'Modo Protanopía activado',
+                        'tritanopia': 'Modo Tritanopía activado',
+                        'acromatopsia': 'Modo Acromatopsia activado'
+                    };
+                    PAE.toast(nombres[filtroValido] || 'Preferencia guardada', 'info');
+                }
             }
 
             function actualizarUIFiltros() {
-                const actual = localStorage.getItem('pae_filtro_daltonismo') || 'normal';
+                const storageKey = obtenerStorageKeyDaltonismo();
+                const actual = localStorage.getItem(storageKey) || localStorage.getItem('pae_filtro_daltonismo') || 'normal';
+                const root = document.documentElement;
+                const body = document.body;
+                const clasesFiltro = ['filtro-normal', 'filtro-protanopia', 'filtro-deuteranopia', 'filtro-tritanopia', 'filtro-acromatopsia'];
+
+                root.classList.remove(...clasesFiltro);
+                if (body) body.classList.remove(...clasesFiltro);
+
+                if (actual !== 'normal') {
+                    root.classList.add('filtro-' + actual);
+                    if (body) body.classList.add('filtro-' + actual);
+                }
+
                 document.querySelectorAll('#opcionesDaltonismo .accesibilidad-item').forEach(item => {
                     const f = item.getAttribute('data-filtro');
                     const check = item.querySelector('.check-filtro');
@@ -560,7 +611,7 @@
         </script>
 
         <!-- ─── MODAL DE AYUDA E INSTRUCCIONES PAE (REQUERIMIENTO 1.5) ─────────────────────────── -->
-        <div class="modal fade" id="modalAyudaPAE" tabindex="-1" aria-labelledby="ayudaModalTitulo" aria-hidden="true">
+        <div class="modal fade" id="modalAyudaPAE" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="ayudaModalTitulo" aria-describedby="ayudaModalQueHace" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered modal-lg">
                 <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
                     <div class="modal-header text-white py-3 px-4" style="background: var(--pae-gradient-primary);">
@@ -591,6 +642,23 @@
                             <ul class="list-unstyled mb-0 small text-secondary" id="ayudaModalPasos">
                                 <li>Cargando instrucciones...</li>
                             </ul>
+                        </div>
+
+                        <!-- Tarjeta: Qué hacer si no sabes cómo continuar -->
+                        <div class="card border-0 shadow-sm rounded-3 mb-3 p-3 bg-white" style="border-left: 4px solid #0d6efd !important;">
+                            <div class="d-flex justify-content-between align-items-start gap-2">
+                                <div>
+                                    <h6 class="fw-bold mb-1" style="color: #0d6efd;">
+                                        <i class="bi bi-signpost-split-fill me-2"></i>¿Qué puedes hacer si no sabes cómo continuar?
+                                    </h6>
+                                    <p class="text-secondary mb-0 small" id="ayudaModalQueHacerSiNoSabe">
+                                        Puedes regresar al panel principal con el botón "Inicio (Cuadros)" o radicar tu consulta formal en el Módulo PQR para recibir orientación del equipo institucional.
+                                    </p>
+                                </div>
+                                <a href="@Url.Action("Index", "Pqr")" class="btn btn-sm btn-outline-primary text-nowrap rounded-pill px-3 py-1 mt-1">
+                                    <i class="bi bi-chat-heart-fill me-1"></i> Ir a PQR
+                                </a>
+                            </div>
                         </div>
 
                         <!-- Tarjeta: Consejos y buenas prácticas -->
