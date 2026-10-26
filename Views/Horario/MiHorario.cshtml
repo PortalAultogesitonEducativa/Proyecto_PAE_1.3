@@ -7,30 +7,15 @@
     string nombreCurso = ViewBag.NombreCurso as string ?? "";
     bool esJornadaTarde = nombreCurso.ToUpper().Contains(" T") || nombreCurso.ToUpper().EndsWith("T");
 
-    // Bloques horarios exclusivos para la Jornada Mañana (6:00 am - 12:00 pm)
-    var bloquesMañana = new[] {
-        new { Inicio = new TimeSpan(6, 0, 0), Fin = new TimeSpan(7, 30, 0), Etiqueta = "06:00 - 07:30", EsReceso = false },
-        new { Inicio = new TimeSpan(7, 30, 0), Fin = new TimeSpan(9, 0, 0), Etiqueta = "07:30 - 09:00", EsReceso = false },
-        new { Inicio = new TimeSpan(9, 0, 0), Fin = new TimeSpan(9, 30, 0), Etiqueta = "09:00 - 09:30", EsReceso = true },
-        new { Inicio = new TimeSpan(9, 30, 0), Fin = new TimeSpan(10, 45, 0), Etiqueta = "09:30 - 10:45", EsReceso = false },
-        new { Inicio = new TimeSpan(10, 45, 0), Fin = new TimeSpan(12, 0, 0), Etiqueta = "10:45 - 12:00", EsReceso = false }
-    };
-
-    // Bloques horarios exclusivos para la Jornada Tarde (12:30 pm - 4:45 pm)
-    var bloquesTarde = new[] {
-        new { Inicio = new TimeSpan(12, 30, 0), Fin = new TimeSpan(13, 45, 0), Etiqueta = "12:30 - 13:45", EsReceso = false },
-        new { Inicio = new TimeSpan(13, 45, 0), Fin = new TimeSpan(15, 0, 0), Etiqueta = "13:45 - 15:00", EsReceso = false },
-        new { Inicio = new TimeSpan(15, 0, 0), Fin = new TimeSpan(15, 30, 0), Etiqueta = "15:00 - 15:30", EsReceso = true },
-        new { Inicio = new TimeSpan(15, 30, 0), Fin = new TimeSpan(16, 45, 0), Etiqueta = "15:30 - 16:45", EsReceso = false }
-    };
-
-    // Seleccionar el arreglo de bloques según la jornada detectada
-    var bloquesHorarios = esJornadaTarde ? bloquesTarde : bloquesMañana;
+    // Franjas fijas de cada jornada (definidas una sola vez en Models/BloquesHorarios.cs)
+    var bloquesHorarios = esJornadaTarde ? ProyectoPAE.Models.BloquesHorarios.Tarde : ProyectoPAE.Models.BloquesHorarios.Manana;
 
     var diasSemana = new[] { "Lunes", "Martes", "Miércoles", "Jueves", "Viernes" };
     bool esDocente = ViewBag.EsDocente == true;
-}
 
+    // Celdas (día, fila) ya cubiertas por una clase doble de 2 horas (rowspan)
+    var cubiertas = new HashSet<string>();
+}
 
 <div class="container-fluid my-4 px-4">
     <div class="panel-con-sidebar">
@@ -52,7 +37,7 @@
                 <i class="bi bi-calendar3 me-2 text-primary"></i>Horario de Clases
             </h2>
             <p class="text-muted mb-0">
-                                Semestre Académico Vigente • <span class="fw-semibold text-primary">@ViewBag.NombreCurso</span>
+                Semestre Académico Vigente • <span class="fw-semibold text-primary">@ViewBag.NombreCurso</span>
             </p>
         </div>
         <div class="d-flex gap-2 align-items-center">
@@ -64,7 +49,7 @@
 
     <!-- TARJETAS DE RESUMEN SUPERIOR -->
     <div class="row g-3 mb-4">
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card border-0 shadow-sm p-3 h-100 bg-white rounded-3 border-start border-primary border-4">
                 <span class="text-muted small fw-bold text-uppercase">Carga Académica</span>
                 <h4 class="fw-bold text-dark mt-1 mb-0">@ViewBag.TotalMaterias Materias</h4>
@@ -73,18 +58,28 @@
                 </small>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card border-0 shadow-sm p-3 h-100 bg-white rounded-3 border-start border-info border-4">
                 <span class="text-muted small fw-bold text-uppercase">Jornada</span>
                 <h4 class="fw-bold text-dark mt-1 mb-0">@(esJornadaTarde ? "Tarde" : "Mañana")</h4>
                 <small class="text-muted mt-2 d-block">Programación semanal de clases</small>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card border-0 shadow-sm p-3 h-100 bg-white rounded-3 border-start border-success border-4">
                 <span class="text-muted small fw-bold text-uppercase">Modalidad</span>
                 <h4 class="fw-bold text-dark mt-1 mb-0">Presencial</h4>
                 <small class="text-muted mt-2 d-block">Aulas y laboratorios institucionales</small>
+            </div>
+        </div>
+        <!-- TARJETA 4: PERÍODO ACADÉMICO CON VALIDACIÓN SEGURA -->
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm p-3 h-100 bg-white rounded-3 border-start border-warning border-4">
+                <span class="text-muted small fw-bold text-uppercase">Período Académico</span>
+                <h4 class="fw-bold text-dark mt-1 mb-0">
+                    @(ViewBag.PeriodoAcademico != null ? $"Período {ViewBag.PeriodoAcademico}" : "Período 1")
+                </h4>
+                <small class="text-muted mt-2 d-block">Calendario A Vigente</small>
             </div>
         </div>
     </div>
@@ -112,8 +107,9 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var bloque in bloquesHorarios)
+                            @for (int i = 0; i < bloquesHorarios.Length; i++)
                             {
+                                var bloque = bloquesHorarios[i];
                                 @if (bloque.EsReceso)
                                 {
                                     <!-- FILA DE DESCANSO / RECESO -->
@@ -131,14 +127,34 @@
 
                                         @foreach (var diaNombre in diasSemana)
                                         {
+                                            // Esta celda ya la ocupa una clase doble que empezó en la fila anterior
+                                            if (cubiertas.Contains(diaNombre + "|" + i)) { continue; }
+
                                             var clase = Model?.FirstOrDefault(h =>
                                                 h.DiaSemana != null && h.DiaSemana.Equals(diaNombre, StringComparison.OrdinalIgnoreCase) &&
                                                 h.HoraInicio == bloque.Inicio);
 
-                                            <td class="p-2" style="height: 95px; vertical-align: middle;">
+                                            // Cuántas filas de clase cubre (sin cruzar el descanso)
+                                            int filas = 1;
+                                            if (clase != null)
+                                            {
+                                                while (i + filas < bloquesHorarios.Length &&
+                                                       !bloquesHorarios[i + filas].EsReceso &&
+                                                       bloquesHorarios[i + filas].Inicio < clase.HoraFin)
+                                                {
+                                                    cubiertas.Add(diaNombre + "|" + (i + filas));
+                                                    filas++;
+                                                }
+                                            }
+                                            bool esDoble = filas > 1;
+                                            string rangoClase = clase != null
+                                                ? clase.HoraInicio.ToString("hh\\:mm") + " - " + clase.HoraFin.ToString("hh\\:mm")
+                                                : "";
+
+                                            <td class="p-2" rowspan="@filas" style="height: 95px; vertical-align: middle;">
                                                 @if (clase != null)
                                                 {
-                                                    <div class="p-2 rounded bg-white border border-light-subtle shadow-sm h-100 d-flex flex-column justify-content-center text-start border-start border-primary border-3">
+                                                    <div class="p-2 rounded @(esDoble ? "bg-primary-subtle" : "bg-white") border border-light-subtle shadow-sm h-100 d-flex flex-column justify-content-center text-start border-start border-primary border-3">
                                                         <span class="fw-bold text-dark text-truncate small" title="@clase.NombreMateria">
                                                             @clase.NombreMateria
                                                         </span>
@@ -157,6 +173,12 @@
                                                         <small class="text-secondary text-truncate d-block" style="font-size: 0.75rem;">
                                                             <i class="bi bi-geo-alt me-1"></i>@clase.NombreSalon
                                                         </small>
+                                                        @if (esDoble)
+                                                        {
+                                                            <small class="text-primary d-block mt-1" style="font-size: 0.75rem;">
+                                                                <i class="bi bi-clock me-1"></i>@rangoClase · 2 horas
+                                                            </small>
+                                                        }
                                                     </div>
                                                 }
                                                 else
@@ -178,3 +200,15 @@
         </div><!-- /.submodulo-activo -->
     </div><!-- /.panel-con-sidebar -->
 </div><!-- /.container-fluid -->
+
+<style>
+    @@media print {
+        header, footer, .btn, .navbar, nav {
+            display: none !important;
+        }
+        .card {
+            box-shadow: none !important;
+            border: 1px solid #ddd !important;
+        }
+    }
+</style>

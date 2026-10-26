@@ -45,9 +45,10 @@ namespace ProyectoPAE.Models
         public string NombreSalon { get; set; } = string.Empty;
 
         /// <summary>
-        /// Indica si la franja corresponde a un receso o descanso institucional.
+        /// Indica si la franja corresponde a un receso o descanso institugit cional.
         /// </summary>
         public bool EsDescanso { get; set; } = false;
+        public int? PeriodoAcademico { get; set; }
     }
 }
 

@@ -27,5 +27,6 @@ namespace ProyectoPAE.Models
 
         public List<SelectListItem> ListadoEstudiantes { get; set; } = new List<SelectListItem>();
         public List<SelectListItem> ListadoCursos { get; set; } = new List<SelectListItem>();
+        public int PeriodoAcademico { get; set; }
     }
 }

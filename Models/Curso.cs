@@ -45,5 +45,6 @@ namespace ProyectoPAE.Models
         /// Identificador del periodo académico.
         /// </summary>
         public int id_periodo { get; set; }
+        public string? jornada { get; set; }
     }
 }

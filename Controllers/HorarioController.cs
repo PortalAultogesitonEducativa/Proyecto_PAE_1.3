@@ -333,6 +333,7 @@ namespace ProyectoPAE.Controllers
                                 DiaSemana = h.dia,
                                 HoraInicio = h.hora_inicio,
                                 HoraFin = h.hora_fin,
+                                PeriodoAcademico = h.periodo_academico,
                                 NombreMateria = materia != null ? materia.nombre_materia : (curso != null ? curso.nombre_curso : "Asignatura"),
                                 NombreCurso = curso != null ? curso.nombre_curso : "General",
                                 NombreProfesor = nombreProfesorActual,
@@ -355,6 +356,7 @@ namespace ProyectoPAE.Controllers
                     ViewBag.Mensaje = "Aún no hay horarios registrados para tu perfil de docente.";
                 }
 
+                ViewBag.PeriodoAcademico = horariosDocente.Select(x => x.PeriodoAcademico).FirstOrDefault(p => p != null) ?? 1;
                 return View(horariosDocente);
             }
 
@@ -379,8 +381,14 @@ namespace ProyectoPAE.Controllers
 
             int estudianteId = estudianteIdSession.Value;
 
+            // Tomamos la matrícula ACTIVA más reciente (por año y, si empatan, por id)
             var matricula = await _context.Matriculas
-                .FirstOrDefaultAsync(m => m.id_estudiante == estudianteId);
+                .Where(m => m.id_estudiante == estudianteId &&
+                            m.estado != null &&
+                            (m.estado.ToLower() == "activa" || m.estado.ToLower() == "activo"))
+                .OrderByDescending(m => m.ano)
+                .ThenByDescending(m => m.id_matricula)
+                .FirstOrDefaultAsync();
 
             if (matricula == null)
             {
@@ -406,6 +414,7 @@ namespace ProyectoPAE.Controllers
                                                 DiaSemana = h.dia,
                                                 HoraInicio = h.hora_inicio,
                                                 HoraFin = h.hora_fin,
+                                                PeriodoAcademico = h.periodo_academico,
                                                 NombreMateria = mat != null ? mat.nombre_materia : "Clase",
                                                 NombreProfesor = prof != null ? (prof.nombre + " " + (prof.apellido ?? "")) : "Docente Asignado",
                                                 NombreSalon = aul != null ? aul.codigo_aula : "Aula",
@@ -419,7 +428,284 @@ namespace ProyectoPAE.Controllers
                 ViewBag.Mensaje = "Aún no hay horarios registrados para tu curso (" + ViewBag.NombreCurso + ").";
             }
 
+            ViewBag.PeriodoAcademico = horariosEstudiante.Select(x => x.PeriodoAcademico).FirstOrDefault(p => p != null) ?? 1;
             return View(horariosEstudiante);
+        }
+        // Obtener horario filtrado por Docente o por Curso usando .Include()
+        [HttpGet]
+        [RequierePermiso(Permisos.AsignarAcademica)]
+        public async Task<IActionResult> ObtenerHorario(int? idDocente, int? idCurso)
+        {
+            try
+            {
+                // Construimos la consulta base incluyendo las relaciones
+                var query = _context.HORARIOS
+                    .Include(h => h.Materia)
+                    .Include(h => h.Curso)
+                    .Include(h => h.Profesor)
+                    .AsQueryable();
+
+                // Filtramos según lo seleccionado por el usuario
+                if (idDocente.HasValue && idDocente > 0)
+                {
+                    query = query.Where(h => h.id_profesor == idDocente.Value);
+                }
+                else if (idCurso.HasValue && idCurso > 0)
+                {
+                    query = query.Where(h => h.id_curso == idCurso.Value);
+                }
+                else
+                {
+                    // Si no hay docente ni curso seleccionado, retornamos lista vacía
+                    return Json(new List<object>());
+                }
+
+                var lista = await query.ToListAsync();
+
+                // Proyectamos el resultado para evitar ciclos y asegurar formato seguro
+                var resultado = lista.Select(h => new
+                {
+                    id = h.id_horario,
+                    bloque = h.hora_inicio.ToString(@"hh\:mm") + " - " + h.hora_fin.ToString(@"hh\:mm"),
+                    dia = h.dia,
+                    materia = h.Materia != null ? h.Materia.nombre_materia : "Sin Materia",
+                    curso = h.Curso != null ? h.Curso.nombre_curso : "",
+                    docente = h.Profesor != null ? (h.Profesor.nombre + " " + h.Profesor.apellido) : ""
+                });
+
+                return Json(resultado);
+            }
+            catch (Exception ex)
+            {
+                // En caso de error, devuelves un objeto indicando el fallo para no romper la vista
+                return StatusCode(500, new { message = ex.Message });
+            }
+        }
+        // Acción HTTP POST para eliminar una asignación de horario específica
+        [HttpPost]
+        [RequierePermiso(Permisos.AsignarAcademica)]
+        public async Task<IActionResult> EliminarHorario(int id)
+        {
+            try
+            {
+                // Buscamos el registro en la base de datos por su ID principal
+                var horario = await _context.HORARIOS.FindAsync(id);
+
+                if (horario == null)
+                {
+                    return Json(new { success = false, message = "No se encontró el registro de horario a eliminar." });
+                }
+
+                // Removemos la entidad del contexto de la base de datos
+                _context.HORARIOS.Remove(horario);
+
+                // Guardamos los cambios de forma asíncrona
+                await _context.SaveChangesAsync();
+
+                return Json(new { success = true, message = "La asignación ha sido eliminada correctamente." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Error al eliminar: " + ex.Message });
+            }
+        }
+        // =========================================================================
+        // 9. LISTAS PARA EL FORMULARIO
+        // =========================================================================
+        [HttpGet]
+        [RequierePermiso(Permisos.AsignarAcademica)]
+        public JsonResult ObtenerCursosPorJornada(string jornada)
+        {
+            // Se ordena por el número del curso (601, 602... 1001, 1101), no como texto,
+            // porque como texto "1001" quedaría antes que "601".
+            var cursos = _context.Cursos
+                .Where(c => c.jornada == jornada)
+                .Select(c => new { c.id_curso, c.nombre_curso })
+                .AsEnumerable()
+                .OrderBy(c => OrdenNumericoCurso(c.nombre_curso))
+                .ThenBy(c => c.nombre_curso)
+                .ToList();
+
+            return Json(cursos);
+        }
+
+        // Extrae el número inicial del nombre del curso ("601 M" -> 601). Si no tiene, va al final.
+        private static int OrdenNumericoCurso(string? nombre)
+        {
+            var digitos = new string((nombre ?? "").TrimStart().TakeWhile(char.IsDigit).ToArray());
+            return int.TryParse(digitos, out var n) ? n : int.MaxValue;
+        }
+
+        // Docentes de la jornada. Si un docente aún no tiene jornada registrada (NULL o vacía),
+        // también se muestra para que no quede fuera de la lista.
+        [HttpGet]
+        [RequierePermiso(Permisos.AsignarAcademica)]
+        public JsonResult ObtenerDocentesPorJornada(string jornada)
+        {
+            var docentes = _context.PROFESOR
+                .Where(p => p.jornada == jornada || p.jornada == null || p.jornada == "")
+                .OrderBy(p => p.nombre).ThenBy(p => p.apellido)
+                .Select(p => new
+                {
+                    id_profesor = p.id_profesor,
+                    nombreCompleto = p.nombre + " " + p.apellido
+                })
+                .ToList();
+
+            return Json(docentes);
+        }
+
+        [HttpGet]
+        [RequierePermiso(Permisos.AsignarAcademica)]
+        public JsonResult ObtenerAulas()
+        {
+            var aulas = _context.AULA
+                .OrderBy(a => a.codigo_aula)
+                .Select(a => new
+                {
+                    id_aula = a.id_aula,
+                    nombre = a.codigo_aula + " - " + a.tipo + " (Capacidad: " + a.capacidad + ")"
+                })
+                .ToList();
+
+            return Json(aulas);
+        }
+
+        // Franjas fijas de la jornada (incluye el descanso, que el formulario deja bloqueado)
+        // Franjas de 2 horas seguidas (clase doble) válidas para la jornada.
+        [HttpGet]
+        [RequierePermiso(Permisos.AsignarAcademica)]
+        public JsonResult ObtenerBloquesDobles(string jornada)
+        {
+            var dobles = BloquesHorarios.DoblesPorJornada(jornada).Select(b => new
+            {
+                inicio = b.Inicio.ToString(@"hh\:mm"),
+                fin = b.Fin.ToString(@"hh\:mm"),
+                etiqueta = b.Etiqueta,
+                nombre = b.Nombre,
+                esReceso = false
+            });
+
+            return Json(dobles);
+        }
+
+        [HttpGet]
+        [RequierePermiso(Permisos.AsignarAcademica)]
+        public JsonResult ObtenerBloques(string jornada)
+        {
+            var bloques = BloquesHorarios.PorJornada(jornada).Select(b => new
+            {
+                inicio = b.Inicio.ToString(@"hh\:mm"),
+                fin = b.Fin.ToString(@"hh\:mm"),
+                etiqueta = b.Etiqueta,
+                nombre = b.Nombre,
+                esReceso = b.EsReceso
+            });
+
+            return Json(bloques);
+        }
+        // =========================================================================
+        // 8. GUARDAR HORARIO (valida período, jornada, franja fija, materia del docente y choques)
+        // =========================================================================
+        [HttpPost]
+        [RequierePermiso(Permisos.AsignarAcademica)]
+        public async Task<JsonResult> GuardarHorario(int idCurso, int idProfesor, int idAula, int idMateria, string dia, string horaInicio, string horaFin, int periodoAcademico)
+        {
+            const int anioEscolar = 2026;
+
+            if (idCurso == 0 || idProfesor == 0 || idAula == 0 || idMateria == 0 || string.IsNullOrWhiteSpace(dia)
+                || !TimeSpan.TryParse(horaInicio, out var inicio) || !TimeSpan.TryParse(horaFin, out var fin) || periodoAcademico == 0)
+            {
+                return Json(new { success = false, message = "Completa todos los campos (incluyendo el período académico) antes de guardar." });
+            }
+
+            var curso = await _context.Cursos.FindAsync(idCurso);
+            var profesor = await _context.PROFESOR.FindAsync(idProfesor);
+
+            if (curso == null || profesor == null)
+            {
+                return Json(new { success = false, message = "El curso o el profesor seleccionado no existen." });
+            }
+
+            // 1. Jornada
+            if (!string.IsNullOrWhiteSpace(profesor.jornada) &&
+                !string.Equals(curso.jornada, profesor.jornada, StringComparison.OrdinalIgnoreCase))
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = $"Conflicto de jornada: el curso '{curso.nombre_curso}' es de jornada '{curso.jornada}', pero {profesor.nombre} {profesor.apellido} labora en la jornada '{profesor.jornada}'."
+                });
+            }
+
+            // 2. Franja fija
+            var bloque = BloquesHorarios.BuscarFranjaValida(curso.jornada, inicio, fin);
+            if (bloque == null)
+            {
+                return Json(new
+                {
+                    success = false,
+                    message = "Ese horario no es una franja de clase válida para la jornada del curso."
+                });
+            }
+
+            // 3. El docente debe dictar esa materia
+            bool docenteDictaMateria = await _context.Set<ProfesorMateria>()
+                .AnyAsync(pm => pm.id_profesor == idProfesor && pm.id_materia == idMateria);
+
+            if (!docenteDictaMateria)
+            {
+                return Json(new { success = false, message = "Ese docente no está habilitado para dictar esa materia." });
+            }
+
+            // 4. Choques (mismo período, anio, día y franja)
+            bool choqueDocente = await _context.HORARIOS.AnyAsync(h =>
+                h.anio_escolar == anioEscolar && h.periodo_academico == periodoAcademico && h.dia == dia && h.id_profesor == idProfesor &&
+                h.hora_inicio < fin && inicio < h.hora_fin);
+            if (choqueDocente)
+            {
+                return Json(new { success = false, message = "Ese docente ya tiene una clase asignada ese día en esa franja para este período." });
+            }
+
+            bool choqueCurso = await _context.HORARIOS.AnyAsync(h =>
+                h.anio_escolar == anioEscolar && h.periodo_academico == periodoAcademico && h.dia == dia && h.id_curso == idCurso &&
+                h.hora_inicio < fin && inicio < h.hora_fin);
+            if (choqueCurso)
+            {
+                return Json(new { success = false, message = $"El curso {curso.nombre_curso} ya tiene una clase asignada ese día en esa franja para este período." });
+            }
+
+            bool choqueAula = await _context.HORARIOS.AnyAsync(h =>
+                h.anio_escolar == anioEscolar && h.periodo_academico == periodoAcademico && h.dia == dia && h.id_aula == idAula &&
+                h.hora_inicio < fin && inicio < h.hora_fin);
+            if (choqueAula)
+            {
+                return Json(new { success = false, message = "Esa aula ya está ocupada ese día en esa franja para este período." });
+            }
+
+            // 5. Guardado incluyendo el período académico
+            try
+            {
+                _context.HORARIOS.Add(new Horario
+                {
+                    id_curso = idCurso,
+                    id_profesor = idProfesor,
+                    id_aula = idAula,
+                    id_materia = idMateria,
+                    dia = dia,
+                    hora_inicio = inicio,
+                    hora_fin = fin,
+                    anio_escolar = anioEscolar,
+                    periodo_academico = periodoAcademico // <--- Asignación correcta
+                });
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "No se pudo guardar: " + (ex.InnerException?.Message ?? ex.Message) });
+            }
+
+            return Json(new { success = true, message = $"Horario guardado: Período {periodoAcademico}, {curso.nombre_curso}, {dia} {bloque.Etiqueta}." });
         }
     }
 }
