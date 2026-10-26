@@ -284,8 +284,14 @@ namespace ProyectoPAE.Controllers
 
                     if (estudiante != null)
                     {
+                        // Tomamos la matrícula ACTIVA más reciente (por año y, si empatan, por id)
                         var matriculaActiva = _context.Matriculas
-                            .FirstOrDefault(m => m.id_estudiante == estudiante.id_estudiante && m.estado != null && (m.estado.ToLower() == "activa" || m.estado.ToLower() == "activo"));
+                            .Where(m => m.id_estudiante == estudiante.id_estudiante &&
+                                m.estado != null &&
+                                (m.estado.ToLower() == "activa" || m.estado.ToLower() == "activo"))
+                            .OrderByDescending(m => m.ano)
+                            .ThenByDescending(m => m.id_matricula)
+                            .FirstOrDefault();
 
                         if (matriculaActiva != null)
                         {

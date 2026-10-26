@@ -8,506 +8,430 @@
         @await Html.PartialAsync("_SidebarAdmin")
 
         <div class="submodulo-activo">
-        <div class="card shadow-sm border-0">
-            <div class="card-header bg-primary text-white p-3">
-                <h4 class="mb-0 fw-normal">
-                    <i class="bi bi-calendar-plus me-2"></i>Asignación Académica de Horarios
-                </h4>
-            </div>
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0"><i class="bi bi-calendar-plus"></i> Asignación de Horarios Académicos</h4>
+        </div>
+        <div class="card-body">
 
-        <div class="card-body p-4">
-
-            @if (TempData["Mensaje"] != null)
-            {
-                <div class="alert alert-success">@TempData["Mensaje"]</div>
-            }
-            @if (TempData["Error"] != null)
-            {
-                <div class="alert alert-danger">@TempData["Error"]</div>
-            }
-
-            <!-- PESTAÑAS (TABS) -->
-            <ul class="nav nav-tabs mb-4" id="asignacionTab" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active fw-bold" id="docentes-tab" data-bs-toggle="tab" data-bs-target="#tab-docentes" type="button" role="tab" aria-controls="tab-docentes" aria-selected="true">
-                        <i class="bi bi-person-badge me-2"></i> Asignación a Docentes
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link fw-bold" id="alumnos-tab" data-bs-toggle="tab" data-bs-target="#tab-alumnos" type="button" role="tab" aria-controls="tab-alumnos" aria-selected="false">
-                        <i class="bi bi-people me-2"></i> Asignación a Alumnos
-                    </button>
+            <ul class="nav nav-tabs mb-4">
+                <li class="nav-item">
+                    <a class="nav-link active fw-bold" href="#"><i class="bi bi-person-workspace"></i> Asignación de Horarios</a>
                 </li>
             </ul>
 
-            <div class="tab-content" id="asignacionTabContent">
+            <div id="alertaHorario" class="mb-3" role="status" aria-live="polite"></div>
 
-                <!-- PESTAÑA 1: DOCENTES -->
-                <div class="tab-pane fade show active" id="tab-docentes" role="tabpanel" aria-labelledby="docentes-tab">
-                    <form method="post" asp-action="GuardarAsignacionDocente">
-                        <div class="row g-3">
-                            <!-- 1. DOCENTE -->
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold">Docente</label>
-                                <select id="selectDocente" name="id_profesor" class="form-select" required>
-                                    <option value="">-- Seleccione Docente --</option>
-                                    @if (ViewBag.Profesores != null)
-                                    {
-                                        foreach (var prof in ViewBag.Profesores)
-                                        {
-                                            <option value="@prof.id_profesor">@prof.nombre @prof.apellido</option>
-                                        }
-                                    }
-                                </select>
-                            </div>
+            <form id="formAsignacionHorario" novalidate>
+                <div class="row g-3">
 
-                            <!-- 2. CURSO -->
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold">Curso / Grupo Objetivo</label>
-                                <select id="selectCursoDocenteTab" name="id_curso" class="form-select" required>
-                                    <option value="">-- Seleccione primero el Curso --</option>
-                                    @if (ViewBag.Cursos != null)
-                                    {
-                                        foreach (var curso in ViewBag.Cursos)
-                                        {
-                                            <option value="@curso.id_curso">@curso.nombre_curso</option>
-                                        }
-                                    }
-                                </select>
-                            </div>
+                    <!-- 0. Período Académico (Calendario A Bogotá) -->
+                    <div class="col-md-6">
+                        <label for="selectPeriodo" class="form-label fw-bold">Período Académico</label>
+                        <select id="selectPeriodo" name="periodoAcademico" class="form-select" required>
+                            <option value="">-- Seleccione el Período --</option>
+                            <option value="1">Período 1 (Calendario A)</option>
+                            <option value="2">Período 2 (Calendario A)</option>
+                            <option value="3">Período 3 (Calendario A)</option>
+                            <option value="4">Período 4 (Calendario A)</option>
+                        </select>
+                    </div>
 
-                            <!-- 3. MATERIA (filtrada por docente + curso) -->
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold">Asignatura / Materia</label>
-                                <select id="selectMateriaDocente" name="id_materia" class="form-select" required disabled>
-                                    <option value="">-- Primero seleccione un Docente --</option>
-                                </select>
-                            </div>
+                    <!-- 1. Jornada -->
+                    <div class="col-md-6">
+                        <label for="selectJornada" class="form-label fw-bold">Jornada</label>
+                        <select id="selectJornada" class="form-select" required>
+                            <option value="">-- Seleccione la Jornada --</option>
+                            <option value="Mañana">Mañana</option>
+                            <option value="Tarde">Tarde</option>
+                        </select>
+                    </div>
 
-                            <!-- 4. AULA (filtrada por materia) -->
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold">Aula / Salón</label>
-                                <select id="selectAulaDocente" name="id_aula" class="form-select" required>
-                                    <option value="">-- Seleccione el Aula --</option>
-                                    @if (ViewBag.Aulas != null)
-                                    {
-                                        foreach (var aula in ViewBag.Aulas)
-                                        {
-                                            <option value="@aula.id_aula">
-                                                @aula.codigo_aula - @aula.tipo (Aforo: @aula.capacidad)
-                                            </option>
-                                        }
-                                    }
-                                </select>
-                            </div>
+                    <!-- 2. Curso (depende de la jornada) -->
+                    <div class="col-md-6">
+                        <label for="selectCurso" class="form-label fw-bold">Curso / Grupo Objetivo</label>
+                        <select id="selectCurso" class="form-select" disabled required>
+                            <option value="">-- Seleccione primero la Jornada --</option>
+                        </select>
+                    </div>
 
-                            <!-- DÍA -->
-                            <div class="col-md-6 mt-4">
-                                <label class="form-label fw-bold"><i class="bi bi-calendar-day"></i> Día de la Semana</label>
-                                <select name="dia" class="form-select" required>
-                                    <option value="">-- Seleccione el Día --</option>
-                                    <option value="Lunes">Lunes</option>
-                                    <option value="Martes">Martes</option>
-                                    <option value="Miércoles">Miércoles</option>
-                                    <option value="Jueves">Jueves</option>
-                                    <option value="Viernes">Viernes</option>
-                                </select>
-                            </div>
+                    <!-- 3. Docente (depende de la jornada) -->
+                    <div class="col-md-6">
+                        <label for="selectDocente" class="form-label fw-bold">Docente</label>
+                        <select id="selectDocente" class="form-select" disabled required>
+                            <option value="">-- Seleccione primero la Jornada --</option>
+                        </select>
+                    </div>
 
-                            <!-- BLOQUE HORARIO -->
-                            <div class="col-md-6 mt-4">
-                                <label class="form-label fw-bold"><i class="bi bi-clock"></i> Bloque Horario</label>
-                                <select id="selectBloqueHorario" class="form-select" required disabled>
-                                    <option value="">-- Primero seleccione un Curso --</option>
-                                </select>
+                    <!-- 4. Materia (depende del docente y del curso) -->
+                    <div class="col-md-6">
+                        <label for="selectMateria" class="form-label fw-bold">Asignatura / Materia</label>
+                        <select id="selectMateria" class="form-select" disabled required>
+                            <option value="">-- Seleccione Docente y Curso --</option>
+                        </select>
+                    </div>
 
-                                <input type="hidden" id="hidden_hora_inicio" name="hora_inicio" required />
-                                <input type="hidden" id="hidden_hora_fin" name="hora_fin" required />
-                            </div>
+                    <!-- 5. Aula (lista completa; se filtra según la materia) -->
+                    <div class="col-md-6">
+                        <label for="selectAula" class="form-label fw-bold">Aula / Salón</label>
+                        <select id="selectAula" class="form-select" required>
+                            <option value="">-- Seleccione el Aula --</option>
+                            @if (ViewBag.Aulas != null)
+                            {
+                                foreach (var aula in ViewBag.Aulas)
+                                {
+                                    <option value="@aula.id_aula">@aula.codigo_aula - @aula.tipo (Aforo: @aula.capacidad)</option>
+                                }
+                            }
+                        </select>
+                        <div class="form-text" id="ayudaAula"></div>
+                    </div>
 
-                            <div class="col-12 text-end mt-4">
-                                <button type="submit" class="btn btn-primary btn-lg px-4 fs-6 fw-bold">
-                                    Guardar Asignación Docente
-                                </button>
-                            </div>
-                        </div>
-                    </form>
+                    <!-- 6. Día -->
+                    <div class="col-md-6">
+                        <label for="selectDia" class="form-label fw-bold">Día de la Semana</label>
+                        <select id="selectDia" class="form-select" required>
+                            <option value="">-- Seleccione el Día --</option>
+                            <option value="Lunes">Lunes</option>
+                            <option value="Martes">Martes</option>
+                            <option value="Miércoles">Miércoles</option>
+                            <option value="Jueves">Jueves</option>
+                            <option value="Viernes">Viernes</option>
+                        </select>
+                    </div>
+
+                    <!-- 7. Duración de la clase (1 bloque o clase doble de 2 horas) -->
+                    <div class="col-md-4">
+                        <label for="selectDuracion" class="form-label fw-bold">Duración de la clase</label>
+                        <select id="selectDuracion" class="form-select">
+                            <option value="1">Sencilla (1 bloque)</option>
+                            <option value="2">Doble (2 horas seguidas)</option>
+                        </select>
+                    </div>
+
+                    <!-- 8. Bloque (franjas fijas según la jornada y la duración; el descanso queda bloqueado) -->
+                    <div class="col-md-8">
+                        <label for="selectBloque" class="form-label fw-bold">Bloque Horario</label>
+                        <select id="selectBloque" class="form-select" disabled required>
+                            <option value="">-- Seleccione primero la Jornada --</option>
+                        </select>
+                    </div>
+
                 </div>
 
-                <!-- PESTAÑA 2: ALUMNOS / GRUPOS -->
-                <div class="tab-pane fade" id="tab-alumnos" role="tabpanel" aria-labelledby="alumnos-tab">
-                    <form method="post" asp-action="GuardarAsignacionDocente">
-                        <div class="row g-3">
-                            <!-- 1. CURSO (dispara todo) -->
-                            <div class="col-md-6">
-                                <label for="selectCursoAlumno" class="form-label fw-bold">Curso / Grupo Objetivo</label>
-                                <select id="selectCursoAlumno" name="id_curso" class="form-select" required>
-                                    <option value="">-- Seleccione un Curso --</option>
-                                    @if (ViewBag.Cursos != null)
-                                    {
-                                        foreach (var curso in ViewBag.Cursos)
-                                        {
-                                            <option value="@curso.id_curso">@curso.nombre_curso</option>
-                                        }
-                                    }
-                                </select>
-                            </div>
-
-                            <!-- 2. MATERIA (filtrada por el plan del curso) -->
-                            <div class="col-md-6">
-                                <label for="MateriaAlumno" class="form-label fw-bold">Asignatura / Materia</label>
-                                <select id="MateriaAlumno" name="id_materia" class="form-select" disabled required>
-                                    <option value="">-- Primero seleccione un Curso --</option>
-                                </select>
-                            </div>
-
-                            <!-- 3. DOCENTE (filtrado por quién dicta esa materia) -->
-                            <div class="col-md-6">
-                                <label for="selectDocenteAlumno" class="form-label fw-bold">Docente Asignado</label>
-                                <select id="selectDocenteAlumno" name="id_profesor" class="form-select" disabled required>
-                                    <option value="">-- Primero seleccione una Materia --</option>
-                                </select>
-                            </div>
-
-                            <!-- 4. AULA (filtrada y preseleccionada según la materia) -->
-                            <div class="col-md-6">
-                                <label for="selectAulaAlumno" class="form-label fw-bold">Aula / Salón Asignado</label>
-                                <select id="selectAulaAlumno" name="id_aula" class="form-select" required>
-                                    <option value="">-- Seleccione el Aula --</option>
-                                    @if (ViewBag.Aulas != null)
-                                    {
-                                        foreach (var aula in ViewBag.Aulas)
-                                        {
-                                            <option value="@aula.id_aula">
-                                                @aula.codigo_aula - @aula.tipo (Aforo: @aula.capacidad)
-                                            </option>
-                                        }
-                                    }
-                                </select>
-                            </div>
-
-                            <!-- 5. DÍA -->
-                            <div class="col-md-6 mt-2">
-                                <label class="form-label fw-bold"><i class="bi bi-calendar-day"></i> Día de la Semana</label>
-                                <select name="dia" class="form-select" required>
-                                    <option value="">-- Seleccione el Día --</option>
-                                    <option value="Lunes">Lunes</option>
-                                    <option value="Martes">Martes</option>
-                                    <option value="Miércoles">Miércoles</option>
-                                    <option value="Jueves">Jueves</option>
-                                    <option value="Viernes">Viernes</option>
-                                </select>
-                            </div>
-
-                            <!-- 6. BLOQUE HORARIO (Mañana / Tarde según jornada del curso) -->
-                            <div class="col-md-6 mt-2">
-                                <label class="form-label fw-bold"><i class="bi bi-clock"></i> Bloque Horario</label>
-                                <select id="selectBloqueAlumno" class="form-select" required disabled>
-                                    <option value="">-- Primero seleccione un Curso --</option>
-                                </select>
-
-                                <input type="hidden" id="hidden_hora_inicio_alumno" name="hora_inicio" required />
-                                <input type="hidden" id="hidden_hora_fin_alumno" name="hora_fin" required />
-                            </div>
-
-                            <div class="col-12 text-end mt-4">
-                                <button type="submit" class="btn btn-primary btn-lg px-4 fs-6 fw-bold">
-                                    <i class="bi bi-check-circle me-1"></i> Guardar Asignación de Grupo
-                                </button>
-                            </div>
-                        </div>
-                    </form>
+                <div class="mt-4 d-flex justify-content-between">
+                    <button type="button" id="btnReiniciar" class="btn btn-secondary">
+                        <i class="bi bi-arrow-counterclockwise"></i> Reiniciar / Limpiar Formulario
+                    </button>
+                    <button type="submit" id="btnGuardar" class="btn btn-primary px-4">
+                        <i class="bi bi-save"></i> Guardar Asignación Docente
+                    </button>
                 </div>
+            </form>
 
-            </div>
         </div>
     </div>
-</div>
+
+    <div class="card shadow-sm mt-4">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0"><i class="bi bi-calendar3"></i> Vista Previa del Horario <span id="tituloPrevia" class="fw-normal fs-6"></span></h5>
+        </div>
+        <div class="card-body p-0" id="vistaPreviaContenedor">
+            <p class="text-muted text-center my-4">Seleccione una jornada y curso para visualizar la parrilla horaria.</p>
+        </div>
+    </div>
+
+        </div><!-- /.submodulo-activo -->
+    </div><!-- /.panel-con-sidebar -->
+</div><!-- /.container-fluid -->
 
 @section Scripts {
     <script>
         document.addEventListener("DOMContentLoaded", function () {
 
-            // ============================================================
-            // PESTAÑA DOCENTES
-            // ============================================================
-            const selectDocente = document.getElementById("selectDocente");
-            const selectCursoDocenteTab = document.getElementById("selectCursoDocenteTab");
-            const selectMateriaDocente = document.getElementById("selectMateriaDocente");
-            const selectBloque = document.getElementById("selectBloqueHorario");
-            const selectAulaDocente = document.getElementById("selectAulaDocente");
-            const hiddenInicio = document.getElementById("hidden_hora_inicio");
-            const hiddenFin = document.getElementById("hidden_hora_fin");
+            const el = id => document.getElementById(id);
+            const selPeriodo = el("selectPeriodo"); // <-- 1. Agregamos el selector de período
+            const selJornada = el("selectJornada");
+            const selCurso = el("selectCurso");
+            const selDocente = el("selectDocente");
+            const selMateria = el("selectMateria");
+            const selAula = el("selectAula");
+            const selDia = el("selectDia");
+            const selBloque = el("selectBloque");
+            const selDuracion = el("selectDuracion");
+            const form = el("formAsignacionHorario");
+            const alerta = el("alertaHorario");
+            const previa = el("vistaPreviaContenedor");
+            const tituloPrevia = el("tituloPrevia");
+            const ayudaAula = el("ayudaAula");
 
-            function cargarMateriasDelDocente() {
-                const idProfesor = selectDocente.value;
-                const idCurso = selectCursoDocenteTab.value;
+            const DIAS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
+            let bloquesJornada = [];
+            let bloquesDobles = [];
+            const aulasCompletas = selAula.innerHTML;
 
-                if (!idProfesor) {
-                    selectMateriaDocente.innerHTML = '<option value="">-- Primero seleccione un Docente --</option>';
-                    selectMateriaDocente.disabled = true;
+            // ---------- utilidades ----------
+            const esc = s => String(s ?? "").replace(/[&<>"']/g, c =>
+                ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+            const getJson = url => fetch(url).then(r => {
+                if (!r.ok) throw new Error("HTTP " + r.status);
+                return r.json();
+            });
+
+            function llenar(select, placeholder, items, valor, texto) {
+                select.innerHTML = "";
+                select.appendChild(new Option(placeholder, ""));
+                items.forEach(i => select.appendChild(new Option(texto(i), valor(i))));
+            }
+
+            function bloquear(select, mensaje) {
+                select.innerHTML = "";
+                select.appendChild(new Option(mensaje, ""));
+                select.disabled = true;
+            }
+
+            function mostrarAlerta(ok, mensaje) {
+                alerta.innerHTML = `<div class="alert alert-${ok ? "success" : "danger"} alert-dismissible fade show mb-0">
+                    ${esc(mensaje)}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button></div>`;
+                alerta.scrollIntoView({ behavior: "smooth", block: "nearest" });
+            }
+
+            // ---------- 1. JORNADA -> cursos, docentes y franjas fijas ----------
+            selJornada.addEventListener("change", function () {
+                const jornada = this.value;
+                alerta.innerHTML = "";
+                bloquear(selMateria, "-- Seleccione Docente y Curso --");
+                selAula.innerHTML = aulasCompletas;
+                ayudaAula.textContent = "";
+                limpiarVistaPrevia();
+
+                if (!jornada) {
+                    bloquear(selCurso, "-- Seleccione primero la Jornada --");
+                    bloquear(selDocente, "-- Seleccione primero la Jornada --");
+                    bloquear(selBloque, "-- Seleccione primero la Jornada --");
+                    bloquesJornada = [];
+                    bloquesDobles = [];
                     return;
                 }
 
-                selectMateriaDocente.innerHTML = '<option value="">-- Cargando materias del docente... --</option>';
+                const q = encodeURIComponent(jornada);
 
-                fetch(`/Horario/ObtenerMateriasPorDocente?idProfesor=${idProfesor}&idCurso=${idCurso || 0}`)
-                    .then(res => res.json())
-                    .then(materias => {
-                        selectMateriaDocente.innerHTML = '<option value="">-- Seleccione la Materia --</option>';
-                        if (materias.length === 0) {
-                            selectMateriaDocente.innerHTML = '<option value="">-- Este docente no dicta materias en ese curso --</option>';
-                            selectMateriaDocente.disabled = true;
-                            return;
-                        }
-                        materias.forEach(m => {
-                            const opt = document.createElement("option");
-                            opt.value = m.id_materia;
-                            opt.textContent = m.nombre_materia;
-                            selectMateriaDocente.appendChild(opt);
-                        });
-                        selectMateriaDocente.disabled = false;
-                    })
-                    .catch(err => console.error("Error al cargar materias:", err));
-            }
+                bloquear(selCurso, "-- Cargando cursos... --");
+                getJson(`/Horario/ObtenerCursosPorJornada?jornada=${q}`).then(cursos => {
+                    if (!cursos.length) return bloquear(selCurso, "No hay cursos para esta jornada");
+                    llenar(selCurso, "-- Seleccione un Curso --", cursos, c => c.id_curso, c => c.nombre_curso);
+                    selCurso.disabled = false;
+                }).catch(() => bloquear(selCurso, "-- Error al cargar los cursos --"));
 
-            function cargarBloquesHorario(textoCursoOption) {
-                const esTarde = textoCursoOption.toUpperCase().includes("T");
+                bloquear(selDocente, "-- Cargando docentes... --");
+                getJson(`/Horario/ObtenerDocentesPorJornada?jornada=${q}`).then(docs => {
+                    if (!docs.length) return bloquear(selDocente, "No hay docentes para esta jornada");
+                    llenar(selDocente, "-- Seleccione Docente --", docs, d => d.id_profesor, d => d.nombreCompleto);
+                    selDocente.disabled = false;
+                }).catch(() => bloquear(selDocente, "-- Error al cargar los docentes --"));
 
-                const bloquesMañana = [
-                    { val: "06:00-07:30", text: "06:00 - 07:30 (Bloque 1 - Mañana)" },
-                    { val: "07:30-09:00", text: "07:30 - 09:00 (Bloque 2 - Mañana)" },
-                    { val: "09:00-09:30", text: "09:00 - 09:30 (DESCANSO MAÑANA)", disabled: true },
-                    { val: "09:30-10:45", text: "09:30 - 10:45 (Bloque 3 - Mañana)" },
-                    { val: "10:45-12:00", text: "10:45 - 12:00 (Bloque 4 - Mañana)" }
-                ];
-                const bloquesTarde = [
-                    { val: "12:30-13:45", text: "12:30 - 13:45 (Bloque 1 - Tarde)" },
-                    { val: "13:45-15:00", text: "13:45 - 15:00 (Bloque 2 - Tarde)" },
-                    { val: "15:00-15:30", text: "15:00 - 15:30 (DESCANSO TARDE)", disabled: true },
-                    { val: "15:30-16:45", text: "15:30 - 16:45 (Bloque 3 - Tarde)" },
-                    { val: "16:45-18:00", text: "16:45 - 18:00 (Bloque 4 - Tarde)" }
-                ];
-
-                const listaActiva = esTarde ? bloquesTarde : bloquesMañana;
-
-                selectBloque.disabled = false;
-                selectBloque.innerHTML = '<option value="">-- Seleccione el Bloque Horario --</option>';
-
-                listaActiva.forEach(b => {
-                    const opt = document.createElement("option");
-                    opt.value = b.val;
-                    opt.textContent = b.text;
-                    if (b.disabled) {
-                        opt.disabled = true;
-                        opt.className = "text-danger fw-bold bg-light";
-                    }
-                    selectBloque.appendChild(opt);
-                });
-
-                hiddenInicio.value = "";
-                hiddenFin.value = "";
-            }
-
-            selectDocente.addEventListener("change", cargarMateriasDelDocente);
-
-            selectCursoDocenteTab.addEventListener("change", function () {
-                const idCurso = this.value;
-                const textoCursoOption = this.options[this.selectedIndex].text;
-
-                if (!idCurso) {
-                    selectMateriaDocente.innerHTML = '<option value="">-- Primero seleccione un Curso --</option>';
-                    selectMateriaDocente.disabled = true;
-                    selectBloque.disabled = true;
-                    selectBloque.innerHTML = '<option value="">-- Primero seleccione un Curso --</option>';
-                    hiddenInicio.value = "";
-                    hiddenFin.value = "";
-                    return;
-                }
-
-                cargarMateriasDelDocente();
-                cargarBloquesHorario(textoCursoOption);
+                bloquear(selBloque, "-- Cargando franjas... --");
+                Promise.all([
+                    getJson(`/Horario/ObtenerBloques?jornada=${q}`),
+                    getJson(`/Horario/ObtenerBloquesDobles?jornada=${q}`)
+                ]).then(([bloques, dobles]) => {
+                    bloquesJornada = bloques;
+                    bloquesDobles = dobles;
+                    llenarBloques();
+                    dibujarVistaPrevia([]);
+                }).catch(() => bloquear(selBloque, "-- Error al cargar las franjas --"));
             });
 
-            selectMateriaDocente.addEventListener("change", function () {
-                const idMateria = this.value;
-                if (!idMateria) return;
-
-                fetch(`/Horario/ObtenerAulasPorMateria?idMateria=${idMateria}`)
-                    .then(res => res.json())
-                    .then(aulas => {
-                        selectAulaDocente.innerHTML = '<option value="">-- Seleccione el Aula Recomendada --</option>';
-                        aulas.forEach(a => {
-                            const opt = document.createElement("option");
-                            opt.value = a.id_aula;
-                            opt.textContent = `${a.codigo_aula} - ${a.tipo} (Aforo: ${a.capacidad})`;
-                            selectAulaDocente.appendChild(opt);
-                        });
-                        if (aulas.length > 0) {
-                            selectAulaDocente.value = aulas[0].id_aula;
-                        }
-                    })
-                    .catch(err => console.error("Error al cargar aulas:", err));
-            });
-
-            selectBloque.addEventListener("change", function () {
-                const val = this.value;
-                if (val) {
-                    const h = val.split("-");
-                    hiddenInicio.value = h[0];
-                    hiddenFin.value = h[1];
+            function llenarBloques() {
+                if (!bloquesJornada.length) return;
+                const doble = selDuracion.value === "2";
+                selBloque.innerHTML = "";
+                selBloque.appendChild(new Option("-- Seleccione el Bloque Horario --", ""));
+                if (doble) {
+                    bloquesDobles.forEach(b =>
+                        selBloque.appendChild(new Option(`${b.nombre} (${b.etiqueta})`, `${b.inicio}|${b.fin}`)));
                 } else {
-                    hiddenInicio.value = "";
-                    hiddenFin.value = "";
-                }
-            });
-
-
-            // ============================================================
-            // PESTAÑA ALUMNOS
-            // ============================================================
-            const selectCursoAlumno = document.getElementById("selectCursoAlumno");
-            const selectMateriaAlumno = document.getElementById("MateriaAlumno");
-            const selectDocenteAlumno = document.getElementById("selectDocenteAlumno");
-            const selectAulaAlumno = document.getElementById("selectAulaAlumno");
-            const selectBloqueAlumno = document.getElementById("selectBloqueAlumno");
-            const hiddenInicioAlumno = document.getElementById("hidden_hora_inicio_alumno");
-            const hiddenFinAlumno = document.getElementById("hidden_hora_fin_alumno");
-
-            function cargarBloquesHorario2(selectDestino, hInicio, hFin, textoCursoOption) {
-                const esTarde = textoCursoOption.toUpperCase().includes("T");
-
-                const bloquesMañana = [
-                    { val: "06:00-07:30", text: "06:00 - 07:30 (Bloque 1 - Mañana)" },
-                    { val: "07:30-09:00", text: "07:30 - 09:00 (Bloque 2 - Mañana)" },
-                    { val: "09:00-09:30", text: "09:00 - 09:30 (DESCANSO MAÑANA)", disabled: true },
-                    { val: "09:30-10:45", text: "09:30 - 10:45 (Bloque 3 - Mañana)" },
-                    { val: "10:45-12:00", text: "10:45 - 12:00 (Bloque 4 - Mañana)" }
-                ];
-                const bloquesTarde = [
-                    { val: "12:30-13:45", text: "12:30 - 13:45 (Bloque 1 - Tarde)" },
-                    { val: "13:45-15:00", text: "13:45 - 15:00 (Bloque 2 - Tarde)" },
-                    { val: "15:00-15:30", text: "15:00 - 15:30 (DESCANSO TARDE)", disabled: true },
-                    { val: "15:30-16:45", text: "15:30 - 16:45 (Bloque 3 - Tarde)" },
-                    { val: "16:45-18:00", text: "16:45 - 18:00 (Bloque 4 - Tarde)" }
-                ];
-
-                const listaActiva = esTarde ? bloquesTarde : bloquesMañana;
-                selectDestino.disabled = false;
-                selectDestino.innerHTML = '<option value="">-- Seleccione el Bloque Horario --</option>';
-                listaActiva.forEach(b => {
-                    const opt = document.createElement("option");
-                    opt.value = b.val;
-                    opt.textContent = b.text;
-                    if (b.disabled) {
-                        opt.disabled = true;
-                        opt.className = "text-danger fw-bold bg-light";
-                    }
-                    selectDestino.appendChild(opt);
-                });
-                hInicio.value = "";
-                hFin.value = "";
-            }
-
-            selectCursoAlumno.addEventListener("change", function () {
-                const idCurso = this.value;
-                const textoCursoOption = this.options[this.selectedIndex].text;
-
-                if (!idCurso) {
-                    selectMateriaAlumno.innerHTML = '<option value="">-- Primero seleccione un Curso --</option>';
-                    selectMateriaAlumno.disabled = true;
-                    selectDocenteAlumno.innerHTML = '<option value="">-- Primero seleccione una Materia --</option>';
-                    selectDocenteAlumno.disabled = true;
-                    selectBloqueAlumno.innerHTML = '<option value="">-- Primero seleccione un Curso --</option>';
-                    selectBloqueAlumno.disabled = true;
-                    return;
-                }
-
-                selectMateriaAlumno.innerHTML = '<option value="">-- Cargando materias del curso... --</option>';
-
-                fetch(`/Horario/ObtenerMateriasPorCurso?idCurso=${idCurso}`)
-                    .then(res => res.json())
-                    .then(materias => {
-                        selectMateriaAlumno.innerHTML = '<option value="">-- Seleccione la Materia --</option>';
-                        if (materias.length === 0) {
-                            selectMateriaAlumno.innerHTML = '<option value="">-- Este curso no tiene plan de estudios cargado --</option>';
-                            selectMateriaAlumno.disabled = true;
-                            return;
+                    bloquesJornada.forEach(b => {
+                        if (b.esReceso) {
+                            const o = new Option(`${b.etiqueta} (DESCANSO, bloqueado)`, "");
+                            o.disabled = true;
+                            o.className = "text-danger fw-bold bg-light";
+                            selBloque.appendChild(o);
+                        } else {
+                            selBloque.appendChild(new Option(`${b.nombre} (${b.etiqueta})`, `${b.inicio}|${b.fin}`));
                         }
-                        materias.forEach(m => {
-                            const opt = document.createElement("option");
-                            opt.value = m.id_materia;
-                            opt.textContent = m.nombre_materia;
-                            selectMateriaAlumno.appendChild(opt);
-                        });
-                        selectMateriaAlumno.disabled = false;
-                    })
-                    .catch(err => console.error("Error al cargar materias del curso:", err));
+                    });
+                }
+                selBloque.disabled = false;
+            }
+            selDuracion.addEventListener("change", llenarBloques);
 
-                cargarBloquesHorario2(selectBloqueAlumno, hiddenInicioAlumno, hiddenFinAlumno, textoCursoOption);
+            // ---------- 2. DOCENTE + CURSO -> materias ----------
+            function cargarMaterias() {
+                const idDocente = selDocente.value, idCurso = selCurso.value;
+                selAula.innerHTML = aulasCompletas;
+                ayudaAula.textContent = "";
+
+                if (!idDocente || !idCurso) return bloquear(selMateria, "-- Seleccione Docente y Curso --");
+
+                bloquear(selMateria, "-- Cargando materias... --");
+                getJson(`/Horario/ObtenerMateriasPorDocente?idProfesor=${idDocente}&idCurso=${idCurso}`).then(materias => {
+                    if (!materias.length) return bloquear(selMateria, "-- Este docente no dicta materias en ese curso --");
+                    llenar(selMateria, "-- Seleccione la Materia --", materias, m => m.id_materia, m => m.nombre_materia);
+                    selMateria.disabled = false;
+                }).catch(() => bloquear(selMateria, "-- Error al cargar las materias --"));
+            }
+            selDocente.addEventListener("change", cargarMaterias);
+            selCurso.addEventListener("change", function () {
+                cargarMaterias();
+                cargarVistaPrevia();
             });
 
-            selectMateriaAlumno.addEventListener("change", function () {
+            // ---------- 3. MATERIA -> aulas recomendadas ----------
+            selMateria.addEventListener("change", function () {
                 const idMateria = this.value;
-
                 if (!idMateria) {
-                    selectDocenteAlumno.innerHTML = '<option value="">-- Primero seleccione una Materia --</option>';
-                    selectDocenteAlumno.disabled = true;
+                    selAula.innerHTML = aulasCompletas;
+                    ayudaAula.textContent = "";
                     return;
                 }
-
-                selectDocenteAlumno.innerHTML = '<option value="">-- Cargando docentes... --</option>';
-
-                fetch(`/Horario/ObtenerDocentesPorMateria?idMateria=${idMateria}`)
-                    .then(res => res.json())
-                    .then(docentes => {
-                        selectDocenteAlumno.innerHTML = '<option value="">-- Seleccione el Docente --</option>';
-                        if (docentes.length === 0) {
-                            selectDocenteAlumno.innerHTML = '<option value="">-- Ningún docente dicta esta materia aún --</option>';
-                            selectDocenteAlumno.disabled = true;
-                            return;
-                        }
-                        docentes.forEach(d => {
-                            const opt = document.createElement("option");
-                            opt.value = d.id_profesor;
-                            opt.textContent = d.nombreCompleto;
-                            selectDocenteAlumno.appendChild(opt);
-                        });
-                        selectDocenteAlumno.disabled = false;
-                    })
-                    .catch(err => console.error("Error al cargar docentes:", err));
-
-                fetch(`/Horario/ObtenerAulasPorMateria?idMateria=${idMateria}`)
-                    .then(res => res.json())
-                    .then(aulas => {
-                        selectAulaAlumno.innerHTML = '<option value="">-- Seleccione el Aula Recomendada --</option>';
-                        aulas.forEach(a => {
-                            const opt = document.createElement("option");
-                            opt.value = a.id_aula;
-                            opt.textContent = `${a.codigo_aula} - ${a.tipo} (Aforo: ${a.capacidad})`;
-                            selectAulaAlumno.appendChild(opt);
-                        });
-                        if (aulas.length > 0) selectAulaAlumno.value = aulas[0].id_aula;
-                    })
-                    .catch(err => console.error("Error al cargar aulas:", err));
+                getJson(`/Horario/ObtenerAulasPorMateria?idMateria=${idMateria}`).then(aulas => {
+                    llenar(selAula, "-- Seleccione el Aula Recomendada --", aulas, a => a.id_aula,
+                        a => `${a.codigo_aula} - ${a.tipo} (Aforo: ${a.capacidad})`);
+                    if (aulas.length) selAula.value = aulas[0].id_aula;
+                    ayudaAula.textContent = "Se muestran las aulas recomendadas para esta materia.";
+                }).catch(() => { selAula.innerHTML = aulasCompletas; });
             });
 
-            selectBloqueAlumno.addEventListener("change", function () {
-                const val = this.value;
-                if (val) {
-                    const h = val.split("-");
-                    hiddenInicioAlumno.value = h[0];
-                    hiddenFinAlumno.value = h[1];
-                } else {
-                    hiddenInicioAlumno.value = "";
-                    hiddenFinAlumno.value = "";
-                }
+            // ---------- 4. VISTA PREVIA (parrilla del curso) ----------
+            function limpiarVistaPrevia() {
+                tituloPrevia.textContent = "";
+                previa.innerHTML = '<p class="text-muted text-center my-4">Seleccione una jornada y curso para visualizar la parrilla horaria.</p>';
+            }
+
+            function cargarVistaPrevia() {
+                const idCurso = selCurso.value;
+                if (!idCurso || !bloquesJornada.length) return limpiarVistaPrevia();
+                getJson(`/Horario/ObtenerHorario?idCurso=${idCurso}`)
+                    .then(dibujarVistaPrevia)
+                    .catch(() => {
+                        previa.innerHTML = '<p class="text-danger text-center my-4">No se pudo cargar el horario del curso.</p>';
+                    });
+            }
+
+            function dibujarVistaPrevia(clases) {
+                if (!bloquesJornada.length) return limpiarVistaPrevia();
+                const nombreCurso = selCurso.selectedIndex > 0 ? selCurso.options[selCurso.selectedIndex].text : "";
+                tituloPrevia.textContent = nombreCurso ? "(" + nombreCurso + ")" : "";
+
+                let html = '<div class="table-responsive"><table class="table table-bordered align-middle text-center mb-0">' +
+                    '<thead class="table-light"><tr><th style="width:14%">Hora</th>' +
+                    DIAS.map(d => `<th>${d}</th>`).join("") + "</tr></thead><tbody>";
+
+                const cubiertas = {};
+                DIAS.forEach(d => cubiertas[d] = 0);
+
+                bloquesJornada.forEach((b, i) => {
+                    if (b.esReceso) {
+                        html += `<tr class="table-light"><td class="small fw-bold text-muted">${b.etiqueta}</td>` +
+                            `<td colspan="5" class="small fw-bold text-muted"><i class="bi bi-cup-hot text-warning me-1"></i>DESCANSO</td></tr>`;
+                        return;
+                    }
+                    html += `<tr><td class="small fw-bold bg-light">${b.etiqueta}</td>`;
+                    DIAS.forEach(d => {
+                        if (cubiertas[d] > 0) { cubiertas[d]--; return; }
+
+                        const c = (clases || []).find(x =>
+                            (x.dia || "").toLowerCase() === d.toLowerCase() &&
+                            (x.bloque || "").split(" - ")[0] === b.inicio);
+                        if (!c) { html += '<td class="text-muted">-</td>'; return; }
+
+                        const finClase = (c.bloque || "").split(" - ")[1];
+                        let span = 1;
+                        while (i + span < bloquesJornada.length &&
+                               !bloquesJornada[i + span].esReceso &&
+                               bloquesJornada[i + span].inicio < finClase) span++;
+                        cubiertas[d] = span - 1;
+
+                        const doble = span > 1;
+                        html += `<td class="p-2" rowspan="${span}" style="vertical-align:middle;${doble ? "background:#e7f1ff;border-left:4px solid #0d6efd;" : ""}">` +
+                            `<div class="fw-bold small">${esc(c.materia)}</div>` +
+                            `<div class="text-muted small">${esc(c.docente)}</div>` +
+                            (doble ? `<div class="small text-primary"><i class="bi bi-clock me-1"></i>${esc(c.bloque)} · 2 horas</div>` : "") +
+                            `<button type="button" class="btn btn-sm btn-outline-danger py-0 mt-1" data-eliminar="${c.id}" title="Eliminar esta asignación"><i class="bi bi-trash"></i></button></td>`;
+                    });
+                    html += "</tr>";
+                });
+
+                previa.innerHTML = html + "</tbody></table></div>";
+            }
+
+            previa.addEventListener("click", function (e) {
+                const btn = e.target.closest("[data-eliminar]");
+                if (!btn || !confirm("¿Eliminar esta asignación del horario?")) return;
+                fetch("/Horario/EliminarHorario", { method: "POST", body: new URLSearchParams({ id: btn.dataset.eliminar }) })
+                    .then(r => r.json())
+                    .then(res => { mostrarAlerta(res.success, res.message); cargarVistaPrevia(); })
+                    .catch(() => mostrarAlerta(false, "No se pudo eliminar la asignación."));
+            });
+
+            // ---------- 5. GUARDAR (Inclusión de 'selPeriodo' y 'periodoAcademico') ----------
+            form.addEventListener("submit", function (e) {
+                e.preventDefault();
+
+                // <-- 2. Añadimos selPeriodo a la validación
+                const faltan = [selPeriodo, selJornada, selCurso, selDocente, selMateria, selAula, selDia, selBloque].some(s => !s.value);
+                if (faltan) return mostrarAlerta(false, "Completa todos los campos (incluyendo el período académico) antes de guardar.");
+
+                const [horaInicio, horaFin] = selBloque.value.split("|");
+                const btn = el("btnGuardar");
+                btn.disabled = true;
+
+                // <-- 3. Enviamos 'periodoAcademico' en la petición POST
+                fetch("/Horario/GuardarHorario", {
+                    method: "POST",
+                    body: new URLSearchParams({
+                        periodoAcademico: selPeriodo.value,
+                        idCurso: selCurso.value,
+                        idProfesor: selDocente.value,
+                        idAula: selAula.value,
+                        idMateria: selMateria.value,
+                        dia: selDia.value,
+                        horaInicio: horaInicio,
+                        horaFin: horaFin
+                    })
+                })
+                    .then(r => r.json())
+                    .then(res => {
+                        mostrarAlerta(res.success, res.message);
+                        if (res.success) {
+                            selDia.value = "";
+                            selBloque.value = "";
+                            cargarVistaPrevia();
+                        }
+                    })
+                    .catch(() => mostrarAlerta(false, "Error de comunicación con el servidor."))
+                    .finally(() => { btn.disabled = false; });
+            });
+
+            // ---------- 6. REINICIAR FORMULARIO ----------
+            el("btnReiniciar").addEventListener("click", function () {
+                form.reset();
+                alerta.innerHTML = "";
+                if (selPeriodo) selPeriodo.value = ""; // <-- 4. Reiniciamos el período
+                bloquear(selCurso, "-- Seleccione primero la Jornada --");
+                bloquear(selDocente, "-- Seleccione primero la Jornada --");
+                bloquear(selMateria, "-- Seleccione Docente y Curso --");
+                bloquear(selBloque, "-- Seleccione primero la Jornada --");
+                selAula.innerHTML = aulasCompletas;
+                ayudaAula.textContent = "";
+                bloquesJornada = [];
+                bloquesDobles = [];
+                selDuracion.value = "1";
+                limpiarVistaPrevia();
             });
 
         });
     </script>
 }
-
-        </div><!-- /.submodulo-activo -->
-    </div><!-- /.panel-con-sidebar -->
-</div><!-- /.container-fluid -->

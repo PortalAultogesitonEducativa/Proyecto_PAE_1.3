@@ -17,5 +17,6 @@ namespace ProyectoPAE.Models
         public string? especialidad { get; set; }
         public int id_departamento { get; set; } = 1;
         public int? id_usuario { get; set; }
+        public string? jornada { get; set; }
     }
 }
