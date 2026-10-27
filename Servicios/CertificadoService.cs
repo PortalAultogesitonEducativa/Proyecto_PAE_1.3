@@ -141,9 +141,9 @@ namespace ProyectoPAE.Servicios
             certificado.Detalles.Add(new CertificadoDetalle
             {
                 IdCalificacion = matricula.id_matricula,
-                Materia = $"Grado {matricula.id_curso}°",
+                Materia = $"Grado {matricula.grado_solicitado ?? matricula.id_curso ?? 0}°",
                 Periodo = matricula.periodo_academico,
-                NotaFinal = matricula.id_curso,
+                NotaFinal = Convert.ToDecimal(matricula.grado_solicitado ?? matricula.id_curso ?? 0),
                 EstadoNota = matricula.estado
             });
 

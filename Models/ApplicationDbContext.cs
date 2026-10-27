@@ -45,6 +45,8 @@ namespace ProyectoPAE.Models
         // --- FIRMA DE CERTIFICADOS ---
         public DbSet<Certificado> Certificados { get; set; }
         public DbSet<CertificadoDetalle> CertificadosDetalle { get; set; }
+        public DbSet<CertificadoEstudioExterno> CertificadosEstudioExterno { get; set; }
+
 
         // --- NOTIFICACIONES Y ANUNCIOS GLOBALES ---
         public DbSet<Notificacion> Notificaciones { get; set; }

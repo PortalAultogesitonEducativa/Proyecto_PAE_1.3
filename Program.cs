@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+ï»¿using Microsoft.EntityFrameworkCore;
 using ProyectoPAE.Models;
 using ProyectoPAE.Services;
 using Rotativa.AspNetCore;
@@ -7,7 +7,7 @@ using ProyectoPAE.Servicios;
 var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-// 1. Configuración de la base de datos
+// 1. ConfiguraciÃ³n de la base de datos
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
@@ -25,9 +25,10 @@ builder.Services.AddScoped<ServicioEmail>();
 
 // CERTIFICADOS
 builder.Services.AddScoped<CertificadoService>();
+builder.Services.AddScoped<MatriculaAcademicaService>();
 
 var app = builder.Build();
-// Configuración de Rotativa para encontrar el ejecutable en wwwroot/Rotativa
+// ConfiguraciÃ³n de Rotativa para encontrar el ejecutable en wwwroot/Rotativa
 IWebHostEnvironment env = app.Services.GetRequiredService<IWebHostEnvironment>();
 RotativaConfiguration.Setup(env.WebRootPath, "Rotativa");
 // Configure the HTTP request pipeline.

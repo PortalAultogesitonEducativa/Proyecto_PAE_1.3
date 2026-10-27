@@ -16,10 +16,10 @@ namespace ProyectoPAE.Models
         public DateTime fecha_inscripcion { get; set; }
         public int? id_usuario { get; set; } // enlaza con GU_Usuario.ID_Usuario
 
-        [NotMapped]
+        [Column("id_curso")]
         public int? id_curso { get; set; } // Curso asignado al estudiante
 
-        [NotMapped]
+        [Column("curso_asignado")]
         public string? curso_asignado { get; set; } // Nombre o código de curso asignado (ej: "601 M", "1102 T")
     }
 }
