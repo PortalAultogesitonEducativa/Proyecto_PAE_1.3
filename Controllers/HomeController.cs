@@ -175,23 +175,94 @@ namespace ProyectoPAE.Controllers
                 ViewBag.MatriculasEsteAnio = _context.Matriculas.Count(m => m.ano == anioActual);
                 ViewBag.MatriculasFinalizadas = _context.Matriculas.Count(m => m.estado != null && m.estado.ToLower() == "finalizada");
 
-                var listaMatriculas = (from m in _context.Matriculas
-                                       join e in _context.ESTUDIANTE on m.id_estudiante equals e.id_estudiante
-                                       orderby m.fecha_matricula descending
-                                       select new MatriculaAdminItemViewModel
-                                       {
-                                           IdMatricula = m.id_matricula,
-                                           IdEstudiante = e.id_estudiante,
-                                           NombreEstudiante = e.nombre + " " + e.apellido,
-                                           CodigoEstudiante = e.codigo_estudiante,
-                                           Grado = m.id_curso,
-                                           FechaMatricula = m.fecha_matricula,
-                                           PeriodoAcademico = m.periodo_academico,
-                                           Estado = m.estado
-                                       })
-                                       .ToList();
+                var certsExternos = _context.CertificadosEstudioExterno
+                    .Where(c => c.Activo)
+                    .GroupBy(c => c.IdEstudiante)
+                    .Select(g => new
+                    {
+                        IdEstudiante = g.Key,
+                        Verificados = g.Count(x => x.EstadoVerificacion == "Verificado"),
+                        Pendientes = g.Count(x => x.EstadoVerificacion == "Pendiente de verificación")
+                    })
+                    .ToDictionary(k => k.IdEstudiante, v => v);
+
+                var cursosDict = _context.Cursos.ToDictionary(c => c.id_curso, c => c.nombre_curso);
+
+                var rawMatriculas = (from m in _context.Matriculas
+                                     join e in _context.ESTUDIANTE on m.id_estudiante equals e.id_estudiante
+                                     orderby m.fecha_matricula descending
+                                     select new
+                                     {
+                                         m.id_matricula,
+                                         m.id_estudiante,
+                                         NombreEstudiante = e.nombre + " " + e.apellido,
+                                         e.codigo_estudiante,
+                                         m.grado_solicitado,
+                                         m.id_curso,
+                                         m.fecha_matricula,
+                                         m.periodo_academico,
+                                         m.ano,
+                                         m.estado,
+                                         m.estado_academico,
+                                         m.estado_documental,
+                                         m.documentos_pendientes,
+                                         m.observaciones
+                                     })
+                                     .ToList();
+
+                var listaMatriculas = rawMatriculas.Select(m =>
+                {
+                    string nombreCurso = "Sin asignar";
+                    if (m.id_curso.HasValue && cursosDict.TryGetValue(m.id_curso.Value, out var cNom))
+                    {
+                        nombreCurso = cNom;
+                    }
+                    int grado = m.grado_solicitado ?? MatriculaAcademicaService.ExtraerGrado(nombreCurso, 6);
+                    certsExternos.TryGetValue(m.id_estudiante, out var certInfo);
+
+                    // Determinar estado académico previo descriptivo
+                    string estadoPrevio = "Verificar requisitos";
+                    if (grado <= 6)
+                    {
+                        if (certInfo != null && certInfo.Verificados >= 5)
+                            estadoPrevio = "Primaria acreditada (1°-5°)";
+                        else if (certInfo != null && certInfo.Pendientes > 0)
+                            estadoPrevio = $"{certInfo.Pendientes} cert. pendiente(s)";
+                        else
+                            estadoPrevio = "Requiere cert. 5°";
+                    }
+                    else
+                    {
+                        int gradoPrev = grado - 1;
+                        estadoPrevio = $"Prerrequisito: Grado {gradoPrev}°";
+                    }
+
+                    return new MatriculaAdminItemViewModel
+                    {
+                        IdMatricula = m.id_matricula,
+                        IdEstudiante = m.id_estudiante,
+                        NombreEstudiante = m.NombreEstudiante,
+                        CodigoEstudiante = m.codigo_estudiante,
+                        GradoSolicitado = grado,
+                        IdCurso = m.id_curso,
+                        NombreCurso = nombreCurso,
+                        Grado = grado,
+                        FechaMatricula = m.fecha_matricula,
+                        PeriodoAcademico = m.periodo_academico ?? "",
+                        Anio = m.ano,
+                        Estado = string.IsNullOrWhiteSpace(m.estado) ? "Registrada" : m.estado,
+                        EstadoAcademico = string.IsNullOrWhiteSpace(m.estado_academico) ? "Pendiente de resultado" : m.estado_academico,
+                        EstadoDocumental = string.IsNullOrWhiteSpace(m.estado_documental) ? "Pendiente de revisión" : m.estado_documental,
+                        EstadoAcademicoAnterior = estadoPrevio,
+                        DocumentosPendientes = m.documentos_pendientes,
+                        Observaciones = m.observaciones,
+                        CertificadosExternosVerificados = certInfo?.Verificados ?? 0,
+                        CertificadosExternosPendientes = certInfo?.Pendientes ?? 0
+                    };
+                }).ToList();
 
                 ViewBag.ListaMatriculas = listaMatriculas;
+                ViewBag.TodosLosCursos = _context.Cursos.OrderBy(c => c.nombre_curso).ToList();
 
                 // --- Cargar datos para Reportes Pro ---
                 var repPro = new ReportesProViewModel();

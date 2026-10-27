@@ -393,121 +393,333 @@
                 </div>
             </div>
 
-            <!-- Tabla -->
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-white d-flex flex-wrap align-items-center justify-content-between gap-3 p-3">
-                    <div class="d-flex gap-3">
+            <!-- Contenedor y Filtros de Matrículas -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white p-3">
+                    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
                         <div>
-                            <label class="form-label small mb-1">Filtrar por Grado</label>
+                            <h5 class="fw-bold mb-1" style="color:#0d2a4a;"><i class="bi bi-mortarboard-fill text-warning me-2"></i>Gestión de Matrículas y Asignación de Cursos</h5>
+                            <p class="text-muted small mb-0">Control del proceso educativo colombiano: separación estricta entre estado académico, documental y de matrícula.</p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="limpiarFiltrosMatriculas()">
+                                <i class="bi bi-arrow-counterclockwise me-1"></i>Limpiar Filtros
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Barra de filtros combinados -->
+                    <div class="row g-2 align-items-end">
+                        <div class="col-md-3">
+                            <label class="form-label small fw-semibold text-muted mb-1">Buscar estudiante</label>
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                                <input type="text" id="buscarMatricula" class="form-control" placeholder="Nombre o documento..." onkeyup="filtrarMatriculas()" />
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small fw-semibold text-muted mb-1">Grado solicitado</label>
                             <select id="filtroGrado" class="form-select form-select-sm" onchange="filtrarMatriculas()">
                                 <option value="todos">Todos los Grados</option>
-                                <option value="6">Grado 6</option>
-                                <option value="7">Grado 7</option>
-                                <option value="8">Grado 8</option>
-                                <option value="9">Grado 9</option>
-                                <option value="10">Grado 10</option>
-                                <option value="11">Grado 11</option>
+                                <option value="6">Grado 6°</option>
+                                <option value="7">Grado 7°</option>
+                                <option value="8">Grado 8°</option>
+                                <option value="9">Grado 9°</option>
+                                <option value="10">Grado 10°</option>
+                                <option value="11">Grado 11°</option>
                             </select>
                         </div>
-                        <div>
-                            <label class="form-label small mb-1">Estado</label>
+                        <div class="col-md-2">
+                            <label class="form-label small fw-semibold text-muted mb-1">Año Lectivo</label>
+                            <select id="filtroAnio" class="form-select form-select-sm" onchange="filtrarMatriculas()">
+                                <option value="todos">Todos los Años</option>
+                                <option value="2026">2026</option>
+                                <option value="2025">2025</option>
+                                <option value="2024">2024</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small fw-semibold text-muted mb-1">Estado Matrícula</label>
                             <select id="filtroEstado" class="form-select form-select-sm" onchange="filtrarMatriculas()">
                                 <option value="todos">Cualquier Estado</option>
                                 <option value="activa">Activa</option>
+                                <option value="registrada">Registrada</option>
                                 <option value="finalizada">Finalizada</option>
+                                <option value="cancelada">Cancelada / Rechazada</option>
                             </select>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <label class="form-label small fw-semibold text-muted mb-1">Revisión Doc.</label>
+                                    <select id="filtroEstadoDoc" class="form-select form-select-sm" onchange="filtrarMatriculas()">
+                                        <option value="todos">Todos</option>
+                                        <option value="aprobada">Aprobada</option>
+                                        <option value="pendiente de revisión">Por revisar</option>
+                                        <option value="pendiente de documentos">Docs. pendientes</option>
+                                        <option value="rechazada">Rechazada</option>
+                                    </select>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label small fw-semibold text-muted mb-1">Resultado Acad.</label>
+                                    <select id="filtroEstadoAcad" class="form-select form-select-sm" onchange="filtrarMatriculas()">
+                                        <option value="todos">Todos</option>
+                                        <option value="aprobado">Aprobado</option>
+                                        <option value="reprobado">Reprobado</option>
+                                        <option value="pendiente de resultado">Pendiente</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
+                <!-- Tabla de Matrículas con columnas independientes -->
                 <div class="table-responsive">
-                    <table class="table align-middle mb-0">
+                    <table class="table align-middle table-hover mb-0">
                         <thead class="table-light">
-                            <tr class="small text-uppercase text-muted">
+                            <tr class="small text-uppercase text-muted border-bottom">
                                 <th class="px-3 py-3">Estudiante</th>
-                                <th class="px-3 py-3">Grado</th>
-                                <th class="px-3 py-3">Periodo Académico</th>
-                                <th class="px-3 py-3">Fecha Matrícula</th>
-                                <th class="px-3 py-3">Estado</th>
+                                <th class="px-3 py-3">Grado / Curso</th>
+                                <th class="px-3 py-3">Año Lectivo</th>
+                                <th class="px-3 py-3">Resultado Académico</th>
+                                <th class="px-3 py-3">Revisión Documental</th>
+                                <th class="px-3 py-3">Estado Matrícula</th>
                                 <th class="px-3 py-3 text-end">Acciones</th>
                             </tr>
                         </thead>
                         <tbody id="tbodyMatriculas">
                             @{
                                 var listaMatriculas = ViewBag.ListaMatriculas as List<ProyectoPAE.Models.MatriculaAdminItemViewModel>;
+                                var todosCursos = ViewBag.TodosLosCursos as List<ProyectoPAE.Models.Curso> ?? new List<ProyectoPAE.Models.Curso>();
                             }
                             @if (listaMatriculas != null && listaMatriculas.Any())
                             {
                                 foreach (var mat in listaMatriculas)
                                 {
-                                    bool esActiva = mat.Estado != null && (mat.Estado.Equals("Activa", StringComparison.OrdinalIgnoreCase) || mat.Estado.Equals("Activo", StringComparison.OrdinalIgnoreCase));
-                                    string colorFondo = esActiva ? "#0d2a4a1a" : "#6c757d1a";
-                                    string colorTexto = esActiva ? "#0d2a4a" : "#6c757d";
-                                    var iniciales = string.Join("", mat.NombreEstudiante.Split(' ').Take(2).Select(p => p.Length > 0 ? p[0].ToString().ToUpper() : ""));
+                                    bool esActiva = mat.Estado.Equals("Activa", StringComparison.OrdinalIgnoreCase) || mat.Estado.Equals("Activo", StringComparison.OrdinalIgnoreCase);
+                                    bool docAprobada = mat.EstadoDocumental.Equals("Aprobada", StringComparison.OrdinalIgnoreCase);
+                                    bool acadAprobado = mat.EstadoAcademico.Equals("Aprobado", StringComparison.OrdinalIgnoreCase);
+                                    bool acadReprobado = mat.EstadoAcademico.Equals("Reprobado", StringComparison.OrdinalIgnoreCase);
 
-                                    <tr class="fila-mat" data-grado="@mat.Grado" data-estado="@mat.Estado?.ToLower()">
+                                    var iniciales = string.Join("", mat.NombreEstudiante.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(p => p.Length > 0 ? p[0].ToString().ToUpper() : ""));
+
+                                    <tr class="fila-mat"
+                                        data-nombre="@mat.NombreEstudiante.ToLower()"
+                                        data-codigo="@mat.CodigoEstudiante.ToLower()"
+                                        data-grado="@mat.GradoSolicitado"
+                                        data-anio="@mat.Anio"
+                                        data-estado="@mat.Estado.ToLower()"
+                                        data-doc="@mat.EstadoDocumental.ToLower()"
+                                        data-acad="@mat.EstadoAcademico.ToLower()">
                                         <td class="px-3 py-3">
                                             <div class="d-flex align-items-center gap-2">
-                                                <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width:40px;height:40px;background:@colorFondo;color:@colorTexto;">@iniciales</div>
+                                                <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width:40px;height:40px;background:#0d2a4a15;color:#0d2a4a;">
+                                                    @iniciales
+                                                </div>
                                                 <div>
-                                                    <p class="fw-bold mb-0">@mat.NombreEstudiante</p>
-                                                    <p class="text-muted small mb-0">ID: @mat.CodigoEstudiante</p>
+                                                    <div class="fw-bold text-dark">@mat.NombreEstudiante</div>
+                                                    <div class="text-muted small">
+                                                        <span>ID: @mat.CodigoEstudiante</span>
+                                                        @if (mat.CertificadosExternosVerificados > 0)
+                                                        {
+                                                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle ms-1" title="Tiene @mat.CertificadosExternosVerificados certificado(s) externo(s) verificado(s)">
+                                                                <i class="bi bi-award-fill me-1"></i>@mat.CertificadosExternosVerificados cert. verif.
+                                                            </span>
+                                                        }
+                                                        else if (mat.CertificadosExternosPendientes > 0)
+                                                        {
+                                                            <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle ms-1" title="@mat.CertificadosExternosPendientes certificado(s) pendiente(s) de revisión">
+                                                                <i class="bi bi-hourglass me-1"></i>@mat.CertificadosExternosPendientes cert. pend.
+                                                            </span>
+                                                        }
+                                                    </div>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td class="px-3 py-3">Grado @mat.Grado°</td>
-                                        <td class="px-3 py-3">@mat.PeriodoAcademico</td>
-                                        <td class="px-3 py-3">@mat.FechaMatricula.ToString("dd MMM, yyyy")</td>
                                         <td class="px-3 py-3">
-                                            <span class="badge rounded-pill" style="background:@colorFondo;color:@colorTexto;">@mat.Estado.ToUpper()</span>
+                                            <div class="fw-semibold text-dark">Grado @mat.GradoSolicitado°</div>
+                                            @if (mat.IdCurso.HasValue && !string.IsNullOrWhiteSpace(mat.NombreCurso) && mat.NombreCurso != "Sin asignar")
+                                            {
+                                                <span class="badge bg-success-subtle text-success border border-success-subtle">
+                                                    <i class="bi bi-door-open-fill me-1"></i>Curso: @mat.NombreCurso
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-warning-subtle text-dark border border-warning-subtle">
+                                                    <i class="bi bi-exclamation-circle me-1"></i>Sin curso asignado
+                                                </span>
+                                            }
+                                        </td>
+                                        <td class="px-3 py-3">
+                                            <span class="fw-bold">@mat.Anio</span>
+                                            <div class="text-muted small">@mat.PeriodoAcademico</div>
+                                            <div class="text-muted small">@mat.FechaMatricula.ToString("dd/MM/yyyy")</div>
+                                        </td>
+                                        <td class="px-3 py-3">
+                                            @if (acadAprobado)
+                                            {
+                                                <span class="badge bg-success-subtle text-success border border-success-subtle p-1 px-2">
+                                                    <i class="bi bi-check-circle-fill me-1"></i>Aprobado
+                                                </span>
+                                            }
+                                            else if (acadReprobado)
+                                            {
+                                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle p-1 px-2">
+                                                    <i class="bi bi-x-circle-fill me-1"></i>Reprobado
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle p-1 px-2">
+                                                    <i class="bi bi-hourglass-split me-1"></i>Pendiente resultado
+                                                </span>
+                                            }
+                                            <div class="small text-muted mt-1" style="font-size:0.75rem;">
+                                                <i class="bi bi-info-circle me-1"></i>@mat.EstadoAcademicoAnterior
+                                            </div>
+                                        </td>
+                                        <td class="px-3 py-3">
+                                            @if (docAprobada)
+                                            {
+                                                <span class="badge bg-success text-white p-1 px-2">
+                                                    <i class="bi bi-file-earmark-check-fill me-1"></i>Aprobada
+                                                </span>
+                                            }
+                                            else if (mat.EstadoDocumental.Equals("Pendiente de documentos", StringComparison.OrdinalIgnoreCase))
+                                            {
+                                                <span class="badge bg-warning text-dark p-1 px-2" title="@mat.DocumentosPendientes">
+                                                    <i class="bi bi-file-earmark-excel-fill me-1"></i>Docs. Pendientes
+                                                </span>
+                                                @if (!string.IsNullOrWhiteSpace(mat.DocumentosPendientes))
+                                                {
+                                                    <div class="small text-danger fw-semibold mt-1" style="font-size:0.72rem;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="@mat.DocumentosPendientes">
+                                                        @mat.DocumentosPendientes
+                                                    </div>
+                                                }
+                                            }
+                                            else if (mat.EstadoDocumental.Equals("Rechazada", StringComparison.OrdinalIgnoreCase))
+                                            {
+                                                <span class="badge bg-danger text-white p-1 px-2">
+                                                    <i class="bi bi-file-earmark-x-fill me-1"></i>Rechazada
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary-subtle text-dark border p-1 px-2">
+                                                    <i class="bi bi-file-earmark-text me-1"></i>Pendiente revisión
+                                                </span>
+                                            }
+                                        </td>
+                                        <td class="px-3 py-3">
+                                            @if (esActiva)
+                                            {
+                                                <span class="badge rounded-pill bg-primary-subtle text-primary border border-primary-subtle px-2 py-1">ACTIVA</span>
+                                            }
+                                            else if (mat.Estado.Equals("Finalizada", StringComparison.OrdinalIgnoreCase))
+                                            {
+                                                <span class="badge rounded-pill bg-secondary-subtle text-secondary border px-2 py-1">FINALIZADA</span>
+                                            }
+                                            else if (mat.Estado.Equals("Cancelada", StringComparison.OrdinalIgnoreCase) || mat.Estado.Equals("Rechazada", StringComparison.OrdinalIgnoreCase))
+                                            {
+                                                <span class="badge rounded-pill bg-danger-subtle text-danger border px-2 py-1">CANCELADA</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge rounded-pill bg-info-subtle text-info-emphasis border px-2 py-1">@mat.Estado.ToUpper()</span>
+                                            }
                                         </td>
                                         <td class="px-3 py-3 text-end">
-                                            <div class="dropdown">
-                                                <button class="btn btn-sm btn-light border" type="button"
-                                                        id="accion-@mat.IdMatricula"
-                                                        data-bs-toggle="dropdown" aria-expanded="false">
-                                                    <i class="bi bi-three-dots-vertical"></i>
+                                            <div class="d-flex align-items-center justify-content-end gap-1">
+                                                <!-- Botón obligatorio: Historial de matrículas por estudiante -->
+                                                <button type="button" class="btn btn-sm btn-outline-primary"
+                                                        title="Ver historial académico completo y matrículas anteriores"
+                                                        onclick="abrirModalHistorial(@mat.IdEstudiante, '@mat.NombreEstudiante')">
+                                                    <i class="bi bi-clock-history me-1"></i>Historial
                                                 </button>
-                                                <ul class="dropdown-menu dropdown-menu-end shadow-sm"
-                                                    aria-labelledby="accion-@mat.IdMatricula">
-                                                    <li>
-                                                        <button type="button" class="dropdown-item"
-                                                                onclick="abrirModalEditarMatricula(@mat.IdMatricula, @mat.Grado, '@mat.Estado', '@mat.NombreEstudiante')">
-                                                            <i class="bi bi-pencil-square text-primary me-2"></i>Editar
-                                                        </button>
-                                                    </li>
-                                                    @if (!esActiva)
-                                                    {
+
+                                                <!-- Menú de gestión secretaria/admin -->
+                                                <div class="dropdown">
+                                                    <button class="btn btn-sm btn-light border" type="button"
+                                                            id="accion-@mat.IdMatricula"
+                                                            data-bs-toggle="dropdown" aria-expanded="false" title="Más acciones">
+                                                        <i class="bi bi-three-dots-vertical"></i>
+                                                    </button>
+                                                    <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="accion-@mat.IdMatricula">
                                                         <li>
-                                                            <form method="post" action="/Admin/CambiarEstadoMatricula" style="display:inline">
-                                                                <input type="hidden" name="idMatricula" value="@mat.IdMatricula" />
-                                                                <input type="hidden" name="nuevoEstado" value="Activa" />
+                                                            <button type="button" class="dropdown-item"
+                                                                    onclick="abrirModalRevisionDocumental(@mat.IdMatricula, '@mat.NombreEstudiante', @mat.GradoSolicitado, '@mat.EstadoDocumental', '@mat.DocumentosPendientes', '@(mat.Observaciones?.Replace("'", "\\'"))')">
+                                                                <i class="bi bi-clipboard-check text-info me-2"></i>Revisión Documental
+                                                            </button>
+                                                        </li>
+                                                        <li>
+                                                            <button type="button" class="dropdown-item"
+                                                                    onclick="abrirModalCertificadosExternos(@mat.IdEstudiante, '@mat.NombreEstudiante')">
+                                                                <i class="bi bi-award text-warning me-2"></i>Certificados Externos
+                                                            </button>
+                                                        </li>
+                                                        <li>
+                                                            <button type="button" class="dropdown-item"
+                                                                    onclick="abrirModalAsignarCurso(@mat.IdMatricula, @mat.IdEstudiante, '@mat.NombreEstudiante', @mat.GradoSolicitado, @(mat.IdCurso ?? 0), '@mat.EstadoDocumental')">
+                                                                <i class="bi bi-door-open text-success me-2"></i>Asignar Curso Definitivo
+                                                            </button>
+                                                        </li>
+                                                        <li>
+                                                            <button type="button" class="dropdown-item"
+                                                                    onclick="abrirModalEstadoAcademico(@mat.IdMatricula, '@mat.NombreEstudiante', @mat.GradoSolicitado, '@mat.EstadoAcademico', '@(mat.Observaciones?.Replace("'", "\\'"))')">
+                                                                <i class="bi bi-mortarboard text-primary me-2"></i>Calificar Resultado Académico
+                                                            </button>
+                                                        </li>
+                                                        <li><hr class="dropdown-divider" /></li>
+                                                        <li>
+                                                            <form method="post" action="/Admin/RenovarMatricula" style="display:inline">
+                                                                <input type="hidden" name="idEstudiante" value="@mat.IdEstudiante" />
                                                                 @Html.AntiForgeryToken()
-                                                                <button type="submit" class="dropdown-item"><i class="bi bi-check-circle text-success me-2"></i>Marcar Activa</button>
+                                                                <button type="submit" class="dropdown-item text-primary" title="Genera nueva matrícula verificando requisitos de avance">
+                                                                    <i class="bi bi-arrow-repeat text-primary me-2"></i>Renovar Matrícula @DateTime.Now.Year
+                                                                </button>
                                                             </form>
                                                         </li>
-                                                    }
-                                                    @if (esActiva)
-                                                    {
                                                         <li>
-                                                            <form method="post" action="/Admin/CambiarEstadoMatricula" style="display:inline">
+                                                            <button type="button" class="dropdown-item"
+                                                                    onclick="abrirModalEditarMatricula(@mat.IdMatricula, @(mat.IdCurso ?? 0), @mat.GradoSolicitado, '@mat.Estado', '@mat.EstadoAcademico', '@mat.EstadoDocumental', '@mat.NombreEstudiante', '@(mat.Observaciones?.Replace("'", "\\'"))')">
+                                                                <i class="bi bi-pencil-square text-secondary me-2"></i>Editar Matrícula
+                                                            </button>
+                                                        </li>
+                                                        @if (!esActiva)
+                                                        {
+                                                            <li>
+                                                                <form method="post" action="/Admin/CambiarEstadoMatricula" style="display:inline">
+                                                                    <input type="hidden" name="idMatricula" value="@mat.IdMatricula" />
+                                                                    <input type="hidden" name="nuevoEstado" value="Activa" />
+                                                                    @Html.AntiForgeryToken()
+                                                                    <button type="submit" class="dropdown-item text-success"><i class="bi bi-check-circle me-2"></i>Marcar Activa</button>
+                                                                </form>
+                                                            </li>
+                                                        }
+                                                        else
+                                                        {
+                                                            <li>
+                                                                <form method="post" action="/Admin/CambiarEstadoMatricula" style="display:inline">
+                                                                    <input type="hidden" name="idMatricula" value="@mat.IdMatricula" />
+                                                                    <input type="hidden" name="nuevoEstado" value="Finalizada" />
+                                                                    @Html.AntiForgeryToken()
+                                                                    <button type="submit" class="dropdown-item text-secondary"><i class="bi bi-stop-circle me-2"></i>Finalizar Matrícula</button>
+                                                                </form>
+                                                            </li>
+                                                        }
+                                                        <li><hr class="dropdown-divider" /></li>
+                                                        <li>
+                                                            <form method="post" action="/Admin/EliminarMatricula" style="display:inline"
+                                                                  onsubmit="return confirm('¿Eliminar esta matrícula de @mat.NombreEstudiante? El historial académico y certificados no se eliminarán.')">
                                                                 <input type="hidden" name="idMatricula" value="@mat.IdMatricula" />
-                                                                <input type="hidden" name="nuevoEstado" value="Finalizada" />
                                                                 @Html.AntiForgeryToken()
-                                                                <button type="submit" class="dropdown-item"><i class="bi bi-x-circle text-warning me-2"></i>Dar de Baja</button>
+                                                                <button type="submit" class="dropdown-item text-danger"><i class="bi bi-trash me-2"></i>Eliminar</button>
                                                             </form>
                                                         </li>
-                                                    }
-                                                    <li><hr class="dropdown-divider" /></li>
-                                                    <li>
-                                                        <form method="post" action="/Admin/EliminarMatricula" style="display:inline"
-                                                              onsubmit="return confirm('¿Eliminar la matrícula de @mat.NombreEstudiante? Esta acción no se puede deshacer.')">
-                                                            <input type="hidden" name="idMatricula" value="@mat.IdMatricula" />
-                                                            @Html.AntiForgeryToken()
-                                                            <button type="submit" class="dropdown-item text-danger"><i class="bi bi-trash me-2"></i>Eliminar</button>
-                                                        </form>
-                                                    </li>
-                                                </ul>
+                                                    </ul>
+                                                </div>
                                             </div>
                                         </td>
                                     </tr>
@@ -516,74 +728,440 @@
                             else
                             {
                                 <tr id="sinMatriculas">
-                                    <td colspan="6" class="text-center text-muted py-4">No hay matrículas registradas.</td>
+                                    <td colspan="7" class="text-center text-muted py-5">
+                                        <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                        No hay matrículas registradas.
+                                    </td>
                                 </tr>
                             }
                         </tbody>
                     </table>
                 </div>
 
-                <!-- PAGINACIÓN MATRÍCULAS -->
-                <div class="card-footer bg-white d-flex flex-wrap align-items-center justify-content-between gap-2 px-3 py-2">
-                    <p class="text-muted small mb-0" id="infoMatPagina">Cargando...</p>
+                <!-- Paginación de Matrículas -->
+                <div class="card-footer bg-white d-flex flex-wrap align-items-center justify-content-between gap-2 px-3 py-3 border-top">
+                    <p class="text-muted small mb-0" id="infoMatPagina">Mostrando registros...</p>
                     <nav aria-label="Paginación matrículas">
                         <ul class="pagination pagination-sm mb-0" id="paginacionMat"></ul>
                     </nav>
                 </div>
             </div>
 
-            @* Alertas de feedback para el CRUD de matrículas *@
+            @* Alertas de feedback *@
             @if (TempData["MensajeMatriculas"] != null)
             {
-                <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
-                    <i class="bi bi-check-circle-fill me-2"></i>@TempData["MensajeMatriculas"]
+                <div class="alert alert-success alert-dismissible fade show mt-3 shadow-sm border-0" role="alert" style="border-left: 4px solid #198754 !important;">
+                    <i class="bi bi-check-circle-fill me-2 fs-5"></i>@TempData["MensajeMatriculas"]
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             }
             @if (TempData["ErrorMatriculas"] != null)
             {
-                <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["ErrorMatriculas"]
+                <div class="alert alert-danger alert-dismissible fade show mt-3 shadow-sm border-0" role="alert" style="border-left: 4px solid #dc3545 !important;">
+                    <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>@TempData["ErrorMatriculas"]
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             }
 
-            @* Modal de edición de matrícula *@
-            <div class="modal fade" id="modalEditarMatricula" tabindex="-1" aria-labelledby="modalEditarMatriculaLabel" aria-hidden="true">
+            <!-- ========================================================================= -->
+            <!-- MODAL 1: HISTORIAL DE MATRÍCULAS Y ANTECEDENTES (REQUISITO CRÍTICO #2) -->
+            <!-- ========================================================================= -->
+            <div class="modal fade" id="modalHistorialMatriculas" tabindex="-1" aria-labelledby="modalHistorialLabel" aria-hidden="true">
+                <div class="modal-dialog modal-xl modal-dialog-scrollable">
+                    <div class="modal-content border-0 shadow">
+                        <div class="modal-header text-white" style="background:#0d2a4a;">
+                            <h5 class="modal-title fw-bold" id="modalHistorialLabel">
+                                <i class="bi bi-journal-bookmark-fill text-warning me-2"></i>Historial Académico y de Matrículas
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                        </div>
+                        <div class="modal-body p-4">
+                            <!-- Banner resumen del estudiante -->
+                            <div class="card border-0 shadow-sm p-3 mb-4" style="background:#f8f9fa;">
+                                <div class="row align-items-center">
+                                    <div class="col-md-6">
+                                        <h5 class="fw-bold text-dark mb-1" id="hist_nombreEstudiante">Cargando...</h5>
+                                        <p class="text-muted small mb-0">Código / Documento: <span id="hist_codigoEstudiante" class="fw-semibold">-</span></p>
+                                    </div>
+                                    <div class="col-md-6 text-md-end mt-2 mt-md-0">
+                                        <div class="d-inline-block text-start bg-white p-2 px-3 rounded border">
+                                            <div class="small text-muted">Diagnóstico Académico:</div>
+                                            <div class="fw-bold text-primary" id="hist_diagnostico">Consultando registros...</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tabla de registros históricos -->
+                            <h6 class="fw-bold text-dark mb-2"><i class="bi bi-clock-history me-2 text-warning"></i>Trayectoria Educativa Completa (Matrículas y Certificados Externos)</h6>
+                            <p class="text-muted small mb-3">Conserva todos los grados cursados sin sobreescritura, diferenciando matrículas internas de antecedentes acreditados externamente.</p>
+                            
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-hover align-middle mb-0">
+                                    <thead class="table-light text-muted small text-uppercase">
+                                        <tr>
+                                            <th>Año</th>
+                                            <th>Grado</th>
+                                            <th>Tipo de Registro</th>
+                                            <th>Curso / Institución</th>
+                                            <th>Fecha</th>
+                                            <th>Resultado Académico</th>
+                                            <th>Estado Matrícula / Doc.</th>
+                                            <th>Observaciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="hist_tbodyRegistros">
+                                        <tr>
+                                            <td colspan="8" class="text-center py-4 text-muted">
+                                                <div class="spinner-border text-primary spinner-border-sm me-2" role="status"></div>Cargando historial...
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="modal-footer bg-light">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================================================= -->
+            <!-- MODAL 2: GESTIÓN DE CERTIFICADOS EXTERNOS (REQUISITO CRÍTICO #5) -->
+            <!-- ========================================================================= -->
+            <div class="modal fade" id="modalCertificadosExternos" tabindex="-1" aria-labelledby="modalCertificadosLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                    <div class="modal-content border-0 shadow">
+                        <div class="modal-header text-white" style="background:#0d2a4a;">
+                            <h5 class="modal-title fw-bold" id="modalCertificadosLabel">
+                                <i class="bi bi-award-fill text-warning me-2"></i>Certificados de Estudio Externos
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body p-4">
+                            <div class="alert alert-info border-0 shadow-sm small mb-3">
+                                <i class="bi bi-info-circle-fill me-2"></i>
+                                <strong>Validez Académica:</strong> Registre los certificados de estudio de estudiantes antiguos o que ingresan por primera vez al sistema (ej. Grados 1° a 5°). Una vez <strong>Verificados</strong> por secretaría, el sistema habilitará el avance al siguiente grado sin inventar matrículas internas.
+                            </div>
+
+                            <h6 class="fw-bold mb-1" id="cert_nombreEstudiante">Estudiante: Cargando...</h6>
+                            <p class="text-muted small mb-3" id="cert_gradosAcreditados">Grados Aprobados Acreditados: -</p>
+
+                            <!-- Lista de certificados registrados -->
+                            <div class="table-responsive mb-4">
+                                <table class="table table-sm table-bordered align-middle">
+                                    <thead class="table-light small text-muted">
+                                        <tr>
+                                            <th>Grado</th>
+                                            <th>Año</th>
+                                            <th>Institución de Origen</th>
+                                            <th>Estado Verificación</th>
+                                            <th>Verificado Por</th>
+                                            <th>Acción</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="cert_tbody">
+                                        <tr>
+                                            <td colspan="6" class="text-center py-3 text-muted">Cargando certificados...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Formulario para agregar nuevo certificado externo -->
+                            <div class="card border p-3 bg-light">
+                                <h6 class="fw-bold text-dark mb-3"><i class="bi bi-plus-circle-fill text-primary me-2"></i>Registrar Nuevo Certificado Externo</h6>
+                                <form method="post" action="/Admin/RegistrarCertificadoExterno" enctype="multipart/form-data">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="idEstudiante" id="form_cert_idEstudiante" />
+                                    <div class="row g-2 mb-2">
+                                        <div class="col-md-4">
+                                            <label class="form-label small fw-semibold">Grado Aprobado <span class="text-danger">*</span></label>
+                                            <select name="gradoAprobado" class="form-select form-select-sm" required>
+                                                <option value="1">Grado 1° Primaria</option>
+                                                <option value="2">Grado 2° Primaria</option>
+                                                <option value="3">Grado 3° Primaria</option>
+                                                <option value="4">Grado 4° Primaria</option>
+                                                <option value="5" selected>Grado 5° Primaria</option>
+                                                <option value="6">Grado 6° Secundaria</option>
+                                                <option value="7">Grado 7° Secundaria</option>
+                                                <option value="8">Grado 8° Secundaria</option>
+                                                <option value="9">Grado 9° Secundaria</option>
+                                                <option value="10">Grado 10° Media</option>
+                                                <option value="11">Grado 11° Media</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label small fw-semibold">Año Lectivo <span class="text-danger">*</span></label>
+                                            <input type="number" name="anoLectivo" class="form-control form-control-sm" value="@(DateTime.Now.Year - 1)" min="1990" max="@DateTime.Now.Year" required />
+                                        </div>
+                                        <div class="col-md-5">
+                                            <label class="form-label small fw-semibold">Institución de Procedencia <span class="text-danger">*</span></label>
+                                            <input type="text" name="institucionOrigen" class="form-control form-control-sm" placeholder="Ej: Colegio San José..." required />
+                                        </div>
+                                    </div>
+                                    <div class="row g-2 mb-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label small fw-semibold">Archivo soporte (PDF / Imagen)</label>
+                                            <input type="file" name="archivoCertificado" class="form-control form-control-sm" accept=".pdf,.png,.jpg,.jpeg" />
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label small fw-semibold">Observaciones</label>
+                                            <input type="text" name="observaciones" class="form-control form-control-sm" placeholder="Detalles de autenticidad o resolución..." />
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <button type="submit" class="btn btn-sm btn-primary">
+                                            <i class="bi bi-save me-1"></i>Guardar Certificado
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="modal-footer bg-light">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================================================= -->
+            <!-- MODAL 3: REVISIÓN DOCUMENTAL Y ADMINISTRATIVA (REQUISITO CRÍTICO #4 Y #6) -->
+            <!-- ========================================================================= -->
+            <div class="modal fade" id="modalRevisionDocumental" tabindex="-1" aria-labelledby="modalRevisionLabel" aria-hidden="true">
                 <div class="modal-dialog">
-                    <div class="modal-content">
-                        <form method="post" action="/Admin/EditarMatricula">
+                    <div class="modal-content border-0 shadow">
+                        <form method="post" action="/Admin/RevisarDocumentosMatricula">
                             @Html.AntiForgeryToken()
-                            <input type="hidden" name="idMatricula" id="edit_idMatricula" />
-                            <div class="modal-header" style="background:#0d2a4a;color:white;">
-                                <h5 class="modal-title" id="modalEditarMatriculaLabel">
-                                    <i class="bi bi-pencil-square me-2"></i>Editar Matrícula
+                            <input type="hidden" name="idMatricula" id="rev_idMatricula" />
+                            <div class="modal-header text-white" style="background:#0d2a4a;">
+                                <h5 class="modal-title fw-bold" id="modalRevisionLabel">
+                                    <i class="bi bi-clipboard-check-fill text-warning me-2"></i>Revisión Documental y Administrativa
                                 </h5>
                                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                             </div>
-                            <div class="modal-body">
-                                <p class="text-muted small mb-3" id="edit_nombreEstudiante"></p>
+                            <div class="modal-body p-4">
+                                <div class="card border-0 p-3 mb-3" style="background:#f1f5f9;">
+                                    <div class="fw-bold text-dark" id="rev_nombreEstudiante">Estudiante</div>
+                                    <div class="text-muted small" id="rev_gradoSolicitado">Grado Solicitado: -</div>
+                                </div>
+
+                                <div class="alert alert-warning border-0 small mb-3">
+                                    <i class="bi bi-shield-lock-fill me-1"></i>
+                                    <strong>Independencia de Estados:</strong> Esta revisión aprueba o rechaza los requisitos administrativos. No altera el resultado académico del estudiante.
+                                </div>
+
                                 <div class="mb-3">
-                                    <label class="form-label fw-semibold">Grado (curso)</label>
-                                    <select name="idCurso" id="edit_idCurso" class="form-select" required>
-                                        @for (int g = 1; g <= 11; g++)
-                                        {
-                                            <option value="@g">Grado @g°</option>
-                                        }
+                                    <label class="form-label fw-semibold">Estado de la Revisión Documental <span class="text-danger">*</span></label>
+                                    <select name="estadoDocumental" id="rev_estadoDocumental" class="form-select" required onchange="toggleCamposRevisionDoc()">
+                                        <option value="Aprobada">Aprobada (Documentos completos y verificados)</option>
+                                        <option value="Pendiente de revisión">Pendiente de revisión</option>
+                                        <option value="En revisión">En revisión</option>
+                                        <option value="Pendiente de documentos">Pendiente de documentos (Faltan requisitos)</option>
+                                        <option value="Rechazada">Rechazada (No cumple requisitos)</option>
                                     </select>
                                 </div>
+
+                                <div class="mb-3" id="rev_divDocumentosPendientes">
+                                    <label class="form-label fw-semibold">Documentos Faltantes o Pendientes</label>
+                                    <textarea name="documentosPendientes" id="rev_documentosPendientes" class="form-control" rows="2" placeholder="Ej: Registro civil, certificado de EPS, fotos 3x4..."></textarea>
+                                </div>
+
                                 <div class="mb-3">
-                                    <label class="form-label fw-semibold">Estado</label>
-                                    <select name="estado" id="edit_estado" class="form-select" required>
-                                        <option value="Activa">Activa</option>
-                                        <option value="Finalizada">Finalizada</option>
-                                        <option value="Retirada">Retirada</option>
-                                    </select>
+                                    <label class="form-label fw-semibold">Observaciones de la Secretaría</label>
+                                    <textarea name="observaciones" id="rev_observaciones" class="form-control" rows="2" placeholder="Observaciones administrativas o justificación..."></textarea>
                                 </div>
                             </div>
-                            <div class="modal-footer">
+                            <div class="modal-footer bg-light">
                                 <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-                                <button type="submit" class="btn btn-primary">
+                                <button type="submit" class="btn btn-primary fw-semibold">
+                                    <i class="bi bi-save me-1"></i>Guardar Revisión
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================================================= -->
+            <!-- MODAL 4: ASIGNACIÓN DEFINITIVA AL CURSO (REQUISITO CRÍTICO #7) -->
+            <!-- ========================================================================= -->
+            <div class="modal fade" id="modalAsignarCurso" tabindex="-1" aria-labelledby="modalAsignarCursoLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content border-0 shadow">
+                        <form method="post" action="/Admin/AsignarCursoDefinitivo" id="formAsignarCurso">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="idMatricula" id="asig_idMatricula" />
+                            <div class="modal-header text-white" style="background:#0d2a4a;">
+                                <h5 class="modal-title fw-bold" id="modalAsignarCursoLabel">
+                                    <i class="bi bi-door-open-fill text-warning me-2"></i>Asignación Definitiva al Curso
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body p-4">
+                                <div class="card border-0 p-3 mb-3" style="background:#f8f9fa;">
+                                    <div class="fw-bold text-dark" id="asig_nombreEstudiante">Estudiante</div>
+                                    <div class="text-muted small" id="asig_gradoSolicitado">Grado: -</div>
+                                    <div class="small mt-1" id="asig_estadoDocBanner">Estado Documental: -</div>
+                                </div>
+
+                                <div id="asig_avisoBloqueo" class="alert alert-danger border-0 small d-none">
+                                    <i class="bi bi-exclamation-octagon-fill me-1"></i>
+                                    <strong>Bloqueado:</strong> No se puede realizar la asignación definitiva. La revisión documental debe estar en estado <strong>Aprobada</strong>.
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Seleccionar Curso Disponible <span class="text-danger">*</span></label>
+                                    <select name="idCurso" id="asig_idCurso" class="form-select" required>
+                                        <option value="">-- Seleccionar curso --</option>
+                                        @if (todosCursos != null)
+                                        {
+                                            foreach (var c in todosCursos)
+                                            {
+                                                int g = ProyectoPAE.Servicios.MatriculaAcademicaService.ExtraerGrado(c.nombre_curso);
+                                                <option value="@c.id_curso" data-grado="@g">@c.nombre_curso (@c.jornada) - Grado @g°</option>
+                                            }
+                                        }
+                                    </select>
+                                    <div class="form-text">Solo se listan los cursos compatibles con el grado solicitado.</div>
+                                </div>
+                            </div>
+                            <div class="modal-footer bg-light">
+                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                <button type="submit" id="btnConfirmarAsignacion" class="btn btn-success fw-semibold">
+                                    <i class="bi bi-check2-circle me-1"></i>Confirmar Asignación Definitiva
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================================================= -->
+            <!-- MODAL 5: CALIFICACIÓN DEL RESULTADO ACADÉMICO (REQUISITO CRÍTICO #4) -->
+            <!-- ========================================================================= -->
+            <div class="modal fade" id="modalEstadoAcademico" tabindex="-1" aria-labelledby="modalEstadoAcademicoLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content border-0 shadow">
+                        <form method="post" action="/Admin/ActualizarEstadoAcademicoMatricula">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="idMatricula" id="acad_idMatricula" />
+                            <div class="modal-header text-white" style="background:#0d2a4a;">
+                                <h5 class="modal-title fw-bold" id="modalEstadoAcademicoLabel">
+                                    <i class="bi bi-mortarboard-fill text-warning me-2"></i>Calificar Resultado Académico
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body p-4">
+                                <div class="card border-0 p-3 mb-3" style="background:#f8f9fa;">
+                                    <div class="fw-bold text-dark" id="acad_nombreEstudiante">Estudiante</div>
+                                    <div class="text-muted small" id="acad_grado">Grado: -</div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Resultado Académico del Curso <span class="text-danger">*</span></label>
+                                    <select name="estadoAcademico" id="acad_estadoAcademico" class="form-select" required>
+                                        <option value="Pendiente de resultado">Pendiente de resultado (Aún en curso / sin notas consolidadas)</option>
+                                        <option value="Aprobado">Aprobado (Acredita el grado y habilita el siguiente)</option>
+                                        <option value="Reprobado">Reprobado (Debe repetir el grado cursado)</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Observaciones Académicas</label>
+                                    <textarea name="observaciones" id="acad_observaciones" class="form-control" rows="2" placeholder="Motivo, acta de comisión de evaluación o notas..."></textarea>
+                                </div>
+                            </div>
+                            <div class="modal-footer bg-light">
+                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                <button type="submit" class="btn btn-primary fw-semibold">
+                                    <i class="bi bi-save me-1"></i>Guardar Resultado
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========================================================================= -->
+            <!-- MODAL 6: EDITAR MATRÍCULA -->
+            <!-- ========================================================================= -->
+            <div class="modal fade" id="modalEditarMatricula" tabindex="-1" aria-labelledby="modalEditarMatriculaLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content border-0 shadow">
+                        <form method="post" action="/Admin/EditarMatricula">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="idMatricula" id="edit_idMatricula" />
+                            <div class="modal-header text-white" style="background:#0d2a4a;">
+                                <h5 class="modal-title fw-bold" id="modalEditarMatriculaLabel">
+                                    <i class="bi bi-pencil-square text-warning me-2"></i>Editar Matrícula
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body p-4">
+                                <p class="fw-bold text-dark mb-3" id="edit_nombreEstudiante"></p>
+                                <div class="row g-2 mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-semibold">Grado Solicitado</label>
+                                        <select name="gradoSolicitado" id="edit_gradoSolicitado" class="form-select form-select-sm" required>
+                                            @for (int g = 6; g <= 11; g++)
+                                            {
+                                                <option value="@g">Grado @g°</option>
+                                            }
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-semibold">Curso Asignado</label>
+                                        <select name="idCurso" id="edit_idCurso" class="form-select form-select-sm">
+                                            <option value="">-- Sin asignar --</option>
+                                            @if (todosCursos != null)
+                                            {
+                                                foreach (var c in todosCursos)
+                                                {
+                                                    <option value="@c.id_curso">@c.nombre_curso (@c.jornada)</option>
+                                                }
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="row g-2 mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-semibold">Estado de Matrícula</label>
+                                        <select name="estado" id="edit_estado" class="form-select form-select-sm" required>
+                                            <option value="Registrada">Registrada</option>
+                                            <option value="Activa">Activa</option>
+                                            <option value="Finalizada">Finalizada</option>
+                                            <option value="Cancelada">Cancelada</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label small fw-semibold">Revisión Documental</label>
+                                        <select name="estadoDocumental" id="edit_estadoDocumental" class="form-select form-select-sm">
+                                            <option value="Pendiente de revisión">Pendiente de revisión</option>
+                                            <option value="En revisión">En revisión</option>
+                                            <option value="Pendiente de documentos">Pendiente de documentos</option>
+                                            <option value="Aprobada">Aprobada</option>
+                                            <option value="Rechazada">Rechazada</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label small fw-semibold">Resultado Académico</label>
+                                    <select name="estadoAcademico" id="edit_estadoAcademico" class="form-select form-select-sm">
+                                        <option value="Pendiente de resultado">Pendiente de resultado</option>
+                                        <option value="Aprobado">Aprobado</option>
+                                        <option value="Reprobado">Reprobado</option>
+                                    </select>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label small fw-semibold">Observaciones</label>
+                                    <textarea name="observaciones" id="edit_observaciones" class="form-control form-control-sm" rows="2"></textarea>
+                                </div>
+                            </div>
+                            <div class="modal-footer bg-light">
+                                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                <button type="submit" class="btn btn-primary fw-semibold">
                                     <i class="bi bi-save me-1"></i>Guardar Cambios
                                 </button>
                             </div>
@@ -592,21 +1170,229 @@
                 </div>
             </div>
 
+            <!-- Formulario oculto para verificar o rechazar certificados externos -->
+            <form id="formVerificarCertificadoModal" method="post" action="/Admin/VerificarCertificadoExterno" style="display:none;">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="idCertificado" id="verif_idCertificado" />
+                <input type="hidden" name="estadoVerificacion" id="verif_estadoVerificacion" />
+            </form>
+
+            <!-- Scripts interactivos para Matrículas -->
             <script>
-                            function abrirModalEditarMatricula(idMatricula, grado, estado, nombre) {
-                                document.getElementById('edit_idMatricula').value = idMatricula;
-                                document.getElementById('edit_nombreEstudiante').textContent = 'Estudiante: ' + nombre;
-                                var selectGrado = document.getElementById('edit_idCurso');
-                                for (var i = 0; i < selectGrado.options.length; i++) {
-                                    selectGrado.options[i].selected = (parseInt(selectGrado.options[i].value) === grado);
-                                }
-                                var selectEstado = document.getElementById('edit_estado');
-                                for (var j = 0; j < selectEstado.options.length; j++) {
-                                    selectEstado.options[j].selected = (selectEstado.options[j].value === estado);
-                                }
-                                var modal = new bootstrap.Modal(document.getElementById('modalEditarMatricula'));
-                                modal.show();
+                // --- 1. HISTORIAL ACADÉMICO ---
+                function abrirModalHistorial(idEstudiante, nombreEstudiante) {
+                    var modal = new bootstrap.Modal(document.getElementById('modalHistorialMatriculas'));
+                    document.getElementById('hist_nombreEstudiante').textContent = nombreEstudiante || 'Estudiante #' + idEstudiante;
+                    document.getElementById('hist_codigoEstudiante').textContent = 'Consultando...';
+                    document.getElementById('hist_diagnostico').textContent = 'Consultando...';
+                    var tbody = document.getElementById('hist_tbodyRegistros');
+                    tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-muted"><div class="spinner-border spinner-border-sm text-primary me-2"></div>Cargando historial académico...</td></tr>';
+                    modal.show();
+
+                    fetch('/Admin/HistorialMatriculas?idEstudiante=' + idEstudiante)
+                        .then(function(res) { return res.json(); })
+                        .then(function(data) {
+                            document.getElementById('hist_nombreEstudiante').textContent = data.nombreCompleto || nombreEstudiante;
+                            document.getElementById('hist_codigoEstudiante').textContent = data.codigoEstudiante || 'ID ' + idEstudiante;
+                            document.getElementById('hist_diagnostico').textContent = data.estadoAcademicoGeneral || 'Historial actualizado';
+
+                            tbody.innerHTML = '';
+                            if (!data.registros || data.registros.length === 0) {
+                                tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-muted">No se registran antecedentes académicos en el sistema. Secretaría puede registrar certificados anteriores.</td></tr>';
+                                return;
                             }
+
+                            data.registros.forEach(function(item) {
+                                var tr = document.createElement('tr');
+                                var badgeTipo = item.esExterno 
+                                    ? '<span class="badge bg-warning-subtle text-dark border border-warning"><i class="bi bi-award me-1"></i>Certificado Externo</span>'
+                                    : '<span class="badge bg-primary-subtle text-primary border border-primary"><i class="bi bi-building me-1"></i>Institucional</span>';
+
+                                var badgeAcad = '';
+                                if (item.resultadoAcademico === 'Aprobado') {
+                                    badgeAcad = '<span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Aprobado</span>';
+                                } else if (item.resultadoAcademico === 'Reprobado') {
+                                    badgeAcad = '<span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>Reprobado</span>';
+                                } else {
+                                    badgeAcad = '<span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split me-1"></i>Pendiente</span>';
+                                }
+
+                                var fStr = item.fechaRegistro ? new Date(item.fechaRegistro).toLocaleDateString() : '-';
+
+                                tr.innerHTML = 
+                                    '<td class="fw-bold">' + item.anioLectivo + '</td>' +
+                                    '<td class="fw-semibold">Grado ' + item.grado + '°</td>' +
+                                    '<td>' + badgeTipo + '</td>' +
+                                    '<td>' + (item.cursoOInstitucion || '-') + '</td>' +
+                                    '<td class="small text-muted">' + fStr + '</td>' +
+                                    '<td>' + badgeAcad + '</td>' +
+                                    '<td><span class="small fw-semibold">' + (item.esExterno ? ('Verif: ' + (item.estadoVerificacion || 'Pendiente')) : item.estadoMatricula) + '</span></td>' +
+                                    '<td class="small text-muted">' + (item.observaciones || '-') + '</td>';
+                                tbody.appendChild(tr);
+                            });
+                        })
+                        .catch(function(err) {
+                            tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-danger"><i class="bi bi-exclamation-triangle me-2"></i>Error al cargar el historial académico.</td></tr>';
+                        });
+                }
+
+                // --- 2. CERTIFICADOS EXTERNOS ---
+                function abrirModalCertificadosExternos(idEstudiante, nombreEstudiante) {
+                    var modal = new bootstrap.Modal(document.getElementById('modalCertificadosExternos'));
+                    document.getElementById('cert_nombreEstudiante').textContent = 'Estudiante: ' + nombreEstudiante;
+                    document.getElementById('form_cert_idEstudiante').value = idEstudiante;
+                    var tbody = document.getElementById('cert_tbody');
+                    tbody.innerHTML = '<tr><td colspan="6" class="text-center py-3 text-muted">Cargando certificados externos...</td></tr>';
+                    modal.show();
+
+                    fetch('/Admin/ListarCertificadosExternos?idEstudiante=' + idEstudiante)
+                        .then(function(res) { return res.json(); })
+                        .then(function(data) {
+                            var gAprob = (data.gradosAprobados && data.gradosAprobados.length > 0) 
+                                ? data.gradosAprobados.map(function(g) { return g + '°'; }).join(', ')
+                                : 'Ninguno registrado aún';
+                            document.getElementById('cert_gradosAcreditados').textContent = 'Grados Aprobados Reconocidos: ' + gAprob;
+
+                            tbody.innerHTML = '';
+                            if (!data.certificados || data.certificados.length === 0) {
+                                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-3 text-muted">No hay certificados externos registrados para este estudiante.</td></tr>';
+                                return;
+                            }
+
+                            data.certificados.forEach(function(c) {
+                                var tr = document.createElement('tr');
+                                var badgeEstado = '';
+                                if (c.estadoVerificacion === 'Verificado') {
+                                    badgeEstado = '<span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Verificado</span>';
+                                } else if (c.estadoVerificacion === 'Rechazado') {
+                                    badgeEstado = '<span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>Rechazado</span>';
+                                } else {
+                                    badgeEstado = '<span class="badge bg-warning text-dark"><i class="bi bi-hourglass me-1"></i>Pendiente</span>';
+                                }
+
+                                var soporteLink = c.archivoRuta 
+                                    ? '<a href="' + c.archivoRuta + '" target="_blank" class="btn btn-xs btn-outline-secondary py-0"><i class="bi bi-file-earmark-pdf"></i> Ver</a>'
+                                    : '<span class="text-muted small">Sin archivo</span>';
+
+                                var accionesHtml = '';
+                                if (c.estadoVerificacion !== 'Verificado') {
+                                    accionesHtml += '<button type="button" class="btn btn-sm btn-success py-0 px-2 me-1" onclick="enviarAccionCertificado(' + c.idCertificadoExterno + ', \'Verificado\')" title="Aprobar y reconocer grado"><i class="bi bi-check2"></i> Verificar</button>';
+                                }
+                                if (c.estadoVerificacion !== 'Rechazado') {
+                                    accionesHtml += '<button type="button" class="btn btn-sm btn-outline-danger py-0 px-2" onclick="enviarAccionCertificado(' + c.idCertificadoExterno + ', \'Rechazado\')" title="Rechazar certificado"><i class="bi bi-x"></i> Rechazar</button>';
+                                }
+
+                                tr.innerHTML = 
+                                    '<td class="fw-bold">Grado ' + c.gradoAprobado + '°</td>' +
+                                    '<td>' + c.anoLectivo + '</td>' +
+                                    '<td>' + c.institucionOrigen + ' ' + soporteLink + '</td>' +
+                                    '<td>' + badgeEstado + '</td>' +
+                                    '<td class="small text-muted">' + (c.revisadoPor || '-') + '</td>' +
+                                    '<td>' + accionesHtml + '</td>';
+                                tbody.appendChild(tr);
+                            });
+                        })
+                        .catch(function(err) {
+                            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-3 text-danger">Error al cargar certificados.</td></tr>';
+                        });
+                }
+
+                function enviarAccionCertificado(idCertificado, nuevoEstado) {
+                    if (!confirm('¿Confirma marcar este certificado como ' + nuevoEstado + '?')) return;
+                    document.getElementById('verif_idCertificado').value = idCertificado;
+                    document.getElementById('verif_estadoVerificacion').value = nuevoEstado;
+                    document.getElementById('formVerificarCertificadoModal').submit();
+                }
+
+                // --- 3. REVISIÓN DOCUMENTAL ---
+                function abrirModalRevisionDocumental(idMatricula, nombre, grado, estadoDoc, docPendientes, obs) {
+                    document.getElementById('rev_idMatricula').value = idMatricula;
+                    document.getElementById('rev_nombreEstudiante').textContent = 'Estudiante: ' + nombre;
+                    document.getElementById('rev_gradoSolicitado').textContent = 'Grado Solicitado: ' + grado + '°';
+                    document.getElementById('rev_estadoDocumental').value = estadoDoc || 'Pendiente de revisión';
+                    document.getElementById('rev_documentosPendientes').value = docPendientes || '';
+                    document.getElementById('rev_observaciones').value = obs || '';
+                    toggleCamposRevisionDoc();
+                    var modal = new bootstrap.Modal(document.getElementById('modalRevisionDocumental'));
+                    modal.show();
+                }
+
+                function toggleCamposRevisionDoc() {
+                    var est = document.getElementById('rev_estadoDocumental').value;
+                    var divDocs = document.getElementById('rev_divDocumentosPendientes');
+                    if (est === 'Pendiente de documentos') {
+                        divDocs.style.display = 'block';
+                    }
+                }
+
+                // --- 4. ASIGNACIÓN DEFINITIVA AL CURSO ---
+                function abrirModalAsignarCurso(idMatricula, idEstudiante, nombre, gradoSolicitado, idCursoActual, estadoDoc) {
+                    document.getElementById('asig_idMatricula').value = idMatricula;
+                    document.getElementById('asig_nombreEstudiante').textContent = 'Estudiante: ' + nombre;
+                    document.getElementById('asig_gradoSolicitado').textContent = 'Grado Solicitado: ' + gradoSolicitado + '°';
+                    
+                    var banner = document.getElementById('asig_estadoDocBanner');
+                    var avisoBloqueo = document.getElementById('asig_avisoBloqueo');
+                    var btnConfirmar = document.getElementById('btnConfirmarAsignacion');
+                    var selectCurso = document.getElementById('asig_idCurso');
+
+                    var docAprobada = (estadoDoc && estadoDoc.toLowerCase() === 'aprobada');
+                    if (docAprobada) {
+                        banner.innerHTML = '<span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Revisión Documental Aprobada</span>';
+                        avisoBloqueo.classList.add('d-none');
+                        btnConfirmar.disabled = false;
+                        selectCurso.disabled = false;
+                    } else {
+                        banner.innerHTML = '<span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>Revisión Documental: ' + (estadoDoc || 'Pendiente') + '</span>';
+                        avisoBloqueo.classList.remove('d-none');
+                        btnConfirmar.disabled = true;
+                        selectCurso.disabled = true;
+                    }
+
+                    // Filtrar opciones del select para que solo muestre cursos del grado correspondiente
+                    for (var i = 0; i < selectCurso.options.length; i++) {
+                        var opt = selectCurso.options[i];
+                        if (!opt.value) continue;
+                        var g = parseInt(opt.getAttribute('data-grado'));
+                        if (g === gradoSolicitado) {
+                            opt.style.display = "";
+                            opt.disabled = false;
+                        } else {
+                            opt.style.display = "none";
+                            opt.disabled = true;
+                        }
+                    }
+
+                    selectCurso.value = idCursoActual > 0 ? idCursoActual : "";
+
+                    var modal = new bootstrap.Modal(document.getElementById('modalAsignarCurso'));
+                    modal.show();
+                }
+
+                // --- 5. CALIFICACIÓN DEL RESULTADO ACADÉMICO ---
+                function abrirModalEstadoAcademico(idMatricula, nombre, grado, estadoAcad, obs) {
+                    document.getElementById('acad_idMatricula').value = idMatricula;
+                    document.getElementById('acad_nombreEstudiante').textContent = 'Estudiante: ' + nombre;
+                    document.getElementById('acad_grado').textContent = 'Grado Cursado: ' + grado + '°';
+                    document.getElementById('acad_estadoAcademico').value = estadoAcad || 'Pendiente de resultado';
+                    document.getElementById('acad_observaciones').value = obs || '';
+                    var modal = new bootstrap.Modal(document.getElementById('modalEstadoAcademico'));
+                    modal.show();
+                }
+
+                // --- 6. EDITAR MATRÍCULA ---
+                function abrirModalEditarMatricula(idMatricula, idCurso, gradoSolicitado, estado, estadoAcad, estadoDoc, nombre, obs) {
+                    document.getElementById('edit_idMatricula').value = idMatricula;
+                    document.getElementById('edit_nombreEstudiante').textContent = 'Estudiante: ' + nombre;
+                    document.getElementById('edit_gradoSolicitado').value = gradoSolicitado || 6;
+                    document.getElementById('edit_idCurso').value = idCurso > 0 ? idCurso : '';
+                    document.getElementById('edit_estado').value = estado || 'Registrada';
+                    document.getElementById('edit_estadoAcademico').value = estadoAcad || 'Pendiente de resultado';
+                    document.getElementById('edit_estadoDocumental').value = estadoDoc || 'Pendiente de revisión';
+                    document.getElementById('edit_observaciones').value = obs || '';
+                    var modal = new bootstrap.Modal(document.getElementById('modalEditarMatricula'));
+                    modal.show();
+                }
             </script>
         </div>
 
@@ -5001,19 +5787,39 @@
     const MAT_POR_PAGINA = 20;
 
     function getFilasMatriculasFiltradas() {
+        const inpBuscar = document.getElementById('buscarMatricula');
         const selGrado = document.getElementById('filtroGrado');
+        const selAnio = document.getElementById('filtroAnio');
         const selEstado = document.getElementById('filtroEstado');
-        const valGrado  = selGrado  ? selGrado.value.toLowerCase().trim()  : 'todos';
-        const valEstado = selEstado ? selEstado.value.toLowerCase().trim() : 'todos';
+        const selEstadoDoc = document.getElementById('filtroEstadoDoc');
+        const selEstadoAcad = document.getElementById('filtroEstadoAcad');
+
+        const valBuscar = inpBuscar ? (inpBuscar.value || '').toLowerCase().trim() : '';
+        const valGrado  = selGrado  ? (selGrado.value || 'todos').toLowerCase().trim()  : 'todos';
+        const valAnio   = selAnio   ? (selAnio.value || 'todos').toLowerCase().trim()   : 'todos';
+        const valEstado = selEstado ? (selEstado.value || 'todos').toLowerCase().trim() : 'todos';
+        const valDoc    = selEstadoDoc ? (selEstadoDoc.value || 'todos').toLowerCase().trim() : 'todos';
+        const valAcad   = selEstadoAcad ? (selEstadoAcad.value || 'todos').toLowerCase().trim() : 'todos';
 
         const todasFilas = Array.from(document.querySelectorAll('#tbodyMatriculas tr.fila-mat'));
         return todasFilas.filter(fila => {
+            const nombre = (fila.getAttribute('data-nombre') || '').toLowerCase();
+            const codigo = (fila.getAttribute('data-codigo') || '').toLowerCase();
             const grado  = (fila.getAttribute('data-grado')  || '').toLowerCase();
+            const anio   = (fila.getAttribute('data-anio')   || '').toLowerCase();
             const estado = (fila.getAttribute('data-estado') || '').toLowerCase();
-            const okGrado  = valGrado  === 'todos' || grado === valGrado;
-            const okEstado = valEstado === 'todos' || estado.includes(valEstado) ||
+            const doc    = (fila.getAttribute('data-doc')    || '').toLowerCase();
+            const acad   = (fila.getAttribute('data-acad')   || '').toLowerCase();
+
+            const okBuscar = !valBuscar || nombre.includes(valBuscar) || codigo.includes(valBuscar);
+            const okGrado  = valGrado === 'todos' || grado === valGrado;
+            const okAnio   = valAnio === 'todos' || anio === valAnio;
+            const okEstado = valEstado === 'todos' || estado === valEstado ||
                              (valEstado === 'activa' && (estado === 'activa' || estado === 'activo'));
-            return okGrado && okEstado;
+            const okDoc    = valDoc === 'todos' || doc === valDoc;
+            const okAcad   = valAcad === 'todos' || acad === valAcad;
+
+            return okBuscar && okGrado && okAnio && okEstado && okDoc && okAcad;
         });
     }
 
@@ -5084,6 +5890,22 @@
     function filtrarMatriculas() {
         matPaginaActual = 1;
         renderizarPaginacionMat();
+    }
+
+    function limpiarFiltrosMatriculas() {
+        const inpBuscar = document.getElementById('buscarMatricula');
+        if (inpBuscar) inpBuscar.value = '';
+        const fGrado = document.getElementById('filtroGrado');
+        if (fGrado) fGrado.value = 'todos';
+        const fAnio = document.getElementById('filtroAnio');
+        if (fAnio) fAnio.value = 'todos';
+        const fEstado = document.getElementById('filtroEstado');
+        if (fEstado) fEstado.value = 'todos';
+        const fDoc = document.getElementById('filtroEstadoDoc');
+        if (fDoc) fDoc.value = 'todos';
+        const fAcad = document.getElementById('filtroEstadoAcad');
+        if (fAcad) fAcad.value = 'todos';
+        filtrarMatriculas();
     }
 
     // --- INICIALIZACIÓN ÚNICA DEL DOM ---
