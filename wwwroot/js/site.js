@@ -118,22 +118,54 @@ window.PAE = window.PAE || {};
         }
     };
 
-    // Confirmación amigable para sustituir los confirm() nativos del navegador
-    PAE.confirmar = function (pregunta, detalle, callback) {
-        pregunta = pregunta || '¿Está seguro de que desea eliminar este registro?';
-        detalle = detalle || 'Esta acción no se puede deshacer. Verifique antes de continuar.';
+        // Confirmación amigable polimórfica (soporta firmas con detalle o callback directo)
+    PAE.confirmar = function (pregunta, detalleOCallback, callbackOTitulo, textoConfirmar, colorConfirmar) {
+        pregunta = pregunta || '¿Está seguro de continuar?';
+        let callback = null;
+        let detalle = '';
+        let confirmText = '<i class="bi bi-check-circle-fill me-1"></i> Sí, continuar';
+        let confirmColor = '#6f42c1';
 
-        anunciarAccesible(pregunta);
+        if (typeof detalleOCallback === 'function') {
+            // Firma: PAE.confirmar(pregunta, callback, tituloODetalle, textoConfirmar, colorConfirmar)
+            callback = detalleOCallback;
+            detalle = (typeof callbackOTitulo === 'string') ? callbackOTitulo : '';
+            if (typeof textoConfirmar === 'string' && textoConfirmar.trim()) {
+                confirmText = `<i class="bi bi-check-lg me-1"></i> ${textoConfirmar}`;
+            }
+            if (colorConfirmar) {
+                confirmColor = colorConfirmar;
+            }
+        } else {
+            // Firma: PAE.confirmar(pregunta, detalle, callback)
+            detalle = detalleOCallback || '';
+            callback = callbackOTitulo;
+            if (typeof textoConfirmar === 'string' && textoConfirmar.trim()) {
+                confirmText = `<i class="bi bi-check-lg me-1"></i> ${textoConfirmar}`;
+            }
+        }
+
+        const textoCompleto = (pregunta + ' ' + detalle).toLowerCase();
+        if (textoCompleto.includes('eliminar') || textoCompleto.includes('rechazar')) {
+            confirmColor = confirmColor === '#6f42c1' ? '#dc3545' : confirmColor;
+            if (confirmText.includes('Sí, continuar')) {
+                confirmText = '<i class="bi bi-trash-fill me-1"></i> Sí, confirmar';
+            }
+        }
+
+        if (typeof anunciarAccesible === 'function') {
+            anunciarAccesible(pregunta);
+        }
 
         if (typeof Swal !== 'undefined') {
             return Swal.fire({
-                icon: 'warning',
+                icon: (textoCompleto.includes('eliminar') || textoCompleto.includes('rechazar')) ? 'warning' : 'question',
                 title: pregunta,
-                text: detalle,
+                text: detalle || undefined,
                 showCancelButton: true,
-                confirmButtonColor: '#dc3545',
+                confirmButtonColor: confirmColor,
                 cancelButtonColor: '#6c757d',
-                confirmButtonText: '<i class="bi bi-trash-fill me-1"></i> Sí, confirmar eliminación',
+                confirmButtonText: confirmText,
                 cancelButtonText: '<i class="bi bi-x-circle me-1"></i> Cancelar',
                 reverseButtons: true
             }).then(function (result) {
@@ -142,9 +174,30 @@ window.PAE = window.PAE || {};
                 }
             });
         } else {
-            if (confirm(pregunta + '\n' + detalle) && typeof callback === 'function') {
+            if (confirm(pregunta + (detalle ? '\n' + detalle : '')) && typeof callback === 'function') {
                 callback();
             }
+        }
+    };
+
+    // Notificaciones estándar PAE
+    PAE.notificarExito = function (mensaje) {
+        if (typeof PAE.toast === 'function') {
+            PAE.toast(mensaje, 'success');
+        } else if (typeof PAE.exito === 'function') {
+            PAE.exito(mensaje);
+        } else {
+            alert(mensaje);
+        }
+    };
+
+    PAE.notificarError = function (mensaje) {
+        if (typeof PAE.error === 'function') {
+            PAE.error(mensaje);
+        } else if (typeof PAE.toast === 'function') {
+            PAE.toast(mensaje, 'error');
+        } else {
+            alert(mensaje);
         }
     };
 

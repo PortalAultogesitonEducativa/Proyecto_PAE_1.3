@@ -21,5 +21,11 @@ namespace ProyectoPAE.Models
 
         [Column("curso_asignado")]
         public string? curso_asignado { get; set; } // Nombre o código de curso asignado (ej: "601 M", "1102 T")
+
+        [Column("id_padre")]
+        public int? id_padre { get; set; } // Enlace directo con PADRE_TUTOR
+
+        [ForeignKey("id_padre")]
+        public virtual PadreTutor? Padre { get; set; }
     }
 }

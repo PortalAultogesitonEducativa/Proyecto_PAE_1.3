@@ -27,6 +27,8 @@ namespace ProyectoPAE.Models
         // Estado del estudiante actual respecto a este curso
         public bool EstaInscrito { get; set; }
         public int? IdInscripcion { get; set; }
+        public string EstadoInscripcion { get; set; } = string.Empty;
+        public bool PendienteAprobacion => EstadoInscripcion == "PendienteAprobacion";
         public DateTime? FechaInscripcionEstudiante { get; set; }
         public List<ExtraDocumentoInscripcion> DocumentosSubidos { get; set; } = new List<ExtraDocumentoInscripcion>();
 

@@ -303,6 +303,12 @@ namespace ProyectoPAE.Controllers
                                 relacion = acu.PARENTESCO,
                                 ES_PRINCIPAL = acu.ES_PRINCIPAL
                             });
+
+                            // RelaciÃ³n directa del estudiante con su padre/tutor principal
+                            if (nuevoEstudiante.id_padre == null || acu.ES_PRINCIPAL)
+                            {
+                                nuevoEstudiante.id_padre = padreTutor.id_padre;
+                            }
                         }
                     }
                 }

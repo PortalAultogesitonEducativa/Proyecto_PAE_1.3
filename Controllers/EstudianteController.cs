@@ -60,6 +60,8 @@ public class EstudianteController : Controller
     [RequierePermiso(Permisos.ParticiparComoEstudiante)]
     public IActionResult InscribirseCursoExtra(int idCurso)
     {
+        try
+        {
         _context.AsegurarEsquemaExtracurriculares();
 
         var userId = HttpContext.Session.GetInt32("UserId");
@@ -90,13 +92,16 @@ public class EstudianteController : Controller
             return Json(new { success = false, message = "Lo sentimos, los cupos para este curso ya se encuentran agotados." });
         }
 
-        // Verificar si ya está inscrito
+        // Verificar si ya está inscrito o tiene solicitud pendiente
         var inscripcionExistente = _context.ExtraInscripciones
-            .FirstOrDefault(i => i.IdEstudiante == userId.Value && i.IdExtraCurso == idCurso && i.Estado == "Inscrito");
+            .FirstOrDefault(i => i.IdEstudiante == userId.Value && i.IdExtraCurso == idCurso && (i.Estado == "Inscrito" || i.Estado == "PendienteAprobacion"));
 
         if (inscripcionExistente != null)
         {
-            return Json(new { success = false, message = "Ya te encuentras inscrito en este curso extracurricular." });
+            var msgExistente = inscripcionExistente.Estado == "PendienteAprobacion"
+                ? "Ya enviaste tu solicitud de inscripción. Está pendiente de aprobación por el docente."
+                : "Ya te encuentras inscrito en este curso extracurricular.";
+            return Json(new { success = false, message = msgExistente });
         }
 
         // Verificar grado del estudiante si el curso tiene rango definido
@@ -127,28 +132,84 @@ public class EstudianteController : Controller
             }
         }
 
-        // Descontar cupo
-        curso.CuposDisponibles -= 1;
-        if (curso.CuposDisponibles < 0) curso.CuposDisponibles = 0;
+        // Verificar si el curso requiere documentos previos
+        bool tieneDocsRequeridos = !string.IsNullOrWhiteSpace(curso.DocumentosRequeridos);
 
-        // Registrar inscripción
-        var nuevaInscripcion = new ExtraInscripcion
+        if (tieneDocsRequeridos)
         {
-            IdEstudiante = userId.Value,
-            IdExtraCurso = idCurso,
-            FechaInscripcion = DateTime.Now,
-            Estado = "Inscrito"
-        };
+            // Crear inscripción como PendienteAprobacion SIN descontar cupo
+            var nuevaInscripcion = new ExtraInscripcion
+            {
+                IdEstudiante = userId.Value,
+                IdExtraCurso = idCurso,
+                FechaInscripcion = DateTime.Now,
+                Estado = "PendienteAprobacion"
+            };
+            _context.ExtraInscripciones.Add(nuevaInscripcion);
+            _context.SaveChanges();
 
-        _context.ExtraInscripciones.Add(nuevaInscripcion);
-        _context.SaveChanges();
+            // Parsear lista de documentos requeridos
+            List<string> docsList;
+            try
+            {
+                if (curso.DocumentosRequeridos.Trim().StartsWith("["))
+                {
+                    var parsed = System.Text.Json.JsonSerializer.Deserialize<List<string>>(curso.DocumentosRequeridos);
+                    docsList = parsed ?? new List<string>();
+                }
+                else
+                {
+                    docsList = curso.DocumentosRequeridos
+                        .Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries)
+                        .Select(d => d.Trim())
+                        .ToList();
+                }
+            }
+            catch
+            {
+                docsList = new List<string> { "Documento de Identidad (TI / RC)", "Formato de Autorización de Padres / Acudientes" };
+            }
 
-        return Json(new
+            return Json(new
+            {
+                success = true,
+                pendienteDocumentos = true,
+                idInscripcion = nuevaInscripcion.IdExtraInscripcion,
+                documentosRequeridos = docsList,
+                message = $"Para completar tu inscripción a '{curso.Nombre}', debes subir los documentos requeridos."
+            });
+        }
+        else
         {
-            success = true,
-            message = $"¡Te has inscrito exitosamente a '{curso.Nombre}'! Cupos restantes: {curso.CuposDisponibles}.",
-            cuposDisponibles = curso.CuposDisponibles
-        });
+            // Sin documentos requeridos: inscripción directa
+            curso.CuposDisponibles -= 1;
+            if (curso.CuposDisponibles < 0) curso.CuposDisponibles = 0;
+
+            var nuevaInscripcion = new ExtraInscripcion
+            {
+                IdEstudiante = userId.Value,
+                IdExtraCurso = idCurso,
+                FechaInscripcion = DateTime.Now,
+                Estado = "Inscrito"
+            };
+
+            _context.ExtraInscripciones.Add(nuevaInscripcion);
+            _context.SaveChanges();
+
+            return Json(new
+            {
+                success = true,
+                pendienteDocumentos = false,
+                message = $"¡Te has inscrito exitosamente a '{curso.Nombre}'! Cupos restantes: {curso.CuposDisponibles}.",
+                cuposDisponibles = curso.CuposDisponibles
+            });
+        }
+    
+        }
+        catch (Exception ex)
+        {
+            return Json(new { success = false, message = "Error al procesar la inscripción: " + ex.Message });
+        }
     }
 
     [HttpPost]
@@ -178,9 +239,10 @@ public class EstudianteController : Controller
         inscripcion.FechaCancelacion = DateTime.Now;
         inscripcion.MotivoCancelacion = "Cancelado voluntariamente por el estudiante";
 
-        // Devolver el cupo al curso
+        // Devolver el cupo solo si la inscripción ya estaba aprobada (Inscrito)
+        bool cupoARestaurar = inscripcion.Estado == "Inscrito";
         var curso = _context.ExtraCursos.Find(inscripcion.IdExtraCurso);
-        if (curso != null)
+        if (curso != null && cupoARestaurar)
         {
             if (curso.CuposDisponibles < curso.CuposTotales)
             {
@@ -195,6 +257,36 @@ public class EstudianteController : Controller
             success = true,
             message = "Has cancelado tu inscripción. El cupo ha sido liberado exitosamente."
         });
+    }
+
+    [HttpPost]
+    [RequierePermiso(Permisos.ParticiparComoEstudiante)]
+    public IActionResult FinalizarInscripcionConDocumentos(int idInscripcion)
+    {
+        _context.AsegurarEsquemaExtracurriculares();
+
+        var userId = HttpContext.Session.GetInt32("UserId");
+        if (userId == null)
+            return Json(new { success = false, message = "Sesión inválida." });
+
+        var insc = _context.ExtraInscripciones.Find(idInscripcion);
+        if (insc == null || insc.IdEstudiante != userId.Value)
+            return Json(new { success = false, message = "Inscripción no encontrada." });
+
+        if (insc.Estado != "PendienteAprobacion")
+            return Json(new { success = false, message = "Esta inscripción no está en estado pendiente." });
+
+        // Verificar que subió al menos un documento
+        var docsSubidos = _context.ExtraDocumentosInscripciones
+            .Where(d => d.IdExtraInscripcion == idInscripcion)
+            .ToList();
+
+        if (!docsSubidos.Any())
+            return Json(new { success = false, message = "Debes subir al menos un documento antes de enviar la solicitud." });
+
+        _context.SaveChanges();
+
+        return Json(new { success = true, message = "¡Solicitud enviada! El docente revisará tus documentos y aprobará tu inscripción." });
     }
 
     // ===============================================

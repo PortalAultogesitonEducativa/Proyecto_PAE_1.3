@@ -388,7 +388,7 @@ namespace ProyectoPAE.Controllers
                     // Cursos Extracurriculares para Estudiante
                     _context.AsegurarEsquemaExtracurriculares();
                     var inscripcionesEstudiante = _context.ExtraInscripciones
-                        .Where(i => i.IdEstudiante == userId && i.Estado == "Inscrito")
+                        .Where(i => i.IdEstudiante == userId && (i.Estado == "Inscrito" || i.Estado == "PendienteAprobacion"))
                         .ToList();
 
                     var todosDocsSubidos = _context.ExtraDocumentosInscripciones.ToList();
@@ -422,6 +422,7 @@ namespace ProyectoPAE.Controllers
                             DocumentosRequeridos = c.DocumentosRequeridos,
                             EstaInscrito = insc != null,
                             IdInscripcion = insc?.IdExtraInscripcion,
+                            EstadoInscripcion = insc?.Estado ?? string.Empty,
                             FechaInscripcionEstudiante = insc?.FechaInscripcion,
                             DocumentosSubidos = docsEst
                         };
