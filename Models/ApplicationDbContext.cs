@@ -90,6 +90,13 @@ namespace ProyectoPAE.Models
                 .WithMany()
                 .HasForeignKey(ep => ep.ID_ESTUDIANTE)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // RelaciÃ³n directa entre ESTUDIANTE y PADRE_TUTOR
+            modelBuilder.Entity<Estudiante>()
+                .HasOne(e => e.Padre)
+                .WithMany()
+                .HasForeignKey(e => e.id_padre)
+                .OnDelete(DeleteBehavior.Restrict);
         }
 
         public void AsegurarEsquemaEstudiantes()
@@ -106,6 +113,28 @@ namespace ProyectoPAE.Models
                     BEGIN
                         EXEC(N'ALTER TABLE [dbo].[ESTUDIANTE] ADD [curso_asignado] NVARCHAR(50) NULL;');
                     END
+
+                    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[ESTUDIANTE]') AND name = 'id_padre')
+                    BEGIN
+                        EXEC(N'ALTER TABLE [dbo].[ESTUDIANTE] ADD [id_padre] INT NULL;');
+                    END
+
+                    IF NOT EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_ESTUDIANTE_PADRE_DIRECT')
+                    BEGIN
+                        EXEC(N'ALTER TABLE [dbo].[ESTUDIANTE] WITH CHECK ADD CONSTRAINT [FK_ESTUDIANTE_PADRE_DIRECT] FOREIGN KEY([id_padre]) REFERENCES [dbo].[PADRE_TUTOR] ([id_padre]);');
+                    END
+
+                    EXEC(N'
+                        UPDATE e
+                        SET e.id_padre = ep.id_padre
+                        FROM [dbo].[ESTUDIANTE] e
+                        INNER JOIN (
+                            SELECT id_estudiante, id_padre,
+                                   ROW_NUMBER() OVER (PARTITION BY id_estudiante ORDER BY es_principal DESC, id_padre ASC) as rn
+                            FROM [dbo].[ESTUDIANTE_PADRE]
+                        ) ep ON e.id_estudiante = ep.id_estudiante AND ep.rn = 1
+                        WHERE e.id_padre IS NULL;
+                    ');
 
                     IF EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[ESTUDIANTE]') AND name = 'id_curso')
                     BEGIN

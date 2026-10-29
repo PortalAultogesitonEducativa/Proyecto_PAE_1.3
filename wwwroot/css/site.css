@@ -435,6 +435,7 @@ a:hover {
     display: flex !important;
     gap: 1.5rem;
     align-items: flex-start;
+    width: 100% !important;
 }
 
 .pae-sidebar-lateral {
