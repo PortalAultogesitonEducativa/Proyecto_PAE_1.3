@@ -29,6 +29,9 @@
     var seccionInicialUrl = Context.Request.Query["seccion"].ToString().ToLowerInvariant();
 
     bool iniciaEnSubmodulo = !string.IsNullOrEmpty(seccionInicialUrl);
+    // Bienvenida emergente: solo la primera vez que se entra al Dashboard tras iniciar sesión
+    bool mostrarBienvenida = Context.Session.GetString("BienvenidaMostrada") == null;
+    if (mostrarBienvenida) { Context.Session.SetString("BienvenidaMostrada", "1"); }
 
 }
 
@@ -42,7 +45,27 @@
 
 
 
-<center id="tituloBienvenidaDashboard" class="@(iniciaEnSubmodulo ? "d-none" : "")"><h2>Bienvenido/a, @nombre</h2></center>
+@if (mostrarBienvenida)
+{
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            Swal.fire({
+                toast: true,
+                position: "top",
+                backdrop: false,
+                icon: "success",
+                titleText: @Html.Raw(System.Text.Json.JsonSerializer.Serialize("¡Bienvenido/a, " + nombre + "!")),
+                color: "#0d2a4a",
+                width: "26rem",
+                padding: "1.1rem 1.4rem",
+                customClass: { popup: "toast-bienvenida" },
+                showConfirmButton: false,
+                timer: 3500,
+                timerProgressBar: true
+            });
+        });
+    </script>
+}
 
 
 
@@ -86,7 +109,7 @@
 
 <!-- BARRA SUPERIOR AZUL -->
 
-<div id="barraSuperiorPaeDashboard" class="@(iniciaEnSubmodulo ? "d-none" : "") container-fluid fw-bold py-3 mb-4" style="background-color: #0d2a4a; color: white;">
+<div id="barraSuperiorPaeDashboard" class="@(iniciaEnSubmodulo ? "d-none" : "") container-fluid fw-bold py-3 mb-4" style="background-color: #0d2a4a; color: white; margin-top: -1rem;">
 
     <div class="container d-flex justify-content-between align-items-center">
 
@@ -340,7 +363,7 @@
 
         <div id="admin-main" style="max-width: 1400px; margin: 0 auto;">
 
-            <h2 class="mb-4" style="color: #e67e22;">
+            <h2 class="mb-4" style="color: #0d2a4a;">
 
                 <i class="bi bi-gear-fill me-2"></i>@(esCoordinador ? "Gestión Académica y Coordinación" : "Gestión Administrativa")
 
@@ -360,7 +383,7 @@
 
                         <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-admin-limpia" 
 
-                             style="border-top: 4px solid #e67e22 !important; cursor: pointer;" 
+                             style="border-top: 2px solid #000000 !important; cursor: pointer;" 
 
                              onclick="location.href='@Url.Action("Supervision", "Coordinador")'">
 
@@ -384,7 +407,7 @@
 
                         <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-admin-limpia" 
 
-                             style="border-top: 4px solid #e67e22 !important; cursor: pointer;" 
+                             style="border-top: 2px solid #000000 !important; cursor: pointer;" 
 
                              onclick="verAsignacion()">
 
@@ -408,7 +431,7 @@
 
                         <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-admin-limpia" 
 
-                             style="border-top: 4px solid #e67e22 !important; cursor: pointer;" 
+                             style="border-top: 2px solid #000000 !important; cursor: pointer;" 
 
                              onclick="location.href='@Url.Action("ReporteGrupal", "Docente")'">
 
@@ -432,7 +455,7 @@
 
                         <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-admin-limpia" 
 
-                             style="border-top: 4px solid #e67e22 !important; cursor: pointer;" 
+                             style="border-top: 2px solid #000000 !important; cursor: pointer;" 
 
                              onclick="verMatricula()">
 
@@ -456,7 +479,7 @@
 
                         <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-admin-limpia" 
 
-                             style="border-top: 4px solid #e67e22 !important; cursor: pointer;" 
+                             style="border-top: 2px solid #000000 !important; cursor: pointer;" 
 
                              onclick="verCertificados()">
 
@@ -480,7 +503,7 @@
 
                         <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-admin-limpia" 
 
-                             style="border-top: 4px solid #e67e22 !important; cursor: pointer;" 
+                             style="border-top: 2px solid #000000 !important; cursor: pointer;" 
 
                              onclick="verReportes()">
 
@@ -504,7 +527,7 @@
 
                         <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-admin-limpia" 
 
-                             style="border-top: 4px solid #e67e22 !important; cursor: pointer;" 
+                             style="border-top: 2px solid #000000 !important; cursor: pointer;" 
 
                              onclick="location.href='@Url.Action("Index", "Pqr")'">
 
@@ -532,7 +555,7 @@
 
                         <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-admin-limpia" 
 
-                             style="border-top: 4px solid #e67e22 !important; cursor: pointer;" 
+                             style="border-top: 2px solid #000000 !important; cursor: pointer;" 
 
                              onclick="verMatricula()">
 
@@ -556,7 +579,7 @@
 
                         <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-admin-limpia" 
 
-                             style="border-top: 4px solid #e67e22 !important; cursor: pointer;" 
+                             style="border-top: 2px solid #000000 !important; cursor: pointer;" 
 
                              onclick="location.href='@Url.Action("Usuarios", "Admin")'">
 
@@ -580,7 +603,7 @@
 
                         <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-admin-limpia" 
 
-                             style="border-top: 4px solid #e67e22 !important; cursor: pointer;" 
+                             style="border-top: 2px solid #000000 !important; cursor: pointer;" 
 
                              onclick="location.href='@Url.Action("Supervision", "Coordinador")'">
 
@@ -604,7 +627,7 @@
 
                         <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-admin-limpia" 
 
-                             style="border-top: 4px solid #e67e22 !important; cursor: pointer;" 
+                             style="border-top: 2px solid #000000 !important; cursor: pointer;" 
 
                              onclick="verCertificados()">
 
@@ -628,7 +651,7 @@
 
                         <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-admin-limpia" 
 
-                             style="border-top: 4px solid #e67e22 !important; cursor: pointer;" 
+                             style="border-top: 2px solid #000000 !important; cursor: pointer;" 
 
                              onclick="location.href='@Url.Action("Notificaciones", "Admin")'">
 
@@ -652,7 +675,7 @@
 
                         <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-admin-limpia" 
 
-                             style="border-top: 4px solid #e67e22 !important; cursor: pointer;" 
+                             style="border-top: 2px solid #000000 !important; cursor: pointer;" 
 
                              onclick="verAsignacion()">
 
@@ -676,7 +699,7 @@
 
                         <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-admin-limpia" 
 
-                             style="border-top: 4px solid #e67e22 !important; cursor: pointer;" 
+                             style="border-top: 2px solid #000000 !important; cursor: pointer;" 
 
                              onclick="verReportes()">
 
@@ -700,7 +723,7 @@
 
                         <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-admin-limpia" 
 
-                             style="border-top: 4px solid #e67e22 !important; cursor: pointer;" 
+                             style="border-top: 2px solid #000000 !important; cursor: pointer;" 
 
                              onclick="location.href='@Url.Action("Index", "Pqr")'">
 
@@ -3496,7 +3519,7 @@
 
         <div id="docente-main" style="max-width: 1400px; margin: 0 auto;">
 
-            <h2 class="mb-4" style="color: #2980b9;"><i class="bi bi-person-badge-fill me-2"></i>Panel del Docente</h2>
+            <h2 class="mb-4" style="color: #0d2a4a;"><i class="bi bi-person-badge-fill me-2"></i>Panel del Docente</h2>
 
 
 
@@ -3508,7 +3531,7 @@
 
                     <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-docente-limpia" 
 
-                         style="border-top: 4px solid #2980b9 !important; cursor: pointer;"
+                         style="border-top: 2px solid #000000 !important; cursor: pointer;"
 
                          onclick="location.href='@Url.Action("Planilla", "Docente")'">
 
@@ -3532,7 +3555,7 @@
 
                     <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-docente-limpia" 
 
-                         style="border-top: 4px solid #2980b9 !important; cursor: pointer;"
+                         style="border-top: 2px solid #000000 !important; cursor: pointer;"
 
                          onclick="verAsistencia()">
 
@@ -3556,7 +3579,7 @@
 
                     <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-docente-limpia" 
 
-                         style="border-top: 4px solid #2980b9 !important; cursor: pointer;"
+                         style="border-top: 2px solid #000000 !important; cursor: pointer;"
 
                          onclick="verObservaciones()">
 
@@ -3580,7 +3603,7 @@
 
                     <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-docente-limpia" 
 
-                         style="border-top: 4px solid #2980b9 !important; cursor: pointer;"
+                         style="border-top: 2px solid #000000 !important; cursor: pointer;"
 
                          onclick="location.href='@Url.Action("ReporteGrupal", "Docente")'">
 
@@ -3604,7 +3627,7 @@
 
                     <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-docente-limpia" 
 
-                         style="border-top: 4px solid #2980b9 !important; cursor: pointer;"
+                         style="border-top: 2px solid #000000 !important; cursor: pointer;"
 
                          onclick="verModuloMejorasDocente()">
 
@@ -3628,7 +3651,7 @@
 
                     <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-docente-limpia" 
 
-                         style="border-top: 4px solid #2980b9 !important; cursor: pointer;"
+                         style="border-top: 2px solid #000000 !important; cursor: pointer;"
 
                          onclick="location.href='@Url.Action("MiHorario", "Horario")'">
 
@@ -3652,7 +3675,7 @@
 
                     <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-docente-limpia" 
 
-                         style="border-top: 4px solid #2980b9 !important; cursor: pointer;"
+                         style="border-top: 2px solid #000000 !important; cursor: pointer;"
 
                          onclick="verCursosExtraDocente()">
 
@@ -3676,7 +3699,7 @@
 
                     <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-docente-limpia" 
 
-                         style="border-top: 4px solid #2980b9 !important; cursor: pointer;"
+                         style="border-top: 2px solid #000000 !important; cursor: pointer;"
 
                          onclick="verActividadesDocente()">
 
@@ -3700,7 +3723,7 @@
 
                     <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-docente-limpia" 
 
-                         style="border-top: 4px solid #2980b9 !important; cursor: pointer;"
+                         style="border-top: 2px solid #000000 !important; cursor: pointer;"
 
                          onclick="location.href='@Url.Action("Index", "Pqr")'">
 
@@ -5051,7 +5074,7 @@
 
                             <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-docente-limpia" 
 
-                                 style="border-top: 4px solid #2980b9 !important; cursor: pointer;"
+                                 style="border-top: 2px solid #000000 !important; cursor: pointer;"
 
                                  onclick="entrarAClassroomDocenteCurso('@curso')">
 
@@ -5679,7 +5702,7 @@
 
                             <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-docente-limpia" 
 
-                                 style="border-top: 4px solid #2980b9 !important; cursor: pointer;"
+                                 style="border-top: 2px solid #000000 !important; cursor: pointer;"
 
                                  onclick="entrarAMejorasCursoDocente('@curso')">
 
@@ -6211,11 +6234,11 @@
 
             <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
 
-                <h2 style="color: #27ae60;" class="mb-0"><i class="bi bi-person-heart me-2"></i>Panel de Padres y Acudientes</h2>
+                <h2 style="color: #0d2a4a;" class="mb-0"><i class="bi bi-person-heart me-2"></i>Panel de Padres y Acudientes</h2>
 
 
 
-                <div class="d-flex align-items-center bg-success text-white px-3 py-2 rounded-pill shadow-sm">
+                <div class="d-flex align-items-center text-white px-3 py-2 rounded-pill shadow-sm" style="background-color: #0d2a4a;">
 
                     <span class="small me-2 fw-bold"><i class="bi bi-person-badge me-1"></i>Hijo(a):</span>
 
@@ -6263,7 +6286,7 @@
 
                     <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-acudiente-limpia" 
 
-                         style="border-top: 4px solid #27ae60 !important; cursor: pointer;"
+                         style="border-top: 2px solid #000000 !important; cursor: pointer;"
 
                          onclick="verCalificacionesAcudiente()">
 
@@ -6295,7 +6318,7 @@
 
                     <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-acudiente-limpia" 
 
-                         style="border-top: 4px solid #27ae60 !important; cursor: pointer;"
+                         style="border-top: 2px solid #000000 !important; cursor: pointer;"
 
                          onclick="verAsistenciaAcudiente()">
 
@@ -6327,7 +6350,7 @@
 
                     <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-acudiente-limpia" 
 
-                         style="border-top: 4px solid #27ae60 !important; cursor: pointer;"
+                         style="border-top: 2px solid #000000 !important; cursor: pointer;"
 
                          onclick="verCitacionesAcudiente()">
 
@@ -6359,7 +6382,7 @@
 
                     <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-acudiente-limpia" 
 
-                         style="border-top: 4px solid #27ae60 !important; cursor: pointer;"
+                         style="border-top: 2px solid #000000 !important; cursor: pointer;"
 
                          onclick="verObservadorAcudiente()">
 
@@ -6391,7 +6414,7 @@
 
                     <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-acudiente-limpia" 
 
-                         style="border-top: 4px solid #27ae60 !important; cursor: pointer;"
+                         style="border-top: 2px solid #000000 !important; cursor: pointer;"
 
                          onclick="location.href='@Url.Action("Index", "Pqr")'">
 
@@ -6869,7 +6892,7 @@
 
         <div id="estudiante-main" style="max-width: 1400px; margin: 0 auto;">
 
-            <h2 class="mb-4" style="color: #6f42c1;"><i class="bi bi-mortarboard-fill me-2"></i>Mi Panel Académico</h2>
+            <h2 class="mb-4" style="color: #0d2a4a;"><i class="bi bi-mortarboard-fill me-2"></i>Mi Panel Académico</h2>
 
 
 
@@ -6883,7 +6906,7 @@
 
                     <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-estudiante-limpia"
 
-                         style="border-top: 4px solid #6f42c1 !important;">
+                         style="border-top: 2px solid #000000 !important;">
 
                         <i class="bi bi-calendar3 fs-2 mb-2" style="color: #6f42c1;"></i>
 
@@ -6913,7 +6936,7 @@
 
                     <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-estudiante-limpia"
 
-                         style="border-top: 4px solid #6f42c1 !important; cursor: pointer;"
+                         style="border-top: 2px solid #000000 !important; cursor: pointer;"
 
                          onclick="location.href='@Url.Action("MisNotas", "Estudiante")'">
 
@@ -6941,7 +6964,7 @@
 
                     <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-estudiante-limpia"
 
-                         style="border-top: 4px solid #6f42c1 !important; cursor: pointer;"
+                         style="border-top: 2px solid #000000 !important; cursor: pointer;"
 
                          onclick="verActividadesEstudiante()">
 
@@ -6965,7 +6988,7 @@
 
                     <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-estudiante-limpia"
 
-                         style="border-top: 4px solid #6f42c1 !important; cursor: pointer;"
+                         style="border-top: 2px solid #000000 !important; cursor: pointer;"
 
                          onclick="verCursosExtra()">
 
@@ -6989,7 +7012,7 @@
 
                     <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-estudiante-limpia"
 
-                         style="border-top: 4px solid #6f42c1 !important; cursor: pointer;"
+                         style="border-top: 2px solid #000000 !important; cursor: pointer;"
 
                          onclick="verModuloMejoras()">
 
@@ -7013,7 +7036,7 @@
 
                     <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-estudiante-limpia"
 
-                         style="border-top: 4px solid #6f42c1 !important; cursor: pointer;"
+                         style="border-top: 2px solid #000000 !important; cursor: pointer;"
 
                          onclick="location.href='@Url.Action("Index", "Pqr")'">
 
@@ -7169,7 +7192,7 @@
 
                                 <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-estudiante-limpia" 
 
-                                     style="border-top: 4px solid #6f42c1 !important; cursor: pointer;"
+                                     style="border-top: 2px solid #000000 !important; cursor: pointer;"
 
                                      onclick="entrarAClassroomMateria('@mat')">
 
@@ -8475,7 +8498,7 @@
 
                                 <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-estudiante-limpia" 
 
-                                     style="border-top: 4px solid #6f42c1 !important; cursor: pointer;"
+                                     style="border-top: 2px solid #000000 !important; cursor: pointer;"
 
                                      onclick="entrarAMejorasMateriaEstudiante('@mat')">
 
@@ -14140,6 +14163,52 @@
 
 
 
+<style>
+    /* ===== Tarjetas de módulos (todos los roles): borde negro, título e icono negros, botón azul ===== */
+    .card.card-admin-limpia,
+    .card.card-docente-limpia,
+    .card.card-estudiante-limpia,
+    .card.card-acudiente-limpia {
+        border: 2px solid #000000 !important;
+    }
+    /* Título e icono en negro (el texto gris de la descripción no se toca) */
+    .card-admin-limpia > i, .card-admin-limpia > h5,
+    .card-docente-limpia > i, .card-docente-limpia > h5,
+    .card-estudiante-limpia > i, .card-estudiante-limpia > h5,
+    .card-acudiente-limpia > i, .card-acudiente-limpia > h5 {
+        color: #000000 !important;
+    }
+    /* Botón azul oscuro igual al de la barra superior (#0d2a4a), para los cuatro roles */
+    .btn-admin-solido,
+    .btn-docente-solido,
+    .btn-estudiante-solido,
+    .btn-acudiente-solido {
+        background-color: #0d2a4a !important;
+        color: #ffffff !important;
+        border: none !important;
+    }
+    .btn-admin-solido:hover,
+    .btn-docente-solido:hover,
+    .btn-estudiante-solido:hover,
+    .btn-acudiente-solido:hover {
+        background-color: #1b4170 !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 8px rgba(13, 42, 74, 0.35);
+    }
+</style>
+<style>
+    /* Aviso de bienvenida centrado y un poco más grande */
+    .swal2-popup.swal2-toast.toast-bienvenida {
+        font-size: 1.25rem;
+        border: 2px solid #0d2a4a;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(13, 42, 74, 0.25);
+    }
+    .swal2-popup.swal2-toast.toast-bienvenida .swal2-title {
+        font-size: 1.15rem;
+        font-weight: 700;
+    }
+</style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
