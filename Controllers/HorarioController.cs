@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using ProyectoPAE.Models;
 using ProyectoPAE.Servicios;
 using System;
+using System.Globalization;
+using System.Text;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -95,20 +97,32 @@ namespace ProyectoPAE.Controllers
             }
             else
             {
-                string nombre = materia.nombre_materia.ToLower();
+                // Se compara sin tildes ni mayúsculas ("Educación Física" == "educacion fisica")
+                string nombre = SinTildes(materia.nombre_materia ?? "");
 
-                if (nombre.Contains("física") || nombre.Contains("química") ||
-                    nombre.Contains("biología") || nombre.Contains("ciencias naturales"))
+                // OJO: esta regla va ANTES que la de laboratorio, porque "Educación Física" también
+                // contiene la palabra "física" y antes caía por error en los laboratorios.
+                if (nombre.Contains("educacion fisica") || nombre.Contains("deporte") || nombre.Contains("recreacion"))
+                {
+                    // Canchas y polideportivos (POLI-01, POLI-02, CAN-EXT...)
+                    aulasFiltradas = todasLasAulas
+                        .Where(a => string.Equals(a.tipo, "Polideportivo", StringComparison.OrdinalIgnoreCase)
+                                    || (a.codigo_aula ?? "").StartsWith("POLI", StringComparison.OrdinalIgnoreCase)
+                                    || (a.codigo_aula ?? "").StartsWith("CAN", StringComparison.OrdinalIgnoreCase))
+                        .ToList();
+                }
+                else if (nombre.Contains("fisica") || nombre.Contains("quimica") ||
+                         nombre.Contains("biologia") || nombre.Contains("ciencias naturales"))
                 {
                     aulasFiltradas = todasLasAulas.Where(a => a.tipo == "Laboratorio").ToList();
                 }
-                else if (nombre.Contains("tecnología") || nombre.Contains("informática"))
+                else if (nombre.Contains("tecnologia") || nombre.Contains("informatica"))
                 {
                     aulasFiltradas = todasLasAulas
                         .Where(a => a.tipo == "Sala de Sistemas" || a.codigo_aula.Contains("SAL-SIS"))
                         .ToList();
                 }
-                else if (nombre.Contains("artística"))
+                else if (nombre.Contains("artistica"))
                 {
                     aulasFiltradas = todasLasAulas.Where(a => a.codigo_aula.Contains("SAL-ART")).ToList();
                 }
@@ -137,6 +151,18 @@ namespace ProyectoPAE.Controllers
             });
 
             return Json(resultado);
+        }
+
+        // Quita tildes y pasa a minúsculas para comparar nombres de materias de forma segura
+        private static string SinTildes(string texto)
+        {
+            var normalizado = texto.Normalize(NormalizationForm.FormD);
+            var sb = new StringBuilder(normalizado.Length);
+            foreach (var c in normalizado)
+            {
+                if (CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark) sb.Append(c);
+            }
+            return sb.ToString().Normalize(NormalizationForm.FormC).ToLowerInvariant();
         }
 
         // ============================================================================
@@ -289,6 +315,7 @@ namespace ProyectoPAE.Controllers
             {
                 int? idProfesorConsulta = null;
                 string nombreProfesorActual = "";
+                string? jornadaProfesor = null;
 
                 if (idUsuario.HasValue)
                 {
@@ -301,6 +328,7 @@ namespace ProyectoPAE.Controllers
                     {
                         idProfesorConsulta = profesor.id_profesor;
                         nombreProfesorActual = profesor.nombre + " " + (profesor.apellido ?? "");
+                        jornadaProfesor = profesor.jornada;
                     }
                 }
 
@@ -342,6 +370,15 @@ namespace ProyectoPAE.Controllers
                             };
 
                 var horariosDocente = await query.ToListAsync();
+
+                // Jornada de la parrilla: se deduce de las clases reales del docente (antes de filtrar por materia)
+                // y, si aún no tiene clases, se usa la jornada registrada en su perfil.
+                bool tieneTarde = horariosDocente.Any(h => h.HoraInicio >= TimeSpan.FromHours(12));
+                bool tieneManana = horariosDocente.Any(h => h.HoraInicio < TimeSpan.FromHours(12));
+                ViewBag.Jornada = (tieneTarde && tieneManana) ? "Mañana y Tarde"
+                                : tieneTarde ? "Tarde"
+                                : tieneManana ? "Mañana"
+                                : (string.Equals(jornadaProfesor?.Trim(), "Tarde", StringComparison.OrdinalIgnoreCase) ? "Tarde" : "Mañana");
 
                 if (!string.IsNullOrEmpty(materia_filtro))
                 {
@@ -400,6 +437,7 @@ namespace ProyectoPAE.Controllers
 
             var cursoObj = await _context.Cursos.FindAsync(matricula.id_curso);
             ViewBag.NombreCurso = cursoObj?.nombre_curso ?? "Curso Desconocido";
+            ViewBag.Jornada = cursoObj?.jornada;
 
             var horariosEstudiante = await (from h in _context.HORARIOS
                                             join m in _context.MATERIA on h.id_materia equals m.id_materia into mGroup

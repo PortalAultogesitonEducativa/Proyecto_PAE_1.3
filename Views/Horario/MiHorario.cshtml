@@ -3,12 +3,21 @@
 @{
     ViewData["Title"] = "Horario de Clases - PAE";
 
-    // Detectar automáticamente si la jornada es Tarde ('T') o Mañana ('M') basándose en el nombre del curso (ej. "601 M")
+    // La jornada la define el controlador: la del curso (estudiante) o la de las clases del docente.
+    // Solo si no llega, se detecta por el nombre del curso (ej. "601 T").
     string nombreCurso = ViewBag.NombreCurso as string ?? "";
-    bool esJornadaTarde = nombreCurso.ToUpper().Contains(" T") || nombreCurso.ToUpper().EndsWith("T");
+    string jornadaVista = (ViewBag.Jornada as string ?? "").Trim();
+    if (string.IsNullOrEmpty(jornadaVista))
+    {
+        jornadaVista = (nombreCurso.ToUpper().Contains(" T") || nombreCurso.ToUpper().EndsWith("T")) ? "Tarde" : "Mañana";
+    }
+    bool esJornadaTarde = jornadaVista.Equals("Tarde", StringComparison.OrdinalIgnoreCase);
+    bool esJornadaMixta = jornadaVista.Contains(" y ", StringComparison.OrdinalIgnoreCase);
 
     // Franjas fijas de cada jornada (definidas una sola vez en Models/BloquesHorarios.cs)
-    var bloquesHorarios = esJornadaTarde ? ProyectoPAE.Models.BloquesHorarios.Tarde : ProyectoPAE.Models.BloquesHorarios.Manana;
+    var bloquesHorarios = esJornadaMixta
+        ? ProyectoPAE.Models.BloquesHorarios.Manana.Concat(ProyectoPAE.Models.BloquesHorarios.Tarde).ToArray()
+        : (esJornadaTarde ? ProyectoPAE.Models.BloquesHorarios.Tarde : ProyectoPAE.Models.BloquesHorarios.Manana);
 
     var diasSemana = new[] { "Lunes", "Martes", "Miércoles", "Jueves", "Viernes" };
     bool esDocente = ViewBag.EsDocente == true;
@@ -61,7 +70,7 @@
         <div class="col-md-3">
             <div class="card border-0 shadow-sm p-3 h-100 bg-white rounded-3 border-start border-info border-4">
                 <span class="text-muted small fw-bold text-uppercase">Jornada</span>
-                <h4 class="fw-bold text-dark mt-1 mb-0">@(esJornadaTarde ? "Tarde" : "Mañana")</h4>
+                <h4 class="fw-bold text-dark mt-1 mb-0">@jornadaVista</h4>
                 <small class="text-muted mt-2 d-block">Programación semanal de clases</small>
             </div>
         </div>
