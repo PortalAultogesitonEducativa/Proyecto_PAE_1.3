@@ -366,7 +366,27 @@ namespace ProyectoPAE.Controllers
 
                         if (matriculaActiva != null)
                         {
-                            gradoEstudiante = matriculaActiva.id_curso;
+                            if (matriculaActiva.id_curso.HasValue)
+                            {
+                                var cursoMat = _context.Cursos.Find(matriculaActiva.id_curso.Value);
+                                if (cursoMat != null)
+                                {
+                                    gradoEstudiante = MatriculaAcademicaService.ExtraerGrado(cursoMat.nombre_curso, matriculaActiva.grado_solicitado ?? 6);
+                                }
+                                else
+                                {
+                                    gradoEstudiante = matriculaActiva.grado_solicitado;
+                                }
+                            }
+                            else
+                            {
+                                gradoEstudiante = matriculaActiva.grado_solicitado;
+                            }
+
+                            if (!gradoEstudiante.HasValue && !string.IsNullOrEmpty(estudiante.curso_asignado))
+                            {
+                                gradoEstudiante = MatriculaAcademicaService.ExtraerGrado(estudiante.curso_asignado, 6);
+                            }
 
                             var horarioEstudiante = _context.HORARIOS
                                 .Where(h => h.id_curso == matriculaActiva.id_curso)
@@ -379,6 +399,10 @@ namespace ProyectoPAE.Controllers
                         }
                         else
                         {
+                            if (!string.IsNullOrEmpty(estudiante.curso_asignado))
+                            {
+                                gradoEstudiante = MatriculaAcademicaService.ExtraerGrado(estudiante.curso_asignado, 6);
+                            }
                             ViewBag.MensajeHorario = "No tienes una matrícula activa registrada.";
                         }
                     }

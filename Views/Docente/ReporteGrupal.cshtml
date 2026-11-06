@@ -53,20 +53,27 @@
             @await Html.PartialAsync("_SidebarDocente")
         }
         <main class="submodulo-activo flex-grow-1" role="main" aria-label="Reporte de Calificaciones">
-            <!-- Encabezado con Botón Volver y Acciones -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="d-flex align-items-center justify-content-between p-3 rounded-3 text-white mb-4"
+                 style="background: var(--pae-gradient-primary);">
                 <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center"
+                         style="width:50px;height:50px;background:rgba(255,255,255,.18); flex-shrink: 0;">
+                        <i class="bi bi-file-earmark-bar-graph fs-3 text-white"></i>
+                    </div>
+                    <div>
+                        <h4 class="mb-0 fw-bold">Reporte de Calificaciones</h4>
+                        <small class="opacity-75">Estadísticas, promedios y consolidado general de notas por asignatura</small>
+                    </div>
+                </div>
+                <div class="d-flex gap-2">
+                    <button onclick="window.print()" class="btn btn-outline-light btn-sm rounded-pill px-3">
+                        <i class="bi bi-printer me-1"></i> Imprimir PDF
+                    </button>
                     <a href="@Url.Action("Dashboard", "Home")" class="btn btn-pae-volver">
                         Volver al Panel
                     </a>
-                    <h2 class="fw-bold m-0" style="color: var(--pae-primary);">
-                        <i class="bi bi-file-earmark-bar-graph me-2" style="color: var(--pae-secondary);"></i>Reporte de Calificaciones
-                    </h2>
                 </div>
-        <button onclick="window.print()" class="btn btn-outline-secondary">
-            <i class="bi bi-printer me-1"></i> Imprimir PDF
-        </button>
-    </div>
+            </div>
 
     <div class="card shadow border-0">
         <div class="card-body p-4">
@@ -78,7 +85,7 @@
             </div>
 
             <div class="table-responsive">
-                <table class="table table-hover align-middle">
+                <table class="table table-hover align-middle" id="tablaReporte">
                     <thead class="table-light">
                         <tr>
                             <th>Estudiante</th>
@@ -92,7 +99,7 @@
                     <tbody>
                         @foreach (var item in Model)
                         {
-                            <tr>
+                            <tr class="fila-reporte">
                                 <td>@item.NombreEstudiante</td>
                                 <td>
                                     <span class="badge text-white px-3 py-1 rounded-2 fw-semibold shadow-sm"
@@ -130,14 +137,114 @@
                     </tbody>
                 </table>
             </div>
+
+            <!-- BARRA DE PAGINACIÓN REPORTES GENERALES (ESTILO IMAGEN 3) -->
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-4 p-2 bg-light rounded border">
+                <p class="text-muted small mb-0" id="infoReportePagina">Cargando...</p>
+                <nav aria-label="Paginación reportes generales">
+                    <ul class="pagination pagination-sm mb-0" id="paginacionReporte"></ul>
+                </nav>
+            </div>
         </div>
     </div>
         </main>
     </div>
 </div>
 
+<style>
+    #paginacionReporte .page-item .page-link {
+        color: #007bff;
+        border-color: #dee2e6;
+        padding: 0.35rem 0.75rem;
+        font-size: 0.9rem;
+    }
+    #paginacionReporte .page-item.active .page-link {
+        background-color: #007bff;
+        border-color: #007bff;
+        color: #ffffff;
+        font-weight: bold;
+    }
+    #paginacionReporte .page-item.disabled .page-link {
+        color: #6c757d;
+        background-color: #fff;
+        border-color: #dee2e6;
+        cursor: not-allowed;
+    }
+</style>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+    // Paginación Client-Side idéntica a Imagen 3
+    const filasPorPaginaReporte = 10;
+    let repPaginaActual = 1;
+
+    function renderizarPaginacionReporte() {
+        const todasFilas = Array.from(document.querySelectorAll('#tablaReporte tbody tr.fila-reporte'));
+        const totalFilas = todasFilas.length;
+        const totalPaginas = Math.ceil(totalFilas / filasPorPaginaReporte) || 1;
+
+        if (repPaginaActual > totalPaginas) repPaginaActual = totalPaginas;
+        if (repPaginaActual < 1) repPaginaActual = 1;
+
+        const inicio = (repPaginaActual - 1) * filasPorPaginaReporte;
+        const fin = Math.min(inicio + filasPorPaginaReporte, totalFilas);
+
+        todasFilas.forEach((tr, idx) => {
+            tr.style.display = (idx >= inicio && idx < fin) ? '' : 'none';
+        });
+
+        const info = document.getElementById('infoReportePagina');
+        if (info) {
+            if (totalFilas === 0) {
+                info.textContent = 'No hay calificaciones para mostrar';
+            } else {
+                info.textContent = `Mostrando ${inicio + 1}–${fin} de ${totalFilas} registros`;
+            }
+        }
+
+        const ul = document.getElementById('paginacionReporte');
+        if (!ul) return;
+        ul.innerHTML = '';
+
+        if (totalPaginas <= 1) return;
+
+        const crearLi = (label, pagina, activo, disabled) => {
+            const li = document.createElement('li');
+            li.className = `page-item${activo ? ' active' : ''}${disabled ? ' disabled' : ''}`;
+            const a = document.createElement('a');
+            a.className = 'page-link';
+            a.innerHTML = label;
+            a.href = '#';
+            if (!disabled && !activo) {
+                a.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    repPaginaActual = pagina;
+                    renderizarPaginacionReporte();
+                });
+            }
+            li.appendChild(a);
+            ul.appendChild(li);
+        };
+
+        // Botón anterior «
+        crearLi('&laquo;', repPaginaActual - 1, false, repPaginaActual === 1);
+
+        const rango = 2;
+        for (let p = 1; p <= totalPaginas; p++) {
+            if (p === 1 || p === totalPaginas || (p >= repPaginaActual - rango && p <= repPaginaActual + rango)) {
+                crearLi(p.toString(), p, p === repPaginaActual, false);
+            } else if (p === repPaginaActual - rango - 1 || p === repPaginaActual + rango + 1) {
+                crearLi('...', 0, false, true);
+            }
+        }
+
+        // Botón siguiente »
+        crearLi('&raquo;', repPaginaActual + 1, false, repPaginaActual === totalPaginas);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        renderizarPaginacionReporte();
+    });
     const ctx = document.getElementById('graficaNotas');
 
     // Extraemos los datos de C# a JavaScript

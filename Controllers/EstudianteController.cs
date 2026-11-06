@@ -113,10 +113,34 @@ public class EstudianteController : Controller
         if (estudianteObj != null)
         {
             var matricula = _context.Matriculas
-                .FirstOrDefault(m => m.id_estudiante == estudianteObj.id_estudiante && m.estado != null && (m.estado.ToLower() == "activa" || m.estado.ToLower() == "activo"));
+                .Where(m => m.id_estudiante == estudianteObj.id_estudiante && m.estado != null && (m.estado.ToLower() == "activa" || m.estado.ToLower() == "activo"))
+                .OrderByDescending(m => m.ano)
+                .ThenByDescending(m => m.id_matricula)
+                .FirstOrDefault();
+
             if (matricula != null)
             {
-                gradoEstudiante = matricula.id_curso;
+                if (matricula.id_curso.HasValue)
+                {
+                    var cursoObj = _context.Cursos.Find(matricula.id_curso.Value);
+                    if (cursoObj != null)
+                    {
+                        gradoEstudiante = MatriculaAcademicaService.ExtraerGrado(cursoObj.nombre_curso, matricula.grado_solicitado ?? 6);
+                    }
+                    else
+                    {
+                        gradoEstudiante = matricula.grado_solicitado;
+                    }
+                }
+                else
+                {
+                    gradoEstudiante = matricula.grado_solicitado;
+                }
+            }
+
+            if (!gradoEstudiante.HasValue && !string.IsNullOrEmpty(estudianteObj.curso_asignado))
+            {
+                gradoEstudiante = MatriculaAcademicaService.ExtraerGrado(estudianteObj.curso_asignado, 6);
             }
         }
 
@@ -132,78 +156,73 @@ public class EstudianteController : Controller
             }
         }
 
-        // Verificar si el curso requiere documentos previos
-        bool tieneDocsRequeridos = !string.IsNullOrWhiteSpace(curso.DocumentosRequeridos);
-
-        if (tieneDocsRequeridos)
+        // Obtener lista de documentos requeridos por el profesor o por tipo de curso
+        List<string> docsList = new List<string>();
+        if (!string.IsNullOrWhiteSpace(curso.DocumentosRequeridos))
         {
-            // Crear inscripción como PendienteAprobacion SIN descontar cupo
-            var nuevaInscripcion = new ExtraInscripcion
-            {
-                IdEstudiante = userId.Value,
-                IdExtraCurso = idCurso,
-                FechaInscripcion = DateTime.Now,
-                Estado = "PendienteAprobacion"
-            };
-            _context.ExtraInscripciones.Add(nuevaInscripcion);
-            _context.SaveChanges();
-
-            // Parsear lista de documentos requeridos
-            List<string> docsList;
             try
             {
                 if (curso.DocumentosRequeridos.Trim().StartsWith("["))
                 {
                     var parsed = System.Text.Json.JsonSerializer.Deserialize<List<string>>(curso.DocumentosRequeridos);
-                    docsList = parsed ?? new List<string>();
+                    if (parsed != null && parsed.Any()) docsList = parsed;
                 }
                 else
                 {
                     docsList = curso.DocumentosRequeridos
                         .Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries)
                         .Select(d => d.Trim())
+                        .Where(d => !string.IsNullOrEmpty(d))
                         .ToList();
                 }
             }
             catch
             {
-                docsList = new List<string> { "Documento de Identidad (TI / RC)", "Formato de Autorización de Padres / Acudientes" };
+                docsList = new List<string>();
             }
-
-            return Json(new
-            {
-                success = true,
-                pendienteDocumentos = true,
-                idInscripcion = nuevaInscripcion.IdExtraInscripcion,
-                documentosRequeridos = docsList,
-                message = $"Para completar tu inscripción a '{curso.Nombre}', debes subir los documentos requeridos."
-            });
         }
-        else
+
+        if (!docsList.Any())
         {
-            // Sin documentos requeridos: inscripción directa
-            curso.CuposDisponibles -= 1;
-            if (curso.CuposDisponibles < 0) curso.CuposDisponibles = 0;
-
-            var nuevaInscripcion = new ExtraInscripcion
-            {
-                IdEstudiante = userId.Value,
-                IdExtraCurso = idCurso,
-                FechaInscripcion = DateTime.Now,
-                Estado = "Inscrito"
-            };
-
-            _context.ExtraInscripciones.Add(nuevaInscripcion);
-            _context.SaveChanges();
-
-            return Json(new
-            {
-                success = true,
-                pendienteDocumentos = false,
-                message = $"¡Te has inscrito exitosamente a '{curso.Nombre}'! Cupos restantes: {curso.CuposDisponibles}.",
-                cuposDisponibles = curso.CuposDisponibles
-            });
+            if (curso.TipoCurso?.ToLower() == "deportivo")
+                docsList = new List<string> { "Documento de Identidad (TI / RC)", "Formato de Autorización de Padres / Acudientes", "Certificado Médico de Aptitud Física", "Copia de EPS o Seguro Estudiantil" };
+            else if (curso.TipoCurso?.ToLower() == "servicio social y comunitario" || curso.TipoCurso?.ToLower() == "servicio social")
+                docsList = new List<string> { "Documento de Identidad (TI / RC)", "Formato de Autorización de Padres / Acudientes", "Copia de EPS o Seguro Estudiantil", "Paz y Salvo Institucional" };
+            else
+                docsList = new List<string> { "Documento de Identidad (TI / RC)", "Formato de Autorización de Padres / Acudientes", "Copia de EPS o Seguro Estudiantil" };
         }
+
+        // Limpiar cualquier borrador previo que haya quedado pendiente
+        var borradorPrevio = _context.ExtraInscripciones
+            .FirstOrDefault(i => i.IdEstudiante == userId.Value && i.IdExtraCurso == idCurso && i.Estado == "Borrador");
+        if (borradorPrevio != null)
+        {
+            var docsBorrador = _context.ExtraDocumentosInscripciones
+                .Where(d => d.IdExtraInscripcion == borradorPrevio.IdExtraInscripcion);
+            _context.ExtraDocumentosInscripciones.RemoveRange(docsBorrador);
+            _context.ExtraInscripciones.Remove(borradorPrevio);
+            _context.SaveChanges();
+        }
+
+        // Crear registro en estado "Borrador". NO entrará a la cola del docente hasta que suba todos los documentos.
+        var nuevaInscripcion = new ExtraInscripcion
+        {
+            IdEstudiante = userId.Value,
+            IdExtraCurso = idCurso,
+            FechaInscripcion = DateTime.Now,
+            Estado = "Borrador"
+        };
+        _context.ExtraInscripciones.Add(nuevaInscripcion);
+        _context.SaveChanges();
+
+        return Json(new
+        {
+            success = true,
+            pendienteDocumentos = true,
+            idInscripcion = nuevaInscripcion.IdExtraInscripcion,
+            documentosRequeridos = docsList,
+            message = $"Para postularte a '{curso.Nombre}', es obligatorio adjuntar los documentos solicitados antes de enviar la solicitud al docente."
+        });
     
         }
         catch (Exception ex)
@@ -230,17 +249,26 @@ public class EstudianteController : Controller
             return Json(new { success = false, message = "Inscripción no encontrada." });
         }
 
+        if (inscripcion.Estado == "Borrador")
+        {
+            var docsBorrador = _context.ExtraDocumentosInscripciones
+                .Where(d => d.IdExtraInscripcion == idInscripcion);
+            _context.ExtraDocumentosInscripciones.RemoveRange(docsBorrador);
+            _context.ExtraInscripciones.Remove(inscripcion);
+            _context.SaveChanges();
+            return Json(new { success = true, message = "Postulación cancelada." });
+        }
+
         if (inscripcion.Estado == "Cancelado")
         {
             return Json(new { success = false, message = "Esta inscripción ya fue cancelada previamente." });
         }
 
+        bool cupoARestaurar = inscripcion.Estado == "Inscrito";
         inscripcion.Estado = "Cancelado";
         inscripcion.FechaCancelacion = DateTime.Now;
         inscripcion.MotivoCancelacion = "Cancelado voluntariamente por el estudiante";
 
-        // Devolver el cupo solo si la inscripción ya estaba aprobada (Inscrito)
-        bool cupoARestaurar = inscripcion.Estado == "Inscrito";
         var curso = _context.ExtraCursos.Find(inscripcion.IdExtraCurso);
         if (curso != null && cupoARestaurar)
         {
@@ -255,7 +283,7 @@ public class EstudianteController : Controller
         return Json(new
         {
             success = true,
-            message = "Has cancelado tu inscripción. El cupo ha sido liberado exitosamente."
+            message = "Has cancelado tu inscripción exitosamente."
         });
     }
 
@@ -273,20 +301,71 @@ public class EstudianteController : Controller
         if (insc == null || insc.IdEstudiante != userId.Value)
             return Json(new { success = false, message = "Inscripción no encontrada." });
 
-        if (insc.Estado != "PendienteAprobacion")
-            return Json(new { success = false, message = "Esta inscripción no está en estado pendiente." });
+        if (insc.Estado != "Borrador" && insc.Estado != "PendienteAprobacion")
+            return Json(new { success = false, message = "Esta inscripción no se encuentra pendiente de documentos." });
 
-        // Verificar que subió al menos un documento
+        var curso = _context.ExtraCursos.Find(insc.IdExtraCurso);
+        if (curso == null)
+            return Json(new { success = false, message = "Curso no encontrado." });
+
+        // Obtener la lista de documentos obligatorios
+        List<string> docsRequeridos = new List<string>();
+        if (!string.IsNullOrWhiteSpace(curso.DocumentosRequeridos))
+        {
+            try
+            {
+                if (curso.DocumentosRequeridos.Trim().StartsWith("["))
+                {
+                    var parsed = System.Text.Json.JsonSerializer.Deserialize<List<string>>(curso.DocumentosRequeridos);
+                    if (parsed != null && parsed.Any()) docsRequeridos = parsed;
+                }
+                else
+                {
+                    docsRequeridos = curso.DocumentosRequeridos
+                        .Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries)
+                        .Select(d => d.Trim())
+                        .Where(d => !string.IsNullOrEmpty(d))
+                        .ToList();
+                }
+            }
+            catch { }
+        }
+
+        if (!docsRequeridos.Any())
+        {
+            if (curso.TipoCurso?.ToLower() == "deportivo")
+                docsRequeridos = new List<string> { "Documento de Identidad (TI / RC)", "Formato de Autorización de Padres / Acudientes", "Certificado Médico de Aptitud Física", "Copia de EPS o Seguro Estudiantil" };
+            else if (curso.TipoCurso?.ToLower() == "servicio social y comunitario" || curso.TipoCurso?.ToLower() == "servicio social")
+                docsRequeridos = new List<string> { "Documento de Identidad (TI / RC)", "Formato de Autorización de Padres / Acudientes", "Copia de EPS o Seguro Estudiantil", "Paz y Salvo Institucional" };
+            else
+                docsRequeridos = new List<string> { "Documento de Identidad (TI / RC)", "Formato de Autorización de Padres / Acudientes", "Copia de EPS o Seguro Estudiantil" };
+        }
+
+        // Obtener documentos subidos por el estudiante
         var docsSubidos = _context.ExtraDocumentosInscripciones
-            .Where(d => d.IdExtraInscripcion == idInscripcion)
+            .Where(d => d.IdExtraInscripcion == idInscripcion && !string.IsNullOrEmpty(d.ArchivoRuta))
             .ToList();
 
         if (!docsSubidos.Any())
-            return Json(new { success = false, message = "Debes subir al menos un documento antes de enviar la solicitud." });
+        {
+            return Json(new { success = false, message = "Es obligatorio adjuntar todos los documentos requeridos antes de enviar la solicitud al docente." });
+        }
 
+        // Validar que TODOS los documentos requeridos hayan sido adjuntados
+        var tiposSubidos = docsSubidos.Select(d => (d.TipoDocumento ?? "").Trim().ToLower()).ToList();
+        var faltantes = docsRequeridos.Where(req => !tiposSubidos.Contains(req.Trim().ToLower())).ToList();
+
+        if (faltantes.Any())
+        {
+            return Json(new { success = false, message = $"Faltan documentos obligatorios por adjuntar ({docsSubidos.Count} de {docsRequeridos.Count} cargados). Por favor adjunta: {string.Join(", ", faltantes)}." });
+        }
+
+        // Pasa a estado PendienteAprobacion para que ahora sí ingrese a la lista de cola/revisión del docente
+        insc.Estado = "PendienteAprobacion";
+        insc.FechaInscripcion = DateTime.Now;
         _context.SaveChanges();
 
-        return Json(new { success = true, message = "¡Solicitud enviada! El docente revisará tus documentos y aprobará tu inscripción." });
+        return Json(new { success = true, message = "¡Documentos cargados exitosamente! Tu postulación ha entrado en la lista de espera para el visto bueno del docente." });
     }
 
     // ===============================================
@@ -341,7 +420,8 @@ public class EstudianteController : Controller
                 comentario = entrega?.Comentario,
                 calificacion = entrega?.Calificacion,
                 retroalimentacion = entrega?.Retroalimentacion,
-                vencida = vencida
+                vencida = vencida,
+                esMejora = a.EsMejora
             };
         }).ToList();
 
@@ -364,6 +444,11 @@ public class EstudianteController : Controller
         var actividad = _context.Actividades.Find(idActividad);
         if (actividad == null || !actividad.Activo)
             return Json(new { success = false, message = "La actividad no existe o está inactiva." });
+
+        if (DateTime.Now > actividad.FechaLimite)
+        {
+            return Json(new { success = false, message = "La fecha límite de entrega ha expirado. Ya no es posible modificar ni enviar respuestas a esta actividad." });
+        }
 
         // Verificar si ya tiene entrega registrada
         var entregaExistente = _context.EntregasActividades
@@ -438,6 +523,93 @@ public class EstudianteController : Controller
             success = true,
             message = "¡Tu actividad fue enviada exitosamente con el texto y archivos adjuntos!",
             archivoNombre = archivo?.FileName
+        });
+    }
+
+    /// <summary>
+    /// Consulta comentarios de clase y comentarios privados de una actividad para el estudiante.
+    /// </summary>
+    [HttpGet]
+    public IActionResult ObtenerComentariosActividad(int idActividad)
+    {
+        _context.AsegurarEsquemaActividades();
+
+        var userId = HttpContext.Session.GetInt32("UserId");
+        if (userId == null)
+            return Json(new { success = false, message = "Sesión inválida." });
+
+        var comentarios = _context.ComentariosActividades
+            .Where(c => c.IdActividad == idActividad && (!c.EsPrivado || c.IdEstudiantePrivado == userId.Value))
+            .OrderBy(c => c.Fecha)
+            .Select(c => new
+            {
+                idComentario = c.IdComentario,
+                idActividad = c.IdActividad,
+                idUsuario = c.IdUsuario,
+                nombreUsuario = c.NombreUsuario,
+                rolUsuario = c.RolUsuario,
+                mensaje = c.Mensaje,
+                fecha = c.Fecha.ToString("dd/MM/yyyy HH:mm"),
+                esPrivado = c.EsPrivado,
+                esMio = c.IdUsuario == userId.Value
+            })
+            .ToList();
+
+        return Json(new { success = true, comentarios = comentarios });
+    }
+
+    /// <summary>
+    /// Registra un comentario de clase o privado del estudiante.
+    /// </summary>
+    [HttpPost]
+    [RequierePermiso(Permisos.ParticiparComoEstudiante)]
+    public IActionResult GuardarComentarioActividad(int idActividad, string mensaje, bool esPrivado = false)
+    {
+        _context.AsegurarEsquemaActividades();
+
+        var userId = HttpContext.Session.GetInt32("UserId");
+        var nombreUsuario = HttpContext.Session.GetString("NombreUsuario") ?? "Estudiante";
+        if (userId == null)
+            return Json(new { success = false, message = "Sesión inválida." });
+
+        if (string.IsNullOrWhiteSpace(mensaje))
+            return Json(new { success = false, message = "El mensaje no puede estar vacío." });
+
+        var actividad = _context.Actividades.Find(idActividad);
+        if (actividad == null || !actividad.Activo)
+            return Json(new { success = false, message = "Actividad no encontrada." });
+
+        var nuevo = new ComentarioActividad
+        {
+            IdActividad = idActividad,
+            IdUsuario = userId.Value,
+            NombreUsuario = nombreUsuario,
+            RolUsuario = "Estudiante",
+            Mensaje = mensaje.Trim(),
+            Fecha = DateTime.Now,
+            EsPrivado = esPrivado,
+            IdEstudiantePrivado = esPrivado ? userId.Value : null
+        };
+
+        _context.ComentariosActividades.Add(nuevo);
+        _context.SaveChanges();
+
+        return Json(new
+        {
+            success = true,
+            mensaje = "Comentario registrado correctamente.",
+            comentario = new
+            {
+                idComentario = nuevo.IdComentario,
+                idActividad = nuevo.IdActividad,
+                idUsuario = nuevo.IdUsuario,
+                nombreUsuario = nuevo.NombreUsuario,
+                rolUsuario = nuevo.RolUsuario,
+                mensaje = nuevo.Mensaje,
+                fecha = nuevo.Fecha.ToString("dd/MM/yyyy HH:mm"),
+                esPrivado = nuevo.EsPrivado,
+                esMio = true
+            }
         });
     }
 
