@@ -6,16 +6,22 @@
 }
 
 <div class="container mt-4">
-    <!-- Encabezado con Botón Volver -->
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="fw-bold m-0" style="color: var(--pae-primary);">
-            <i class="bi bi-patch-check-fill me-2" style="color: var(--pae-secondary);"></i>Generar Certificado
-        </h2>
+    <div class="d-flex align-items-center justify-content-between p-3 rounded-3 text-white mb-4"
+         style="background: var(--pae-gradient-primary);">
+        <div class="d-flex align-items-center gap-3">
+            <div class="rounded-circle d-flex align-items-center justify-content-center"
+                 style="width:50px;height:50px;background:rgba(255,255,255,.18); flex-shrink: 0;">
+                <i class="bi bi-patch-check-fill fs-3 text-white"></i>
+            </div>
+            <div>
+                <h4 class="mb-0 fw-bold">Generar Certificado</h4>
+                <small class="opacity-75">Expedición oficial de constancias y certificados académicos</small>
+            </div>
+        </div>
         <button onclick="history.back()" class="btn btn-pae-volver">
-            Volver
+            Volver al Panel
         </button>
     </div>
-    <hr class="mb-4" />
 
     <div class="card border-0 shadow-sm p-4">
         <p class="fs-5 mb-4"><strong>Estudiante:</strong> @estudiante?.NOMBRES @estudiante?.APELLIDOS</p>

@@ -8,10 +8,23 @@
         @await Html.PartialAsync("_SidebarAdmin")
 
         <div class="submodulo-activo">
+            <div class="d-flex align-items-center justify-content-between p-3 rounded-3 text-white mb-4"
+                 style="background: var(--pae-gradient-primary);">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center"
+                         style="width:50px;height:50px;background:rgba(255,255,255,.18); flex-shrink: 0;">
+                        <i class="bi bi-calendar-plus fs-3 text-white"></i>
+                    </div>
+                    <div>
+                        <h4 class="mb-0 fw-bold">Asignación de Horarios Académicos</h4>
+                        <small class="opacity-75">Configuración y asignación de franjas horarias por docente y grupo</small>
+                    </div>
+                </div>
+                <a href="@Url.Action("Dashboard", "Home")" class="btn btn-pae-volver">
+                    Volver al Panel
+                </a>
+            </div>
     <div class="card shadow-sm">
-        <div class="card-header bg-primary text-white">
-            <h4 class="mb-0"><i class="bi bi-calendar-plus"></i> Asignación de Horarios Académicos</h4>
-        </div>
         <div class="card-body">
 
             <ul class="nav nav-tabs mb-4">

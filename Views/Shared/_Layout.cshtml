@@ -611,75 +611,474 @@
         </script>
 
         <!-- ─── MODAL DE AYUDA E INSTRUCCIONES PAE (REQUERIMIENTO 1.5) ─────────────────────────── -->
-        <div class="modal fade" id="modalAyudaPAE" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="ayudaModalTitulo" aria-describedby="ayudaModalQueHace" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered modal-lg">
-                <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-                    <div class="modal-header text-white py-3 px-4" style="background: var(--pae-gradient-primary);">
+        <!-- MODAL DE AYUDA GLOBAL: CENTRO DE ORIENTACIÓN CON IDALGO -->
+        <div class="modal fade" id="modalAyudaPAE" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="ayudaModalTitulo" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" style="max-width: 600px;">
+                <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden" style="background: #0b2545; color: #fff;">
+                    <div class="modal-header border-0 py-3 px-4" style="background: linear-gradient(135deg, #071e3d 0%, #0b2545 100%);">
                         <div class="d-flex align-items-center gap-2">
-                            <span class="badge bg-warning text-dark px-2.5 py-1 rounded-pill fw-semibold" id="ayudaModalRol">Guía</span>
-                            <h5 class="modal-title mb-0 fw-bold" id="ayudaModalTitulo">
+                            <span class="badge bg-warning text-dark px-2.5 py-1 rounded-pill fw-bold" style="font-size: 0.75rem;">Guía Institucional</span>
+                            <h5 class="modal-title mb-0 fw-bold text-white" id="ayudaModalTitulo">
                                 <i class="bi bi-question-circle-fill text-warning me-2"></i>Centro de Ayuda PAE
                             </h5>
                         </div>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <div class="modal-body p-4 bg-light">
-                        <!-- Tarjeta: ¿Qué hace este módulo? -->
-                        <div class="card border-0 shadow-sm rounded-3 mb-3 p-3 bg-white">
-                            <h6 class="fw-bold mb-2" style="color: var(--pae-primary);">
-                                <i class="bi bi-info-circle-fill text-primary me-2"></i>¿Qué puedes hacer en este módulo?
-                            </h6>
-                            <p class="text-secondary mb-0 small" id="ayudaModalQueHace" style="line-height: 1.5;">
-                                Selecciona o interactúa con el módulo activo para visualizar las funciones detalladas.
-                            </p>
+                    <div class="modal-body p-4 text-center" style="background: linear-gradient(180deg, #0b2545 0%, #0d2a4a 100%);">
+                        <!-- Imagen destacada de Idalgo -->
+                        <div class="position-relative d-inline-block mb-3">
+                            <img src="/images/idalgo.png" style="width: 125px; height: 125px; border-radius: 50%; border: 3px solid #f59e0b; background: #fff; object-fit: cover; box-shadow: 0 0 25px rgba(245, 158, 11, 0.45);" alt="Idalgo Mascota PAE" />
+                            <span class="position-absolute bottom-0 end-0 p-2 bg-success border border-2 border-white rounded-circle" title="En línea"></span>
                         </div>
+                        <h4 class="fw-bold text-white mb-1 d-flex align-items-center justify-content-center gap-2">
+                            <span>Habla con Idalgo</span>
+                            <span class="badge bg-warning text-dark fs-7 px-2 py-0.5 rounded-pill">Mascota Guía</span>
+                        </h4>
+                        <p class="text-white-50 small mb-4 px-3" style="line-height: 1.5;">
+                            ¿Tienes dudas sobre cómo consultar notas, entregar tareas, qué pasa con la fecha límite, planes de mejora o certificados?
+                            Idalgo está listo para responder tus consultas al instante.
+                        </p>
 
-                        <!-- Tarjeta: Instrucciones paso a paso -->
-                        <div class="card border-0 shadow-sm rounded-3 mb-3 p-3 bg-white">
-                            <h6 class="fw-bold mb-2" style="color: var(--pae-primary);">
-                                <i class="bi bi-list-ol text-success me-2"></i>Instrucciones paso a paso
-                            </h6>
-                            <ul class="list-unstyled mb-0 small text-secondary" id="ayudaModalPasos">
-                                <li>Cargando instrucciones...</li>
-                            </ul>
-                        </div>
-
-                        <!-- Tarjeta: Qué hacer si no sabes cómo continuar -->
-                        <div class="card border-0 shadow-sm rounded-3 mb-3 p-3 bg-white" style="border-left: 4px solid #0d6efd !important;">
-                            <div class="d-flex justify-content-between align-items-start gap-2">
-                                <div>
-                                    <h6 class="fw-bold mb-1" style="color: #0d6efd;">
-                                        <i class="bi bi-signpost-split-fill me-2"></i>¿Qué puedes hacer si no sabes cómo continuar?
-                                    </h6>
-                                    <p class="text-secondary mb-0 small" id="ayudaModalQueHacerSiNoSabe">
-                                        Puedes regresar al panel principal con el botón "Inicio (Cuadros)" o radicar tu consulta formal en el Módulo PQR para recibir orientación del equipo institucional.
-                                    </p>
-                                </div>
-                                <a href="@Url.Action("Index", "Pqr")" class="btn btn-sm btn-outline-primary text-nowrap rounded-pill px-3 py-1 mt-1">
-                                    <i class="bi bi-chat-heart-fill me-1"></i> Ir a PQR
-                                </a>
-                            </div>
-                        </div>
-
-                        <!-- Tarjeta: Consejos y buenas prácticas -->
-                        <div class="card border-0 shadow-sm rounded-3 p-3 bg-white" style="border-left: 4px solid #e67e22 !important;">
-                            <h6 class="fw-bold mb-1" style="color: #e67e22;">
-                                <i class="bi bi-lightbulb-fill me-2"></i>Consejo Útil
-                            </h6>
-                            <p class="text-secondary mb-0 small" id="ayudaModalConsejo">
-                                Verifica siempre los datos antes de presionar Guardar.
-                            </p>
+                        <div class="d-grid gap-2 col-md-10 mx-auto">
+                            <button type="button" class="btn btn-warning btn-lg text-dark fw-bold rounded-pill py-3 shadow-lg d-flex align-items-center justify-content-center gap-2" onclick="abrirChatIdalgo()">
+                                <i class="bi bi-chat-dots-fill fs-5"></i> Chatear con Idalgo
+                            </button>
+                            <a href="@Url.Action("Index", "Pqr")" class="btn btn-outline-light rounded-pill py-2 small mt-2">
+                                <i class="bi bi-headset me-1"></i> Radicar PQR oficial en secretaría
+                            </a>
                         </div>
                     </div>
-                    <div class="modal-footer bg-white border-top px-4 py-3 justify-content-between">
-                        <span class="small text-muted"><i class="bi bi-shield-check text-success me-1"></i>Soporte Técnico PAE &bull; v1.3</span>
-                        <button type="button" class="btn btn-primary px-4 rounded-3" data-bs-dismiss="modal">
-                            Entendido
+                    <div class="modal-footer border-0 px-4 py-3 justify-content-between" style="background: #071e3d;">
+                        <span class="small text-white-50"><i class="bi bi-shield-check text-success me-1"></i>Soporte Asistido PAE &bull; v1.3</span>
+                        <button type="button" class="btn btn-sm btn-outline-secondary text-white rounded-pill px-3" data-bs-dismiss="modal">
+                            Cerrar
                         </button>
                     </div>
                 </div>
             </div>
         </div>
+
+        <!-- MODAL CHATBOT CON IDALGO (VISTA GRANDE EN AZUL COLOR PAE) -->
+        <div class="modal fade" id="modalChatIdalgo" tabindex="-1" aria-labelledby="modalChatIdalgoLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-xl" style="max-width: 1050px;">
+                <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden" style="background: #071e3d; color: #fff; height: 750px; display: flex; flex-direction: column;">
+                    
+                    <!-- Barra Superior -->
+                    <div class="modal-header py-2.5 px-4 border-bottom" style="background: #071e3d; border-color: rgba(255,255,255,0.1) !important;">
+                        <div class="d-flex align-items-center gap-2">
+                            <img src="/images/idalgo.png" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1.5px solid #f59e0b;" alt="Idalgo" />
+                            <h5 class="modal-title mb-0 fw-bold text-white d-flex align-items-center gap-2" id="modalChatIdalgoLabel">
+                                Idalgo <span class="badge bg-warning text-dark px-2 py-0.5 rounded-pill fw-semibold" style="font-size: 0.72rem;">Mascota & Asistente Virtual PAE</span>
+                            </h5>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <button type="button" class="btn btn-sm btn-outline-light rounded-pill px-2.5 py-1" onclick="reiniciarChatIdalgo()" title="Reiniciar conversación">
+                                <i class="bi bi-arrow-clockwise me-1"></i>Reiniciar
+                            </button>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                    </div>
+
+                    <!-- Cuerpo dividido en 2 columnas: Columna Izquierda (Perfil de Idalgo) y Columna Derecha (Chat) -->
+                    <div class="modal-body p-0" style="flex: 1 1 auto; overflow: hidden;">
+                        <div class="row g-0 h-100">
+                            
+                            <!-- COLUMNA IZQUIERDA: PERFIL Y PREGUNTAS DIRECTAS -->
+                            <div class="col-lg-4 d-none d-lg-flex flex-column p-4 border-end" style="background: #0b2545; border-color: rgba(255,255,255,0.1) !important; overflow-y: auto;">
+                                <div class="text-center mb-3">
+                                    <div class="position-relative d-inline-block mb-2">
+                                        <img src="/images/idalgo.png" style="width: 125px; height: 125px; border-radius: 50%; border: 3px solid #f59e0b; background: #fff; object-fit: cover; box-shadow: 0 0 25px rgba(245, 158, 11, 0.4);" alt="Idalgo Mascota PAE" />
+                                        <span class="position-absolute bottom-0 end-0 p-2 bg-success border border-2 border-white rounded-circle" title="En línea"></span>
+                                    </div>
+                                    <h5 class="fw-bold text-white mb-0">Idalgo</h5>
+                                    <small class="text-warning fw-semibold">Mascota Oficial PAE 🦉🎓</small>
+                                    <div class="mt-2">
+                                        <span class="badge rounded-pill px-3 py-1" style="background: rgba(34, 197, 94, 0.2); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3);">
+                                            <i class="bi bi-circle-fill me-1" style="font-size: 0.5rem;"></i>En línea para ayudarte
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <p class="small text-white-50 text-center mb-3" style="line-height: 1.45;">
+                                    Haz clic en cualquiera de estos temas frecuentes para recibir una respuesta inmediata:
+                                </p>
+
+                                <!-- Accesos rápidos a temas -->
+                                <div class="d-flex flex-column gap-1.5 flex-grow-1" id="chatIdalgoListaTemasLateral">
+                                    <button type="button" class="btn text-start text-white p-2 rounded-3 btn-tema-lateral d-flex align-items-center gap-2" style="background: #134074; border: 1px solid rgba(255,255,255,0.12);" onclick="seleccionarPreguntaIdalgo('entregar_tarea')">
+                                        <i class="bi bi-pencil-square text-warning fs-5"></i>
+                                        <span class="small fw-semibold">¿Cómo entrego tareas?</span>
+                                    </button>
+                                    <button type="button" class="btn text-start text-white p-2 rounded-3 btn-tema-lateral d-flex align-items-center gap-2" style="background: #134074; border: 1px solid rgba(255,255,255,0.12);" onclick="seleccionarPreguntaIdalgo('fecha_limite')">
+                                        <i class="bi bi-alarm-fill text-danger fs-5"></i>
+                                        <span class="small fw-semibold">¿Qué pasa si vence la fecha límite?</span>
+                                    </button>
+                                    <button type="button" class="btn text-start text-white p-2 rounded-3 btn-tema-lateral d-flex align-items-center gap-2" style="background: #134074; border: 1px solid rgba(255,255,255,0.12);" onclick="seleccionarPreguntaIdalgo('calificaciones')">
+                                        <i class="bi bi-graph-up-arrow text-success fs-5"></i>
+                                        <span class="small fw-semibold">¿Dónde veo mis notas?</span>
+                                    </button>
+                                    <button type="button" class="btn text-start text-white p-2 rounded-3 btn-tema-lateral d-flex align-items-center gap-2" style="background: #134074; border: 1px solid rgba(255,255,255,0.12);" onclick="seleccionarPreguntaIdalgo('mejoras')">
+                                        <i class="bi bi-arrow-repeat text-info fs-5"></i>
+                                        <span class="small fw-semibold">Planes de Apoyo / Mejoras</span>
+                                    </button>
+                                    <button type="button" class="btn text-start text-white p-2 rounded-3 btn-tema-lateral d-flex align-items-center gap-2" style="background: #134074; border: 1px solid rgba(255,255,255,0.12);" onclick="seleccionarPreguntaIdalgo('comentarios')">
+                                        <i class="bi bi-chat-left-quote-fill text-warning fs-5"></i>
+                                        <span class="small fw-semibold">Comentarios de clase y privados</span>
+                                    </button>
+                                    <button type="button" class="btn text-start text-white p-2 rounded-3 btn-tema-lateral d-flex align-items-center gap-2" style="background: #134074; border: 1px solid rgba(255,255,255,0.12);" onclick="seleccionarPreguntaIdalgo('extracurriculares')">
+                                        <i class="bi bi-trophy-fill text-warning fs-5"></i>
+                                        <span class="small fw-semibold">Cursos Extracurriculares</span>
+                                    </button>
+                                    <button type="button" class="btn text-start text-white p-2 rounded-3 btn-tema-lateral d-flex align-items-center gap-2" style="background: #134074; border: 1px solid rgba(255,255,255,0.12);" onclick="seleccionarPreguntaIdalgo('certificados')">
+                                        <i class="bi bi-file-earmark-text-fill text-info fs-5"></i>
+                                        <span class="small fw-semibold">Certificados de Estudio</span>
+                                    </button>
+                                    <button type="button" class="btn text-start text-white p-2 rounded-3 btn-tema-lateral d-flex align-items-center gap-2" style="background: #134074; border: 1px solid rgba(255,255,255,0.12);" onclick="seleccionarPreguntaIdalgo('pqr')">
+                                        <i class="bi bi-headset text-danger fs-5"></i>
+                                        <span class="small fw-semibold">¿Cómo radicar una PQR?</span>
+                                    </button>
+                                </div>
+
+                                <div class="mt-3 pt-3 border-top" style="border-color: rgba(255,255,255,0.1) !important;">
+                                    <a href="@Url.Action("Index", "Pqr")" class="btn btn-outline-warning btn-sm rounded-pill w-100 py-1.5 fw-semibold">
+                                        <i class="bi bi-box-arrow-up-right me-1"></i> Ir al Módulo PQR
+                                    </a>
+                                </div>
+                            </div>
+
+                            <!-- COLUMNA DERECHA: SALA DE CHAT EN AZUL PAE -->
+                            <div class="col-lg-8 d-flex flex-column h-100" style="background: #0d2a4a;">
+                                
+                                <!-- Mensajes del Chat con fondo Azul PAE -->
+                                <div class="p-3 p-md-4" id="chatIdalgoMensajes" style="flex: 1 1 auto; overflow-y: auto; background: #071e3d;">
+                                    
+                                    <!-- Bienvenida Inicial de Idalgo -->
+                                    <div class="d-flex align-items-start gap-3 mb-3">
+                                        <img src="/images/idalgo.png" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid #f59e0b; background: #fff; flex-shrink: 0;" alt="Idalgo" />
+                                        <div class="p-3 rounded-4 shadow-sm text-white" style="background: #134074; border: 1px solid rgba(255,255,255,0.15); max-width: 90%;">
+                                            <div class="fw-bold text-warning mb-1 small d-flex align-items-center gap-1">
+                                                <span>🦉 Idalgo &bull; Mascota Guía PAE</span>
+                                            </div>
+                                            <p class="mb-2 small" style="line-height: 1.5; color: #f1f5f9;">
+                                                ¡Hola! 👋 Soy <strong>Idalgo</strong>, la mascota y asistente virtual del <strong>Portal de Autogestión Educativa (PAE)</strong> 🦉🎓.
+                                                Estoy aquí para guiarte en todo momento.
+                                            </p>
+                                            <p class="mb-2 small text-white-50">Selecciona una de las preguntas frecuentes o escribe en el campo inferior lo que desees consultar:</p>
+                                            
+                                            <!-- Chips dentro del chat -->
+                                            <div class="d-flex flex-wrap gap-1.5 mt-2" id="chatIdalgoChipsIniciales">
+                                                <button type="button" class="btn btn-sm text-white rounded-pill py-1 px-2.5 small" style="background: #0b2545; border: 1px solid #38bdf8;" onclick="seleccionarPreguntaIdalgo('entregar_tarea')">📝 ¿Cómo entrego tareas?</button>
+                                                <button type="button" class="btn btn-sm text-white rounded-pill py-1 px-2.5 small" style="background: #0b2545; border: 1px solid #f87171;" onclick="seleccionarPreguntaIdalgo('fecha_limite')">⏰ ¿Qué pasa si vence la fecha límite?</button>
+                                                <button type="button" class="btn btn-sm text-white rounded-pill py-1 px-2.5 small" style="background: #0b2545; border: 1px solid #4ade80;" onclick="seleccionarPreguntaIdalgo('calificaciones')">📈 ¿Dónde veo mis notas?</button>
+                                                <button type="button" class="btn btn-sm text-white rounded-pill py-1 px-2.5 small" style="background: #0b2545; border: 1px solid #c084fc;" onclick="seleccionarPreguntaIdalgo('mejoras')">🔄 Planes de Apoyo / Mejoras</button>
+                                                <button type="button" class="btn btn-sm text-white rounded-pill py-1 px-2.5 small" style="background: #0b2545; border: 1px solid #fbbf24;" onclick="seleccionarPreguntaIdalgo('comentarios')">💬 Comentarios de clase y privados</button>
+                                                <button type="button" class="btn btn-sm text-white rounded-pill py-1 px-2.5 small" style="background: #0b2545; border: 1px solid #f97316;" onclick="seleccionarPreguntaIdalgo('extracurriculares')">⚽ Cursos Extracurriculares</button>
+                                                <button type="button" class="btn btn-sm text-white rounded-pill py-1 px-2.5 small" style="background: #0b2545; border: 1px solid #22d3ee;" onclick="seleccionarPreguntaIdalgo('certificados')">📄 Certificados</button>
+                                                <button type="button" class="btn btn-sm text-white rounded-pill py-1 px-2.5 small" style="background: #0b2545; border: 1px solid #f43f5e;" onclick="seleccionarPreguntaIdalgo('pqr')">📬 ¿Cómo radicar PQR?</button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                                <!-- Input del Chat en Azul PAE -->
+                                <div class="p-3 border-top" style="background: #0b2545; border-color: rgba(255,255,255,0.1) !important;">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <input type="text" id="chatIdalgoInput" class="form-control rounded-pill text-white shadow-none" 
+                                               style="background: #071e3d; border: 1px solid rgba(255,255,255,0.2); padding: 0.65rem 1.2rem; font-size: 0.92rem;" 
+                                               placeholder="Escribe tu consulta a Idalgo (ej: notas, tareas, plazo, certificados)..." 
+                                               onkeypress="if(event.key === 'Enter') enviarMensajeIdalgo()" />
+                                        <button type="button" class="btn btn-warning rounded-circle d-flex align-items-center justify-content-center shadow-lg" 
+                                                style="width: 44px; height: 44px; flex-shrink: 0;" 
+                                                onclick="enviarMensajeIdalgo()" title="Enviar mensaje a Idalgo">
+                                            <i class="bi bi-send-fill text-dark fs-5"></i>
+                                        </button>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center mt-2 px-2">
+                                        <small class="text-white-50" style="font-size: 0.75rem;">
+                                            <i class="bi bi-lightbulb-fill text-warning me-1"></i>Tip: Puedes preguntar escribiendo palabras clave como <em>"entrega"</em>, <em>"plazo"</em> o <em>"notas"</em>.
+                                        </small>
+                                        <small class="text-white-50" style="font-size: 0.75rem;">PAE Asistente Virtual 🦉</small>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ─── SCRIPT CHATBOT IDALGO (TEMA AZUL PAE) ───────────── -->
+        <script>
+            function abrirChatIdalgo() {
+                const modalAyudaEl = document.getElementById('modalAyudaPAE');
+                if (modalAyudaEl) {
+                    const mAyuda = bootstrap.Modal.getInstance(modalAyudaEl);
+                    if (mAyuda) mAyuda.hide();
+                }
+
+                const chatModalEl = document.getElementById('modalChatIdalgo');
+                if (chatModalEl) {
+                    const modalChat = new bootstrap.Modal(chatModalEl);
+                    modalChat.show();
+                    setTimeout(() => {
+                        const input = document.getElementById('chatIdalgoInput');
+                        if (input) input.focus();
+                    }, 400);
+                }
+            }
+
+            function reiniciarChatIdalgo() {
+                const cont = document.getElementById('chatIdalgoMensajes');
+                if (!cont) return;
+                cont.innerHTML = `
+                    <div class="d-flex align-items-start gap-3 mb-3">
+                        <img src="/images/idalgo.png" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid #f59e0b; background: #fff; flex-shrink: 0;" alt="Idalgo" />
+                        <div class="p-3 rounded-4 shadow-sm text-white" style="background: #134074; border: 1px solid rgba(255,255,255,0.15); max-width: 90%;">
+                            <div class="fw-bold text-warning mb-1 small d-flex align-items-center gap-1">
+                                <span>🦉 Idalgo &bull; Mascota Guía PAE</span>
+                            </div>
+                            <p class="mb-2 small" style="line-height: 1.5; color: #f1f5f9;">
+                                ¡Hola de nuevo! 👋 Conversación reiniciada. ¿En qué otro tema puedo orientarte hoy?
+                            </p>
+                            <div class="d-flex flex-wrap gap-1.5 mt-2">
+                                <button type="button" class="btn btn-sm text-white rounded-pill py-1 px-2.5 small" style="background: #0b2545; border: 1px solid #38bdf8;" onclick="seleccionarPreguntaIdalgo('entregar_tarea')">📝 ¿Cómo entrego tareas?</button>
+                                <button type="button" class="btn btn-sm text-white rounded-pill py-1 px-2.5 small" style="background: #0b2545; border: 1px solid #f87171;" onclick="seleccionarPreguntaIdalgo('fecha_limite')">⏰ ¿Qué pasa si vence la fecha límite?</button>
+                                <button type="button" class="btn btn-sm text-white rounded-pill py-1 px-2.5 small" style="background: #0b2545; border: 1px solid #4ade80;" onclick="seleccionarPreguntaIdalgo('calificaciones')">📈 ¿Dónde veo mis notas?</button>
+                                <button type="button" class="btn btn-sm text-white rounded-pill py-1 px-2.5 small" style="background: #0b2545; border: 1px solid #c084fc;" onclick="seleccionarPreguntaIdalgo('mejoras')">🔄 Planes de Apoyo / Mejoras</button>
+                                <button type="button" class="btn btn-sm text-white rounded-pill py-1 px-2.5 small" style="background: #0b2545; border: 1px solid #fbbf24;" onclick="seleccionarPreguntaIdalgo('comentarios')">💬 Comentarios de clase y privados</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            const chatIdalgoRespuestas = {
+                'entregar_tarea': {
+                    titulo: '📝 ¿Cómo entrego una actividad o tarea?',
+                    contenido: `<p class="mb-2 text-white"><strong>Pasos para enviar tu actividad:</strong></p>
+                    <ol class="ps-3 mb-2 small" style="color: #e2e8f0;">
+                        <li>Ingresa al módulo <strong>Actividades y Classroom</strong> desde tu menú lateral.</li>
+                        <li>Haz clic en <strong>Entrar a la Materia</strong> correspondiente.</li>
+                        <li>En el tablón, presiona sobre la tarea asignada.</li>
+                        <li>En la columna derecha <strong>"Tu trabajo"</strong>, escribe tu respuesta o pega enlaces, y si lo deseas adjunta tu archivo (PDF, Word, Excel, PowerPoint o imagen de hasta 5 MB).</li>
+                        <li>Presiona el botón azul <strong>"Entregar"</strong>.</li>
+                    </ol>
+                    <div class="p-2 rounded-3 small mb-0" style="background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); color: #7dd3fc;"><i class="bi bi-lightbulb-fill text-warning me-1"></i>¡Asegúrate de entregar antes de la fecha límite!</div>`
+                },
+                'fecha_limite': {
+                    titulo: '⏰ ¿Qué pasa si vence la fecha límite de entrega?',
+                    contenido: `<p class="mb-2 text-white"><strong>Regla estricta de plazos en el PAE:</strong></p>
+                    <ul class="ps-3 mb-2 small" style="color: #e2e8f0;">
+                        <li>Cada actividad asignada por tu profesor cuenta con una <strong>fecha y hora límite</strong>.</li>
+                        <li><strong>Una vez vencido el plazo:</strong> el sistema <strong>bloquea automáticamente</strong> cualquier envío nuevo o modificación de trabajos ya entregados.</li>
+                        <li>El botón cambiará a <span class="badge bg-danger">Entrega Cerrada (Plazo Vencido)</span> y los campos quedarán desactivados.</li>
+                        <li>Esta regla aplica de igual forma para las <strong>Actividades de Clase</strong> como para los <strong>Planes de Apoyo y Mejoras</strong>.</li>
+                    </ul>
+                    <p class="mb-0 small" style="color: #94a3b8;"><i class="bi bi-chat-lock-fill me-1 text-warning"></i>Si tuviste una fuerza mayor justificada, comunícate con tu profesor a través de los <strong>Comentarios Privados</strong> de la tarea.</p>`
+                },
+                'calificaciones': {
+                    titulo: '📈 ¿Dónde consulto mis notas y calificaciones?',
+                    contenido: `<p class="mb-2 text-white"><strong>Consulta académica y boletines:</strong></p>
+                    <ul class="ps-3 mb-2 small" style="color: #e2e8f0;">
+                        <li>Ve al módulo <strong>Mis Calificaciones</strong> en tu panel de estudiante.</li>
+                        <li>Allí encontrarás tus asignaturas con las calificaciones registradas por periodo (1, 2, 3 y 4), tu promedio ponderado y la escala de desempeño (Superior, Alto, Básico o Bajo).</li>
+                        <li>También tienes acceso al botón para descargar tu <strong>Boletín de Calificaciones en PDF</strong> con la firma institucional.</li>
+                    </ul>`
+                },
+                'mejoras': {
+                    titulo: '🔄 ¿Cómo funcionan los Planes de Apoyo y Nivelación (Mejoras)?',
+                    contenido: `<p class="mb-2 text-white"><strong>Módulo de Planes de Apoyo:</strong></p>
+                    <ul class="ps-3 mb-2 small" style="color: #e2e8f0;">
+                        <li>Ingresa a <strong>Planes de Apoyo</strong> en el menú lateral.</li>
+                        <li>Verás tus materias asignadas exactamente igual que en Actividades y Classroom.</li>
+                        <li>Al hacer clic en <strong>Entrar a la Materia</strong>, accederás al <strong>Classroom de Mejoras</strong>, donde tu profesor publica talleres pedagógicos, guías de recuperación y compromisos.</li>
+                        <li>Podrás subir tus trabajos de nivelación antes de la fecha límite para mejorar tu valoración académica.</li>
+                    </ul>`
+                },
+                'comentarios': {
+                    titulo: '💬 ¿Cómo funcionan los comentarios de clase y comentarios privados?',
+                    contenido: `<p class="mb-2 text-white"><strong>Canales de comunicación en Classroom:</strong></p>
+                    <ul class="ps-3 mb-2 small" style="color: #e2e8f0;">
+                        <li><strong>Comentarios de la clase:</strong> Ubicados debajo de las instrucciones de la tarea. Son visibles para todos tus compañeros de aula y el profesor. Ideales para preguntas generales sobre el tema.</li>
+                        <li><strong>Comentarios privados:</strong> Ubicados en la tarjeta derecha "Tu trabajo". Solo los pueden leer <strong>tú y tu profesor</strong>. Ideales para justificaciones personales o dudas puntuales de tu entrega.</li>
+                    </ul>`
+                },
+                'extracurriculares': {
+                    titulo: '⚽ ¿Cómo me inscribo a un Curso Extracurricular?',
+                    contenido: `<p class="mb-2 text-white"><strong>Inscripción a Cursos y Talleres:</strong></p>
+                    <ol class="ps-3 mb-2 small" style="color: #e2e8f0;">
+                        <li>Ve a <strong>Cursos Extracurriculares</strong>.</li>
+                        <li>El sistema filtra los cursos permitidos para tu grado escolar (de 6° a 11°).</li>
+                        <li>Haz clic en <strong>Inscribirme</strong>.</li>
+                        <li><strong>Requisito obligatorio:</strong> Debes adjuntar todos los documentos requeridos (ej: autorización de acudiente, EPS o certificado médico).</li>
+                        <li>Al enviar los documentos, tu solicitud entrará a la lista de espera del docente para su revisión y aprobación.</li>
+                    </ol>`
+                },
+                'certificados': {
+                    titulo: '📄 ¿Cómo solicito un Certificado de Estudio?',
+                    contenido: `<p class="mb-2 text-white"><strong>Expedición de Certificados Oficiales:</strong></p>
+                    <ul class="ps-3 mb-2 small" style="color: #e2e8f0;">
+                        <li>Ingresa al módulo <strong>Certificados</strong>.</li>
+                        <li>Selecciona el tipo de documento requerido (Certificado de Estudio, Certificado de Calificaciones, etc.).</li>
+                        <li>Verifica tus datos escolares y presiona <strong>Generar</strong>.</li>
+                        <li>El documento se genera de forma inmediata con firma electrónica y código QR de autenticidad institucional.</li>
+                    </ul>`
+                },
+                'pqr': {
+                    titulo: '📬 ¿Cómo radicar una PQR (Petición, Queja o Reclamo)?',
+                    contenido: `<p class="mb-2 text-white"><strong>Módulo PQR oficial:</strong></p>
+                    <ul class="ps-3 mb-2 small" style="color: #e2e8f0;">
+                        <li>Haz clic en el botón <strong>PQR</strong> ubicado en la parte superior derecha de la pantalla.</li>
+                        <li>Elige el tipo de solicitud: Petición, Queja, Reclamo, Sugerencia o Felicitación.</li>
+                        <li>Redacta detalladamente tu solicitud y adjunta evidencias si las tienes.</li>
+                        <li>El sistema te generará un código de radicado único para consultar el estado y la respuesta de la institución.</li>
+                    </ul>`
+                }
+            };
+
+            function seleccionarPreguntaIdalgo(clave) {
+                const info = chatIdalgoRespuestas[clave];
+                if (!info) return;
+
+                agregarBurbujaUsuario(info.titulo);
+                mostrarEscribiendoIdalgo();
+
+                setTimeout(() => {
+                    quitarEscribiendoIdalgo();
+                    agregarBurbujaIdalgo(info.contenido);
+                }, 350);
+            }
+
+            function enviarMensajeIdalgo() {
+                const input = document.getElementById('chatIdalgoInput');
+                if (!input) return;
+                const texto = input.value.trim();
+                if (!texto) return;
+
+                input.value = '';
+                agregarBurbujaUsuario(texto);
+                mostrarEscribiendoIdalgo();
+
+                setTimeout(() => {
+                    quitarEscribiendoIdalgo();
+                    procesarConsultaTextoIdalgo(texto);
+                }, 380);
+            }
+
+            function procesarConsultaTextoIdalgo(texto) {
+                const q = texto.toLowerCase();
+
+                if (q.includes('tarea') || q.includes('actividad') || q.includes('subir') || q.includes('adjunt') || q.includes('entreg')) {
+                    seleccionarPreguntaIdalgoDirecta('entregar_tarea');
+                } else if (q.includes('plazo') || q.includes('limite') || q.includes('venc') || q.includes('tiempo') || q.includes('tard') || q.includes('cerrad')) {
+                    seleccionarPreguntaIdalgoDirecta('fecha_limite');
+                } else if (q.includes('nota') || q.includes('calific') || q.includes('promedio') || q.includes('boletin')) {
+                    seleccionarPreguntaIdalgoDirecta('calificaciones');
+                } else if (q.includes('mejora') || q.includes('nivelac') || q.includes('apoyo') || q.includes('recuper')) {
+                    seleccionarPreguntaIdalgoDirecta('mejoras');
+                } else if (q.includes('comentario') || q.includes('privad') || q.includes('mensaje') || q.includes('profesor') || q.includes('docente')) {
+                    seleccionarPreguntaIdalgoDirecta('comentarios');
+                } else if (q.includes('extra') || q.includes('curso') || q.includes('futbol') || q.includes('arte') || q.includes('deporte') || q.includes('taller')) {
+                    seleccionarPreguntaIdalgoDirecta('extracurriculares');
+                } else if (q.includes('certific') || q.includes('constancia') || q.includes('documento')) {
+                    seleccionarPreguntaIdalgoDirecta('certificados');
+                } else if (q.includes('pqr') || q.includes('reclamo') || q.includes('queja') || q.includes('peticion') || q.includes('ayuda') || q.includes('soporte')) {
+                    seleccionarPreguntaIdalgoDirecta('pqr');
+                } else {
+                    const fallbackHtml = `
+                        <p class="mb-2 text-white">Comprendo tu inquietud sobre: <em>"${texto}"</em>.</p>
+                        <p class="mb-2 small text-white-50">Aquí tienes los temas más consultados donde puedes encontrar la respuesta:</p>
+                        <div class="d-flex flex-wrap gap-1.5 mb-2">
+                            <button type="button" class="btn btn-sm text-white rounded-pill py-1 px-2.5 small" style="background: #0b2545; border: 1px solid #38bdf8;" onclick="seleccionarPreguntaIdalgo('entregar_tarea')">📝 Entregar Tareas</button>
+                            <button type="button" class="btn btn-sm text-white rounded-pill py-1 px-2.5 small" style="background: #0b2545; border: 1px solid #f87171;" onclick="seleccionarPreguntaIdalgo('fecha_limite')">⏰ Fechas Límite</button>
+                            <button type="button" class="btn btn-sm text-white rounded-pill py-1 px-2.5 small" style="background: #0b2545; border: 1px solid #4ade80;" onclick="seleccionarPreguntaIdalgo('calificaciones')">📈 Ver Calificaciones</button>
+                            <button type="button" class="btn btn-sm text-white rounded-pill py-1 px-2.5 small" style="background: #0b2545; border: 1px solid #c084fc;" onclick="seleccionarPreguntaIdalgo('mejoras')">🔄 Planes de Mejora</button>
+                        </div>
+                        <p class="small text-white-50 mb-0">Si tu caso requiere atención especial del personal administrativo, puedes <a href="/Pqr/Index" class="fw-bold text-warning text-decoration-underline">radicar una PQR oficial aquí</a>.</p>
+                    `;
+                    agregarBurbujaIdalgo(fallbackHtml);
+                }
+            }
+
+            function seleccionarPreguntaIdalgoDirecta(clave) {
+                const info = chatIdalgoRespuestas[clave];
+                if (info) {
+                    agregarBurbujaIdalgo(info.contenido);
+                }
+            }
+
+            function agregarBurbujaUsuario(texto) {
+                const cont = document.getElementById('chatIdalgoMensajes');
+                if (!cont) return;
+
+                const wrapper = document.createElement('div');
+                wrapper.className = 'd-flex justify-content-end mb-3';
+                wrapper.innerHTML = `
+                    <div class="p-3 rounded-4 text-white shadow-sm" style="background: linear-gradient(135deg, #1d6fa5 0%, #2980b9 100%); max-width: 82%;">
+                        <div class="small fw-semibold mb-0" style="line-height: 1.4;">${texto}</div>
+                    </div>
+                `;
+                cont.appendChild(wrapper);
+                cont.scrollTop = cont.scrollHeight;
+            }
+
+            function mostrarEscribiendoIdalgo() {
+                const cont = document.getElementById('chatIdalgoMensajes');
+                if (!cont) return;
+
+                const typingDiv = document.createElement('div');
+                typingDiv.id = 'chatIdalgoTyping';
+                typingDiv.className = 'd-flex align-items-center gap-2 mb-3';
+                typingDiv.innerHTML = `
+                    <img src="/images/idalgo.png" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:1.5px solid #f59e0b;background:#fff;" alt="Idalgo" />
+                    <div class="p-2.5 px-3 rounded-pill shadow-sm text-white-50 small d-flex align-items-center gap-2" style="background: #134074; border: 1px solid rgba(255,255,255,0.15);">
+                        <span class="spinner-grow spinner-grow-sm text-warning" style="width: 0.65rem; height: 0.65rem;" role="status"></span>
+                        <span style="font-size: 0.8rem; color: #cbd5e1;">Idalgo está consultando la guía...</span>
+                    </div>
+                `;
+                cont.appendChild(typingDiv);
+                cont.scrollTop = cont.scrollHeight;
+            }
+
+            function quitarEscribiendoIdalgo() {
+                const typing = document.getElementById('chatIdalgoTyping');
+                if (typing) typing.remove();
+            }
+
+            function agregarBurbujaIdalgo(htmlContenido) {
+                const cont = document.getElementById('chatIdalgoMensajes');
+                if (!cont) return;
+
+                const wrapper = document.createElement('div');
+                wrapper.className = 'd-flex align-items-start gap-3 mb-3';
+                wrapper.innerHTML = `
+                    <img src="/images/idalgo.png" style="width:42px;height:42px;border-radius:50%;object-fit:cover;border:2px solid #f59e0b;background:#fff;flex-shrink:0;" alt="Idalgo" />
+                    <div class="p-3 rounded-4 shadow-sm text-white" style="background: #134074; border: 1px solid rgba(255,255,255,0.15); max-width: 88%;">
+                        <div class="fw-bold text-warning mb-1 small d-flex align-items-center gap-1">
+                            <span>🦉 Idalgo &bull; Mascota Guía PAE</span>
+                        </div>
+                        <div class="small" style="line-height: 1.5; color: #f1f5f9;">
+                            ${htmlContenido}
+                        </div>
+                        <div class="mt-2 pt-2 border-top d-flex justify-content-between align-items-center" style="border-color: rgba(255,255,255,0.12) !important;">
+                            <small class="text-white-50" style="font-size: 0.72rem;">¿Te sirvió esta respuesta?</small>
+                            <div class="btn-group btn-group-sm">
+                                <button type="button" class="btn btn-outline-light py-0 px-2 rounded-pill" onclick="this.parentElement.innerHTML='<span class=\\'badge bg-success-subtle text-success border border-success-subtle\\'>¡Me alegra ayudarte! 🦉</span>'"><i class="bi bi-hand-thumbs-up"></i></button>
+                                <button type="button" class="btn btn-outline-warning py-0 px-2 rounded-pill ms-1" onclick="abrirPqrDesdeChat()"><i class="bi bi-headset"></i> PQR</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                cont.appendChild(wrapper);
+                cont.scrollTop = cont.scrollHeight;
+            }
+
+            function abrirPqrDesdeChat() {
+                window.location.href = '@Url.Action("Index", "Pqr")';
+            }
+        </script>
 
         <!-- ─── FEEDBACK COMUNICATIVO Y ALERTAS GLOBALES (REQUERIMIENTO 1.6) ───────────── -->
         <script>

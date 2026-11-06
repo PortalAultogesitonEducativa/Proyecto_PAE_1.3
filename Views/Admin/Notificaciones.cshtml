@@ -11,14 +11,21 @@
 
         <div class="submodulo-activo">
 
-        <!-- Encabezado con paleta Azul Marino y Naranja -->
-        <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
-            <div>
-                <h2 class="fw-bold mb-1" style="color: #1b2a47;">
-                    <i class="bi bi-bell-fill me-2" style="color: #e67e22;"></i>Gestión de Notificaciones
-                </h2>
-                <p class="text-muted small mb-0">Publica avisos institucionales con filtros por rol de usuario.</p>
+        <div class="d-flex align-items-center justify-content-between p-3 rounded-3 text-white mb-4"
+             style="background: var(--pae-gradient-primary);">
+            <div class="d-flex align-items-center gap-3">
+                <div class="rounded-circle d-flex align-items-center justify-content-center"
+                     style="width:50px;height:50px;background:rgba(255,255,255,.18); flex-shrink: 0;">
+                    <i class="bi bi-bell-fill fs-3 text-white"></i>
+                </div>
+                <div>
+                    <h4 class="mb-0 fw-bold">Gestión de Notificaciones</h4>
+                    <small class="opacity-75">Publica avisos institucionales con filtros por rol de usuario</small>
+                </div>
             </div>
+            <a href="@Url.Action("Dashboard", "Home")" class="btn btn-pae-volver">
+                Volver al Panel
+            </a>
         </div>
 
 

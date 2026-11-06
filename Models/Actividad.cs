@@ -42,8 +42,48 @@ namespace ProyectoPAE.Models
         [Column("fecha_creacion")]
         public DateTime FechaCreacion { get; set; } = DateTime.Now;
 
+        [Column("es_mejora")]
+        public bool EsMejora { get; set; } = false;
+
         [Column("activo")]
         public bool Activo { get; set; } = true;
+    }
+
+    [Table("COMENTARIO_ACTIVIDAD")]
+    public class ComentarioActividad
+    {
+        [Key]
+        [Column("id_comentario")]
+        public int IdComentario { get; set; }
+
+        [Column("id_actividad")]
+        public int IdActividad { get; set; }
+
+        [Column("id_usuario")]
+        public int IdUsuario { get; set; }
+
+        [Required]
+        [Column("nombre_usuario")]
+        [StringLength(150)]
+        public string NombreUsuario { get; set; } = string.Empty;
+
+        [Required]
+        [Column("rol_usuario")]
+        [StringLength(50)]
+        public string RolUsuario { get; set; } = string.Empty;
+
+        [Required]
+        [Column("mensaje")]
+        public string Mensaje { get; set; } = string.Empty;
+
+        [Column("fecha")]
+        public DateTime Fecha { get; set; } = DateTime.Now;
+
+        [Column("es_privado")]
+        public bool EsPrivado { get; set; } = false;
+
+        [Column("id_estudiante_privado")]
+        public int? IdEstudiantePrivado { get; set; }
     }
 
     [Table("ENTREGA_ACTIVIDAD")]
@@ -103,6 +143,7 @@ namespace ProyectoPAE.Models
         public decimal? Calificacion { get; set; }
         public string? Retroalimentacion { get; set; }
         public string EstadoEntrega { get; set; } = "Pendiente";
+        public bool EsMejora { get; set; }
     }
 
     public class NotasPorMateriaViewModel

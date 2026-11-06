@@ -36,6 +36,7 @@ namespace ProyectoPAE.Models
         // --- ACTIVIDADES ACADÉMICAS Y ENTREGAS ---
         public DbSet<Actividad> Actividades { get; set; }
         public DbSet<EntregaActividad> EntregasActividades { get; set; }
+        public DbSet<ComentarioActividad> ComentariosActividades { get; set; }
 
         // ── Recuperación de contraseña ──
         public DbSet<GU_RECUPERACION_PASSWORD> RecuperacionesPassword { get; set; }
@@ -292,6 +293,26 @@ namespace ProyectoPAE.Models
                             [calificacion] [decimal](3,1) NULL,
                             [retroalimentacion] [nvarchar](max) NULL,
                             [estado] [nvarchar](50) NOT NULL DEFAULT 'Entregado'
+                        );
+                    END
+
+                    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID('ACTIVIDAD') AND name = 'es_mejora')
+                    BEGIN
+                        ALTER TABLE [dbo].[ACTIVIDAD] ADD [es_mejora] [bit] NOT NULL DEFAULT 0;
+                    END
+
+                    IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'COMENTARIO_ACTIVIDAD')
+                    BEGIN
+                        CREATE TABLE [dbo].[COMENTARIO_ACTIVIDAD](
+                            [id_comentario] [int] IDENTITY(1,1) NOT NULL PRIMARY KEY,
+                            [id_actividad] [int] NOT NULL,
+                            [id_usuario] [int] NOT NULL,
+                            [nombre_usuario] [nvarchar](150) NOT NULL,
+                            [rol_usuario] [nvarchar](50) NOT NULL,
+                            [mensaje] [nvarchar](max) NOT NULL,
+                            [fecha] [datetime] NOT NULL DEFAULT GETDATE(),
+                            [es_privado] [bit] NOT NULL DEFAULT 0,
+                            [id_estudiante_privado] [int] NULL
                         );
                     END
                 ");
