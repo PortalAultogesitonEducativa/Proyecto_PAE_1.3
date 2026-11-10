@@ -500,6 +500,12 @@ namespace ProyectoPAE.Controllers
 
                 var lista = await query.ToListAsync();
 
+                // Códigos de aula de esas clases (consulta directa a AULA, como en MiHorario)
+                var idsAula = lista.Select(h => h.id_aula).Distinct().ToList();
+                var codigosAula = await _context.AULA
+                    .Where(a => idsAula.Contains(a.id_aula))
+                    .ToDictionaryAsync(a => a.id_aula, a => a.codigo_aula);
+
                 // Proyectamos el resultado para evitar ciclos y asegurar formato seguro
                 var resultado = lista.Select(h => new
                 {
@@ -508,7 +514,8 @@ namespace ProyectoPAE.Controllers
                     dia = h.dia,
                     materia = h.Materia != null ? h.Materia.nombre_materia : "Sin Materia",
                     curso = h.Curso != null ? h.Curso.nombre_curso : "",
-                    docente = h.Profesor != null ? (h.Profesor.nombre + " " + h.Profesor.apellido) : ""
+                    docente = h.Profesor != null ? (h.Profesor.nombre + " " + h.Profesor.apellido) : "",
+                    aula = codigosAula.GetValueOrDefault(h.id_aula, "")
                 });
 
                 return Json(resultado);
