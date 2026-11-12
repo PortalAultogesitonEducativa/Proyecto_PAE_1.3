@@ -1,8 +1,9 @@
 @model IEnumerable<ProyectoPAE.Models.Pqr>
 @{
     ViewData["Title"] = "Módulo PQR - Peticiones, Quejas y Reclamos";
-    bool esGestor = ViewBag.EsGestor ?? false;
     string rolActual = ViewBag.RolActual ?? "estudiante";
+    bool esAdmin = ViewBag.EsAdmin ?? (rolActual == "admin");
+    bool esGestor = ViewBag.EsGestor ?? esAdmin;
     string busqueda = ViewBag.Busqueda ?? "";
     string tipoFiltro = ViewBag.Tipo ?? "todos";
     string estadoFiltro = ViewBag.Estado ?? "todos";
@@ -75,45 +76,48 @@
                 </div>
             }
 
-            <!-- Tarjetas de Resumen / Métricas -->
-            <div class="row g-3 mb-4">
-                <div class="col-sm-6 col-xl-3">
-                    <div class="card border-0 shadow-sm p-3 h-100 rounded-3" style="border-left: 4px solid #0d2a4a !important;">
-                        <span class="text-muted small text-uppercase fw-semibold">Total Solicitudes</span>
-                        <div class="d-flex justify-content-between align-items-center mt-2">
-                            <span class="fs-3 fw-bold" style="color: #0d2a4a;">@ViewBag.Total</span>
-                            <span class="badge bg-light text-dark border p-2 rounded-circle"><i class="bi bi-inbox-fill text-primary"></i></span>
+            <!-- Tarjetas de Resumen / Métricas (Únicamente visibles para el Administrador) -->
+            @if (esAdmin)
+            {
+                <div class="row g-3 mb-4">
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="card border-0 shadow-sm p-3 h-100 rounded-3" style="border-left: 4px solid #0d2a4a !important;">
+                            <span class="text-muted small text-uppercase fw-semibold">Total Solicitudes</span>
+                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                <span class="fs-3 fw-bold" style="color: #0d2a4a;">@ViewBag.Total</span>
+                                <span class="badge bg-light text-dark border p-2 rounded-circle"><i class="bi bi-inbox-fill text-primary"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="card border-0 shadow-sm p-3 h-100 rounded-3" style="border-left: 4px solid #e67e22 !important;">
+                            <span class="text-muted small text-uppercase fw-semibold">Recibidas / Pendientes</span>
+                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                <span class="fs-3 fw-bold" style="color: #e67e22;">@ViewBag.TotalRecibidas</span>
+                                <span class="badge bg-light text-dark border p-2 rounded-circle"><i class="bi bi-clock-history text-warning"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="card border-0 shadow-sm p-3 h-100 rounded-3" style="border-left: 4px solid #0dcaf0 !important;">
+                            <span class="text-muted small text-uppercase fw-semibold">En Revisión</span>
+                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                <span class="fs-3 fw-bold text-info">@ViewBag.TotalEnRevision</span>
+                                <span class="badge bg-light text-dark border p-2 rounded-circle"><i class="bi bi-search text-info"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-xl-3">
+                        <div class="card border-0 shadow-sm p-3 h-100 rounded-3" style="border-left: 4px solid #198754 !important;">
+                            <span class="text-muted small text-uppercase fw-semibold">Respondidas / Cerradas</span>
+                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                <span class="fs-3 fw-bold text-success">@(ViewBag.TotalRespondidas + ViewBag.TotalCerradas)</span>
+                                <span class="badge bg-light text-dark border p-2 rounded-circle"><i class="bi bi-patch-check-fill text-success"></i></span>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-sm-6 col-xl-3">
-                    <div class="card border-0 shadow-sm p-3 h-100 rounded-3" style="border-left: 4px solid #e67e22 !important;">
-                        <span class="text-muted small text-uppercase fw-semibold">Recibidas / Pendientes</span>
-                        <div class="d-flex justify-content-between align-items-center mt-2">
-                            <span class="fs-3 fw-bold" style="color: #e67e22;">@ViewBag.TotalRecibidas</span>
-                            <span class="badge bg-light text-dark border p-2 rounded-circle"><i class="bi bi-clock-history text-warning"></i></span>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-6 col-xl-3">
-                    <div class="card border-0 shadow-sm p-3 h-100 rounded-3" style="border-left: 4px solid #0dcaf0 !important;">
-                        <span class="text-muted small text-uppercase fw-semibold">En Revisión</span>
-                        <div class="d-flex justify-content-between align-items-center mt-2">
-                            <span class="fs-3 fw-bold text-info">@ViewBag.TotalEnRevision</span>
-                            <span class="badge bg-light text-dark border p-2 rounded-circle"><i class="bi bi-search text-info"></i></span>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-6 col-xl-3">
-                    <div class="card border-0 shadow-sm p-3 h-100 rounded-3" style="border-left: 4px solid #198754 !important;">
-                        <span class="text-muted small text-uppercase fw-semibold">Respondidas / Cerradas</span>
-                        <div class="d-flex justify-content-between align-items-center mt-2">
-                            <span class="fs-3 fw-bold text-success">@(ViewBag.TotalRespondidas + ViewBag.TotalCerradas)</span>
-                            <span class="badge bg-light text-dark border p-2 rounded-circle"><i class="bi bi-patch-check-fill text-success"></i></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            }
 
             <!-- Filtros y Buscador -->
             <div class="card border-0 shadow-sm rounded-4 mb-4">

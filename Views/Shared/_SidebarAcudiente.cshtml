@@ -60,6 +60,11 @@
                 <i class="bi bi-file-person-fill"></i>
                 <span>Observador del Estudiante</span>
             </a>
+            <a href="@Url.Action("Dashboard", "Home", new { seccion = "actividades" })"
+               class="pae-sidebar-nav-item@(ActiveIf("Home","Dashboard","actividades"))">
+                <i class="bi bi-journal-bookmark-fill"></i>
+                <span>Tareas y Actividades</span>
+            </a>
             <a href="@Url.Action("Index", "Pqr")"
                class="pae-sidebar-nav-item@(ActiveIf("Pqr","Index"))">
                 <i class="bi bi-chat-heart-fill"></i>

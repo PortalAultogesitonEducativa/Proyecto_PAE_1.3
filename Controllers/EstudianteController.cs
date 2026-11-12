@@ -377,21 +377,46 @@ public class EstudianteController : Controller
     /// </summary>
     [HttpGet]
     [RequierePermiso(Permisos.UsarPanelEstudiante)]
-    public IActionResult ObtenerActividades()
+    public IActionResult ObtenerActividades(int? idEstudiante)
     {
         _context.AsegurarEsquemaActividades();
 
-        var userId = HttpContext.Session.GetInt32("UserId");
-        if (userId == null)
+        var rol = (HttpContext.Session.GetString("UserRol") ?? "").ToLower().Trim();
+        var sessionUserId = HttpContext.Session.GetInt32("UserId");
+        if (sessionUserId == null)
             return Json(new { success = false, message = "Sesión inválida." });
 
-        var actividades = _context.Actividades
-            .Where(a => a.Activo)
+        int targetEstudianteId = (idEstudiante.HasValue && (rol == "acudiente" || rol == "padre" || rol == "admin" || rol == "docente"))
+            ? idEstudiante.Value
+            : sessionUserId.Value;
+
+        // Determinar curso o grado del estudiante para filtrar actividades pertinentes
+        var estPerfil = _context.ESTUDIANTE.FirstOrDefault(e => e.id_usuario == targetEstudianteId);
+        string cursoEstudiante = estPerfil?.curso_asignado ?? "";
+        if (string.IsNullOrEmpty(cursoEstudiante) && estPerfil != null)
+        {
+            var mat = _context.Matriculas.FirstOrDefault(m => m.id_estudiante == estPerfil.id_estudiante);
+            if (mat != null)
+            {
+                var c = _context.Cursos.Find(mat.id_curso);
+                cursoEstudiante = c?.nombre_curso ?? mat.id_curso.ToString();
+            }
+        }
+
+        var query = _context.Actividades.Where(a => a.Activo);
+        if (!string.IsNullOrWhiteSpace(cursoEstudiante))
+        {
+            var cNorm = cursoEstudiante.Trim().ToLower();
+            var cNoSpace = cNorm.Replace(" ", "");
+            query = query.Where(a => a.Grado == null || a.Grado == "" || a.Grado.ToLower() == "todos" || a.Grado.ToLower() == cNorm || a.Grado.Replace(" ", "").ToLower() == cNoSpace);
+        }
+
+        var actividades = query
             .OrderBy(a => a.FechaLimite)
             .ToList();
 
         var entregas = _context.EntregasActividades
-            .Where(e => e.IdEstudiante == userId.Value)
+            .Where(e => e.IdEstudiante == targetEstudianteId)
             .ToList();
 
         var resultado = actividades.Select(a =>
@@ -425,7 +450,7 @@ public class EstudianteController : Controller
             };
         }).ToList();
 
-        return Json(new { success = true, actividades = resultado });
+        return Json(new { success = true, actividades = resultado, curso = cursoEstudiante });
     }
 
     /// <summary>

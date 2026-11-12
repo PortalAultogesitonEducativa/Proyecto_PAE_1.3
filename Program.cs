@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using ProyectoPAE.Models;
 using ProyectoPAE.Services;
 using Rotativa.AspNetCore;
@@ -26,6 +26,10 @@ builder.Services.AddScoped<ServicioEmail>();
 // CERTIFICADOS
 builder.Services.AddScoped<CertificadoService>();
 builder.Services.AddScoped<MatriculaAcademicaService>();
+
+// 4. SERVICIOS DE COPIAS DE SEGURIDAD (DISPARADOR AUTOMÁTICO 24 HORAS)
+builder.Services.AddSingleton<BackupBaseDatosService>();
+builder.Services.AddHostedService<BackupHostedService>();
 
 var app = builder.Build();
 // Configuración de Rotativa para encontrar el ejecutable en wwwroot/Rotativa
