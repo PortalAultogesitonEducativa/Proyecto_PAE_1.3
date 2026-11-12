@@ -81,7 +81,7 @@ namespace ProyectoPAE.Servicios
                     GenerarCertificadoMatricula => true,
                     VerCertificados => true,
                     UsarPanelEstudiante => true,
-                    GestionarPQR => true,
+                    GestionarPQR => false,
                     ParticiparPQR => true,
                     _ => false
                 },

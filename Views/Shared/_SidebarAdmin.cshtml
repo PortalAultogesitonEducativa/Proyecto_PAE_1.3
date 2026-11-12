@@ -84,6 +84,11 @@
                     <i class="bi bi-chat-heart-fill"></i>
                     <span>Módulo PQR</span>
                 </a>
+                <a href="@Url.Action("Dashboard", "Home", new { seccion = "backup" })"
+                   class="pae-sidebar-nav-item@(ActiveIf("Home","Dashboard","backup"))">
+                    <i class="bi bi-cloud-arrow-up-fill"></i>
+                    <span>Copias de Seguridad</span>
+                </a>
             }
             else
             {
@@ -126,6 +131,11 @@
                    class="pae-sidebar-nav-item@(ActiveIf("Pqr","Index"))">
                     <i class="bi bi-chat-heart-fill"></i>
                     <span>Módulo PQR</span>
+                </a>
+                <a href="@Url.Action("Dashboard", "Home", new { seccion = "backup" })"
+                   class="pae-sidebar-nav-item@(ActiveIf("Home","Dashboard","backup"))">
+                    <i class="bi bi-cloud-arrow-up-fill"></i>
+                    <span>Copias de Seguridad</span>
                 </a>
             }
         </div>

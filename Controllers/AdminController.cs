@@ -1215,5 +1215,41 @@ namespace ProyectoPAE.Controllers
                 Detalles = resultados
             });
         }
+
+        // =========================================================================
+        // COPIAS DE SEGURIDAD DE BASE DE DATOS (DISPARADOR 24H Y BAJO DEMANDA)
+        // =========================================================================
+
+        [HttpGet]
+        [RequierePermiso(Permisos.AdministrarUsuarios)]
+        public IActionResult ListarRespaldos([FromServices] BackupBaseDatosService backupService)
+        {
+            var lista = backupService.ListarRespaldos();
+            return Json(new { success = true, respaldos = lista, repositorio = BackupBaseDatosService.RepositorioOficial, intervalo = "Cada 24 horas" });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [RequierePermiso(Permisos.AdministrarUsuarios)]
+        public async Task<IActionResult> GenerarBackupManual([FromServices] BackupBaseDatosService backupService)
+        {
+            try
+            {
+                var resultado = await backupService.GenerarRespaldoAsync();
+                return Json(new
+                {
+                    success = true,
+                    message = $"Copia de seguridad '{resultado.NombreArchivo}' generada correctamente.",
+                    sincronizadoGit = resultado.SincronizadoGit,
+                    detalleSincronizacion = resultado.MensajeSincronizacion,
+                    tamanoBytes = resultado.TamanoBytes,
+                    fecha = resultado.FechaCreacion.ToString("dd/MM/yyyy HH:mm:ss")
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"Error al generar el respaldo: {ex.Message}" });
+            }
+        }
     }
 }

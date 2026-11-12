@@ -731,3 +731,113 @@ html.filtro-acromatopsia {
     transform: translateY(-2px) !important;
     box-shadow: var(--pae-shadow) !important;
 }
+
+/* ==========================================================================
+   REGLAS GLOBALES DE IMPRESIÓN Y EXPORTACIÓN A PDF (PAE)
+   Elimina encabezados, pies de página, barras de navegación, menús y botones
+   de la interfaz institucional, manteniendo el documento limpio y formal.
+   ========================================================================== */
+@media print {
+    /* 1. Ocultar todos los elementos de interfaz, navegación y control */
+    header,
+    nav,
+    .navbar,
+    footer,
+    .footer,
+    aside,
+    .pae-sidebar-lateral,
+    .submodulo-sidebar,
+    .panel-con-sidebar > aside,
+    button,
+    .btn,
+    .btn-pae-volver,
+    .btn-admin-solido,
+    .btn-docente-solido,
+    .btn-estudiante-solido,
+    .btn-acudiente-solido,
+    input[type="button"],
+    input[type="submit"],
+    .d-print-none,
+    #pae-live-announcer,
+    .modal,
+    .modal-backdrop,
+    .dropdown,
+    #campanaDropdown,
+    .pae-daltonismo-panel,
+    .pae-accesibilidad-widget,
+    #btnAbrirDaltonismo,
+    .alert-dismissible .btn-close,
+    .breadcrumb,
+    .pagination {
+        display: none !important;
+    }
+
+    /* 2. Configuración de página limpia sin márgenes ni fondos de interfaz */
+    @page {
+        size: auto;
+        margin: 1.5cm 1.2cm 1.5cm 1.2cm;
+    }
+
+    html, body {
+        background-color: #ffffff !important;
+        background: #ffffff !important;
+        color: #000000 !important;
+        font-family: Arial, "Helvetica Neue", Helvetica, sans-serif !important;
+        font-size: 11pt !important;
+        line-height: 1.5 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        height: auto !important;
+    }
+
+    /* 3. Limpieza de contenedores estructurales */
+    .container,
+    .container-fluid,
+    main,
+    .submodulo-activo,
+    .panel-con-sidebar {
+        max-width: 100% !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+        border: none !important;
+        background: transparent !important;
+    }
+
+    .card {
+        border: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    /* 4. Tablas y listas legibles */
+    table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        page-break-inside: auto;
+    }
+
+    tr {
+        page-break-inside: avoid;
+        page-break-after: auto;
+    }
+
+    thead {
+        display: table-header-group;
+    }
+
+    th, td {
+        border: 1px solid #ddd !important;
+        padding: 6px 8px !important;
+    }
+
+    /* 5. Asegurar visibilidad de enlaces como texto sin subrayado azul */
+    a {
+        text-decoration: none !important;
+        color: #000000 !important;
+    }
+}

@@ -612,7 +612,15 @@ namespace ProyectoPAE.Controllers
             }
 
             var userId = HttpContext.Session.GetInt32("UserId");
-            model.IdDocente = userId;
+            if (!userId.HasValue)
+            {
+                return Json(new { success = false, message = "Tu sesión ha expirado. Por favor ingresa nuevamente al sistema." });
+            }
+
+            model.Titulo = model.Titulo.Trim();
+            model.Materia = model.Materia.Trim();
+            model.Grado = string.IsNullOrWhiteSpace(model.Grado) ? "Todos" : model.Grado.Trim();
+            model.IdDocente = userId.Value;
             model.FechaCreacion = DateTime.Now;
             model.Activo = true;
 
@@ -646,9 +654,157 @@ namespace ProyectoPAE.Controllers
             }
 
             _context.Actividades.Add(model);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
-            return Json(new { success = true, message = "¡Actividad académica creada y publicada con éxito!" });
+            return Json(new
+            {
+                success = true,
+                message = "¡Actividad académica creada y publicada con éxito!",
+                actividad = new
+                {
+                    idActividad = model.IdActividad,
+                    titulo = model.Titulo,
+                    descripcion = model.Descripcion,
+                    materia = model.Materia,
+                    grado = model.Grado,
+                    fechaLimite = model.FechaLimite.ToString("dd/MM/yyyy HH:mm"),
+                    fechaLimiteIso = model.FechaLimite.ToString("o"),
+                    archivoAdjunto = model.ArchivoAdjunto,
+                    totalEntregas = 0,
+                    calificadas = 0,
+                    pendientes = 0,
+                    estaVencida = DateTime.Now > model.FechaLimite,
+                    esMejora = model.EsMejora
+                }
+            });
+        }
+
+        [HttpGet]
+        public IActionResult ObtenerActividadPorId(int idActividad)
+        {
+            _context.AsegurarEsquemaActividades();
+            var act = _context.Actividades.Find(idActividad);
+            if (act == null || !act.Activo)
+            {
+                return Json(new { success = false, message = "Actividad no encontrada." });
+            }
+
+            return Json(new
+            {
+                success = true,
+                actividad = new
+                {
+                    idActividad = act.IdActividad,
+                    titulo = act.Titulo,
+                    descripcion = act.Descripcion,
+                    materia = act.Materia,
+                    grado = act.Grado,
+                    fechaLimite = act.FechaLimite.ToString("yyyy-MM-ddTHH:mm"),
+                    archivoAdjunto = act.ArchivoAdjunto,
+                    esMejora = act.EsMejora
+                }
+            });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EditarActividad(Actividad model, IFormFile? archivo)
+        {
+            _context.AsegurarEsquemaActividades();
+
+            var rol = (HttpContext.Session.GetString("UserRol") ?? "").ToLower().Trim();
+            if (rol != "docente" && rol != "admin" && rol != "profesor")
+            {
+                return Json(new { success = false, message = "No tienes permisos para modificar actividades académicas." });
+            }
+
+            var actividad = await _context.Actividades.FindAsync(model.IdActividad);
+            if (actividad == null || !actividad.Activo)
+            {
+                return Json(new { success = false, message = "La actividad no existe o fue eliminada." });
+            }
+
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (rol != "admin" && actividad.IdDocente.HasValue && actividad.IdDocente.Value != userId)
+            {
+                return Json(new { success = false, message = "Solo el docente creador o un administrador puede editar esta actividad." });
+            }
+
+            if (string.IsNullOrWhiteSpace(model.Titulo))
+            {
+                return Json(new { success = false, message = "El título de la actividad es obligatorio." });
+            }
+
+            if (string.IsNullOrWhiteSpace(model.Materia))
+            {
+                return Json(new { success = false, message = "La asignatura o materia es obligatoria." });
+            }
+
+            actividad.Titulo = model.Titulo.Trim();
+            actividad.Descripcion = model.Descripcion;
+            actividad.Materia = model.Materia.Trim();
+            actividad.Grado = string.IsNullOrWhiteSpace(model.Grado) ? "Todos" : model.Grado.Trim();
+            if (model.FechaLimite != default)
+            {
+                actividad.FechaLimite = model.FechaLimite;
+            }
+            actividad.EsMejora = model.EsMejora;
+
+            if (archivo != null && archivo.Length > 0)
+            {
+                var extensionesPermitidas = new[] { ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".zip", ".rar", ".jpg", ".jpeg", ".png" };
+                var ext = Path.GetExtension(archivo.FileName).ToLowerInvariant();
+
+                if (!extensionesPermitidas.Contains(ext))
+                {
+                    return Json(new { success = false, message = "Tipo de archivo no permitido para la guía de la actividad." });
+                }
+
+                if (archivo.Length > 25 * 1024 * 1024)
+                {
+                    return Json(new { success = false, message = "El archivo supera el tamaño máximo permitido de 25 MB." });
+                }
+
+                var carpeta = Path.Combine("wwwroot", "uploads", "guias");
+                Directory.CreateDirectory(carpeta);
+
+                var nombreGuardado = $"guia_{DateTime.Now:yyyyMMddHHmmss}_{Path.GetFileName(archivo.FileName)}";
+                var rutaFisica = Path.Combine(carpeta, nombreGuardado);
+                using (var stream = new FileStream(rutaFisica, FileMode.Create))
+                {
+                    await archivo.CopyToAsync(stream);
+                }
+
+                actividad.ArchivoAdjunto = $"/uploads/guias/{nombreGuardado}";
+            }
+
+            await _context.SaveChangesAsync();
+
+            var entregas = _context.EntregasActividades.Where(e => e.IdActividad == actividad.IdActividad).ToList();
+            int totalEntregas = entregas.Count;
+            int calificadas = entregas.Count(e => e.Calificacion.HasValue);
+            int pendientes = totalEntregas - calificadas;
+
+            return Json(new
+            {
+                success = true,
+                message = "¡Actividad académica actualizada con éxito!",
+                actividad = new
+                {
+                    idActividad = actividad.IdActividad,
+                    titulo = actividad.Titulo,
+                    descripcion = actividad.Descripcion,
+                    materia = actividad.Materia,
+                    grado = actividad.Grado,
+                    fechaLimite = actividad.FechaLimite.ToString("dd/MM/yyyy HH:mm"),
+                    fechaLimiteIso = actividad.FechaLimite.ToString("o"),
+                    archivoAdjunto = actividad.ArchivoAdjunto,
+                    totalEntregas = totalEntregas,
+                    calificadas = calificadas,
+                    pendientes = pendientes,
+                    estaVencida = DateTime.Now > actividad.FechaLimite,
+                    esMejora = actividad.EsMejora
+                }
+            });
         }
 
         [HttpGet]
@@ -659,8 +815,11 @@ namespace ProyectoPAE.Controllers
             var userId = HttpContext.Session.GetInt32("UserId");
             var rol = (HttpContext.Session.GetString("UserRol") ?? "").ToLower().Trim();
 
+            var prof = _context.PROFESOR.FirstOrDefault(p => p.id_usuario == userId);
+            int? profId = prof?.id_profesor;
+
             var actividades = _context.Actividades
-                .Where(a => a.Activo && (rol == "admin" || a.IdDocente == userId || a.IdDocente == null))
+                .Where(a => a.Activo && (rol == "admin" || a.IdDocente == userId || (profId != null && a.IdDocente == profId) || a.IdDocente == null))
                 .OrderByDescending(a => a.FechaCreacion)
                 .ToList();
 
@@ -679,7 +838,7 @@ namespace ProyectoPAE.Controllers
                     titulo = a.Titulo,
                     descripcion = a.Descripcion,
                     materia = a.Materia,
-                    grado = a.Grado,
+                    grado = string.IsNullOrWhiteSpace(a.Grado) ? "Todos" : a.Grado.Trim(),
                     fechaLimite = a.FechaLimite.ToString("dd/MM/yyyy HH:mm"),
                     fechaLimiteIso = a.FechaLimite.ToString("o"),
                     archivoAdjunto = a.ArchivoAdjunto,
@@ -706,43 +865,135 @@ namespace ProyectoPAE.Controllers
                 return Json(new { success = false, message = "Actividad no encontrada." });
             }
 
-            var entregas = _context.EntregasActividades
-                .Where(e => e.IdActividad == idActividad)
-                .Join(_context.Usuarios,
-                      e => e.IdEstudiante,
-                      u => u.ID_Usuario,
-                      (e, u) => new
-                      {
-                          idEntrega = e.IdEntrega,
-                          idEstudiante = u.ID_Usuario,
-                          nombreEstudiante = (u.NOMBRES + " " + u.APELLIDOS).Trim(),
-                          documento = u.NUM_DOCUMENTO ?? u.NOMBRE_USUARIO,
-                          correo = u.CORREO_ELECTRONICO ?? "-",
-                          grado = u.COLEGIO_PROCEDENCIA ?? "Estudiante",
-                          fechaEntrega = e.FechaEntrega.ToString("dd/MM/yyyy HH:mm"),
-                          archivoRuta = e.ArchivoRuta,
-                          archivoNombre = e.ArchivoNombre,
-                          comentario = e.Comentario,
-                          calificacion = e.Calificacion,
-                          retroalimentacion = e.Retroalimentacion,
-                          estado = e.Estado
-                      })
-                .OrderBy(e => e.nombreEstudiante)
-                .ToList();
+            var estudiantes = _context.Usuarios.Where(u => u.ROL == "estudiante" && u.ACTIVO).ToList();
+            var estudiantesEst = _context.ESTUDIANTE.ToList();
+            var matriculas = _context.Matriculas.ToList();
+            var listaCursos = _context.Cursos.ToList();
+
+            var estudianteGrados = new Dictionary<int, string>();
+            foreach (var u in estudiantes)
+            {
+                var est = estudiantesEst.FirstOrDefault(e => (e.id_usuario != null && e.id_usuario == u.ID_Usuario) ||
+                    (e.email != null && u.CORREO_ELECTRONICO != null && e.email.ToLower() == u.CORREO_ELECTRONICO.ToLower()));
+                if (est != null)
+                {
+                    if (!string.IsNullOrEmpty(est.curso_asignado))
+                    {
+                        estudianteGrados[u.ID_Usuario] = est.curso_asignado.Trim();
+                    }
+                    else
+                    {
+                        var mat = matriculas.FirstOrDefault(m => m.id_estudiante == est.id_estudiante && (m.estado == null || m.estado.ToLower() == "activa" || m.estado.ToLower() == "activo" || m.estado == ""));
+                        if (mat == null) mat = matriculas.FirstOrDefault(m => m.id_estudiante == est.id_estudiante);
+                        if (mat != null)
+                        {
+                            var cursoObj = listaCursos.FirstOrDefault(c => c.id_curso == mat.id_curso);
+                            estudianteGrados[u.ID_Usuario] = (cursoObj != null ? cursoObj.nombre_curso : mat.id_curso.ToString()).Trim();
+                        }
+                    }
+                }
+            }
+
+            // Filtrar estudiantes correspondientes al grado de la actividad (si no es 'Todos')
+            string gradoAct = (actividad.Grado ?? "").Trim();
+            bool esParaTodos = string.IsNullOrEmpty(gradoAct) || gradoAct.Equals("Todos", StringComparison.OrdinalIgnoreCase);
+
+            var estudiantesCurso = estudiantes.Where(u =>
+            {
+                if (esParaTodos) return true;
+                if (estudianteGrados.TryGetValue(u.ID_Usuario, out var cursoEst))
+                {
+                    return cursoEst.Equals(gradoAct, StringComparison.OrdinalIgnoreCase) ||
+                           cursoEst.Replace(" ", "").Equals(gradoAct.Replace(" ", ""), StringComparison.OrdinalIgnoreCase);
+                }
+                return false;
+            }).ToList();
+
+            var entregasExistentes = _context.EntregasActividades.Where(e => e.IdActividad == idActividad).ToList();
+            var idsEstudiantesConEntrega = entregasExistentes.Select(e => e.IdEstudiante).Distinct().ToList();
+
+            foreach (var idEstConEntrega in idsEstudiantesConEntrega)
+            {
+                if (!estudiantesCurso.Any(e => e.ID_Usuario == idEstConEntrega))
+                {
+                    var u = estudiantes.FirstOrDefault(x => x.ID_Usuario == idEstConEntrega);
+                    if (u != null) estudiantesCurso.Add(u);
+                }
+            }
+
+            if (!estudiantesCurso.Any())
+            {
+                estudiantesCurso = estudiantes;
+            }
+
+            var listaResultado = estudiantesCurso
+                .OrderBy(u => u.APELLIDOS)
+                .ThenBy(u => u.NOMBRES)
+                .Select(u =>
+                {
+                    var entrega = entregasExistentes.FirstOrDefault(e => e.IdEstudiante == u.ID_Usuario);
+                    bool haEntregado = (entrega != null);
+                    bool calificado = (entrega != null && entrega.Calificacion.HasValue);
+                    string cursoEst = estudianteGrados.ContainsKey(u.ID_Usuario) ? estudianteGrados[u.ID_Usuario] : (u.COLEGIO_PROCEDENCIA ?? "Estudiante");
+
+                    return new
+                    {
+                        idEstudiante = u.ID_Usuario,
+                        nombreEstudiante = $"{u.NOMBRES} {u.APELLIDOS}".Trim(),
+                        documento = u.NUM_DOCUMENTO ?? u.NOMBRE_USUARIO,
+                        correo = u.CORREO_ELECTRONICO ?? "-",
+                        curso = cursoEst,
+                        haEntregado = haEntregado,
+                        idEntrega = entrega?.IdEntrega ?? 0,
+                        fechaEntrega = entrega != null ? entrega.FechaEntrega.ToString("dd/MM/yyyy HH:mm") : null,
+                        archivoRuta = entrega?.ArchivoRuta,
+                        archivoNombre = entrega?.ArchivoNombre,
+                        comentario = entrega?.Comentario,
+                        calificacion = entrega?.Calificacion,
+                        retroalimentacion = entrega?.Retroalimentacion,
+                        estado = haEntregado ? (calificado ? "Calificado" : "Entregado") : "Pendiente"
+                    };
+                }).ToList();
+
+            int totalAlumnos = listaResultado.Count;
+            int totalEntregados = listaResultado.Count(x => x.haEntregado);
+            int totalSinEntregar = totalAlumnos - totalEntregados;
+            int totalCalificados = listaResultado.Count(x => x.calificacion.HasValue);
+            int totalPorCalificar = totalEntregados - totalCalificados;
 
             return Json(new
             {
                 success = true,
+                actividad = new
+                {
+                    idActividad = actividad.IdActividad,
+                    titulo = actividad.Titulo,
+                    descripcion = actividad.Descripcion,
+                    materia = actividad.Materia,
+                    grado = string.IsNullOrWhiteSpace(actividad.Grado) ? "Todos" : actividad.Grado,
+                    fechaLimite = actividad.FechaLimite.ToString("dd/MM/yyyy HH:mm"),
+                    estaVencida = DateTime.Now > actividad.FechaLimite,
+                    archivoAdjunto = actividad.ArchivoAdjunto
+                },
+                resumen = new
+                {
+                    totalAlumnos,
+                    totalEntregados,
+                    totalSinEntregar,
+                    totalCalificados,
+                    totalPorCalificar
+                },
+                alumnos = listaResultado,
                 tituloActividad = actividad.Titulo,
                 materia = actividad.Materia,
-                grado = actividad.Grado,
-                totalEntregas = entregas.Count,
-                entregas = entregas
+                grado = actividad.Grado ?? "Todos",
+                totalEntregas = totalEntregados,
+                entregas = listaResultado.Where(x => x.haEntregado).ToList()
             });
         }
 
         [HttpPost]
-        public IActionResult CalificarEntrega(int idEntrega, string nota, string? retroalimentacion, int? periodo)
+        public IActionResult CalificarEntrega(int idEntrega, string nota, string? retroalimentacion, int? periodo, int? idActividad, int? idEstudiante)
         {
             _context.AsegurarEsquemaActividades();
 
@@ -752,15 +1003,9 @@ namespace ProyectoPAE.Controllers
                 return Json(new { success = false, message = "No tienes permisos para calificar actividades." });
             }
 
-            var entrega = _context.EntregasActividades.Find(idEntrega);
-            if (entrega == null)
-            {
-                return Json(new { success = false, message = "Entrega de actividad no encontrada." });
-            }
-
             if (!decimal.TryParse((nota ?? "").Replace(",", "."), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal notaDecimal))
             {
-                return Json(new { success = false, message = "El valor de la calificación no es válido." });
+                return Json(new { success = false, message = "El valor de la calificación no es válido. Debe ser un número entre 0.0 y 5.0." });
             }
 
             if (notaDecimal < 0m || notaDecimal > 5.0m)
@@ -768,8 +1013,36 @@ namespace ProyectoPAE.Controllers
                 return Json(new { success = false, message = "La calificación debe estar entre 0.0 y 5.0." });
             }
 
+            EntregaActividad? entrega = null;
+            if (idEntrega > 0)
+            {
+                entrega = _context.EntregasActividades.Find(idEntrega);
+            }
+            else if (idActividad.HasValue && idEstudiante.HasValue)
+            {
+                entrega = _context.EntregasActividades.FirstOrDefault(e => e.IdActividad == idActividad.Value && e.IdEstudiante == idEstudiante.Value);
+                if (entrega == null)
+                {
+                    entrega = new EntregaActividad
+                    {
+                        IdActividad = idActividad.Value,
+                        IdEstudiante = idEstudiante.Value,
+                        FechaEntrega = DateTime.Now,
+                        Comentario = "Calificado directamente por el docente",
+                        Estado = "Calificado"
+                    };
+                    _context.EntregasActividades.Add(entrega);
+                    _context.SaveChanges();
+                }
+            }
+
+            if (entrega == null)
+            {
+                return Json(new { success = false, message = "Entrega de actividad no encontrada." });
+            }
+
             entrega.Calificacion = notaDecimal;
-            entrega.Retroalimentacion = retroalimentacion;
+            entrega.Retroalimentacion = retroalimentacion?.Trim();
             entrega.Estado = "Calificado";
 
             // Reflejar la calificación automáticamente en la tabla oficial de Calificaciones (Planilla de Notas)
@@ -778,7 +1051,7 @@ namespace ProyectoPAE.Controllers
             {
                 int periodoVal = periodo ?? 1;
                 string materiaNombre = actividad.Materia;
-                if (!string.IsNullOrEmpty(actividad.Grado))
+                if (!string.IsNullOrEmpty(actividad.Grado) && actividad.Grado != "Todos")
                 {
                     materiaNombre = $"{actividad.Materia} - {actividad.Grado}";
                 }
@@ -813,7 +1086,8 @@ namespace ProyectoPAE.Controllers
             return Json(new
             {
                 success = true,
-                message = "¡Calificación guardada exitosamente y sincronizada en la Planilla de Notas!",
+                message = "¡Calificación guardada y sincronizada correctamente con la planilla de notas!",
+                idEntrega = entrega.IdEntrega,
                 calificacion = notaDecimal.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture),
                 estado = "Calificado"
             });

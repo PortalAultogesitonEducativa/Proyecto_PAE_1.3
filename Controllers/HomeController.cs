@@ -591,7 +591,83 @@ namespace ProyectoPAE.Controllers
 
             var cursosDocenteLista = cursosAsistencia != null && cursosAsistencia.Any()
                 ? cursosAsistencia
-                : new List<string> { "601", "602", "701", "702", "801", "802", "901", "902", "1001", "1002", "1101", "1102" };
+                : new List<string> { "601 M", "602 M", "701 M", "702 M", "801 M", "802 M", "901 M", "902 M", "1001 M", "1002 M", "1101 M", "1102 M" };
+
+            List<string> asignaturasDocenteLista = new();
+
+            if (rolActivo == "docente")
+            {
+                if (int.TryParse(userIdStr, out int userIdDocente))
+                {
+                    var profesorActual = _context.PROFESOR.FirstOrDefault(p => p.id_usuario == userIdDocente);
+                    if (profesorActual == null)
+                    {
+                        var usr = _context.Usuarios.Find(userIdDocente);
+                        if (usr != null && !string.IsNullOrEmpty(usr.CORREO_ELECTRONICO))
+                        {
+                            profesorActual = _context.PROFESOR.FirstOrDefault(p => p.email.ToLower() == usr.CORREO_ELECTRONICO.ToLower());
+                        }
+                    }
+
+                    if (profesorActual != null)
+                    {
+                        // 1. Asignaturas asignadas al docente (PROFESOR_MATERIA + MATERIA)
+                        asignaturasDocenteLista = (from pm in _context.PROFESOR_MATERIA
+                                                   join m in _context.MATERIA on pm.id_materia equals m.id_materia
+                                                   where pm.id_profesor == profesorActual.id_profesor
+                                                   select m.nombre_materia).Distinct().ToList();
+
+                        if (!asignaturasDocenteLista.Any() && !string.IsNullOrWhiteSpace(profesorActual.especialidad))
+                        {
+                            asignaturasDocenteLista = profesorActual.especialidad
+                                .Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries)
+                                .Select(s => s.Trim())
+                                .Where(s => !string.IsNullOrEmpty(s))
+                                .Distinct()
+                                .ToList();
+                        }
+
+                        // 2. Cursos del docente filtrados por su jornada
+                        var jornadaProf = (profesorActual.jornada ?? "").Trim().ToLower();
+                        List<string> cursosFiltrados = new();
+
+                        if (jornadaProf.Contains("mañana") || jornadaProf == "m")
+                        {
+                            cursosFiltrados = listaCursos
+                                .Where(c => (c.jornada != null && c.jornada.ToLower().Contains("mañana")) || c.nombre_curso.EndsWith("M") || c.nombre_curso.EndsWith(" M"))
+                                .Select(c => c.nombre_curso)
+                                .Distinct()
+                                .ToList();
+                        }
+                        else if (jornadaProf.Contains("tarde") || jornadaProf == "t")
+                        {
+                            cursosFiltrados = listaCursos
+                                .Where(c => (c.jornada != null && c.jornada.ToLower().Contains("tarde")) || c.nombre_curso.EndsWith("T") || c.nombre_curso.EndsWith(" T"))
+                                .Select(c => c.nombre_curso)
+                                .Distinct()
+                                .ToList();
+                        }
+
+                        if (cursosFiltrados.Any())
+                        {
+                            cursosDocenteLista = cursosFiltrados
+                                .OrderBy(n => {
+                                    var digits = new string(n.TakeWhile(char.IsDigit).ToArray());
+                                    return int.TryParse(digits, out int num) ? num : 999999;
+                                })
+                                .ThenBy(n => n)
+                                .ToList();
+                        }
+                    }
+                }
+            }
+
+            if (!asignaturasDocenteLista.Any())
+            {
+                asignaturasDocenteLista = _context.MATERIA.Select(m => m.nombre_materia).Distinct().OrderBy(m => m).ToList();
+            }
+
+            ViewBag.AsignaturasDocente = asignaturasDocenteLista;
             ViewBag.CursosDocente = cursosDocenteLista;
 
             return View();

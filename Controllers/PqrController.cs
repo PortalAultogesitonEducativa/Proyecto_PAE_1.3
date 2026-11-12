@@ -24,7 +24,8 @@ namespace ProyectoPAE.Controllers
         {
             int? userId = HttpContext.Session.GetInt32("UserId");
             string rol = Permisos.RolActual(HttpContext);
-            bool esGestor = Permisos.TienePermiso(HttpContext, Permisos.GestionarPQR);
+            bool esAdmin = (rol == "admin");
+            bool esGestor = esAdmin; // Únicamente el Administrador gestiona y tiene acceso administrativo global
 
             var query = _context.PQRs.Where(p => p.Activo).AsQueryable();
 
@@ -69,12 +70,18 @@ namespace ProyectoPAE.Controllers
             ViewBag.Tipo = tipo ?? "todos";
             ViewBag.Estado = estado ?? "todos";
             ViewBag.EsGestor = esGestor;
+            ViewBag.EsAdmin = esAdmin;
             ViewBag.RolActual = rol;
-            ViewBag.Total = lista.Count;
-            ViewBag.TotalRecibidas = lista.Count(p => p.Estado == "Recibida");
-            ViewBag.TotalEnRevision = lista.Count(p => p.Estado == "En revisión");
-            ViewBag.TotalRespondidas = lista.Count(p => p.Estado == "Respondida");
-            ViewBag.TotalCerradas = lista.Count(p => p.Estado == "Cerrada");
+
+            // Únicamente el Administrador puede ver las estadísticas de las PQR
+            if (esAdmin)
+            {
+                ViewBag.Total = lista.Count;
+                ViewBag.TotalRecibidas = lista.Count(p => p.Estado == "Recibida");
+                ViewBag.TotalEnRevision = lista.Count(p => p.Estado == "En revisión");
+                ViewBag.TotalRespondidas = lista.Count(p => p.Estado == "Respondida");
+                ViewBag.TotalCerradas = lista.Count(p => p.Estado == "Cerrada");
+            }
 
             return View(lista);
         }
