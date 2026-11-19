@@ -78,9 +78,30 @@
                             <small class="opacity-75">Reporte académico detallado por asignatura</small>
                         </div>
                     </div>
-                    <a href="@Url.Action("Dashboard", "Home")" class="btn btn-pae-volver">
-                        Volver al Panel
-                    </a>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        @if (rolNotas == "acudiente" && ViewBag.ListaHijos != null)
+                        {
+                            <div class="d-flex align-items-center bg-white text-dark px-3 py-1 rounded-pill shadow-sm">
+                                <span class="small me-2 fw-bold text-muted"><i class="bi bi-person-badge me-1 text-primary"></i>Hijo(a):</span>
+                                <select class="form-select form-select-sm border-0 bg-transparent fw-bold text-dark" style="box-shadow: none; cursor: pointer; min-width: 170px;" onchange="location.href='@Url.Action("MisNotas", "Estudiante")?idEstudiante=' + this.value">
+                                    @foreach (var hijo in (IEnumerable<ProyectoPAE.Models.Usuario>)ViewBag.ListaHijos)
+                                    {
+                                        if (ViewBag.IdEstudianteActual != null && (int)ViewBag.IdEstudianteActual == hijo.ID_Usuario)
+                                        {
+                                            <option value="@hijo.ID_Usuario" selected>@hijo.NOMBRES @hijo.APELLIDOS</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@hijo.ID_Usuario">@hijo.NOMBRES @hijo.APELLIDOS</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                        }
+                        <a href="@Url.Action("Dashboard", "Home")" class="btn btn-pae-volver">
+                            Volver al Panel
+                        </a>
+                    </div>
                 </div>
     </div>
 

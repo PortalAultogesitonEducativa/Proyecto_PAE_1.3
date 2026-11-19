@@ -59,6 +59,8 @@ namespace ProyectoPAE.Controllers
                 return RedirectToAction("Index", "Login");
             }
 
+            _context.AsegurarLimpiezaCalificacionesDuplicadas();
+
             // 3. Determinamos el rol usando normalización robusta y soporte para "ver como" (Admin)
             string rolSesionNormalizado = Permisos.NormalizarRol(rolSesion);
             string rolActivo = (!string.IsNullOrEmpty(rol) && rolSesionNormalizado == "admin")
@@ -84,8 +86,15 @@ namespace ProyectoPAE.Controllers
                                            .Select(ep => ep.ID_ESTUDIANTE)
                                            .ToList();
 
+                    var estudiantesPorPadreDirecto = _context.ESTUDIANTE
+                                           .Where(e => e.id_padre == idPadreLegacy || e.id_padre == userId)
+                                           .Select(e => e.id_estudiante)
+                                           .ToList();
+
+                    hijosIdsLegacy = hijosIdsLegacy.Union(estudiantesPorPadreDirecto).Distinct().ToList();
+
                     var estudiantesLegacy = _context.ESTUDIANTE
-                        .Where(e => hijosIdsLegacy.Contains(e.id_estudiante) || (e.id_usuario != null && hijosIdsLegacy.Contains(e.id_usuario.Value)))
+                        .Where(e => hijosIdsLegacy.Contains(e.id_estudiante) || (e.id_usuario != null && hijosIdsLegacy.Contains(e.id_usuario.Value)) || e.id_padre == idPadreLegacy || e.id_padre == userId)
                         .ToList();
 
                     var estudianteUserIds = estudiantesLegacy
@@ -114,12 +123,14 @@ namespace ProyectoPAE.Controllers
                         double promedio = 0.0;
                         var notasCalif = _context.Calificaciones
                             .Where(c => c.ID_Estudiante == primerHijoId)
-                            .Select(c => (double)c.Nota)
+                            .ToList()
+                            .GroupBy(c => new { MateriaNorm = (c.Materia ?? "").Trim().ToLower(), c.Periodo })
+                            .Select(g => (double)g.OrderByDescending(x => x.ID_Calificacion).First().Nota)
                             .ToList();
 
                         if (notasCalif.Any())
                         {
-                            promedio = notasCalif.Average();
+                            promedio = Math.Round(notasCalif.Average(), 1);
                         }
                         else
                         {
@@ -589,81 +600,95 @@ namespace ProyectoPAE.Controllers
 
             ViewBag.CursosAsistencia = cursosAsistencia;
 
-            var cursosDocenteLista = cursosAsistencia != null && cursosAsistencia.Any()
-                ? cursosAsistencia
-                : new List<string> { "601 M", "602 M", "701 M", "702 M", "801 M", "802 M", "901 M", "902 M", "1001 M", "1002 M", "1101 M", "1102 M" };
-
+            var cursosDocenteLista = new List<string>();
             List<string> asignaturasDocenteLista = new();
 
             if (rolActivo == "docente")
             {
                 if (int.TryParse(userIdStr, out int userIdDocente))
                 {
-                    var profesorActual = _context.PROFESOR.FirstOrDefault(p => p.id_usuario == userIdDocente);
-                    if (profesorActual == null)
+                    var usr = _context.Usuarios.Find(userIdDocente);
+                    string correoDoc = (usr?.CORREO_ELECTRONICO ?? "").Trim().ToLower();
+                    string nombresDoc = (usr?.NOMBRES ?? "").Trim().ToLower();
+                    string apellidosDoc = (usr?.APELLIDOS ?? "").Trim().ToLower();
+                    string nombreCompletoDoc = $"{nombresDoc} {apellidosDoc}".Trim();
+
+                    var profesoresDoc = _context.PROFESOR.ToList();
+                    var idsProfesorDocente = profesoresDoc
+                        .Where(p => (p.id_usuario != null && p.id_usuario == userIdDocente)
+                                 || (!string.IsNullOrEmpty(p.email) && !string.IsNullOrEmpty(correoDoc) && p.email.Trim().ToLower() == correoDoc)
+                                 || (!string.IsNullOrEmpty(p.nombre) && !string.IsNullOrEmpty(p.apellido) &&
+                                     ($"{p.nombre.Trim()} {p.apellido.Trim()}".ToLower() == nombreCompletoDoc ||
+                                      (nombresDoc.Contains(p.nombre.Trim().ToLower()) && apellidosDoc.Contains(p.apellido.Trim().ToLower())))))
+                        .Select(p => p.id_profesor)
+                        .ToList();
+
+                    idsProfesorDocente.Add(userIdDocente);
+                    idsProfesorDocente = idsProfesorDocente.Distinct().ToList();
+
+                    // Cursos asignados en HORARIOS para este profesor
+                    var cursoIdsHorario = _context.HORARIOS
+                        .Where(h => idsProfesorDocente.Contains(h.id_profesor))
+                        .Select(h => h.id_curso)
+                        .Distinct()
+                        .ToList();
+
+                    if (cursoIdsHorario.Any())
                     {
-                        var usr = _context.Usuarios.Find(userIdDocente);
-                        if (usr != null && !string.IsNullOrEmpty(usr.CORREO_ELECTRONICO))
-                        {
-                            profesorActual = _context.PROFESOR.FirstOrDefault(p => p.email.ToLower() == usr.CORREO_ELECTRONICO.ToLower());
-                        }
+                        cursosDocenteLista = listaCursos
+                            .Where(c => cursoIdsHorario.Contains(c.id_curso))
+                            .Select(c => c.nombre_curso)
+                            .Distinct()
+                            .OrderBy(n => {
+                                var digits = new string(n.TakeWhile(char.IsDigit).ToArray());
+                                return int.TryParse(digits, out int num) ? num : 999999;
+                            })
+                            .ThenBy(n => n)
+                            .ToList();
                     }
 
-                    if (profesorActual != null)
-                    {
-                        // 1. Asignaturas asignadas al docente (PROFESOR_MATERIA + MATERIA)
-                        asignaturasDocenteLista = (from pm in _context.PROFESOR_MATERIA
-                                                   join m in _context.MATERIA on pm.id_materia equals m.id_materia
-                                                   where pm.id_profesor == profesorActual.id_profesor
-                                                   select m.nombre_materia).Distinct().ToList();
+                    // Materias asignadas en HORARIOS y PROFESOR_MATERIA
+                    var materiaIdsHorario = _context.HORARIOS
+                        .Where(h => idsProfesorDocente.Contains(h.id_profesor))
+                        .Select(h => h.id_materia)
+                        .Distinct()
+                        .ToList();
 
-                        if (!asignaturasDocenteLista.Any() && !string.IsNullOrWhiteSpace(profesorActual.especialidad))
+                    var materiaIdsProfMateria = _context.PROFESOR_MATERIA
+                        .Where(pm => idsProfesorDocente.Contains(pm.id_profesor))
+                        .Select(pm => pm.id_materia)
+                        .Distinct()
+                        .ToList();
+
+                    var todasMateriasIds = materiaIdsHorario.Union(materiaIdsProfMateria).Distinct().ToList();
+
+                    if (todasMateriasIds.Any())
+                    {
+                        asignaturasDocenteLista = _context.MATERIA
+                            .Where(m => todasMateriasIds.Contains(m.id_materia))
+                            .Select(m => m.nombre_materia)
+                            .Distinct()
+                            .OrderBy(m => m)
+                            .ToList();
+                    }
+                    else
+                    {
+                        var profAct = profesoresDoc.FirstOrDefault(p => idsProfesorDocente.Contains(p.id_profesor));
+                        if (profAct != null && !string.IsNullOrWhiteSpace(profAct.especialidad))
                         {
-                            asignaturasDocenteLista = profesorActual.especialidad
+                            asignaturasDocenteLista = profAct.especialidad
                                 .Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries)
                                 .Select(s => s.Trim())
                                 .Where(s => !string.IsNullOrEmpty(s))
                                 .Distinct()
                                 .ToList();
                         }
-
-                        // 2. Cursos del docente filtrados por su jornada
-                        var jornadaProf = (profesorActual.jornada ?? "").Trim().ToLower();
-                        List<string> cursosFiltrados = new();
-
-                        if (jornadaProf.Contains("mañana") || jornadaProf == "m")
-                        {
-                            cursosFiltrados = listaCursos
-                                .Where(c => (c.jornada != null && c.jornada.ToLower().Contains("mañana")) || c.nombre_curso.EndsWith("M") || c.nombre_curso.EndsWith(" M"))
-                                .Select(c => c.nombre_curso)
-                                .Distinct()
-                                .ToList();
-                        }
-                        else if (jornadaProf.Contains("tarde") || jornadaProf == "t")
-                        {
-                            cursosFiltrados = listaCursos
-                                .Where(c => (c.jornada != null && c.jornada.ToLower().Contains("tarde")) || c.nombre_curso.EndsWith("T") || c.nombre_curso.EndsWith(" T"))
-                                .Select(c => c.nombre_curso)
-                                .Distinct()
-                                .ToList();
-                        }
-
-                        if (cursosFiltrados.Any())
-                        {
-                            cursosDocenteLista = cursosFiltrados
-                                .OrderBy(n => {
-                                    var digits = new string(n.TakeWhile(char.IsDigit).ToArray());
-                                    return int.TryParse(digits, out int num) ? num : 999999;
-                                })
-                                .ThenBy(n => n)
-                                .ToList();
-                        }
                     }
                 }
             }
-
-            if (!asignaturasDocenteLista.Any())
+            else
             {
+                cursosDocenteLista = cursosAsistencia ?? new List<string>();
                 asignaturasDocenteLista = _context.MATERIA.Select(m => m.nombre_materia).Distinct().OrderBy(m => m).ToList();
             }
 
@@ -910,6 +935,8 @@ namespace ProyectoPAE.Controllers
         public IActionResult Contacto() => View();
         public IActionResult Cursos() => View();
         public IActionResult Blog() => View();
+        public IActionResult Politicas() => View();
+        public IActionResult Privacy() => View("Politicas");
 
         // ─── MÉTODOS PRIVADOS (Aportes de Andrés y Nicolás) ────────────────────────
         private bool VerificarPassword(string passwordIngresada, string passwordAlmacenada)
@@ -972,28 +999,40 @@ namespace ProyectoPAE.Controllers
 
             _context.AsegurarEsquemaObservador();
 
+            // Resolver IDs asociados al estudiante (id_usuario y/o id_estudiante)
+            var estObj = _context.ESTUDIANTE.FirstOrDefault(e => e.id_usuario == idEstudiante || e.id_estudiante == idEstudiante);
+            var idsHijo = new List<int> { idEstudiante };
+            if (estObj != null)
+            {
+                idsHijo.Add(estObj.id_estudiante);
+                if (estObj.id_usuario.HasValue) idsHijo.Add(estObj.id_usuario.Value);
+            }
+            idsHijo = idsHijo.Distinct().ToList();
+
             // Notas / Promedio
             double promedio = 0.0;
             var notasCalif = _context.Calificaciones
-                .Where(c => c.ID_Estudiante == idEstudiante)
-                .Select(c => (double)c.Nota)
+                .Where(c => idsHijo.Contains(c.ID_Estudiante))
+                .ToList()
+                .GroupBy(c => new { MateriaNorm = (c.Materia ?? "").Trim().ToLower(), c.Periodo })
+                .Select(g => (double)g.OrderByDescending(x => x.ID_Calificacion).First().Nota)
                 .ToList();
 
             if (notasCalif.Any())
             {
-                promedio = notasCalif.Average();
+                promedio = Math.Round(notasCalif.Average(), 1);
             }
             else
             {
                 promedio = _context.EVALUACIONES
-                    .Where(e => e.id_estudiante == idEstudiante)
+                    .Where(e => idsHijo.Contains(e.id_estudiante))
                     .Select(e => (double?)e.nota)
                     .Average() ?? 0.0;
             }
 
             // Asistencias
             var asistencias = _context.ASISTENCIAS
-                .Where(a => a.id_estudiante == idEstudiante)
+                .Where(a => idsHijo.Contains(a.id_estudiante))
                 .OrderByDescending(a => a.fecha)
                 .Select(a => new
                 {
@@ -1010,7 +1049,7 @@ namespace ProyectoPAE.Controllers
 
             // Citaciones
             var citaciones = _context.CITACIONES
-                .Where(c => c.id_estudiante == idEstudiante)
+                .Where(c => idsHijo.Contains(c.id_estudiante))
                 .OrderByDescending(c => c.fecha)
                 .Select(c => new
                 {
@@ -1024,7 +1063,7 @@ namespace ProyectoPAE.Controllers
 
             // Observaciones
             var observaciones = _context.ObservacionesEstudiante
-                .Where(o => o.id_estudiante == idEstudiante)
+                .Where(o => idsHijo.Contains(o.id_estudiante))
                 .OrderByDescending(o => o.fecha)
                 .Select(o => new
                 {

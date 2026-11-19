@@ -51,11 +51,18 @@ namespace ProyectoPAE.Servicios
                     .Select(ep => ep.ID_ESTUDIANTE)
                     .ToList();
 
+                var estudiantesPorIdPadre = context.ESTUDIANTE
+                    .Where(e => e.id_padre == idPadreLegacy || e.id_padre == idUsuario.Value)
+                    .Select(e => e.id_estudiante)
+                    .ToList();
+
+                hijosIds = hijosIds.Union(estudiantesPorIdPadre).Distinct().ToList();
+
                 if (hijosIds.Contains(idEstudiante))
                     return true;
 
                 var estudiantesVinculados = context.ESTUDIANTE
-                    .Where(e => hijosIds.Contains(e.id_estudiante) || (e.id_usuario != null && hijosIds.Contains(e.id_usuario.Value)))
+                    .Where(e => hijosIds.Contains(e.id_estudiante) || (e.id_usuario != null && hijosIds.Contains(e.id_usuario.Value)) || e.id_padre == idPadreLegacy || e.id_padre == idUsuario.Value)
                     .ToList();
 
                 bool vinculado = estudiantesVinculados.Any(e => e.id_estudiante == idEstudiante || e.id_usuario == idEstudiante);
