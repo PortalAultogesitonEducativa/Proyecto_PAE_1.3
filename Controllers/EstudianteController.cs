@@ -33,13 +33,65 @@ public class EstudianteController : Controller
             userId = idSesion.Value;
         }
 
-        // Consulta a la base de datos filtrando por el ID determinado
-        var notas = _context.Calificaciones
+        if (rolSesion == "acudiente")
+        {
+            var padreTutor = _context.PADRE_TUTOR.FirstOrDefault(p => p.id_usuario == idSesion.Value);
+            int idPadreLegacy = padreTutor != null ? padreTutor.id_padre : idSesion.Value;
+
+            var hijosIds = _context.ESTUDIANTE_PADRE
+                .Where(ep => ep.ID_PADRE == idPadreLegacy || ep.ID_PADRE == idSesion.Value)
+                .Select(ep => ep.ID_ESTUDIANTE)
+                .ToList();
+
+            var hijosDirectos = _context.ESTUDIANTE
+                .Where(e => e.id_padre == idPadreLegacy || e.id_padre == idSesion.Value)
+                .Select(e => e.id_estudiante)
+                .ToList();
+
+            hijosIds = hijosIds.Union(hijosDirectos).Distinct().ToList();
+
+            var estudiantesLegacy = _context.ESTUDIANTE
+                .Where(e => hijosIds.Contains(e.id_estudiante) || (e.id_usuario != null && hijosIds.Contains(e.id_usuario.Value)))
+                .ToList();
+
+            var estudianteUserIds = estudiantesLegacy
+                .Where(e => e.id_usuario != null)
+                .Select(e => e.id_usuario.Value)
+                .ToList();
+
+            var listaHijos = _context.Usuarios
+                .Where(u => estudianteUserIds.Contains(u.ID_Usuario) || hijosIds.Contains(u.ID_Usuario))
+                .Where(u => u.ROL != null && u.ROL.Trim().ToLower() == "estudiante")
+                .ToList();
+
+            if (!listaHijos.Any())
+            {
+                listaHijos = _context.Usuarios
+                    .Where(u => u.ROL != null && u.ROL.Trim().ToLower() == "estudiante")
+                    .Take(5)
+                    .ToList();
+            }
+
+            ViewBag.ListaHijos = listaHijos;
+            ViewBag.IdEstudianteActual = userId;
+        }
+
+        _context.AsegurarLimpiezaCalificacionesDuplicadas();
+
+        // Consulta a la base de datos filtrando por el ID determinado y deduplicando por materia y periodo
+        var notasRaw = _context.Calificaciones
                             .Where(n => n.ID_Estudiante == userId)
                             .ToList();
 
+        var notas = notasRaw
+                    .GroupBy(n => new { MateriaNorm = (n.Materia ?? "").Trim().ToLower(), n.Periodo })
+                    .Select(g => g.OrderByDescending(x => x.ID_Calificacion).First())
+                    .OrderBy(n => n.Materia)
+                    .ThenBy(n => n.Periodo)
+                    .ToList();
+
         // RF 5.2: Cálculo automático del promedio para la vista
-        double promedio = notas.Any() ? notas.Average(n => (double)n.Nota) : 0.0;
+        double promedio = notas.Any() ? Math.Round(notas.Average(n => (double)n.Nota), 1) : 0.0;
         ViewBag.PromedioGeneral = promedio;
 
         _context.AsegurarEsquemaAccionesMejora();
@@ -548,6 +600,109 @@ public class EstudianteController : Controller
             success = true,
             message = "¡Tu actividad fue enviada exitosamente con el texto y archivos adjuntos!",
             archivoNombre = archivo?.FileName
+        });
+    }
+
+    /// <summary>
+    /// Revierte / anula una entrega realizada previamente por el estudiante para que pueda volver a editarla o adjuntar nuevos archivos.
+    /// </summary>
+    [HttpPost]
+    [RequierePermiso(Permisos.ParticiparComoEstudiante)]
+    public IActionResult RevertirEntregaActividad(int idActividad)
+    {
+        _context.AsegurarEsquemaActividades();
+
+        var userId = HttpContext.Session.GetInt32("UserId");
+        if (userId == null)
+            return Json(new { success = false, message = "Sesión inválida." });
+
+        var actividad = _context.Actividades.Find(idActividad);
+        if (actividad == null || !actividad.Activo)
+            return Json(new { success = false, message = "La actividad no existe o está inactiva." });
+
+        if (DateTime.Now > actividad.FechaLimite)
+            return Json(new { success = false, message = "La fecha límite ha expirado. No es posible revertir la entrega." });
+
+        var entrega = _context.EntregasActividades
+            .FirstOrDefault(e => e.IdActividad == idActividad && e.IdEstudiante == userId.Value);
+
+        if (entrega == null)
+            return Json(new { success = false, message = "No tienes una entrega registrada para esta actividad." });
+
+        if (entrega.Calificacion.HasValue)
+            return Json(new { success = false, message = "Esta actividad ya ha sido calificada por tu docente, por lo que no puede ser revertida." });
+
+        // Si tenía archivo adjunto físico, se elimina
+        if (!string.IsNullOrEmpty(entrega.ArchivoRuta))
+        {
+            try
+            {
+                var rutaFisica = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", entrega.ArchivoRuta.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+                if (System.IO.File.Exists(rutaFisica))
+                {
+                    System.IO.File.Delete(rutaFisica);
+                }
+            }
+            catch { }
+        }
+
+        _context.EntregasActividades.Remove(entrega);
+        _context.SaveChanges();
+
+        return Json(new
+        {
+            success = true,
+            message = "¡Tu entrega ha sido revertida exitosamente! Ahora puedes editar tu trabajo o adjuntar nuevos archivos."
+        });
+    }
+
+    /// <summary>
+    /// Elimina el archivo o documento adjunto de una entrega existente del estudiante.
+    /// </summary>
+    [HttpPost]
+    [RequierePermiso(Permisos.ParticiparComoEstudiante)]
+    public IActionResult EliminarDocumentoEntrega(int idActividad)
+    {
+        _context.AsegurarEsquemaActividades();
+
+        var userId = HttpContext.Session.GetInt32("UserId");
+        if (userId == null)
+            return Json(new { success = false, message = "Sesión inválida." });
+
+        var actividad = _context.Actividades.Find(idActividad);
+        if (actividad == null || !actividad.Activo)
+            return Json(new { success = false, message = "La actividad no existe o está inactiva." });
+
+        if (DateTime.Now > actividad.FechaLimite)
+            return Json(new { success = false, message = "La fecha límite ha expirado. No es posible eliminar documentos." });
+
+        var entrega = _context.EntregasActividades
+            .FirstOrDefault(e => e.IdActividad == idActividad && e.IdEstudiante == userId.Value);
+
+        if (entrega == null || string.IsNullOrEmpty(entrega.ArchivoRuta))
+            return Json(new { success = false, message = "No se encontró ningún documento adjunto para eliminar." });
+
+        if (entrega.Calificacion.HasValue)
+            return Json(new { success = false, message = "Esta actividad ya ha sido calificada por tu docente." });
+
+        try
+        {
+            var rutaFisica = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", entrega.ArchivoRuta.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+            if (System.IO.File.Exists(rutaFisica))
+            {
+                System.IO.File.Delete(rutaFisica);
+            }
+        }
+        catch { }
+
+        entrega.ArchivoRuta = null;
+        entrega.ArchivoNombre = null;
+        _context.SaveChanges();
+
+        return Json(new
+        {
+            success = true,
+            message = "El documento adjunto ha sido eliminado correctamente de tu entrega."
         });
     }
 

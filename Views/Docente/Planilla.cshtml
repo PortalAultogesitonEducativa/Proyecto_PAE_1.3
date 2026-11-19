@@ -78,15 +78,15 @@
         </script>
     }
 
-    <!-- 3. Filtros de Grado, Asignatura y Jornada -->
+    <!-- 3. Filtros de Grado, Asignatura, Periodo y Jornada -->
     <div class="card border-0 shadow-sm p-4 mb-4">
         <div class="row g-3 align-items-end">
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <label class="form-label fw-bold text-dark mb-1">
-                    <i class="bi bi-mortarboard me-1 text-primary"></i>Grado
+                    <i class="bi bi-mortarboard me-1 text-primary"></i>Grado / Curso
                 </label>
                 <select class="form-select" id="selectGrado" name="selectGrado">
-                    <option value="todos">Todos los Grados / Cursos</option>
+                    <option value="todos">Todos los Grados Asignados</option>
                     @if (ViewBag.Grados != null && ((IEnumerable<string>)ViewBag.Grados).Any())
                     {
                         foreach (var grado in ViewBag.Grados)
@@ -96,28 +96,11 @@
                     }
                     else
                     {
-                        <option value="601">601</option>
-                        <option value="602">602</option>
-                        <option value="603">603</option>
-                        <option value="701">701</option>
-                        <option value="702">702</option>
-                        <option value="703">703</option>
-                        <option value="801">801</option>
-                        <option value="802">802</option>
-                        <option value="803">803</option>
-                        <option value="901">901</option>
-                        <option value="902">902</option>
-                        <option value="903">903</option>
-                        <option value="1001">1001</option>
-                        <option value="1002">1002</option>
-                        <option value="1003">1003</option>
-                        <option value="1101">1101</option>
-                        <option value="1102">1102</option>
-                        <option value="1103">1103</option>
+                        <option value="">Sin cursos asignados</option>
                     }
                 </select>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <label class="form-label fw-bold text-dark mb-1">
                     <i class="bi bi-book me-1 text-primary"></i>Asignatura
                 </label>
@@ -129,20 +112,37 @@
                             <option value="@nombre">@nombre</option>
                         }
                     }
-                    else if (ViewBag.Cursos != null)
+                    else
                     {
-                        foreach (var nombre in ViewBag.Cursos)
+                        <option value="">Sin asignaturas asignadas</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-bold text-dark mb-1">
+                    <i class="bi bi-calendar2-range me-1 text-primary"></i>Periodo Académico
+                </label>
+                <select class="form-select" id="selectPeriodo" name="selectPeriodo" onchange="verificarEstadoPeriodoPlanilla()">
+                    @if (ViewBag.Periodos != null)
+                    {
+                        foreach (var p in (List<ProyectoPAE.Models.PeriodoSubidaNota>)ViewBag.Periodos)
                         {
-                            <option value="@nombre">@nombre</option>
+                            bool esActivo = (ViewBag.PeriodoActivo != null && (int)ViewBag.PeriodoActivo == p.Periodo);
+                            <option value="@p.Periodo" selected="@(esActivo ? "selected" : null)" data-activo="@(p.Activo.ToString().ToLower())" data-nombre="@p.Nombre" data-cierre="@p.FechaCierre.ToString("dd/MM/yyyy")">
+                                Periodo @p.Periodo @(!p.Activo ? " (Cerrado)" : "")
+                            </option>
                         }
                     }
                     else
                     {
-                        <option value="">Sin asignaturas disponibles</option>
+                        <option value="1" data-activo="true">Periodo 1</option>
+                        <option value="2" data-activo="false">Periodo 2 (Cerrado)</option>
+                        <option value="3" data-activo="false">Periodo 3 (Cerrado)</option>
+                        <option value="4" data-activo="false">Periodo 4 (Cerrado)</option>
                     }
                 </select>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <label class="form-label fw-bold text-dark mb-1">
                     <i class="bi bi-clock-history me-1 text-primary"></i>Jornada
                 </label>
@@ -152,6 +152,22 @@
                 </select>
             </div>
         </div>
+    </div>
+
+    <!-- BANNER DE ALERTA: SUBIDA DE CALIFICACIONES CERRADA -->
+    <div id="alertaPeriodoCerrado" class="alert alert-danger d-flex align-items-center justify-content-between p-3 rounded-4 mb-4 shadow-sm d-none" style="border-left: 6px solid #dc3545; background-color: #fff5f5;">
+        <div class="d-flex align-items-center gap-3">
+            <div class="rounded-circle bg-danger text-white d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; flex-shrink: 0;">
+                <i class="bi bi-lock-fill fs-4"></i>
+            </div>
+            <div>
+                <h5 class="fw-bold mb-1 text-danger">Subida de Calificaciones Cerrada por Coordinación</h5>
+                <p class="small text-muted mb-0" id="textoAlertaPeriodoCerrado">
+                    El periodo académico seleccionado se encuentra bloqueado para el ingreso o modificación de notas. La planilla se muestra en modo solo lectura.
+                </p>
+            </div>
+        </div>
+        <span class="badge bg-danger rounded-pill px-3 py-2 fw-bold text-uppercase">Subida Bloqueada</span>
     </div>
 
     <!-- 4. Tabla de Calificaciones y Botón Agregar Nota -->
@@ -839,20 +855,77 @@
             });
         }
 
+        // Verificar si el periodo actual se encuentra habilitado o cerrado por Coordinación
+        window.verificarEstadoPeriodoPlanilla = function() {
+            const selectPeriodo = document.getElementById('selectPeriodo');
+            if (!selectPeriodo) return;
+            const opt = selectPeriodo.options[selectPeriodo.selectedIndex];
+            const activo = opt ? (opt.getAttribute('data-activo') === 'true') : true;
+            const alerta = document.getElementById('alertaPeriodoCerrado');
+            const btnGuardar = document.getElementById('btnSubmitPlanilla');
+            const btnAgregar = document.getElementById('btnAgregarNota');
+            const inputs = document.querySelectorAll('.nota-input');
+
+            if (!activo) {
+                if (alerta) alerta.classList.remove('d-none');
+                if (btnGuardar) {
+                    btnGuardar.disabled = true;
+                    btnGuardar.classList.remove('text-white');
+                    btnGuardar.classList.add('btn-secondary');
+                    btnGuardar.style.backgroundColor = '#6c757d';
+                    btnGuardar.innerHTML = '<i class="bi bi-lock-fill me-2"></i>Subida Cerrada (Periodo Bloqueado)';
+                }
+                if (btnAgregar) {
+                    btnAgregar.disabled = true;
+                    btnAgregar.classList.add('disabled');
+                }
+                inputs.forEach(inp => {
+                    inp.disabled = true;
+                    inp.readOnly = true;
+                    inp.classList.add('bg-light');
+                    inp.style.cursor = 'not-allowed';
+                });
+            } else {
+                if (alerta) alerta.classList.add('d-none');
+                if (btnGuardar) {
+                    btnGuardar.disabled = false;
+                    btnGuardar.classList.add('text-white');
+                    btnGuardar.classList.remove('btn-secondary');
+                    btnGuardar.style.backgroundColor = '#2980b9';
+                    btnGuardar.innerHTML = '<i class="bi bi-save me-2"></i>Guardar Calificaciones';
+                }
+                if (btnAgregar) {
+                    btnAgregar.disabled = false;
+                    btnAgregar.classList.remove('disabled');
+                }
+                inputs.forEach(inp => {
+                    inp.disabled = false;
+                    inp.readOnly = false;
+                    inp.classList.remove('bg-light');
+                    inp.style.cursor = '';
+                });
+            }
+        };
+
         // Recargar caché y actualizar filtro cuando cambie el Grado o la Asignatura
         if (selectGrado) {
             selectGrado.addEventListener('change', function() {
                 filtrarPlanilla();
                 cargarDesdeCache();
+                verificarEstadoPeriodoPlanilla();
             });
         }
         if (selectAsignatura) {
-            selectAsignatura.addEventListener('change', cargarDesdeCache);
+            selectAsignatura.addEventListener('change', function() {
+                cargarDesdeCache();
+                verificarEstadoPeriodoPlanilla();
+            });
         }
 
         // Ejecutar filtrado inicial y paginación al cargar la vista
         filtrarGradosPorJornada();
         renderizarPaginacionPlanilla();
+        verificarEstadoPeriodoPlanilla();
 
         // --- C. CONFIRMACIÓN ANTES DE GUARDAR FORMULARIO ---
         if (formPlanilla) {

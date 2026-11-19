@@ -18,9 +18,9 @@
                 <small class="opacity-75">Expedición oficial de constancias y certificados académicos</small>
             </div>
         </div>
-        <button onclick="history.back()" class="btn btn-pae-volver">
-            Volver al Panel
-        </button>
+        <a href="javascript:void(0);" onclick="volverGenerarCertificado()" class="btn btn-pae-volver">
+            <i class="bi bi-arrow-left me-1"></i> Volver al Panel
+        </a>
     </div>
 
     <div class="card border-0 shadow-sm p-4">
@@ -38,32 +38,64 @@
                 <table class="table table-hover align-middle">
                     <thead class="table-light">
                         <tr>
-                            <th style="width: 50px;"></th>
+                            <th style="width: 50px;">
+                                <input type="checkbox" id="checkTodos" class="form-check-input" checked onchange="toggleSeleccionarTodos(this)" title="Seleccionar todas" />
+                            </th>
                             <th>Materia</th>
                             <th>Periodo</th>
                             <th>Nota</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var c in Model)
+                        @if (Model == null || !Model.Any())
                         {
                             <tr>
-                                <td>
-                                    <input type="checkbox" name="idsCalificacion" value="@c.ID_Calificacion" class="form-check-input" />
+                                <td colspan="4" class="text-center text-muted py-3">
+                                    <i class="bi bi-info-circle me-1"></i> No se encontraron calificaciones registradas para este estudiante.
                                 </td>
-                                <td>@c.Materia</td>
-                                <td>@c.Periodo</td>
-                                <td>@c.Nota</td>
                             </tr>
+                        }
+                        else
+                        {
+                            @foreach (var c in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <input type="checkbox" name="idsCalificacion" value="@c.ID_Calificacion" class="form-check-input check-materia" checked />
+                                    </td>
+                                    <td><strong>@c.Materia</strong></td>
+                                    <td><span class="badge bg-secondary-subtle text-secondary border rounded-pill px-2">Periodo @c.Periodo</span></td>
+                                    <td><span class="fw-bold @(c.Nota >= 3.0m ? "text-success" : "text-danger")">@c.Nota.ToString("F1")</span></td>
+                                </tr>
+                            }
                         }
                     </tbody>
                 </table>
             </div>
 
             <div class="d-flex justify-content-end gap-2">
-                <button type="button" onclick="history.back()" class="btn btn-pae-volver">Volver</button>
-                <button type="submit" class="btn btn-primary">Generar certificado</button>
+                <a href="javascript:void(0);" onclick="volverGenerarCertificado()" class="btn btn-pae-volver">
+                    <i class="bi bi-arrow-left me-1"></i> Volver
+                </a>
+                <button type="submit" class="btn btn-primary" @(Model == null || !Model.Any() ? "disabled" : "")>Generar certificado</button>
             </div>
         </form>
     </div>
 </div>
+
+<script>
+    function toggleSeleccionarTodos(master) {
+        const checkboxes = document.querySelectorAll('.check-materia');
+        checkboxes.forEach(cb => cb.checked = master.checked);
+    }
+
+    function volverGenerarCertificado() {
+        if (document.referrer && document.referrer !== window.location.href && !document.referrer.includes('login')) {
+            window.location.href = document.referrer;
+        } else if (window.history.length > 1) {
+            window.history.back();
+        } else {
+            window.location.href = '@Url.Action("Dashboard", "Home")';
+        }
+    }
+</script>

@@ -61,92 +61,213 @@
                         <i class="bi bi-file-earmark-bar-graph fs-3 text-white"></i>
                     </div>
                     <div>
-                        <h4 class="mb-0 fw-bold">Reporte de Calificaciones</h4>
-                        <small class="opacity-75">Estadísticas, promedios y consolidado general de notas por asignatura</small>
+                        <h4 class="mb-0 fw-bold">Reportes Generales</h4>
+                        <small class="opacity-75">Consolidado general de calificaciones, estadísticas y promedios por curso y estudiante</small>
                     </div>
                 </div>
                 <div class="d-flex gap-2">
-                    <button onclick="window.print()" class="btn btn-outline-light btn-sm rounded-pill px-3">
-                        <i class="bi bi-printer me-1"></i> Imprimir PDF
-                    </button>
+                    @if (ViewBag.FiltroAplicado == true && Model != null && Model.Any())
+                    {
+                        <button onclick="window.print()" class="btn btn-outline-light btn-sm rounded-pill px-3">
+                            <i class="bi bi-printer me-1"></i> Imprimir PDF
+                        </button>
+                    }
                     <a href="@Url.Action("Dashboard", "Home")" class="btn btn-pae-volver">
                         Volver al Panel
                     </a>
                 </div>
             </div>
 
-    <div class="card shadow border-0">
-        <div class="card-body p-4">
-
-            <div class="row mb-5 justify-content-center">
-                <div class="col-md-8">
-                    <canvas id="graficaNotas" style="max-height: 300px;"></canvas>
-                </div>
-            </div>
-
-            <div class="table-responsive">
-                <table class="table table-hover align-middle" id="tablaReporte">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Estudiante</th>
-                            <th>Materia</th>
-                            <th>Periodo</th>
-                            <th class="text-center">Nota Final</th>
-                            <th>Estado</th>
-                            <th>Certificado</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var item in Model)
-                        {
-                            <tr class="fila-reporte">
-                                <td>@item.NombreEstudiante</td>
-                                <td>
-                                    <span class="badge text-white px-3 py-1 rounded-2 fw-semibold shadow-sm"
-                                          style="background-color: @ObtenerColorMateria((string)item.Materia); font-size: 0.84rem;">
-                                        @item.Materia
-                                    </span>
-                                </td>
-                                <td>@item.Periodo °</td>
-                                <td class="text-center fw-bold">@Convert.ToDouble(item.Nota).ToString("F1")</td>
-                                <td>
-                                    @if (Convert.ToDouble(item.Nota) >= 3.0)
+            <!-- FILTRO DE BÚSQUEDA PARA REPORTES GENERALES -->
+            <div class="card border-0 shadow-sm p-4 mb-4 rounded-4 bg-white">
+                <form method="get" asp-action="ReporteGrupal" id="formFiltroReportes">
+                    <input type="hidden" name="buscar" value="true" />
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-3">
+                            <label class="form-label fw-bold small text-dark mb-1">
+                                <i class="bi bi-people-fill me-1 text-primary"></i>Curso / Grado
+                            </label>
+                            <select name="curso" class="form-select form-select-sm">
+                                <option value="">-- Todos los cursos --</option>
+                                @if (ViewBag.ListaCursos != null)
+                                {
+                                    foreach (var c in (List<string>)ViewBag.ListaCursos)
                                     {
-                                        <span class="text-success fw-semibold"><i class="bi bi-check-circle-fill me-1"></i> Aprobado</span>
+                                        if (ViewBag.CursoSeleccionado != null && (string)ViewBag.CursoSeleccionado == c)
+                                        {
+                                            <option value="@c" selected>Curso @c</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@c">Curso @c</option>
+                                        }
+                                    }
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label fw-bold small text-dark mb-1">
+                                <i class="bi bi-calendar3 me-1 text-primary"></i>Periodo
+                            </label>
+                            <select name="periodo" class="form-select form-select-sm">
+                                <option value="">-- Todos --</option>
+                                @for (int p = 1; p <= 4; p++)
+                                {
+                                    if (ViewBag.PeriodoSeleccionado != null && (int)ViewBag.PeriodoSeleccionado == p)
+                                    {
+                                        <option value="@p" selected>Periodo @p</option>
                                     }
                                     else
                                     {
-                                        <span class="text-danger fw-semibold"><i class="bi bi-x-circle-fill me-1"></i> Reprobado</span>
+                                        <option value="@p">Periodo @p</option>
                                     }
-                                </td>
-                                <td>
-                                    @{
-                                        int idEst = (int)item.IdEstudiante;
-                                    }
-                                    @if (idsMostrados.Add(idEst))
-                                    {
-                                        <a asp-controller="Certificado" asp-action="Generar"
-                                           asp-route-idEstudiante="@idEst"
-                                           class="btn btn-sm btn-outline-secondary">
-                                            <i class="bi bi-patch-check me-1"></i> Generar
-                                        </a>
-                                    }
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold small text-dark mb-1">
+                                <i class="bi bi-search me-1 text-primary"></i>Estudiante (Nombre o N° Identidad)
+                            </label>
+                            <input type="text" name="busqueda" value="@ViewBag.BusquedaSeleccionada" class="form-control form-control-sm" placeholder="Buscar por nombre o número de documento..." />
+                        </div>
+                        <div class="col-md-3 d-flex gap-2">
+                            <button type="submit" class="btn btn-primary btn-sm w-100 fw-bold shadow-sm rounded-pill">
+                                <i class="bi bi-funnel-fill me-1"></i> Filtrar Reporte
+                            </button>
+                            <a href="@Url.Action("ReporteGrupal", "Docente")" class="btn btn-outline-secondary btn-sm rounded-pill px-3" title="Limpiar filtros">
+                                <i class="bi bi-arrow-counterclockwise"></i>
+                            </a>
+                        </div>
+                    </div>
+                </form>
             </div>
 
-            <!-- BARRA DE PAGINACIÓN REPORTES GENERALES (ESTILO IMAGEN 3) -->
-            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-4 p-2 bg-light rounded border">
-                <p class="text-muted small mb-0" id="infoReportePagina">Cargando...</p>
-                <nav aria-label="Paginación reportes generales">
-                    <ul class="pagination pagination-sm mb-0" id="paginacionReporte"></ul>
-                </nav>
-            </div>
-        </div>
-    </div>
+            @if (ViewBag.FiltroAplicado != true)
+            {
+                <!-- ESTADO INICIAL: ANTES DE APLICAR FILTROS NO DEBE APARECER NADA -->
+                <div class="card border-0 shadow-sm rounded-4 p-5 text-center bg-white my-4">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 70px; height: 70px; background-color: #e3f2fd; color: #1565c0;">
+                        <i class="bi bi-funnel fs-2"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-2">Consulta de Reportes Generales</h5>
+                    <p class="text-muted small mb-0" style="max-width: 520px; margin: 0 auto;">
+                        Selecciona el <strong>Curso</strong>, <strong>Periodo</strong> o escribe el <strong>Nombre / Número de Identidad</strong> del estudiante y haz clic en <strong>Filtrar Reporte</strong> para visualizar las calificaciones y consolidados correspondientes.
+                    </p>
+                </div>
+            }
+            else if (Model == null || !Model.Any())
+            {
+                <div class="card border-0 shadow-sm rounded-4 p-5 text-center bg-white my-4">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 70px; height: 70px; background-color: #fff3cd; color: #856404;">
+                        <i class="bi bi-search fs-2"></i>
+                    </div>
+                    <h5 class="fw-bold text-dark mb-2">No se encontraron resultados</h5>
+                    <p class="text-muted small mb-0">No se encontraron registros de calificaciones para estudiantes con los criterios de búsqueda aplicados.</p>
+                </div>
+            }
+            else
+            {
+                <div class="card shadow border-0">
+                    <div class="card-body p-4">
+
+                        <div class="row mb-4 justify-content-center">
+                            <div class="col-md-8">
+                                <canvas id="graficaNotas" style="max-height: 280px;"></canvas>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle" id="tablaReporte">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Estudiante</th>
+                                        <th>Documento</th>
+                                        <th>Curso</th>
+                                        <th>Materias</th>
+                                        <th>Periodo</th>
+                                        <th class="text-center">Promedio Final</th>
+                                        <th>Estado</th>
+                                        <th>Certificado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model)
+                                    {
+                                        <tr class="fila-reporte">
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center fw-bold" style="width: 34px; height: 34px; font-size: 0.85rem; flex-shrink: 0;">
+                                                        @((!string.IsNullOrEmpty((string)item.NombreEstudiante) ? ((string)item.NombreEstudiante).Substring(0, 1).ToUpper() : "E"))
+                                                    </div>
+                                                    <div>
+                                                        <strong class="text-dark d-block">@item.NombreEstudiante</strong>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td><span class="badge bg-light text-dark border">@item.Documento</span></td>
+                                            <td><span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-2">@item.Curso</span></td>
+                                            <td>
+                                                @if (item.TotalMaterias > 0)
+                                                {
+                                                    <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle rounded-pill px-2">
+                                                        <i class="bi bi-journal-check me-1"></i>@item.TotalMaterias @(item.TotalMaterias == 1 ? "asignatura" : "asignaturas")
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-light text-muted border rounded-pill px-2">Sin calificaciones</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-secondary-subtle text-secondary border rounded-pill px-2">@item.Periodo</span>
+                                            </td>
+                                            <td class="text-center fw-bold fs-6">
+                                                @if (item.TieneNotas)
+                                                {
+                                                    <span>@Convert.ToDouble(item.Promedio).ToString("F1")</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted fw-normal" style="font-size: 0.85rem;">N/A</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (!item.TieneNotas)
+                                                {
+                                                    <span class="text-muted small"><i class="bi bi-dash-circle me-1"></i> Sin notas</span>
+                                                }
+                                                else if (Convert.ToDouble(item.Promedio) >= 3.0)
+                                                {
+                                                    <span class="text-success fw-semibold"><i class="bi bi-check-circle-fill me-1"></i> Aprobado</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-danger fw-semibold"><i class="bi bi-x-circle-fill me-1"></i> Reprobado</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <a asp-controller="Certificado" asp-action="Generar"
+                                                   asp-route-idEstudiante="@item.IdEstudiante"
+                                                   class="btn btn-sm btn-outline-primary fw-semibold rounded-pill px-3 shadow-sm">
+                                                    <i class="bi bi-patch-check-fill me-1"></i> Generar
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- BARRA DE PAGINACIÓN REPORTES GENERALES (ESTILO IMAGEN 3) -->
+                        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-4 p-2 bg-light rounded border">
+                            <p class="text-muted small mb-0" id="infoReportePagina">Cargando...</p>
+                            <nav aria-label="Paginación reportes generales">
+                                <ul class="pagination pagination-sm mb-0" id="paginacionReporte"></ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            }
         </main>
     </div>
 </div>
@@ -246,30 +367,33 @@
         renderizarPaginacionReporte();
     });
     const ctx = document.getElementById('graficaNotas');
+    if (ctx) {
+        // Extraemos los datos de C# a JavaScript
+        const nombres = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Select(m => (string)m.NombreEstudiante)));
+        const notas = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Select(m => (double)m.Promedio)));
 
-    // Extraemos los datos de C# a JavaScript
-    const nombres = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Select(m => (string)m.NombreEstudiante)));
-    const notas = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Select(m => (double)m.Nota)));
+        const colores = notas.map(n => n >= 3.0 ? 'rgba(39, 174, 96, 0.5)' : 'rgba(231, 76, 60, 0.5)');
+        const bordes = notas.map(n => n >= 3.0 ? 'rgba(39, 174, 96, 1)' : 'rgba(231, 76, 60, 1)');
 
-    const colores = notas.map(n => n >= 3.0 ? 'rgba(39, 174, 96, 0.5)' : 'rgba(231, 76, 60, 0.5)');
-    const bordes = notas.map(n => n >= 3.0 ? 'rgba(39, 174, 96, 1)' : 'rgba(231, 76, 60, 1)');
-
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: nombres,
-            datasets: [{
-                label: 'Calificación Final',
-                data: notas,
-                backgroundColor: 'rgba(39, 174, 96, 0.5)',
-                borderColor: 'rgba(39, 174, 96, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            scales: {
-                y: { beginAtZero: true, max: 5 }
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: nombres,
+                datasets: [{
+                    label: 'Promedio General',
+                    data: notas,
+                    backgroundColor: colores,
+                    borderColor: bordes,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true, max: 5 }
+                }
             }
-        }
-    });
+        });
+    }
 </script>

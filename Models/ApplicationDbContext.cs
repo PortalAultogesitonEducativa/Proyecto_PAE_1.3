@@ -62,6 +62,9 @@ namespace ProyectoPAE.Models
         // --- SISTEMA PQR (PETICIONES, QUEJAS Y RECLAMOS) ---
         public DbSet<Pqr> PQRs { get; set; }
 
+        // --- PERIODOS DE SUBIDA DE NOTAS (COORDINACIÓN) ---
+        public DbSet<PeriodoSubidaNota> PeriodosSubidaNotas { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -92,12 +95,16 @@ namespace ProyectoPAE.Models
                 .HasForeignKey(ep => ep.ID_ESTUDIANTE)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // RelaciÃ³n directa entre ESTUDIANTE y PADRE_TUTOR
+            // Relación directa entre ESTUDIANTE y PADRE_TUTOR
             modelBuilder.Entity<Estudiante>()
                 .HasOne(e => e.Padre)
                 .WithMany()
                 .HasForeignKey(e => e.id_padre)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // PROFESOR_MATERIA tiene clave compuesta id_profesor + id_materia
+            modelBuilder.Entity<ProfesorMateria>()
+                .HasKey(pm => new { pm.id_profesor, pm.id_materia });
         }
 
         public void AsegurarEsquemaEstudiantes()
@@ -396,6 +403,82 @@ namespace ProyectoPAE.Models
                 ");
             }
             catch { }
+        }
+
+        public void AsegurarEsquemaPeriodosSubidaNotas()
+        {
+            try
+            {
+                var sql = @"
+                IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'PERIODOS_SUBIDA_NOTAS')
+                BEGIN
+                    CREATE TABLE [dbo].[PERIODOS_SUBIDA_NOTAS] (
+                        [id] INT IDENTITY(1,1) PRIMARY KEY,
+                        [periodo] INT NOT NULL,
+                        [nombre] NVARCHAR(100) NOT NULL,
+                        [fecha_inicio] DATETIME NOT NULL DEFAULT GETDATE(),
+                        [fecha_cierre] DATETIME NOT NULL DEFAULT DATEADD(day, 30, GETDATE()),
+                        [activo] BIT NOT NULL DEFAULT 1,
+                        [porcentaje] INT NOT NULL DEFAULT 25,
+                        [observaciones] NVARCHAR(500) NULL
+                    );
+
+                    INSERT INTO [dbo].[PERIODOS_SUBIDA_NOTAS] ([periodo], [nombre], [fecha_inicio], [fecha_cierre], [activo], [porcentaje], [observaciones])
+                    VALUES 
+                    (1, 'Primer Periodo Académico', GETDATE(), DATEADD(day, 30, GETDATE()), 1, 25, 'Subida ordinaria de calificaciones P1'),
+                    (2, 'Segundo Periodo Académico', DATEADD(day, 31, GETDATE()), DATEADD(day, 60, GETDATE()), 0, 25, 'Pendiente de apertura'),
+                    (3, 'Tercer Periodo Académico', DATEADD(day, 61, GETDATE()), DATEADD(day, 90, GETDATE()), 0, 25, 'Pendiente de apertura'),
+                    (4, 'Cuarto Periodo Académico', DATEADD(day, 91, GETDATE()), DATEADD(day, 120, GETDATE()), 0, 25, 'Pendiente de apertura');
+                END";
+                Database.ExecuteSqlRaw(sql);
+            }
+            catch { }
+
+            AsegurarLimpiezaCalificacionesDuplicadas();
+        }
+
+        public void AsegurarLimpiezaCalificacionesDuplicadas()
+        {
+            try
+            {
+                var sql = @"
+                IF EXISTS (SELECT * FROM sys.tables WHERE name = 'Calificaciones')
+                BEGIN
+                    WITH CTE AS (
+                        SELECT c.ID_Calificacion,
+                               ROW_NUMBER() OVER(
+                                   PARTITION BY c.ID_Estudiante, c.Materia, c.Periodo 
+                                   ORDER BY 
+                                       CASE WHEN EXISTS(SELECT 1 FROM sys.tables WHERE name = 'CERTIFICADO_DETALLE') 
+                                            AND EXISTS(SELECT 1 FROM CERTIFICADO_DETALLE cd WHERE cd.id_calificacion = c.ID_Calificacion) 
+                                            THEN 1 ELSE 0 END DESC,
+                                       c.ID_Calificacion DESC
+                               ) as rn
+                        FROM Calificaciones c
+                    )
+                    DELETE FROM CTE WHERE rn > 1;
+                END";
+                Database.ExecuteSqlRaw(sql);
+            }
+            catch
+            {
+                try
+                {
+                    var duplicados = Calificaciones
+                        .AsEnumerable()
+                        .GroupBy(c => new { c.ID_Estudiante, MateriaNorm = (c.Materia ?? "").Trim().ToLower(), c.Periodo })
+                        .Where(g => g.Count() > 1)
+                        .SelectMany(g => g.OrderByDescending(x => x.ID_Calificacion).Skip(1))
+                        .ToList();
+
+                    if (duplicados.Any())
+                    {
+                        Calificaciones.RemoveRange(duplicados);
+                        SaveChanges();
+                    }
+                }
+                catch { }
+            }
         }
     }
 }

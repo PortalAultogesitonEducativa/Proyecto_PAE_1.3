@@ -69,6 +69,7 @@
                 <small class="opacity-75">Rol actual:</small>
                 <select id="roleSelector" class="form-select form-select-sm" onchange="switchRole()" style="width: auto;">
                     <option value="admin">Administrador</option>
+                    <option value="coordinador">Coordinador</option>
                     <option value="docente">Docente</option>
                     <option value="estudiante">Estudiante</option>
                     <option value="acudiente">Acudiente</option>
@@ -1726,26 +1727,16 @@
                         <button class="btn btn-docente-solido btn-sm mt-auto w-100 text-white">Ver Observaciones</button>
                     </div>
                 </div>
-                <!-- 4. Tarjeta: Reportes Generales -->
-                <div class="col-md-4 mb-4">
-                    <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-docente-limpia" 
-                         style="border-top: 2px solid #000000 !important; cursor: pointer;"
-                         onclick="location.href='@Url.Action("ReporteGrupal", "Docente")'">
-                        <i class="bi bi-bar-chart-line fs-2 mb-2" style="color: #2980b9;"></i>
-                        <h5 style="color: #2980b9; font-weight: bold;">Reportes Generales</h5>
-                        <p class="small text-muted mb-3" style="min-height: 44px; display: flex; align-items: center; justify-content: center;">Estadísticas y promedios grupales del curso.</p>
-                        <a href="@Url.Action("ReporteGrupal", "Docente")" class="btn btn-docente-solido btn-sm mt-auto w-100 text-white">Ver Estadísticas</a>
-                    </div>
-                </div>
+
                 <!-- 5. Tarjeta: Gestión de Acciones de Mejora -->
                 <div class="col-md-4 mb-4">
                     <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-docente-limpia" 
                          style="border-top: 2px solid #000000 !important; cursor: pointer;"
                          onclick="verModuloMejorasDocente()">
                         <i class="bi bi-arrow-up-right-circle fs-2 mb-2" style="color: #2980b9;"></i>
-                        <h5 style="color: #2980b9; font-weight: bold;">Seguimiento de Mejoras</h5>
-                        <p class="small text-muted mb-3" style="min-height: 44px; display: flex; align-items: center; justify-content: center;">Asigna compromisos y observaciones a estudiantes.</p>
-                        <button class="btn btn-docente-solido btn-sm mt-auto w-100 text-white">Gestionar Mejoras</button>
+                        <h5 style="color: #2980b9; font-weight: bold;">Actividades de Mejora</h5>
+                        <p class="small text-muted mb-3" style="min-height: 44px; display: flex; align-items: center; justify-content: center;">Talleres y actividades pedagógicas de nivelación y recuperación.</p>
+                        <button class="btn btn-docente-solido btn-sm mt-auto w-100 text-white">Gestionar Actividades</button>
                     </div>
                 </div>
                 <!-- 6. Tarjeta: Horario de Clases -->
@@ -2413,32 +2404,39 @@
                 <div class="row" id="gridCursosDocente">
                     @{
                         var cursosDocenteList = ViewBag.CursosDocente as IEnumerable<string>;
-                        if (cursosDocenteList == null || !cursosDocenteList.Any())
+                    }
+                    @if (cursosDocenteList != null && cursosDocenteList.Any())
+                    {
+                        foreach (var curso in cursosDocenteList)
                         {
-                            cursosDocenteList = new List<string> { "601", "602", "701", "702", "801", "802", "901", "902", "1001", "1002", "1101", "1102" };
+                            var slugCurso = curso.Replace(" ", "_");
+                            <div class="col-md-4 mb-4">
+                                <div class="card p-4 text-center shadow-sm h-100 card-hover" 
+                                     style="border: 1.5px solid #0d2a4a !important; border-radius: 14px; background: #fff; cursor: pointer;"
+                                     onclick="entrarAClassroomDocenteCurso('@curso')">
+                                    <div class="mb-2">
+                                        <i class="bi bi-people-fill fs-1 text-dark"></i>
+                                    </div>
+                                    <h5 class="fw-bold text-dark mb-1">Curso @curso</h5>
+                                    <p class="small text-muted mb-2">Aula virtual y gestión académica del grupo @curso.</p>
+                                    <div class="mb-3" id="badge-novedades-docente-@slugCurso">
+                                        <span class="badge bg-light text-muted border rounded-pill px-3 py-1 fw-normal">
+                                            ✓ Sin actividades pendientes
+                                        </span>
+                                    </div>
+                                    <button class="btn btn-sm mt-auto w-100 text-white fw-bold py-2 rounded-3" style="background-color: #0d2a4a; border-color: #0d2a4a;">
+                                        <i class="bi bi-journal-bookmark me-1"></i> Entrar al Curso
+                                    </button>
+                                </div>
+                            </div>
                         }
                     }
-                    @foreach (var curso in cursosDocenteList)
+                    else
                     {
-                        var slugCurso = curso.Replace(" ", "_");
-                        <div class="col-md-4 mb-4">
-                            <div class="card p-4 text-center shadow-sm h-100 card-hover" 
-                                 style="border: 1.5px solid #0d2a4a !important; border-radius: 14px; background: #fff; cursor: pointer;"
-                                 onclick="entrarAClassroomDocenteCurso('@curso')">
-                                <div class="mb-2">
-                                    <i class="bi bi-people-fill fs-1 text-dark"></i>
-                                </div>
-                                <h5 class="fw-bold text-dark mb-1">Curso @curso</h5>
-                                <p class="small text-muted mb-2">Aula virtual y gestión académica del grupo @curso.</p>
-                                <div class="mb-3" id="badge-novedades-docente-@slugCurso">
-                                    <span class="badge bg-light text-muted border rounded-pill px-3 py-1 fw-normal">
-                                        ✓ Sin actividades pendientes
-                                    </span>
-                                </div>
-                                <button class="btn btn-sm mt-auto w-100 text-white fw-bold py-2 rounded-3" style="background-color: #0d2a4a; border-color: #0d2a4a;">
-                                    <i class="bi bi-journal-bookmark me-1"></i> Entrar al Curso
-                                </button>
-                            </div>
+                        <div class="col-12 text-center py-5">
+                            <i class="bi bi-calendar-x text-muted" style="font-size: 3.5rem;"></i>
+                            <h5 class="fw-bold text-dark mt-3">Sin Cursos o Clases Asignadas</h5>
+                            <p class="text-muted small">No registras cursos ni horarios asignados en la programación académica institucional.</p>
                         </div>
                     }
                 </div>
@@ -2608,24 +2606,31 @@
                                         }
                                     </select>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-6" id="contenedorGradoModalCrear">
                                     <label class="form-label fw-bold small">Grado / Curso Destino <span class="text-danger">*</span></label>
-                                    <select name="Grado" class="form-select" required>
-                                        <option value="Todos">Todos mis cursos</option>
-                                        @if (ViewBag.CursosDocente != null && ((IEnumerable<string>)ViewBag.CursosDocente).Any())
-                                        {
-                                            foreach (var c in (IEnumerable<string>)ViewBag.CursosDocente)
+                                    <div id="wrapperCursoFijoModalCrear" class="d-none">
+                                        <div class="form-control bg-light border-0 py-2 d-flex align-items-center justify-content-between">
+                                            <span class="badge bg-primary fs-6 px-3 py-1" id="badgeCursoFijoModalCrear">Curso</span>
+                                            <small class="text-muted"><i class="bi bi-lock-fill me-1"></i>Curso actual</small>
+                                        </div>
+                                        <input type="hidden" id="inputGradoFijoModalCrear" name="GradoFijo" value="" />
+                                    </div>
+                                    <div id="wrapperCursoSelectModalCrear">
+                                        <select name="Grado" id="selectGradoModalCrear" class="form-select" required>
+                                            <option value="Todos">Todos mis cursos</option>
+                                            @if (ViewBag.CursosDocente != null && ((IEnumerable<string>)ViewBag.CursosDocente).Any())
                                             {
-                                                <option value="@c">Curso @c</option>
+                                                foreach (var c in (IEnumerable<string>)ViewBag.CursosDocente)
+                                                {
+                                                    <option value="@c">Curso @c</option>
+                                                }
                                             }
-                                        }
-                                        else
-                                        {
-                                            <option value="601 M">Curso 601 M</option>
-                                            <option value="602 M">Curso 602 M</option>
-                                            <option value="701 M">Curso 701 M</option>
-                                        }
-                                    </select>
+                                            else
+                                            {
+                                                <option value="" disabled>Sin cursos asignados en horario</option>
+                                            }
+                                        </select>
+                                    </div>
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label fw-bold small">Fecha y Hora Límite de Entrega <span class="text-danger">*</span></label>
@@ -2732,45 +2737,135 @@
                 </div>
             </div>
         </div>
-        <!-- MODAL: REVISAR ENTREGAS Y CALIFICAR (DOCENTE) -->
+        <!-- MODAL: REVISAR ENTREGAS ESTILO GOOGLE CLASSROOM (DOCENTE) -->
         <div class="modal fade" id="modalRevisarEntregas" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
-                <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
-                    <div class="modal-header text-white" style="background: linear-gradient(135deg, #0d2a4a 0%, #2980b9 100%); border-radius: 16px 16px 0 0;">
-                        <div>
-                            <h5 class="modal-title fw-bold" id="tituloModalRevisarEntregas"><i class="bi bi-file-earmark-check me-2"></i>Entregas de Estudiantes</h5>
-                            <small class="opacity-75" id="subtituloModalRevisarEntregas">Revisión, calificación y sincronización con planilla de notas</small>
+            <div class="modal-dialog modal-fullscreen-lg-down modal-xl modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+                    <!-- Cabecera estilo Google Classroom (Pestañas centrales e icono de volver) -->
+                    <div class="modal-header bg-white border-bottom py-2 px-3 d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center gap-2">
+                            <button type="button" class="btn btn-sm btn-light border rounded-circle" data-bs-dismiss="modal" title="Cerrar aula">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                            <div>
+                                <h6 class="fw-bold mb-0 text-dark" id="classroomHeaderTitulo">Actividad</h6>
+                                <small class="text-muted" style="font-size: 0.75rem;"><span id="classroomHeaderMateria" class="text-primary fw-semibold">Materia</span> • <span id="classroomHeaderCurso">Curso</span></small>
+                            </div>
                         </div>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body p-4">
-                        <div class="alert alert-info border-0 rounded-3 d-flex align-items-center mb-4 py-2 px-3 small">
-                            <i class="bi bi-info-circle-fill fs-5 me-2 text-primary"></i>
-                            <span>Las calificaciones asignadas aquí (0.0 a 5.0) se <strong>guardan y sincronizan automáticamente en la Planilla Oficial de Notas</strong> del estudiante en la materia correspondiente.</span>
+                        <!-- Pestañas centrales estilo Classroom -->
+                        <div class="d-flex classroom-tabs-wrapper">
+                            <button type="button" class="classroom-docente-nav-tab active" id="tabBtnClassroomTrabajo" onclick="cambiarTabModalClassroom('trabajo')">
+                                <i class="bi bi-people me-1"></i> Trabajo del estudiante
+                            </button>
+                            <button type="button" class="classroom-docente-nav-tab" id="tabBtnClassroomInstrucciones" onclick="cambiarTabModalClassroom('instrucciones')">
+                                <i class="bi bi-file-text me-1"></i> Instrucciones
+                            </button>
                         </div>
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0">
-                                <thead class="table-light">
-                                    <tr class="small text-uppercase text-muted">
-                                        <th>Estudiante</th>
-                                        <th>Fecha Entrega</th>
-                                        <th>Archivo / Comentario</th>
-                                        <th style="width: 130px;">Periodo</th>
-                                        <th style="width: 140px;">Calificación (0-5)</th>
-                                        <th style="width: 220px;">Retroalimentación</th>
-                                        <th class="text-end" style="width: 120px;">Acción</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tablaCuerpoEntregas">
-                                    <tr>
-                                        <td colspan="7" class="text-center py-4 text-muted">Cargando entregas...</td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-light text-muted border px-2 py-1 small"><i class="bi bi-google me-1 text-primary"></i>Classroom PAE</span>
                         </div>
                     </div>
-                    <div class="modal-footer bg-light" style="border-radius: 0 0 16px 16px;">
-                        <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cerrar</button>
+
+                    <!-- Sub-barra de acciones estilo Imagen de Google Classroom -->
+                    <div class="bg-light border-bottom px-4 py-2 d-flex flex-wrap align-items-center justify-content-between gap-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <button class="btn btn-sm btn-primary rounded-pill px-3 fw-bold shadow-sm" id="btnDevolverClassroom" onclick="guardarCalificacionEstudianteActual()">
+                                <i class="bi bi-arrow-return-left me-1"></i> Devolver
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary rounded-circle" title="Enviar correo a los estudiantes" onclick="notificarEstudiantesClassroom()">
+                                <i class="bi bi-envelope"></i>
+                            </button>
+                            <div class="input-group input-group-sm" style="width: 100px;">
+                                <span class="input-group-text bg-white fw-bold">pts</span>
+                                <input type="text" class="form-control text-center fw-bold" value="5.0" readonly title="Puntuación máxima" />
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="form-check form-switch mb-0 d-flex align-items-center gap-2">
+                                <input class="form-check-input" type="checkbox" role="switch" id="switchAceptaEntregasClassroom" checked>
+                                <label class="form-check-label small fw-bold text-dark mb-0" for="switchAceptaEntregasClassroom">
+                                    Se aceptan entregas <i class="bi bi-info-circle text-muted ms-1" title="Indica si se aceptan entregas en la plataforma"></i>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contenido Pestaña 1: Trabajo del Estudiante (Estilo Imagen Classroom con lista lateral y detalles) -->
+                    <div class="modal-body p-0" id="seccionModalClassroomTrabajo" style="min-height: 540px;">
+                        <div class="row g-0 h-100">
+                            <!-- Columna Izquierda: Lista de Estudiantes con sus estados -->
+                            <div class="col-lg-4 col-md-5 border-end bg-light p-3 d-flex flex-column" style="max-height: 68vh; overflow-y: auto;">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <div class="form-check d-flex align-items-center gap-2 mb-0">
+                                        <input class="form-check-input" type="checkbox" id="checkTodosEstudiantesClassroom" checked onchange="seleccionarTodosEstudiantesClassroom(this)">
+                                        <label class="form-check-label fw-bold small text-dark" for="checkTodosEstudiantesClassroom" style="cursor: pointer;">
+                                            <i class="bi bi-people-fill me-1 text-primary"></i> Todos los estudiantes (<span id="countTotalEstudiantesClassroom">0</span>)
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <select class="form-select form-select-sm" id="selectOrdenarEstadoClassroom" onchange="filtrarEstudiantesClassroom(this.value)">
+                                        <option value="todos">Ordenar por estado (Todos)</option>
+                                        <option value="entregado">Entregadas</option>
+                                        <option value="pendiente">Asignadas / Sin entregar</option>
+                                        <option value="calificado">Calificadas</option>
+                                    </select>
+                                </div>
+                                <div id="listaEstudiantesClassroomItems" class="d-flex flex-column gap-1">
+                                    <div class="text-center py-4 text-muted small">Cargando lista de estudiantes...</div>
+                                </div>
+                            </div>
+
+                            <!-- Columna Derecha: Panel de Trabajo / Resumen / Calificación -->
+                            <div class="col-lg-8 col-md-7 p-4 bg-white d-flex flex-column" style="max-height: 68vh; overflow-y: auto;" id="panelDetalleClassroomRight">
+                                <!-- Se llena dinámicamente -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contenido Pestaña 2: Instrucciones -->
+                    <div class="modal-body p-4 d-none" id="seccionModalClassroomInstrucciones">
+                        <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-light">
+                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+                                <span class="badge bg-primary rounded-pill px-3 py-1" id="badgeInstruccionesMateria">Materia</span>
+                                <span class="text-muted small"><i class="bi bi-clock-history me-1 text-danger"></i>Fecha Límite: <strong id="fechaLimiteInstruccionesClassroom">-</strong></span>
+                            </div>
+                            <h3 class="fw-bold text-dark mb-2" id="tituloInstruccionesClassroom">Título</h3>
+                            <hr class="my-3" />
+                            <h6 class="fw-bold text-dark mb-2"><i class="bi bi-card-text me-1 text-primary"></i>Instrucciones y Criterios de Evaluación:</h6>
+                            <p class="text-dark small mb-4" style="white-space: pre-line;" id="descInstruccionesClassroom">Sin descripción.</p>
+                            <div id="adjuntoInstruccionesContainer" class="mb-4">
+                                <!-- Enlace a guía si existe -->
+                            </div>
+
+                            <!-- COMENTARIOS DE LA CLASE EN LA VISTA DOCENTE -->
+                            <div class="pt-4 border-top mt-4">
+                                <h6 class="fw-bold text-dark mb-3 d-flex align-items-center gap-2">
+                                    <i class="bi bi-people-fill text-primary"></i>
+                                    <span>Comentarios de la clase</span>
+                                    <span class="badge bg-light text-secondary border rounded-pill small" id="badgeDocenteContadorComentariosClase">0</span>
+                                </h6>
+                                <!-- Listado de comentarios públicos de la clase -->
+                                <div id="listaDocenteComentariosClaseActividad" class="mb-3 p-3 bg-white border rounded-3" style="max-height: 250px; overflow-y: auto;">
+                                    <small class="text-muted fst-italic d-block text-center py-2">Sin comentarios de la clase aún.</small>
+                                </div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center fw-bold" style="width: 38px; height: 38px; flex-shrink: 0;">
+                                        <i class="bi bi-person-workspace"></i>
+                                    </div>
+                                    <input type="text" class="form-control rounded-pill bg-white form-control-sm border" placeholder="Añadir un comentario a la clase como docente..." id="inputDocenteComentarioClaseActividad" onkeypress="if(event.key === 'Enter') enviarDocenteComentarioClaseActividad()" />
+                                    <button class="btn btn-primary btn-sm rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 36px; height: 36px; flex-shrink: 0; background: #0b2545; border-color: #0b2545;" type="button" onclick="enviarDocenteComentarioClaseActividad()" title="Publicar comentario en la clase">
+                                        <i class="bi bi-send-fill text-white"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Footer Modal -->
+                    <div class="modal-footer bg-light py-2 px-4 d-flex justify-content-between align-items-center" style="border-radius: 0 0 16px 16px;">
+                        <small class="text-muted"><i class="bi bi-shield-check text-success me-1"></i>Calificaciones sincronizadas automáticamente con la planilla de notas del estudiante</small>
+                        <button type="button" class="btn btn-secondary btn-sm rounded-pill px-4" data-bs-dismiss="modal">Cerrar</button>
                     </div>
                 </div>
             </div>
@@ -2797,27 +2892,38 @@
                 </div>
                 <!-- Grid de Cursos del Docente para Mejoras -->
                 <div class="row" id="gridCursosMejorasDocente">
-                    @foreach (var curso in cursosDocenteList)
+                    @if (cursosDocenteList != null && cursosDocenteList.Any())
                     {
-                        var slugCurso = curso.Replace(" ", "_");
-                        <div class="col-md-4 mb-4">
-                            <div class="card p-4 text-center shadow-sm h-100 card-hover" 
-                                 style="border: 1.5px solid #0d2a4a !important; border-radius: 14px; background: #fff; cursor: pointer;"
-                                 onclick="entrarAMejorasCursoDocente('@curso')">
-                                <div class="mb-2">
-                                    <i class="bi bi-arrow-up-right-circle fs-1 text-dark"></i>
+                        foreach (var curso in cursosDocenteList)
+                        {
+                            var slugCurso = curso.Replace(" ", "_");
+                            <div class="col-md-4 mb-4">
+                                <div class="card p-4 text-center shadow-sm h-100 card-hover" 
+                                     style="border: 1.5px solid #0d2a4a !important; border-radius: 14px; background: #fff; cursor: pointer;"
+                                     onclick="entrarAMejorasCursoDocente('@curso')">
+                                    <div class="mb-2">
+                                        <i class="bi bi-arrow-up-right-circle fs-1 text-dark"></i>
+                                    </div>
+                                    <h5 class="fw-bold text-dark mb-1">Curso @curso</h5>
+                                    <p class="small text-muted mb-2">Planes de apoyo, nivelación y compromisos pedagógicos del grupo @curso.</p>
+                                    <div class="mb-3" id="badge-mejoras-curso-@slugCurso">
+                                        <span class="badge bg-light text-muted border rounded-pill px-3 py-1 fw-normal">
+                                            ✓ Sin mejoras pendientes
+                                        </span>
+                                    </div>
+                                    <button class="btn btn-sm mt-auto w-100 text-white fw-bold py-2 rounded-3" style="background-color: #0d2a4a; border-color: #0d2a4a;">
+                                        <i class="bi bi-journal-bookmark me-1"></i> Entrar al Curso
+                                    </button>
                                 </div>
-                                <h5 class="fw-bold text-dark mb-1">Curso @curso</h5>
-                                <p class="small text-muted mb-2">Planes de apoyo, nivelación y compromisos pedagógicos del grupo @curso.</p>
-                                <div class="mb-3" id="badge-mejoras-curso-@slugCurso">
-                                    <span class="badge bg-light text-muted border rounded-pill px-3 py-1 fw-normal">
-                                        ✓ Sin mejoras pendientes
-                                    </span>
-                                </div>
-                                <button class="btn btn-sm mt-auto w-100 text-white fw-bold py-2 rounded-3" style="background-color: #0d2a4a; border-color: #0d2a4a;">
-                                    <i class="bi bi-journal-bookmark me-1"></i> Entrar al Curso
-                                </button>
                             </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="col-12 text-center py-5">
+                            <i class="bi bi-calendar-x text-muted" style="font-size: 3.5rem;"></i>
+                            <h5 class="fw-bold text-dark mt-3">Sin Cursos Asignados</h5>
+                            <p class="text-muted small">No registras cursos asignados para gestión de planes de apoyo y nivelación.</p>
                         </div>
                     }
                 </div>
@@ -2831,32 +2937,19 @@
                         </button>
                         <div>
                             <h4 class="fw-bold mb-0 text-dark" id="tituloCursoMejorasDocente">Curso</h4>
-                            <small class="text-muted">Planes de Apoyo, Nivelación Pedagógica y Compromisos de Mejora</small>
+                            <small class="text-muted">Planes de Apoyo y Nivelación Pedagógica - Actividades de Mejora</small>
                         </div>
                     </div>
-                    <!-- Pestañas de Navegación del Módulo de Mejoras Docente -->
+                    <!-- Acción de Actividades de Mejora Docente -->
                     <div class="d-flex gap-2 align-items-center flex-wrap">
-                        <div class="btn-group me-2" role="group">
-                            <button class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm me-1" id="btnTabMejorasDocenteActividades" onclick="cambiarTabMejorasDocente('actividades')">
-                                <i class="bi bi-journal-check me-1"></i> Actividades de Mejora
-                            </button>
-                            <button class="btn btn-outline-secondary btn-sm rounded-pill px-3 shadow-sm" id="btnTabMejorasDocenteCompromisos" onclick="cambiarTabMejorasDocente('compromisos')">
-                                <i class="bi bi-card-checklist me-1"></i> Compromisos Pedagógicos
-                            </button>
-                        </div>
                         <div id="btnContainerMejorasDocenteActividades">
                             <button class="btn text-white btn-sm rounded-pill px-3 shadow-sm" style="background-color: #2980b9;" onclick="abrirModalCrearActividadMejoraParaCurso()">
                                 <i class="bi bi-plus-circle me-1"></i> Nueva Actividad de Mejora
                             </button>
                         </div>
-                        <div id="btnContainerMejorasDocenteCompromisos" class="d-none">
-                            <button class="btn text-white btn-sm rounded-pill px-3 shadow-sm" style="background-color: #2980b9;" onclick="abrirModalCrearMejoraParaCurso()">
-                                <i class="bi bi-plus-circle me-1"></i> Nuevo Compromiso Pedagógico
-                            </button>
-                        </div>
                     </div>
                 </div>
-                <!-- SECCIÓN 1: ACTIVIDADES Y TALLERES DE MEJORA (DOCENTE) -->
+                <!-- SECCIÓN: ACTIVIDADES Y TALLERES DE MEJORA (DOCENTE) -->
                 <div id="seccionMejorasDocenteActividades">
                     <div class="card border-0 shadow-sm rounded-4 p-4 text-white mb-4" style="background: linear-gradient(135deg, #0d2a4a 0%, #1a4971 100%);">
                         <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
@@ -2872,75 +2965,6 @@
                         <div class="col-12 text-center py-5 text-muted">
                             <div class="spinner-border text-primary" role="status"></div>
                             <p class="mt-2 small">Cargando actividades de mejora del curso...</p>
-                        </div>
-                    </div>
-                </div>
-                <!-- SECCIÓN 2: COMPROMISOS Y SEGUIMIENTO PEDAGÓGICO (DOCENTE) -->
-                <div id="seccionMejorasDocenteCompromisos" class="d-none">
-                    <!-- Banner Informativo del Flujo -->
-                    <div class="card border-0 shadow-sm rounded-4 p-4 text-white mb-4" style="background: linear-gradient(135deg, #0d2a4a 0%, #2980b9 100%);">
-                        <div class="row align-items-center">
-                            <div class="col-md-5 text-center text-md-start mb-2 mb-md-0">
-                                <span class="badge bg-warning text-dark fw-bold px-3 py-1 rounded-pill mb-1">FASE 1</span>
-                                <h5 class="fw-bold mb-1">Acción de Mejora</h5>
-                                <p class="small mb-0 opacity-90">El docente establece el aspecto a mejorar y el estudiante asume el compromiso dentro de las fechas acordadas.</p>
-                            </div>
-                            <div class="col-md-2 text-center my-2 my-md-0">
-                                <div class="fs-2 text-warning"><i class="bi bi-arrow-down-circle-fill d-md-none"></i><i class="bi bi-arrow-right-circle-fill d-none d-md-inline"></i></div>
-                                <small class="fw-bold text-light opacity-75">REVISIÓN</small>
-                            </div>
-                            <div class="col-md-5 text-center text-md-start">
-                                <span class="badge bg-success text-white fw-bold px-3 py-1 rounded-pill mb-1">FASE 2</span>
-                                <h5 class="fw-bold mb-1">Seguimiento Posterior</h5>
-                                <p class="small mb-0 opacity-90">Se revisa posteriormente si el compromiso fue cumplido (En Proceso / Cumplido / No Cumplido) y se refleja en notas.</p>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Filtros de búsqueda para el curso -->
-                    <div class="card border-0 shadow-sm p-3 mb-4 rounded-3">
-                        <div class="row g-2 align-items-center">
-                            <div class="col-md-4">
-                                <label class="form-label small fw-bold mb-1"><i class="bi bi-person me-1 text-primary"></i>Filtrar por Estudiante</label>
-                                <select class="form-select form-select-sm" id="selectFiltroEstudianteMejoraDocente" onchange="filtrarMejorasDocenteCurso()">
-                                    <option value="todos">Todos los estudiantes del curso</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label small fw-bold mb-1"><i class="bi bi-book me-1 text-primary"></i>Filtrar por Asignatura</label>
-                                <select class="form-select form-select-sm" id="selectFiltroMateriaMejoraDocente" onchange="filtrarMejorasDocenteCurso()">
-                                    <option value="todas">Todas las asignaturas</option>
-                                    @if (ViewBag.AsignaturasDocente != null && ((IEnumerable<string>)ViewBag.AsignaturasDocente).Any())
-                                    {
-                                        foreach (var asig in (IEnumerable<string>)ViewBag.AsignaturasDocente)
-                                        {
-                                            <option value="@asig">@asig</option>
-                                        }
-                                    }
-                                    else if (ViewBag.Asignaturas != null)
-                                    {
-                                        foreach (var asig in (IEnumerable<string>)ViewBag.Asignaturas)
-                                        {
-                                            <option value="@asig">@asig</option>
-                                        }
-                                    }
-                                </select>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label small fw-bold mb-1"><i class="bi bi-check-circle me-1 text-primary"></i>Estado de Seguimiento</label>
-                                <select class="form-select form-select-sm" id="selectFiltroEstadoMejoraDocente" onchange="filtrarMejorasDocenteCurso()">
-                                    <option value="todos">Todos los estados</option>
-                                    <option value="En Proceso">En Proceso</option>
-                                    <option value="Cumplido">Cumplido</option>
-                                    <option value="No Cumplido">No Cumplido</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Contenedor dinámico de tarjetas de Acciones de Mejora -->
-                    <div id="contenedorMejorasDocenteCurso">
-                        <div class="text-center py-5 text-muted">
-                            <div class="spinner-border text-primary" role="status"></div>
-                            <p class="mt-2">Cargando compromisos pedagógicos del curso...</p>
                         </div>
                     </div>
                 </div>
@@ -3791,7 +3815,12 @@
                                                     <i class="bi bi-file-earmark-arrow-up-fill text-success fs-4"></i>
                                                     <a href="#" target="_blank" id="linkArchivoYaEntregado" class="small fw-bold text-dark text-truncate text-decoration-underline">Archivo.pdf</a>
                                                 </div>
-                                                <span class="badge bg-success-subtle text-success border border-success-subtle">Subido</span>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <span class="badge bg-success-subtle text-success border border-success-subtle">Subido</span>
+                                                    <button type="button" class="btn btn-sm btn-outline-danger rounded-circle p-1 d-flex align-items-center justify-content-center" style="width: 28px; height: 28px;" title="Eliminar documento entregado" id="btnEliminarDocumentoEntrega" onclick="solicitarEliminarDocumentoEntrega()">
+                                                        <i class="bi bi-trash" style="font-size: 0.8rem;"></i>
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                         <!-- SI YA ENVIÓ TEXTO ESCRITO PREVIAMENTE -->
@@ -3820,6 +3849,9 @@
                                             </div>
                                             <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 fw-bold shadow-sm" id="btnEnviarEntrega" style="background-color: #1a73e8; border-color: #1a73e8;">
                                                 <i class="bi bi-send-fill me-1"></i> <span id="textoBotonEntregaModal">Entregar</span>
+                                            </button>
+                                            <button type="button" class="btn btn-outline-danger w-100 rounded-pill py-2 fw-bold shadow-sm mt-2 d-none" id="btnRevertirEntregaModal" onclick="solicitarRevertirEntrega()">
+                                                <i class="bi bi-arrow-counterclockwise me-1"></i> Revertir Entrega
                                             </button>
                                         </form>
                                     </div>
@@ -4722,13 +4754,35 @@
         }
     }
     function abrirModalCrearActividadParaCurso() {
-        const selectGrado = document.querySelector('#formCrearActividad select[name="Grado"]');
-        if (selectGrado && cursoClassroomDocenteSeleccionado) {
-            selectGrado.value = cursoClassroomDocenteSeleccionado;
+        const form = document.getElementById('formCrearActividad');
+        if (form) form.reset();
+        const inputEsMejora = document.getElementById('inputEsMejoraModalCrear');
+        if (inputEsMejora) inputEsMejora.value = "false";
+
+        const wrapperFijo = document.getElementById('wrapperCursoFijoModalCrear');
+        const wrapperSelect = document.getElementById('wrapperCursoSelectModalCrear');
+        const badgeFijo = document.getElementById('badgeCursoFijoModalCrear');
+        const inputGradoFijo = document.getElementById('inputGradoFijoModalCrear');
+        const selectGrado = document.getElementById('selectGradoModalCrear');
+
+        if (cursoClassroomDocenteSeleccionado) {
+            if (wrapperFijo) wrapperFijo.classList.remove('d-none');
+            if (wrapperSelect) wrapperSelect.classList.add('d-none');
+            if (badgeFijo) badgeFijo.textContent = 'Curso ' + cursoClassroomDocenteSeleccionado;
+            if (inputGradoFijo) inputGradoFijo.value = cursoClassroomDocenteSeleccionado;
+            if (selectGrado) {
+                selectGrado.removeAttribute('required');
+                selectGrado.value = cursoClassroomDocenteSeleccionado;
+            }
+        } else {
+            if (wrapperFijo) wrapperFijo.classList.add('d-none');
+            if (wrapperSelect) wrapperSelect.classList.remove('d-none');
+            if (selectGrado) selectGrado.setAttribute('required', 'required');
         }
+
         const modalEl = document.getElementById('modalCrearActividad');
         if (modalEl) {
-            const modal = new bootstrap.Modal(modalEl);
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
             modal.show();
         }
     }
@@ -4875,6 +4929,16 @@
         event.preventDefault();
         const form = document.getElementById('formCrearActividad');
         const formData = new FormData(form);
+
+        // Si estamos asignando dentro de un curso específico, fijar Grado exactamente a dicho curso
+        const wrapperFijo = document.getElementById('wrapperCursoFijoModalCrear');
+        const inputGradoFijo = document.getElementById('inputGradoFijoModalCrear');
+        if (wrapperFijo && !wrapperFijo.classList.contains('d-none') && inputGradoFijo && inputGradoFijo.value) {
+            formData.set('Grado', inputGradoFijo.value);
+        } else if (cursoClassroomDocenteSeleccionado) {
+            formData.set('Grado', cursoClassroomDocenteSeleccionado);
+        }
+
         fetch('@Url.Action("CrearActividad", "Docente")', {
             method: 'POST',
             body: formData
@@ -4892,6 +4956,9 @@
                     if (modal) modal.hide();
                     form.reset();
                     cargarActividadesDocente();
+                    if (cursoClassroomDocenteSeleccionado) {
+                        renderizarClassroomDocenteStream(cursoClassroomDocenteSeleccionado);
+                    }
                     if (typeof cargarActividadesMejoraDocenteCurso === 'function' && cursoMejoraDocenteSeleccionado) {
                         cargarActividadesMejoraDocenteCurso(cursoMejoraDocenteSeleccionado);
                     }
@@ -5021,111 +5088,449 @@
             alert('Ocurrió un error al actualizar la actividad.');
         });
     }
+    let datosActividadClassroomActual = null;
+    let estudianteClassroomSeleccionadoId = null;
+    let filtroEstadoAlumnosActual = 'todos';
+
+    function cambiarTabModalClassroom(tab) {
+        const btnTrabajo = document.getElementById('tabBtnClassroomTrabajo');
+        const btnInst = document.getElementById('tabBtnClassroomInstrucciones');
+        const secTrabajo = document.getElementById('seccionModalClassroomTrabajo');
+        const secInst = document.getElementById('seccionModalClassroomInstrucciones');
+
+        if (tab === 'trabajo') {
+            if (btnTrabajo) btnTrabajo.classList.add('active');
+            if (btnInst) btnInst.classList.remove('active');
+            if (secTrabajo) secTrabajo.classList.remove('d-none');
+            if (secInst) secInst.classList.add('d-none');
+        } else {
+            if (btnTrabajo) btnTrabajo.classList.remove('active');
+            if (btnInst) btnInst.classList.add('active');
+            if (secTrabajo) secTrabajo.classList.add('d-none');
+            if (secInst) secInst.classList.remove('d-none');
+        }
+    }
+
+    let actividadActualDocenteClassroomId = null;
+
     function abrirModalRevisarEntregas(idActividad) {
-        const tbody = document.getElementById('tablaCuerpoEntregas');
-        if (!tbody) return;
-        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted"><div class="spinner-border spinner-border-sm text-primary"></div> Cargando entregas...</td></tr>`;
+        estudianteClassroomSeleccionadoId = null;
+        filtroEstadoAlumnosActual = 'todos';
+        actividadActualDocenteClassroomId = idActividad;
+        cambiarTabModalClassroom('trabajo');
+        cargarDocenteComentariosClase(idActividad);
+
         const modalEl = document.getElementById('modalRevisarEntregas');
-        const modal = new bootstrap.Modal(modalEl);
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
         modal.show();
+
+        const listaContainer = document.getElementById('listaEstudiantesClassroomItems');
+        if (listaContainer) {
+            listaContainer.innerHTML = '<div class="text-center py-5 text-muted small"><div class="spinner-border spinner-border-sm text-primary mb-2"></div><br/>Cargando aula virtual y lista de alumnos...</div>';
+        }
+
+        const panelRight = document.getElementById('panelDetalleClassroomRight');
+        if (panelRight) {
+            panelRight.innerHTML = '<div class="text-center py-5 text-muted small"><div class="spinner-border spinner-border-sm text-primary"></div></div>';
+        }
+
         fetch(`@Url.Action("ObtenerEntregasActividad", "Docente")?idActividad=${idActividad}`)
             .then(res => res.json())
             .then(data => {
                 if (!data.success) {
-                    tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-danger">${data.message}</td></tr>`;
+                    if (listaContainer) listaContainer.innerHTML = `<div class="text-danger small p-3">${data.message}</div>`;
                     return;
                 }
-                document.getElementById('tituloModalRevisarEntregas').innerHTML = `<i class="bi bi-file-earmark-check me-2"></i>Entregas: ${data.tituloActividad}`;
-                document.getElementById('subtituloModalRevisarEntregas').textContent = `Materia: ${data.materia} | Grado: ${data.grado || 'Todos'} | Total entregas: ${data.totalEntregas}`;
-                if (!data.entregas || data.entregas.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-muted">Ningún estudiante ha subido su entrega todavía.</td></tr>`;
-                    return;
+
+                datosActividadClassroomActual = data;
+
+                // Actualizar textos de cabecera
+                const hTitulo = document.getElementById('classroomHeaderTitulo');
+                const hMateria = document.getElementById('classroomHeaderMateria');
+                const hCurso = document.getElementById('classroomHeaderCurso');
+                const tInst = document.getElementById('tituloInstruccionesClassroom');
+                const bMateria = document.getElementById('badgeInstruccionesMateria');
+                const fLimite = document.getElementById('fechaLimiteInstruccionesClassroom');
+                const dInst = document.getElementById('descInstruccionesClassroom');
+                const adjContainer = document.getElementById('adjuntoInstruccionesContainer');
+
+                if (hTitulo) hTitulo.textContent = data.tituloActividad;
+                if (hMateria) hMateria.textContent = data.materia;
+                if (hCurso) hCurso.textContent = 'Curso ' + (data.grado || 'Todos');
+                if (tInst) tInst.textContent = data.tituloActividad;
+                if (bMateria) bMateria.textContent = data.materia;
+                if (fLimite) fLimite.textContent = data.actividad ? data.actividad.fechaLimite : '-';
+                if (dInst) dInst.textContent = data.actividad && data.actividad.descripcion ? data.actividad.descripcion : 'Sin descripción adicional.';
+
+                if (adjContainer) {
+                    if (data.actividad && data.actividad.archivoAdjunto) {
+                        adjContainer.innerHTML = `
+                            <a href="${data.actividad.archivoAdjunto}" target="_blank" class="btn btn-outline-primary btn-sm rounded-pill px-3 shadow-sm">
+                                <i class="bi bi-file-earmark-arrow-down me-1"></i> Descargar Guía / Material Docente
+                            </a>
+                        `;
+                    } else {
+                        adjContainer.innerHTML = '<span class="text-muted small">No se adjuntó material descargable para esta actividad.</span>';
+                    }
                 }
-                let html = '';
-                data.entregas.forEach(ent => {
-                    const badgeEstado = ent.estado === 'Calificado' 
-                        ? `<span class="badge bg-success" id="badge-estado-${ent.idEntrega}">Calificado</span>` 
-                        : `<span class="badge bg-warning text-dark" id="badge-estado-${ent.idEntrega}">Pendiente</span>`;
-                    const linkArchivo = ent.archivoRuta 
-                        ? `<a href="${ent.archivoRuta}" target="_blank" class="btn btn-sm btn-outline-primary py-0 px-2 rounded-pill" style="font-size: 0.8rem;">
-                               <i class="bi bi-file-earmark-arrow-down me-1"></i>${ent.archivoNombre || 'Descargar Trabajo'}
-                           </a>` 
-                        : `<span class="text-muted small">Sin archivo adjunto</span>`;
-                    const comentarioEstudiante = ent.comentario 
-                        ? `<div class="p-2 bg-light rounded mt-1 small text-dark border" style="font-size: 0.78rem;">
-                               <i class="bi bi-chat-left-quote me-1 text-primary"></i>${ent.comentario}
-                           </div>` 
-                        : '';
-                    const valorNota = ent.calificacion !== null && ent.calificacion !== undefined 
-                        ? Number(ent.calificacion).toFixed(1) 
-                        : '';
-                    html += `
-                        <tr id="fila-entrega-${ent.idEntrega}">
-                            <td>
-                                <strong class="d-block text-dark">${ent.nombreEstudiante}</strong>
-                                <small class="text-muted">${ent.correo} | Doc: ${ent.documento}</small>
-                            </td>
-                            <td>
-                                <small class="text-muted">${ent.fechaEntrega}</small>
-                                <div class="mt-1">${badgeEstado}</div>
-                            </td>
-                            <td>
-                                ${linkArchivo}
-                                ${comentarioEstudiante}
-                            </td>
-                            <td>
-                                <select class="form-select form-select-sm" id="periodo-entrega-${ent.idEntrega}">
+
+                // Renderizar la lista de estudiantes a la izquierda y el resumen a la derecha
+                renderizarListaAlumnosClassroom();
+                renderizarDetalleClassroomRight();
+            })
+            .catch(err => {
+                console.error(err);
+                if (listaContainer) listaContainer.innerHTML = '<div class="text-danger small p-3">Error al conectar con el servidor.</div>';
+            });
+    }
+
+    function filtrarEstudiantesClassroom(val) {
+        filtroEstadoAlumnosActual = val;
+        renderizarListaAlumnosClassroom();
+    }
+
+    function seleccionarTodosEstudiantesClassroom(checkbox) {
+        if (checkbox.checked) {
+            estudianteClassroomSeleccionadoId = null;
+            renderizarListaAlumnosClassroom();
+            renderizarDetalleClassroomRight();
+        }
+    }
+
+    function renderizarListaAlumnosClassroom() {
+        if (!datosActividadClassroomActual || !datosActividadClassroomActual.alumnos) return;
+        const cont = document.getElementById('listaEstudiantesClassroomItems');
+        const countSpan = document.getElementById('countTotalEstudiantesClassroom');
+        if (!cont) return;
+
+        let alumnos = datosActividadClassroomActual.alumnos;
+        if (countSpan) countSpan.textContent = alumnos.length;
+
+        // Filtrado por estado
+        if (filtroEstadoAlumnosActual === 'entregado') {
+            alumnos = alumnos.filter(a => a.haEntregado && (a.calificacion === null || a.calificacion === undefined));
+        } else if (filtroEstadoAlumnosActual === 'pendiente') {
+            alumnos = alumnos.filter(a => !a.haEntregado);
+        } else if (filtroEstadoAlumnosActual === 'calificado') {
+            alumnos = alumnos.filter(a => a.calificacion !== null && a.calificacion !== undefined);
+        }
+
+        if (alumnos.length === 0) {
+            cont.innerHTML = '<div class="text-center py-4 text-muted small"><i class="bi bi-search fs-3 d-block mb-1 text-secondary"></i>No hay estudiantes en este estado.</div>';
+            return;
+        }
+
+        let html = '';
+        alumnos.forEach(al => {
+            const isSelected = (estudianteClassroomSeleccionadoId === al.idEstudiante);
+            const activeClass = isSelected ? 'border-primary bg-primary-subtle' : 'bg-white';
+            
+            let estadoBadge = '';
+            if (al.calificacion !== null && al.calificacion !== undefined) {
+                estadoBadge = `<span class="badge bg-success text-white py-1 px-2" style="font-size:0.72rem;"><i class="bi bi-check-circle me-1"></i>${Number(al.calificacion).toFixed(1)}</span>`;
+            } else if (al.haEntregado) {
+                estadoBadge = `<span class="badge bg-primary-subtle text-primary border border-primary-subtle py-1 px-2" style="font-size:0.72rem;"><i class="bi bi-check me-1"></i>Entregada</span>`;
+            } else {
+                estadoBadge = `<span class="badge bg-light text-muted border py-1 px-2" style="font-size:0.72rem;"><i class="bi bi-clock me-1"></i>Asignada</span>`;
+            }
+
+            const partes = (al.nombreEstudiante || 'E').split(' ');
+            const iniciales = (partes[0][0] + (partes.length > 1 ? partes[1][0] : '')).toUpperCase();
+            const valNota = (al.calificacion !== null && al.calificacion !== undefined) ? Number(al.calificacion).toFixed(1) : '';
+
+            html += `
+                <div class="card p-2 border rounded-3 classroom-student-card ${activeClass}" style="cursor: pointer; transition: all .15s ease;" onclick="seleccionarEstudianteClassroom(${al.idEstudiante})">
+                    <div class="d-flex align-items-center justify-content-between gap-2">
+                        <div class="d-flex align-items-center gap-2 overflow-hidden flex-grow-1">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold flex-shrink-0" 
+                                 style="width: 32px; height: 32px; background: linear-gradient(135deg, #1565c0, #2980b9); font-size: 0.75rem;">
+                                ${iniciales}
+                            </div>
+                            <div class="overflow-hidden">
+                                <strong class="d-block text-dark small text-truncate" title="${al.nombreEstudiante}">${al.nombreEstudiante}</strong>
+                                <div class="d-flex align-items-center gap-1">${estadoBadge}</div>
+                            </div>
+                        </div>
+                        <div style="width: 65px; flex-shrink: 0;" onclick="event.stopPropagation()">
+                            <input type="number" step="0.1" min="0" max="5" 
+                                   class="form-control form-control-sm text-center fw-bold text-primary p-1" 
+                                   placeholder="0.0" 
+                                   value="${valNota}"
+                                   title="Calificación directa sobre 5.0"
+                                   onchange="guardarNotaRapidaClassroom(${al.idEstudiante}, ${al.idEntrega}, this.value)" />
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        cont.innerHTML = html;
+    }
+
+    function seleccionarEstudianteClassroom(idEstudiante) {
+        estudianteClassroomSeleccionadoId = idEstudiante;
+        const chkTodos = document.getElementById('checkTodosEstudiantesClassroom');
+        if (chkTodos) chkTodos.checked = false;
+        renderizarListaAlumnosClassroom();
+        renderizarDetalleClassroomRight();
+    }
+
+    function renderizarDetalleClassroomRight() {
+        const panel = document.getElementById('panelDetalleClassroomRight');
+        if (!panel || !datosActividadClassroomActual) return;
+
+        // VISTA RESUMEN (si no hay estudiante específico seleccionado)
+        if (!estudianteClassroomSeleccionadoId) {
+            const res = datosActividadClassroomActual.resumen || { totalEntregados: 0, totalSinEntregar: 0, totalCalificados: 0 };
+            panel.innerHTML = `
+                <div class="d-flex flex-column h-100 justify-content-between">
+                    <div>
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3 pb-3 border-bottom">
+                            <div>
+                                <h4 class="fw-bold text-dark mb-0">${datosActividadClassroomActual.tituloActividad}</h4>
+                                <small class="text-muted">${datosActividadClassroomActual.materia} • Grado: ${datosActividadClassroomActual.grado || 'Todos'}</small>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <span class="badge bg-light text-dark border px-3 py-2 rounded-pill"><i class="bi bi-clock me-1 text-danger"></i>${datosActividadClassroomActual.actividad ? datosActividadClassroomActual.actividad.fechaLimite : ''}</span>
+                            </div>
+                        </div>
+                        <!-- Métricas estilo Classroom (Entregadas y Asignadas) -->
+                        <div class="row g-3 mb-4 text-center">
+                            <div class="col-sm-4">
+                                <div class="p-3 border rounded-4 bg-light shadow-sm">
+                                    <span class="fs-1 fw-bold text-primary d-block">${res.totalEntregados}</span>
+                                    <span class="small text-muted fw-bold text-uppercase">Entregadas</span>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="p-3 border rounded-4 bg-light shadow-sm">
+                                    <span class="fs-1 fw-bold text-secondary d-block">${res.totalSinEntregar}</span>
+                                    <span class="small text-muted fw-bold text-uppercase">Asignadas</span>
+                                </div>
+                            </div>
+                            <div class="col-sm-4">
+                                <div class="p-3 border rounded-4 bg-light shadow-sm">
+                                    <span class="fs-1 fw-bold text-success d-block">${res.totalCalificados}</span>
+                                    <span class="small text-muted fw-bold text-uppercase">Calificadas</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ilustración / Estado Central Estilo Google Classroom -->
+                    <div class="text-center py-2 my-auto">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-2" 
+                             style="width: 60px; height: 60px; background-color: #f1f3f4; color: #5f6368;">
+                            <i class="bi bi-easel2 fs-3"></i>
+                        </div>
+                        <h6 class="fw-bold text-dark mb-1">Panel de Tareas y Entregas de Alumnos</h6>
+                        <p class="text-muted small mx-auto mb-0" style="max-width: 440px; font-size: 0.82rem;">
+                            ${res.totalEntregados === 0 
+                                ? 'Esta actividad ha sido asignada a los estudiantes del curso. A medida que suban sus trabajos podrás revisarlos aquí.' 
+                                : 'Selecciona un estudiante de la columna izquierda para ver su archivo adjunto, rúbrica, retroalimentación y calificar.'}
+                        </p>
+                    </div>
+
+                    <!-- Comentarios de la clase en el panel de resumen -->
+                    <div class="card border rounded-4 p-3 bg-light my-2 shadow-sm text-start">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2" style="font-size: 0.9rem;">
+                                <i class="bi bi-people-fill text-primary"></i>
+                                <span>Comentarios de la clase</span>
+                            </h6>
+                            <button type="button" class="btn btn-sm btn-outline-primary rounded-pill py-0 px-2" style="font-size: 0.75rem;" onclick="cambiarTabModalClassroom('instrucciones')">
+                                <i class="bi bi-box-arrow-up-right me-1"></i> Ver en instrucciones
+                            </button>
+                        </div>
+                        <div id="listaDocenteComentariosResumen" class="mb-2 p-2 bg-white border rounded-3" style="max-height: 140px; overflow-y: auto;">
+                            <small class="text-muted fst-italic d-block text-center py-1">Sin comentarios de la clase aún.</small>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <input type="text" class="form-control rounded-pill bg-white form-control-sm border" placeholder="Añadir comentario a la clase como docente..." id="inputDocenteComentarioResumen" onkeypress="if(event.key === 'Enter') { const inp = document.getElementById('inputDocenteComentarioClaseActividad'); if(inp) inp.value = this.value; enviarDocenteComentarioClaseActividad(); }" />
+                            <button class="btn btn-primary btn-sm rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 32px; height: 32px; flex-shrink: 0; background: #0b2545; border-color: #0b2545;" type="button" onclick="const inp = document.getElementById('inputDocenteComentarioClaseActividad'); if(inp) inp.value = document.getElementById('inputDocenteComentarioResumen').value; enviarDocenteComentarioClaseActividad();" title="Enviar comentario">
+                                <i class="bi bi-send-fill text-white" style="font-size: 0.75rem;"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-light border rounded-3 p-2 small text-muted d-flex align-items-center gap-2 mb-0">
+                        <i class="bi bi-info-circle text-primary fs-5"></i>
+                        <span>Puedes ingresar la nota de cada estudiante (de 0.0 a 5.0) en la casilla correspondiente de la lista izquierda o hacer clic en su nombre para asignarle retroalimentación detallada.</span>
+                    </div>
+                </div>
+            `;
+            if (actividadActualDocenteClassroomId) cargarDocenteComentariosClase(actividadActualDocenteClassroomId);
+            return;
+        }
+
+        // VISTA INDIVIDUAL DE ESTUDIANTE SELECCIONADO
+        const al = datosActividadClassroomActual.alumnos.find(x => x.idEstudiante === estudianteClassroomSeleccionadoId);
+        if (!al) return;
+
+        let badgeEstadoIndividual = '';
+        if (al.calificacion !== null && al.calificacion !== undefined) {
+            badgeEstadoIndividual = `<span class="badge bg-success text-white px-3 py-1 rounded-pill"><i class="bi bi-check-circle-fill me-1"></i>Calificado: ${Number(al.calificacion).toFixed(1)}</span>`;
+        } else if (al.haEntregado) {
+            badgeEstadoIndividual = `<span class="badge bg-primary text-white px-3 py-1 rounded-pill"><i class="bi bi-cloud-check-fill me-1"></i>Tarea Entregada</span>`;
+        } else {
+            badgeEstadoIndividual = `<span class="badge bg-warning text-dark px-3 py-1 rounded-pill"><i class="bi bi-clock-history me-1"></i>Asignada (Sin entregar)</span>`;
+        }
+
+        let archivoHtml = '';
+        if (al.archivoRuta) {
+            archivoHtml = `
+                <div class="card border p-3 rounded-3 bg-light mb-3">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                        <div class="d-flex align-items-center gap-3">
+                            <i class="bi bi-file-earmark-arrow-down-fill fs-2 text-primary"></i>
+                            <div>
+                                <strong class="text-dark d-block small">${al.archivoNombre || 'Archivo Adjunto de Entrega'}</strong>
+                                <small class="text-muted">Documento entregado por el estudiante</small>
+                            </div>
+                        </div>
+                        <a href="${al.archivoRuta}" target="_blank" class="btn btn-outline-primary btn-sm rounded-pill px-3 shadow-sm">
+                            <i class="bi bi-download me-1"></i> Descargar Trabajo
+                        </a>
+                    </div>
+                </div>
+            `;
+        } else if (al.haEntregado) {
+            archivoHtml = `
+                <div class="alert alert-info border-0 rounded-3 py-2 px-3 small mb-3">
+                    <i class="bi bi-info-circle-fill me-1"></i> El estudiante marcó la tarea como completada sin archivo adjunto adicional.
+                </div>
+            `;
+        } else {
+            archivoHtml = `
+                <div class="alert alert-warning-subtle border border-warning-subtle rounded-3 p-3 mb-3 small text-dark">
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <i class="bi bi-exclamation-triangle-fill text-warning fs-5"></i>
+                        <strong>Tarea Asignada - Sin entrega virtual</strong>
+                    </div>
+                    <span>El estudiante aún no ha enviado un archivo o tarea para esta actividad. Si el estudiante entregó el trabajo en formato físico o presencial, puedes asignarle su calificación directamente abajo.</span>
+                </div>
+            `;
+        }
+
+        let comentarioHtml = '';
+        if (al.comentario) {
+            comentarioHtml = `
+                <div class="card border-0 bg-light p-3 rounded-3 mb-3">
+                    <small class="fw-bold text-muted d-block mb-1"><i class="bi bi-chat-quote-fill me-1 text-primary"></i>Comentario del Estudiante:</small>
+                    <p class="small text-dark mb-0 fst-italic">"${al.comentario}"</p>
+                </div>
+            `;
+        }
+
+        const notaVal = (al.calificacion !== null && al.calificacion !== undefined) ? Number(al.calificacion).toFixed(1) : '';
+
+        panel.innerHTML = `
+            <div class="d-flex flex-column h-100 justify-content-between">
+                <div>
+                    <!-- Encabezado del Estudiante -->
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3 pb-3 border-bottom">
+                        <div>
+                            <h4 class="fw-bold text-dark mb-1">${al.nombreEstudiante}</h4>
+                            <div class="small text-muted">
+                                <span>Doc: <strong>${al.documento}</strong></span> • 
+                                <span>${al.correo}</span> • 
+                                <span class="badge bg-light text-dark border">${al.curso}</span>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            ${badgeEstadoIndividual}
+                            <button class="btn btn-outline-secondary btn-sm rounded-pill px-3" onclick="deseleccionarEstudianteClassroom()">
+                                <i class="bi bi-x me-1"></i> Ver Resumen
+                            </button>
+                        </div>
+                    </div>
+
+                    ${archivoHtml}
+                    ${comentarioHtml}
+
+                    <!-- Formulario de Calificación y Retroalimentación -->
+                    <div class="card border rounded-4 p-3 bg-light shadow-sm mb-3">
+                        <h6 class="fw-bold text-dark mb-3"><i class="bi bi-card-checklist me-1 text-primary"></i>Evaluación y Devolución</h6>
+                        <div class="row g-3">
+                            <div class="col-sm-4">
+                                <label class="form-label small fw-bold mb-1">Periodo Escolar</label>
+                                <select class="form-select form-select-sm" id="classroomInputPeriodo">
                                     <option value="1" selected>Periodo 1</option>
                                     <option value="2">Periodo 2</option>
                                     <option value="3">Periodo 3</option>
                                     <option value="4">Periodo 4</option>
                                 </select>
-                            </td>
-                            <td>
-                                <div class="input-group input-group-sm">
-                                    <input type="number" step="0.1" min="0" max="5" class="form-control form-control-sm text-center fw-bold text-primary" 
-                                           id="nota-entrega-${ent.idEntrega}" value="${valorNota}" placeholder="0.0 - 5.0" />
-                                </div>
-                            </td>
-                            <td>
-                                <textarea class="form-control form-control-sm" id="retro-entrega-${ent.idEntrega}" rows="2" placeholder="Observaciones o retroalimentación...">${ent.retroalimentacion || ''}</textarea>
-                            </td>
-                            <td class="text-end">
-                                <button type="button" class="btn btn-sm btn-success rounded-pill px-3 shadow-sm" onclick="guardarCalificacionEntrega(${ent.idEntrega})">
-                                    <i class="bi bi-check-lg me-1"></i>Guardar
+                            </div>
+                            <div class="col-sm-4">
+                                <label class="form-label small fw-bold mb-1">Calificación (0.0 - 5.0) <span class="text-danger">*</span></label>
+                                <input type="number" step="0.1" min="0" max="5" 
+                                       class="form-control form-control-sm text-center fw-bold text-primary fs-6" 
+                                       id="classroomInputNota" 
+                                       value="${notaVal}" 
+                                       placeholder="Ej: 4.5" required />
+                            </div>
+                            <div class="col-sm-4 d-flex align-items-end">
+                                <button type="button" class="btn btn-success btn-sm w-100 fw-bold rounded-pill py-2 shadow-sm" onclick="guardarCalificacionEstudianteActual()">
+                                    <i class="bi bi-arrow-return-left me-1"></i> Devolver Calificación
                                 </button>
-                            </td>
-                        </tr>
-                    `;
-                });
-                tbody.innerHTML = html;
-            })
-            .catch(err => {
-                console.error(err);
-                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-danger">Error al cargar entregas.</td></tr>`;
-            });
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label small fw-bold mb-1">Retroalimentación / Comentarios para el Estudiante</label>
+                                <textarea class="form-control form-control-sm" id="classroomInputRetro" rows="3" placeholder="Observaciones pedagógicas, puntos a reforzar o felicitaciones...">${al.retroalimentacion || ''}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border-top pt-2 d-flex justify-content-between align-items-center small text-muted">
+                    <span><i class="bi bi-clock me-1"></i>${al.haEntregado ? 'Fecha de entrega: ' + (al.fechaEntrega || 'Registrada') : 'Sin entrega registrada'}</span>
+                    <span class="text-success"><i class="bi bi-check2-all me-1"></i>Sincronizado con Planilla de Notas</span>
+                </div>
+            </div>
+        `;
     }
-    function guardarCalificacionEntrega(idEntrega) {
-        const inputNota = document.getElementById(`nota-entrega-${idEntrega}`);
-        const inputRetro = document.getElementById(`retro-entrega-${idEntrega}`);
-        const selectPeriodo = document.getElementById(`periodo-entrega-${idEntrega}`);
+
+    function deseleccionarEstudianteClassroom() {
+        estudianteClassroomSeleccionadoId = null;
+        renderizarListaAlumnosClassroom();
+        renderizarDetalleClassroomRight();
+    }
+
+    function guardarCalificacionEstudianteActual() {
+        if (!datosActividadClassroomActual) return;
+        if (!estudianteClassroomSeleccionadoId) {
+            alert('Por favor selecciona un estudiante de la lista izquierda para devolver su calificación.');
+            return;
+        }
+
+        const inputNota = document.getElementById('classroomInputNota');
+        const inputRetro = document.getElementById('classroomInputRetro');
+        const selectPeriodo = document.getElementById('classroomInputPeriodo');
+
         const notaVal = inputNota ? inputNota.value.trim() : '';
         const retroVal = inputRetro ? inputRetro.value.trim() : '';
         const periodoVal = selectPeriodo ? selectPeriodo.value : '1';
+
         if (!notaVal) {
-            alert('Por favor ingresa una nota válida entre 0.0 y 5.0');
+            alert('Por favor ingresa una nota válida entre 0.0 y 5.0.');
             return;
         }
         const notaNum = parseFloat(notaVal.replace(',', '.'));
         if (isNaN(notaNum) || notaNum < 0 || notaNum > 5.0) {
-            alert('La calificación debe ser un valor numérico entre 0.0 y 5.0');
+            alert('La calificación debe estar entre 0.0 y 5.0.');
             return;
         }
+
+        const al = datosActividadClassroomActual.alumnos.find(x => x.idEstudiante === estudianteClassroomSeleccionadoId);
+        const idEntrega = al ? al.idEntrega : 0;
+
         const formData = new FormData();
         formData.append('idEntrega', idEntrega);
+        formData.append('idActividad', datosActividadClassroomActual.actividad ? datosActividadClassroomActual.actividad.idActividad : 0);
+        formData.append('idEstudiante', estudianteClassroomSeleccionadoId);
         formData.append('nota', notaVal);
         formData.append('retroalimentacion', retroVal);
         formData.append('periodo', periodoVal);
+
         fetch('@Url.Action("CalificarEntrega", "Docente")', {
             method: 'POST',
             body: formData
@@ -5138,18 +5543,30 @@
                             toast: true,
                             position: 'top-end',
                             icon: 'success',
-                            title: '¡Calificación registrada y sincronizada en planilla!',
+                            title: '¡Calificación registrada y devuelta al estudiante!',
                             showConfirmButton: false,
-                            timer: 3000
+                            timer: 2500
                         });
                     } else {
                         alert(data.message);
                     }
-                    const badge = document.getElementById(`badge-estado-${idEntrega}`);
-                    if (badge) {
-                        badge.className = 'badge bg-success';
-                        badge.textContent = 'Calificado';
+
+                    // Actualizar memoria local
+                    if (al) {
+                        al.calificacion = notaNum;
+                        al.retroalimentacion = retroVal;
+                        al.estado = 'Calificado';
+                        if (data.idEntrega) al.idEntrega = data.idEntrega;
                     }
+
+                    // Recalcular métricas
+                    const calificadas = datosActividadClassroomActual.alumnos.filter(x => x.calificacion !== null && x.calificacion !== undefined).length;
+                    const entregadas = datosActividadClassroomActual.alumnos.filter(x => x.haEntregado).length;
+                    datosActividadClassroomActual.resumen.totalCalificados = calificadas;
+                    datosActividadClassroomActual.resumen.totalPorCalificar = Math.max(0, entregadas - calificadas);
+
+                    renderizarListaAlumnosClassroom();
+                    renderizarDetalleClassroomRight();
                     cargarActividadesDocente();
                 } else {
                     alert('Error: ' + data.message);
@@ -5159,6 +5576,160 @@
                 console.error(err);
                 alert('Ocurrió un error al guardar la calificación.');
             });
+    }
+
+    function guardarNotaRapidaClassroom(idEstudiante, idEntrega, notaVal) {
+        if (!notaVal || !notaVal.trim()) return;
+        const notaNum = parseFloat(notaVal.replace(',', '.'));
+        if (isNaN(notaNum) || notaNum < 0 || notaNum > 5.0) {
+            alert('La calificación debe estar entre 0.0 y 5.0.');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('idEntrega', idEntrega || 0);
+        formData.append('idActividad', datosActividadClassroomActual && datosActividadClassroomActual.actividad ? datosActividadClassroomActual.actividad.idActividad : 0);
+        formData.append('idEstudiante', idEstudiante);
+        formData.append('nota', notaVal.trim());
+        formData.append('periodo', '1');
+
+        fetch('@Url.Action("CalificarEntrega", "Docente")', {
+            method: 'POST',
+            body: formData
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    const al = datosActividadClassroomActual ? datosActividadClassroomActual.alumnos.find(x => x.idEstudiante === idEstudiante) : null;
+                    if (al) {
+                        al.calificacion = notaNum;
+                        al.estado = 'Calificado';
+                        if (data.idEntrega) al.idEntrega = data.idEntrega;
+                    }
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: 'success',
+                            title: 'Nota guardada en planilla: ' + Number(notaNum).toFixed(1),
+                            showConfirmButton: false,
+                            timer: 2000
+                        });
+                    }
+                    renderizarListaAlumnosClassroom();
+                    if (estudianteClassroomSeleccionadoId === idEstudiante) {
+                        renderizarDetalleClassroomRight();
+                    }
+                    cargarActividadesDocente();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(err => console.error(err));
+    }
+
+    function cargarDocenteComentariosClase(idActividad) {
+        if (!idActividad) return;
+        actividadActualDocenteClassroomId = idActividad;
+        const listaClase = document.getElementById('listaDocenteComentariosClaseActividad');
+        const badgeClase = document.getElementById('badgeDocenteContadorComentariosClase');
+        if (listaClase) {
+            listaClase.innerHTML = '<div class="text-center py-2 text-muted small"><span class="spinner-border spinner-border-sm me-1"></span> Cargando comentarios de la clase...</div>';
+        }
+
+        fetch(`@Url.Action("ObtenerComentariosActividadDocente", "Docente")?idActividad=${idActividad}`)
+            .then(res => res.json())
+            .then(data => {
+                if (!data.success || !data.comentarios) {
+                    if (listaClase) listaClase.innerHTML = '<small class="text-muted fst-italic d-block text-center py-2">Sin comentarios de la clase aún.</small>';
+                    if (badgeClase) badgeClase.textContent = '0';
+                    return;
+                }
+
+                const comentariosClase = data.comentarios.filter(c => !c.esPrivado);
+                if (badgeClase) badgeClase.textContent = comentariosClase.length;
+
+                if (comentariosClase.length === 0) {
+                    if (listaClase) listaClase.innerHTML = '<small class="text-muted fst-italic d-block text-center py-2">Sin comentarios de la clase aún. Sé el primero en comentar como docente.</small>';
+                    return;
+                }
+
+                let html = '';
+                comentariosClase.forEach(c => {
+                    const esDoc = (c.rolUsuario || '').toLowerCase().includes('docente') || (c.rolUsuario || '').toLowerCase().includes('profesor');
+                    const badgeRol = esDoc 
+                        ? '<span class="badge bg-primary-subtle text-primary border border-primary-subtle ms-1" style="font-size:0.7rem;">Docente</span>'
+                        : '<span class="badge bg-light text-secondary border ms-1" style="font-size:0.7rem;">Estudiante</span>';
+
+                    html += `
+                        <div class="d-flex align-items-start gap-2 mb-2 p-2 rounded-3 ${esDoc ? 'bg-primary-subtle bg-opacity-25' : 'bg-light'}">
+                            <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold text-white flex-shrink-0" 
+                                 style="width: 32px; height: 32px; background: ${esDoc ? '#0b2545' : '#1565c0'}; font-size: 0.75rem;">
+                                ${esDoc ? '<i class="bi bi-person-workspace"></i>' : (c.nombreUsuario ? c.nombreUsuario.charAt(0).toUpperCase() : 'E')}
+                            </div>
+                            <div class="flex-grow-1 overflow-hidden">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <strong class="small text-dark">${c.nombreUsuario || 'Usuario'} ${badgeRol}</strong>
+                                    <small class="text-muted" style="font-size: 0.7rem;">${c.fecha}</small>
+                                </div>
+                                <p class="small text-dark mb-0 mt-1" style="white-space: pre-line; word-break: break-word;">${c.mensaje}</p>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                if (listaClase) {
+                    listaClase.innerHTML = html;
+                    listaClase.scrollTop = listaClase.scrollHeight;
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                if (listaClase) listaClase.innerHTML = '<small class="text-danger d-block text-center py-2">Error al cargar comentarios.</small>';
+            });
+    }
+
+    function enviarDocenteComentarioClaseActividad() {
+        if (!actividadActualDocenteClassroomId) return;
+        const input = document.getElementById('inputDocenteComentarioClaseActividad');
+        if (!input) return;
+        const mensaje = input.value.trim();
+        if (!mensaje) return;
+
+        input.disabled = true;
+
+        fetch('@Url.Action("GuardarComentarioActividadDocente", "Docente")', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `idActividad=${encodeURIComponent(actividadActualDocenteClassroomId)}&mensaje=${encodeURIComponent(mensaje)}&esPrivado=false`
+        })
+        .then(res => res.json())
+        .then(data => {
+            input.disabled = false;
+            if (data.success) {
+                input.value = '';
+                cargarDocenteComentariosClase(actividadActualDocenteClassroomId);
+            } else {
+                alert('No fue posible registrar el comentario: ' + data.message);
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            input.disabled = false;
+            alert('Error de conexión al enviar el comentario.');
+        });
+    }
+
+    function notificarEstudiantesClassroom() {
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                icon: 'info',
+                title: 'Aviso de Classroom',
+                text: 'Las calificaciones y comentarios son visibles en tiempo real para los alumnos y acudientes en su aula virtual y boletín.'
+            });
+        } else {
+            alert('Las calificaciones y comentarios son visibles en tiempo real en el aula virtual de los alumnos.');
+        }
     }
     function eliminarActividadDocente(idActividad) {
         PAE.confirmar('¿Está seguro de que desea eliminar esta actividad? Esta acción no se puede deshacer.', function () {
@@ -5376,8 +5947,11 @@
         });
         streamContainer.innerHTML = html;
     }
+    let actividadActualClassroomId = null;
+
     // Abrir Modal de Actividad estilo Google Classroom Pantalla Completa
     function abrirModalClassroomEntrega(idActividad) {
+        actividadActualClassroomId = idActividad;
         const act = listaActividadesEstudianteGlobal.find(a => a.idActividad === idActividad);
         if (!act) return;
         document.getElementById('idActividadEntrega').value = act.idActividad;
@@ -5476,6 +6050,25 @@
                 }
             }
         }
+
+        // Control del botón Revertir Entrega y Eliminar Documento
+        const btnRevertir = document.getElementById('btnRevertirEntregaModal');
+        const btnEliminarDoc = document.getElementById('btnEliminarDocumentoEntrega');
+        if (btnRevertir) {
+            if (act.entregada && !estaVencida && act.estado !== 'Calificado') {
+                btnRevertir.classList.remove('d-none');
+            } else {
+                btnRevertir.classList.add('d-none');
+            }
+        }
+        if (btnEliminarDoc) {
+            if (act.archivoRuta && !estaVencida && act.estado !== 'Calificado') {
+                btnEliminarDoc.classList.remove('d-none');
+            } else {
+                btnEliminarDoc.classList.add('d-none');
+            }
+        }
+
         // Cargar comentarios reales de clase y privados
         cargarComentariosActividad(idActividad);
         // Previsualizar archivo previamente entregado
@@ -5498,13 +6091,153 @@
             contenedorTextoYa.classList.add('d-none');
         }
         // Limpiar inputs del formulario
-        // (inputArchivo ya fue declarado arriba en esta función)
         if (inputArchivo) inputArchivo.value = '';
-        // (inputComentario ya fue declarado arriba en esta función)
         if (inputComentario) inputComentario.value = act.comentario || '';
         const modalEl = document.getElementById('modalSubirEntregaActividad');
         const modal = new bootstrap.Modal(modalEl);
         modal.show();
+    }
+
+    function solicitarRevertirEntrega() {
+        if (!actividadActualClassroomId) return;
+
+        const ejecutarReversion = () => {
+            fetch('@Url.Action("RevertirEntregaActividad", "Estudiante")', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'idActividad=' + encodeURIComponent(actividadActualClassroomId)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: '¡Entrega Revertida!',
+                            text: data.message,
+                            timer: 2200,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        alert(data.message);
+                    }
+                    const modalEl = document.getElementById('modalSubirEntregaActividad');
+                    if (modalEl) {
+                        const inst = bootstrap.Modal.getInstance(modalEl);
+                        if (inst) inst.hide();
+                    }
+                    cargarActividadesEstudiante();
+                    if (typeof renderizarActividadesMejoraEstudiante === 'function' && typeof materiaMejoraEstudianteSeleccionada !== 'undefined' && materiaMejoraEstudianteSeleccionada) {
+                        renderizarActividadesMejoraEstudiante(materiaMejoraEstudianteSeleccionada);
+                    }
+                } else {
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({ icon: 'error', title: 'Atención', text: data.message });
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Ocurrió un error al intentar revertir la entrega.');
+            });
+        };
+
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: '¿Seguro que quieres revertir la entrega?',
+                text: 'Tu entrega volverá al estado "Sin entregar" y podrás modificar tus respuestas o cambiar tus archivos antes de volver a enviar.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sí, revertir entrega',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    ejecutarReversion();
+                }
+            });
+        } else {
+            if (confirm('¿Seguro que quieres revertir la entrega? Tu entrega volverá al estado "Sin entregar" y podrás modificar tus respuestas o cambiar tus archivos antes de volver a enviar.')) {
+                ejecutarReversion();
+            }
+        }
+    }
+
+    function solicitarEliminarDocumentoEntrega() {
+        if (!actividadActualClassroomId) return;
+
+        const ejecutarEliminacion = () => {
+            fetch('@Url.Action("EliminarDocumentoEntrega", "Estudiante")', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'idActividad=' + encodeURIComponent(actividadActualClassroomId)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: '¡Documento Eliminado!',
+                            text: data.message,
+                            timer: 1800,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        alert(data.message);
+                    }
+                    const contenedorArchivoYa = document.getElementById('contenedorArchivoYaEntregado');
+                    if (contenedorArchivoYa) contenedorArchivoYa.classList.add('d-none');
+                    const linkArchivoYa = document.getElementById('linkArchivoYaEntregado');
+                    if (linkArchivoYa) linkArchivoYa.href = '#';
+
+                    // Actualizar memoria local si existe
+                    const actMem = (listaActividadesEstudianteGlobal || []).find(a => a.idActividad === actividadActualClassroomId);
+                    if (actMem) {
+                        actMem.archivoRuta = null;
+                        actMem.archivoNombre = null;
+                    }
+                    cargarActividadesEstudiante();
+                    if (typeof renderizarActividadesMejoraEstudiante === 'function' && typeof materiaMejoraEstudianteSeleccionada !== 'undefined' && materiaMejoraEstudianteSeleccionada) {
+                        renderizarActividadesMejoraEstudiante(materiaMejoraEstudianteSeleccionada);
+                    }
+                } else {
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({ icon: 'error', title: 'Atención', text: data.message });
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Ocurrió un error al eliminar el documento adjunto.');
+            });
+        };
+
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                title: '¿Seguro que quieres eliminar el documento?',
+                text: 'El archivo adjunto se removerá de tu entrega actual.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Sí, eliminar documento',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    ejecutarEliminacion();
+                }
+            });
+        } else {
+            if (confirm('¿Seguro que quieres eliminar el documento? El archivo adjunto se removerá de tu entrega actual.')) {
+                ejecutarEliminacion();
+            }
+        }
     }
     // Alias para compatibilidad
     function abrirModalSubirEntrega(idActividad, titulo, materia, fechaLimite, descripcion, archivoAdjunto) {
@@ -5840,13 +6573,7 @@
         if (vTablero) vTablero.classList.remove('d-none');
         const elTitulo = document.getElementById('tituloCursoMejorasDocente');
         if (elTitulo) elTitulo.textContent = 'Curso ' + cursoNombre;
-        // Poblar estudiantes del curso en el select de filtros y en el modal de registrar compromiso
-        poblarEstudiantesMejoraDocente(cursoNombre);
-        // Cambiar por defecto a la pestaña de Actividades de Mejora
-        cambiarTabMejorasDocente('actividades');
-        // Cargar ambas colecciones
         cargarActividadesMejoraDocenteCurso(cursoNombre);
-        cargarCompromisosMejoraDocente(cursoNombre);
     }
     function volverAListaCursosMejorasDocente() {
         const vCursos = document.getElementById('vistaCursosMejorasDocente');
@@ -5911,21 +6638,37 @@
         }
     }
     function abrirModalCrearActividadMejoraParaCurso() {
+        if (typeof window.abrirModalCrearActividadParaCurso === 'function' && cursoMejoraDocenteSeleccionado) {
+            window.abrirModalCrearActividadParaCurso(cursoMejoraDocenteSeleccionado);
+            const inputEsMejora = document.getElementById('inputEsMejoraModalCrear');
+            if (inputEsMejora) inputEsMejora.value = "true";
+            const form = document.getElementById('formCrearActividad');
+            const inputTitulo = form?.querySelector('input[name="Titulo"]');
+            if (inputTitulo) {
+                inputTitulo.placeholder = "Ej: Taller de Recuperación / Nivelación - Periodo 1";
+            }
+            return;
+        }
+
         const form = document.getElementById('formCrearActividad');
         if (form) form.reset();
         const inputEsMejora = document.getElementById('inputEsMejoraModalCrear');
         if (inputEsMejora) inputEsMejora.value = "true";
         const inputTitulo = form?.querySelector('input[name="Titulo"]');
-        if (inputTitulo && (!inputTitulo.value || inputTitulo.value.trim() === '')) {
+        if (inputTitulo) {
             inputTitulo.placeholder = "Ej: Taller de Recuperación / Nivelación - Periodo 1";
         }
-        const selectGrado = form?.querySelector('select[name="Grado"]');
-        if (selectGrado && cursoMejoraDocenteSeleccionado) {
-            for (let i = 0; i < selectGrado.options.length; i++) {
-                if (coincideCurso(selectGrado.options[i].value, cursoMejoraDocenteSeleccionado)) {
-                    selectGrado.selectedIndex = i;
-                    break;
-                }
+        const wrapperFijo = document.getElementById('wrapperCursoFijoModalCrear');
+        const badgeFijo = document.getElementById('badgeCursoFijoModalCrear');
+        const inputFijo = document.getElementById('inputCursoFijoModalCrear');
+        const selectGrado = document.getElementById('selectGradoModalCrear');
+        if (cursoMejoraDocenteSeleccionado) {
+            if (wrapperFijo) wrapperFijo.classList.remove('d-none');
+            if (badgeFijo) badgeFijo.textContent = cursoMejoraDocenteSeleccionado;
+            if (inputFijo) inputFijo.value = cursoMejoraDocenteSeleccionado;
+            if (selectGrado) {
+                selectGrado.removeAttribute('required');
+                selectGrado.classList.add('d-none');
             }
         }
         const modalEl = document.getElementById('modalCrearActividad');
@@ -6039,7 +6782,7 @@
                             </div>
                         </div>
                         <div class="d-flex justify-content-between align-items-center pt-2 border-top mt-auto">
-                            <button class="btn btn-primary btn-sm rounded-pill px-4 fw-bold shadow-sm" style="background-color: #2980b9;" onclick="abrirVistaDetalleCalificacion(${act.idActividad})">
+                            <button class="btn btn-primary btn-sm rounded-pill px-4 fw-bold shadow-sm" style="background-color: #2980b9;" onclick="abrirModalRevisarEntregas(${act.idActividad})">
                                 <i class="bi bi-file-earmark-check me-1"></i> Revisar Entregas (${act.totalEntregas || 0})
                             </button>
                             <small class="text-muted"><i class="bi bi-shield-check me-1 text-success"></i>Sincronizado</small>
@@ -7264,11 +8007,20 @@
         window.descargarObservadorDocentePdf = function() {
             const selectEst = document.getElementById('selectEstudianteObservacion');
             const selectCurso = document.getElementById('selectCursoObservador');
+
+            if (!selectEst || !selectEst.value) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Estudiante no seleccionado',
+                    text: 'Por favor seleccione un estudiante en los filtros de arriba antes de generar y descargar el reporte del observador en PDF.',
+                    confirmButtonColor: '#0d2a4a'
+                });
+                return;
+            }
+
             let url = '@Url.Action("DescargarObservadorPdf", "Docente")';
             const params = [];
-            if (selectEst && selectEst.value) {
-                params.push(`idEstudiante=${selectEst.value}`);
-            }
+            params.push(`idEstudiante=${selectEst.value}`);
             if (selectCurso && selectCurso.value && selectCurso.value !== 'todos') {
                 params.push(`curso=${encodeURIComponent(selectCurso.value)}`);
             }

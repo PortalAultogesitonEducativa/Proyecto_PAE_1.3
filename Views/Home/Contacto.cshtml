@@ -1,30 +1,125 @@
-﻿@{
-    ViewData["Title"] = "Solicite una Demo";
+@{
+    ViewData["Title"] = "Canales de Contacto y Atención";
 }
 
-<div class="container my-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8 text-center mb-5">
-            <h2 class="fw-bold">¿Listo para modernizar su institución?</h2>
-            <p class="text-muted">Déjenos sus datos y un asesor se pondrá en contacto para una demostración personalizada del sistema PAE.</p>
+<div class="container my-5 py-4" style="max-width: 1050px;">
+    <!-- Encabezado de Contacto -->
+    <div class="card border-0 shadow-sm rounded-4 text-white p-4 p-md-5 mb-5 text-center" 
+         style="background: linear-gradient(135deg, #0d2a4a 0%, #1a4971 100%);">
+        <div class="rounded-circle d-flex align-items-center justify-content-center text-white mx-auto mb-3" 
+             style="width: 64px; height: 64px; background: rgba(255,255,255,0.18);">
+            <i class="bi bi-headset fs-2 text-warning"></i>
         </div>
-        <!-- Añadimos 'bg-white' aquí para que el cuadro del formulario sea completamente blanco -->
-        <div class="col-md-6 border p-4 rounded shadow-sm bg-white">
-            <form>
-                <div class="mb-3">
-                    <label class="form-label">Institución Educativa</label>
-                    <input type="text" class="form-control" placeholder="Nombre del colegio">
+        <span class="badge bg-warning text-dark px-3 py-1 rounded-pill fw-bold mb-2">ATENCIÓN AL USUARIO</span>
+        <h2 class="fw-bold mb-2">Canales de Contacto y Soporte Oficial</h2>
+        <p class="mb-0 text-light opacity-90 mx-auto" style="max-width: 650px; font-size: 0.95rem;">
+            Estamos a tu disposición para brindarte asesoría personalizada, soporte técnico y atención a solicitudes sobre la plataforma educativa PAE.
+        </p>
+    </div>
+
+    <!-- Tarjetas Principales de Contacto -->
+    <div class="row g-4 mb-5">
+        <!-- Tarjeta WhatsApp -->
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 text-center h-100 bg-white card-hover border-top border-4 border-success">
+                <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3 text-success bg-success-subtle" 
+                     style="width: 58px; height: 58px;">
+                    <i class="bi bi-whatsapp fs-2"></i>
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">Correo Institucional</label>
-                    <input type="email" class="form-control" placeholder="ejemplo@colegio.edu.co">
+                <h5 class="fw-bold text-dark mb-1">Línea WhatsApp</h5>
+                <p class="small text-muted mb-3">Atención rápida y asesoría directa por mensajería instantánea.</p>
+                <div class="p-2 bg-light rounded-3 mb-3 fw-bold text-dark fs-5">
+                    +57 311 739 8531
                 </div>
-                <div class="mb-3">
-                    <label class="form-label">Mensaje</label>
-                    <textarea class="form-control" rows="3" placeholder="¿Cuántos estudiantes maneja su institución?"></textarea>
-                </div>
-                <button type="submit" class="btn w-100 text-white fw-bold" style="background-color: #e67e22;">Enviar Solicitud</button>
-            </form>
+                <a href="https://wa.me/573117398531?text=Hola,%20solicito%20informaci%C3%B3n%20sobre%20el%20sistema%20PAE" 
+                   target="_blank" 
+                   class="btn btn-success rounded-pill w-100 fw-bold py-2 mt-auto shadow-sm">
+                    <i class="bi bi-chat-dots-fill me-1"></i> Escribir a WhatsApp
+                </a>
+            </div>
         </div>
+
+        <!-- Tarjeta Correo Electrónico -->
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 text-center h-100 bg-white card-hover border-top border-4 border-primary">
+                <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3 text-primary bg-primary-subtle" 
+                     style="width: 58px; height: 58px;">
+                    <i class="bi bi-envelope-at-fill fs-2"></i>
+                </div>
+                <h5 class="fw-bold text-dark mb-1">Correo Electrónico</h5>
+                <p class="small text-muted mb-3">Envíanos tus requerimientos o solicitudes oficiales institucionales.</p>
+                <div class="p-2 bg-light rounded-3 mb-3 fw-bold text-primary text-truncate" style="font-size: 0.95rem;">
+                    paesml2025@gmail.com
+                </div>
+                <a href="mailto:paesml2025@gmail.com?subject=Solicitud%20Información%20Sistema%20PAE" 
+                   class="btn rounded-pill w-100 text-white fw-bold py-2 mt-auto shadow-sm" 
+                   style="background-color: #0d2a4a; border-color: #0d2a4a;">
+                    <i class="bi bi-send-fill me-1"></i> Enviar Correo
+                </a>
+            </div>
+        </div>
+
+        <!-- Tarjeta Ubicación y País -->
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm rounded-4 p-4 text-center h-100 bg-white card-hover border-top border-4 border-danger">
+                <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3 text-danger bg-danger-subtle" 
+                     style="width: 58px; height: 58px;">
+                    <i class="bi bi-geo-alt-fill fs-2"></i>
+                </div>
+                <h5 class="fw-bold text-dark mb-1">País y Ubicación</h5>
+                <p class="small text-muted mb-3">Sede central institucional y cobertura en territorio nacional.</p>
+                <div class="p-2 bg-light rounded-3 mb-3 text-dark small">
+                    <strong>Bogotá D.C.</strong><br />
+                    <span>República de Colombia</span>
+                </div>
+                <a asp-controller="Home" asp-action="Nosotros" 
+                   class="btn btn-outline-secondary rounded-pill w-100 fw-bold py-2 mt-auto">
+                    <i class="bi bi-building me-1"></i> Sobre Nosotros
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Información Complementaria de Soporte y Horarios -->
+    <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white mb-4">
+        <div class="row g-4 align-items-center">
+            <div class="col-md-6 border-end-md">
+                <div class="d-flex align-items-start gap-3">
+                    <div class="rounded-circle bg-warning-subtle text-warning d-flex align-items-center justify-content-center flex-shrink-0" 
+                         style="width: 48px; height: 48px;">
+                        <i class="bi bi-clock-history fs-4"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold text-dark mb-1">Horario Oficial de Atención</h6>
+                        <p class="small text-muted mb-1">Nuestro equipo docente y de soporte administrativo atiende en jornada ordinaria:</p>
+                        <div class="badge bg-light text-dark border px-3 py-2 fw-semibold">
+                            Lunes a Viernes • 7:00 a.m. a 5:00 p.m. (Hora de Colombia)
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="d-flex align-items-start gap-3">
+                    <div class="rounded-circle bg-info-subtle text-info d-flex align-items-center justify-content-center flex-shrink-0" 
+                         style="width: 48px; height: 48px;">
+                        <i class="bi bi-chat-heart-fill fs-4 text-primary"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold text-dark mb-1">Módulo Institucional de PQR</h6>
+                        <p class="small text-muted mb-2">Radica formalmente peticiones, quejas, reclamos o sugerencias con número de radicado digital para seguimiento oportuno.</p>
+                        <a asp-controller="Pqr" asp-action="Index" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                            <i class="bi bi-ticket-detailed me-1"></i> Ir al Sistema de PQR
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Aviso Legal de Protección de Datos -->
+    <div class="p-3 bg-light rounded-4 border text-center small text-muted">
+        <i class="bi bi-shield-check text-success me-1"></i>
+        Las comunicaciones y solicitudes son tramitadas conforme a la Ley Estatutaria 1581 de 2012 de Protección de Datos Personales.
+        Consulta nuestras <a asp-controller="Home" asp-action="Politicas" class="text-decoration-underline text-secondary fw-semibold">Políticas de Datos</a>.
     </div>
 </div>

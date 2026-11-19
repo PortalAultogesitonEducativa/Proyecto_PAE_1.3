@@ -33,12 +33,22 @@ namespace ProyectoPAE.Controllers
         [RequierePermiso(Permisos.GenerarCertificados)]
         public async Task<IActionResult> Generar(int idEstudiante)
         {
+            _context.AsegurarLimpiezaCalificacionesDuplicadas();
+
             var estudiante = await _context.Usuarios.FindAsync(idEstudiante);
             if (estudiante == null) return NotFound();
 
-            var calificaciones = await _context.Calificaciones
+            var calificacionesRaw = await _context.Calificaciones
                 .Where(c => c.ID_Estudiante == idEstudiante)
                 .ToListAsync();
+
+            // Garantizar una única calificación por materia y periodo (la más reciente)
+            var calificaciones = calificacionesRaw
+                .GroupBy(c => new { MateriaNorm = (c.Materia ?? "").Trim().ToLower(), c.Periodo })
+                .Select(g => g.OrderByDescending(x => x.ID_Calificacion).First())
+                .OrderBy(c => c.Materia)
+                .ThenBy(c => c.Periodo)
+                .ToList();
 
             ViewBag.Estudiante = estudiante;
             return View(calificaciones);
