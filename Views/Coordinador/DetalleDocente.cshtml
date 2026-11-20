@@ -1,0 +1,231 @@
+@model ProyectoPAE.Models.DetalleDocenteViewModel
+@using ProyectoPAE.Models
+@{
+    ViewData["Title"] = "Detalle docente";
+}
+
+<div class="container-fluid py-3 px-md-4">
+    <div class="panel-con-sidebar">
+        @await Html.PartialAsync("_SidebarAdmin")
+        <main class="submodulo-activo flex-grow-1" role="main" aria-label="Detalle del docente">
+            <div class="card border-0 shadow-sm p-3 p-md-4 bg-white rounded-3">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                    <div>
+                        <h2 class="mb-0" style="color: #e67e22;">
+                            <i class="bi bi-person-badge-fill me-2"></i>@Model.Nombre
+                        </h2>
+                        <div class="small text-muted">@Model.Correo</div>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="@Url.Action("Supervision", "Coordinador")" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-arrow-left me-1"></i>Supervisión docente
+                        </a>
+                        <a href="@Url.Action("Dashboard", "Home")" class="btn btn-pae-volver">
+                            Volver al Panel
+                        </a>
+                    </div>
+                </div>
+
+                @if (TempData["Error"] != null)
+                {
+                    <div class="alert alert-danger shadow-sm border-0" role="alert">@TempData["Error"]</div>
+                }
+
+                <p class="text-muted small">
+                    Vista de solo lectura del trabajo de este docente.
+                    @if (Model.AnioEscolar.HasValue)
+                    {
+                        <span>Horario del año escolar <strong>@Model.AnioEscolar</strong>.</span>
+                    }
+                </p>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-6 col-md">
+                        <div class="card border-0 shadow-sm h-100 text-center p-3" style="border-top: 4px solid #198754 !important;">
+                            <div class="fs-3 fw-bold">@Model.Clases.Count</div>
+                            <div class="small text-muted">Clases (@Model.HorasSemanales.ToString("0.#") h/sem)</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md">
+                        <div class="card border-0 shadow-sm h-100 text-center p-3" style="border-top: 4px solid @(Model.Choques.Count > 0 ? "#dc3545" : "#198754") !important;">
+                            <div class="fs-3 fw-bold">@Model.Choques.Count</div>
+                            <div class="small text-muted">Choques de horario</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md">
+                        <div class="card border-0 shadow-sm h-100 text-center p-3" style="border-top: 4px solid #6f42c1 !important;">
+                            <div class="fs-3 fw-bold">@Model.ActividadesVigentes</div>
+                            <div class="small text-muted">Actividades vigentes</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md">
+                        <div class="card border-0 shadow-sm h-100 text-center p-3" style="border-top: 4px solid @(Model.EntregasAtrasadas > 0 ? "#dc3545" : (Model.EntregasSinCalificar > 0 ? "#ffc107" : "#198754")) !important;">
+                            <div class="fs-3 fw-bold">@Model.EntregasSinCalificar</div>
+                            <div class="small text-muted">Entregas sin calificar</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md">
+                        <div class="card border-0 shadow-sm h-100 text-center p-3" style="border-top: 4px solid @(Model.PlanesVencidos > 0 ? "#ffc107" : "#198754") !important;">
+                            <div class="fs-3 fw-bold">@Model.PlanesVencidos</div>
+                            <div class="small text-muted">Planes de mejora vencidos</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Horario -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3"><i class="bi bi-calendar3 me-2 text-primary"></i>Horario semanal</h5>
+
+                        @if (Model.Choques.Any())
+                        {
+                            <div class="alert alert-danger small">
+                                <strong><i class="bi bi-exclamation-octagon-fill me-1"></i>Clases que se cruzan:</strong>
+                                <ul class="mb-0 mt-1">
+                                    @foreach (var c in Model.Choques)
+                                    {
+                                        <li>@c.Dia: @c.Detalle</li>
+                                    }
+                                </ul>
+                            </div>
+                        }
+
+                        @if (Model.Clases.Any())
+                        {
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr><th>Día</th><th>Hora</th><th>Curso</th><th>Materia</th><th>Aula</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var c in Model.Clases)
+                                        {
+                                            <tr>
+                                                <td>@c.Dia</td>
+                                                <td>@c.Inicio - @c.Fin</td>
+                                                <td>@c.Curso</td>
+                                                <td>@c.Materia</td>
+                                                <td>@(string.IsNullOrWhiteSpace(c.Aula) ? "—" : c.Aula)</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-warning small mb-0">
+                                <i class="bi bi-info-circle-fill me-1"></i>Este docente no tiene clases asignadas en el año escolar de referencia.
+                                <a href="@Url.Action("AsignacionAcademica", "Horario")" class="alert-link">Ir a Asignación académica</a>.
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Actividades -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3"><i class="bi bi-list-check me-2 text-primary"></i>Actividades y entregas</h5>
+
+                        @if (Model.Actividades.Any())
+                        {
+                            <div class="table-responsive" style="max-height: 420px; overflow-y: auto;">
+                                <table class="table table-sm table-hover align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Actividad</th><th>Materia</th><th>Grado</th><th>Fecha límite</th>
+                                            <th class="text-center">Entregas</th><th class="text-center">Sin calificar</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var a in Model.Actividades)
+                                        {
+                                            <tr>
+                                                <td class="fw-semibold">@a.Titulo</td>
+                                                <td>@a.Materia</td>
+                                                <td>@(string.IsNullOrWhiteSpace(a.Grado) ? "—" : a.Grado)</td>
+                                                <td>
+                                                    @a.FechaLimite.ToString("dd/MM/yyyy")
+                                                    @if (a.Vigente)
+                                                    {
+                                                        <span class="badge bg-success-subtle text-success border border-success-subtle ms-1">Vigente</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle ms-1">Vencida</span>
+                                                    }
+                                                </td>
+                                                <td class="text-center">@a.Entregas</td>
+                                                <td class="text-center">
+                                                    @if (a.SinCalificar > 0)
+                                                    {
+                                                        <span class="badge bg-danger">@a.SinCalificar</span>
+                                                        @if (a.SinCalificarAtrasadas > 0)
+                                                        {
+                                                            <div class="small text-danger">@a.SinCalificarAtrasadas atrasadas</div>
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">0</span>
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <p class="text-muted small mb-0">Este docente no ha creado actividades.</p>
+                        }
+                    </div>
+                </div>
+
+                <!-- Planes de mejora -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3"><i class="bi bi-graph-up-arrow me-2 text-primary"></i>Planes de mejora registrados</h5>
+
+                        @if (Model.Planes.Any())
+                        {
+                            <div class="table-responsive" style="max-height: 420px; overflow-y: auto;">
+                                <table class="table table-sm table-hover align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Estudiante</th><th>Materia</th><th>Grado</th><th class="text-center">Período</th>
+                                            <th>Compromiso</th><th>Estado</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var p in Model.Planes)
+                                        {
+                                            string badgeEstado = p.Vencido ? "bg-warning text-dark"
+                                                : p.Estado == "Cumplido" ? "bg-success text-white"
+                                                : p.Estado == "No Cumplido" ? "bg-secondary text-white"
+                                                : "bg-info text-dark";
+
+                                            <tr>
+                                                <td class="fw-semibold">@p.Estudiante</td>
+                                                <td>@p.Materia</td>
+                                                <td>@(string.IsNullOrWhiteSpace(p.Grado) ? "—" : p.Grado)</td>
+                                                <td class="text-center">@p.Periodo</td>
+                                                <td>@(p.FechaCompromiso.HasValue ? p.FechaCompromiso.Value.ToString("dd/MM/yyyy") : "—")</td>
+                                                <td><span class="badge @badgeEstado">@(p.Vencido ? "Vencido" : p.Estado)</span></td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <p class="text-muted small mb-0">Este docente no ha registrado planes de mejora.</p>
+                        }
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>

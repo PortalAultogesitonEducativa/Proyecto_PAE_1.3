@@ -1,0 +1,316 @@
+@model ProyectoPAE.Models.SeguimientoEstudiantilViewModel
+@using ProyectoPAE.Models
+@{
+    ViewData["Title"] = "Seguimiento estudiantil";
+}
+
+<div class="container-fluid py-3 px-md-4">
+    <div class="panel-con-sidebar">
+        @await Html.PartialAsync("_SidebarAdmin")
+        <main class="submodulo-activo flex-grow-1" role="main" aria-label="Seguimiento estudiantil">
+            <div class="card border-0 shadow-sm p-3 p-md-4 bg-white rounded-3">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                    <h2 class="mb-0" style="color: #e67e22;">
+                        <i class="bi bi-people-fill me-2"></i>Seguimiento estudiantil
+                    </h2>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="@Url.Action("Supervision", "Coordinador")" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-clipboard-data-fill me-1"></i>Supervisión docente
+                        </a>
+                        <a href="@Url.Action("Dashboard", "Home")" class="btn btn-pae-volver">
+                            Volver al Panel
+                        </a>
+                    </div>
+                </div>
+
+                <p class="text-muted">
+                    Vista de solo lectura. Aquí se revisa a qué estudiantes les está yendo mal y si ya tienen un plan de mejora,
+                    qué tan completas están las notas de cada curso y cuándo se registró la última asistencia.
+                    @if (Model.AnioNotas.HasValue)
+                    {
+                        <span class="d-block small mt-1">Notas del año <strong>@Model.AnioNotas</strong> (el más reciente con calificaciones registradas).</span>
+                    }
+                </p>
+
+                <form method="get" action="@Url.Action("Seguimiento", "Coordinador")" class="d-flex flex-wrap align-items-end gap-2 mb-4">
+                    <div>
+                        <label for="periodo" class="form-label small fw-semibold mb-1">Período</label>
+                        <select id="periodo" name="periodo" class="form-select form-select-sm" style="min-width: 160px;">
+                            @for (int p = 1; p <= 4; p++)
+                            {
+                                <option value="@p" selected="@(Model.Periodo == p)">Período @p</option>
+                            }
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-arrow-repeat me-1"></i>Ver período</button>
+                </form>
+
+                <div class="row g-3 mb-4">
+                    <div class="col-6 col-md">
+                        <div class="card border-0 shadow-sm h-100 text-center p-3" style="border-top: 4px solid #0d6efd !important;">
+                            <div class="fs-3 fw-bold">@Model.TotalNotasPeriodo</div>
+                            <div class="small text-muted">Notas del período @Model.Periodo</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md">
+                        <div class="card border-0 shadow-sm h-100 text-center p-3" style="border-top: 4px solid @(Model.EstudiantesEnRiesgoUnicos > 0 ? "#ffc107" : "#198754") !important;">
+                            <div class="fs-3 fw-bold">@Model.EstudiantesEnRiesgoUnicos</div>
+                            <div class="small text-muted">Estudiantes con nota menor a @SeguimientoEstudiantilViewModel.NotaMinimaAprobar.ToString("0.0")</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md">
+                        <div class="card border-0 shadow-sm h-100 text-center p-3" style="border-top: 4px solid @(Model.EnRiesgoSinPlan > 0 ? "#dc3545" : "#198754") !important;">
+                            <div class="fs-3 fw-bold">@Model.EnRiesgoSinPlan</div>
+                            <div class="small text-muted">Notas bajas sin plan de mejora</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md">
+                        <div class="card border-0 shadow-sm h-100 text-center p-3" style="border-top: 4px solid @(Model.ClasesConNotasIncompletas > 0 ? "#ffc107" : "#198754") !important;">
+                            <div class="fs-3 fw-bold">@Model.ClasesConNotasIncompletas</div>
+                            <div class="small text-muted">Clases con notas incompletas</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md">
+                        <div class="card border-0 shadow-sm h-100 text-center p-3" style="border-top: 4px solid @(Model.CursosSinAsistenciaReciente > 0 ? "#dc3545" : "#198754") !important;">
+                            <div class="fs-3 fw-bold">@Model.CursosSinAsistenciaReciente</div>
+                            <div class="small text-muted">Cursos sin asistencia reciente</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 1. Estudiantes en riesgo -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-1"><i class="bi bi-exclamation-triangle-fill me-2 text-warning"></i>Estudiantes con nota baja</h5>
+                        <p class="small text-muted">Notas menores a @SeguimientoEstudiantilViewModel.NotaMinimaAprobar.ToString("0.0") en el período @Model.Periodo, con el estado de su plan de mejora.</p>
+
+                        <div class="d-flex flex-wrap align-items-center gap-3 mb-3">
+                            <div class="input-group" style="max-width: 340px;">
+                                <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                                <input type="text" id="buscarRiesgo" class="form-control" placeholder="Buscar estudiante, curso o materia" />
+                            </div>
+                            <div class="form-check mb-0">
+                                <input class="form-check-input" type="checkbox" id="soloSinPlan" />
+                                <label class="form-check-label" for="soloSinPlan">Mostrar solo los que no tienen plan de mejora</label>
+                            </div>
+                            <a href="@Url.Action("ExportarEstudiantesRiesgo", "Coordinador", new { periodo = Model.Periodo })" class="btn btn-outline-success btn-sm ms-auto" title="Descarga un archivo CSV que se abre en Excel">
+                                <i class="bi bi-file-earmark-excel-fill me-1"></i>Exportar a Excel
+                            </a>
+                        </div>
+
+                        <div class="table-responsive" style="max-height: 480px; overflow-y: auto;">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Estudiante</th>
+                                        <th>Curso</th>
+                                        <th>Materia</th>
+                                        <th class="text-center">Nota</th>
+                                        <th>Plan de mejora</th>
+                                        <th>Docente</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbodyRiesgo">
+                                    @if (Model.EstudiantesEnRiesgo.Any())
+                                    {
+                                        foreach (var e in Model.EstudiantesEnRiesgo)
+                                        {
+                                            string badgePlan = !e.TienePlan ? "bg-danger text-white"
+                                                : e.PlanVencido ? "bg-warning text-dark"
+                                                : e.EstadoPlan == "Cumplido" ? "bg-success text-white"
+                                                : e.EstadoPlan == "No Cumplido" ? "bg-secondary text-white"
+                                                : "bg-info text-dark";
+                                            string textoPlan = !e.TienePlan ? "Sin plan"
+                                                : e.PlanVencido ? "Plan vencido"
+                                                : string.IsNullOrWhiteSpace(e.EstadoPlan) ? "Con plan" : e.EstadoPlan;
+
+                                            <tr class="fila-riesgo" data-sinplan="@(e.TienePlan ? "0" : "1")">
+                                                <td class="fw-semibold">@e.Estudiante</td>
+                                                <td>@e.Curso</td>
+                                                <td>@e.Materia</td>
+                                                <td class="text-center"><span class="badge bg-danger-subtle text-danger border border-danger-subtle fs-6">@e.Nota.ToString("0.0")</span></td>
+                                                <td><span class="badge @badgePlan">@textoPlan</span></td>
+                                                <td class="small">@(string.IsNullOrWhiteSpace(e.Docente) ? "—" : e.Docente)</td>
+                                            </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td colspan="6" class="text-center text-muted py-4">
+                                                <i class="bi bi-check-circle-fill text-success me-1"></i>No hay notas por debajo de @SeguimientoEstudiantilViewModel.NotaMinimaAprobar.ToString("0.0") en este período.
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Cobertura de notas -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-1"><i class="bi bi-journal-check me-2 text-primary"></i>Cobertura de notas por curso y materia</h5>
+                        <p class="small text-muted">Cuántos estudiantes de cada curso ya tienen nota en cada materia del plan durante el período @Model.Periodo. Primero aparecen las clases más incompletas.</p>
+
+                        <div class="d-flex flex-wrap align-items-center gap-3 mb-3">
+                            <div class="form-check mb-0">
+                                <input class="form-check-input" type="checkbox" id="soloIncompletas" />
+                                <label class="form-check-label" for="soloIncompletas">Mostrar solo las clases con notas incompletas</label>
+                            </div>
+                            <a href="@Url.Action("ExportarCoberturaNotas", "Coordinador", new { periodo = Model.Periodo })" class="btn btn-outline-success btn-sm ms-auto" title="Descarga un archivo CSV que se abre en Excel">
+                                <i class="bi bi-file-earmark-excel-fill me-1"></i>Exportar a Excel
+                            </a>
+                        </div>
+
+                        <div class="table-responsive" style="max-height: 480px; overflow-y: auto;">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Curso</th>
+                                        <th>Materia</th>
+                                        <th>Docente</th>
+                                        <th class="text-center">Estudiantes</th>
+                                        <th class="text-center">Con nota</th>
+                                        <th style="min-width: 180px;">Cobertura</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (Model.CoberturaNotas.Any())
+                                    {
+                                        foreach (var c in Model.CoberturaNotas)
+                                        {
+                                            string colorBarra = c.Porcentaje >= 100 ? "bg-success" : (c.Porcentaje >= 50 ? "bg-warning" : "bg-danger");
+
+                                            <tr class="fila-cobertura" data-incompleta="@(c.Porcentaje < 100 ? "1" : "0")">
+                                                <td>@c.Curso</td>
+                                                <td>@c.Materia</td>
+                                                <td class="small">@(string.IsNullOrWhiteSpace(c.Docente) ? "—" : c.Docente)</td>
+                                                <td class="text-center">@c.Estudiantes</td>
+                                                <td class="text-center">@c.ConNota</td>
+                                                <td>
+                                                    <div class="d-flex align-items-center gap-2">
+                                                        <div class="progress flex-grow-1" style="height: 10px;">
+                                                            <div class="progress-bar @colorBarra" role="progressbar" style="width: @(c.Porcentaje)%;" aria-valuenow="@c.Porcentaje" aria-valuemin="0" aria-valuemax="100"></div>
+                                                        </div>
+                                                        <span class="small fw-semibold">@(c.Porcentaje)%</span>
+                                                    </div>
+                                                    @if (c.Faltan > 0)
+                                                    {
+                                                        <div class="small text-muted">Faltan @c.Faltan</div>
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td colspan="6" class="text-center text-muted py-4">No hay cursos con estudiantes y materias del plan para medir.</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Asistencia -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-1"><i class="bi bi-calendar-check-fill me-2 text-success"></i>Última asistencia registrada por curso</h5>
+                        <p class="small text-muted">Se marca como alerta si el curso nunca ha registrado asistencia o lleva más de @SeguimientoEstudiantilViewModel.DiasSinAsistenciaAlerta días sin registrarla. En períodos de vacaciones esta alerta es esperable.</p>
+
+                        <div class="table-responsive" style="max-height: 420px; overflow-y: auto;">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Curso</th>
+                                        <th class="text-center">Estudiantes</th>
+                                        <th class="text-center">Con asistencia registrada</th>
+                                        <th>Última asistencia</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (Model.AsistenciaPorCurso.Any())
+                                    {
+                                        foreach (var a in Model.AsistenciaPorCurso)
+                                        {
+                                            <tr>
+                                                <td class="fw-semibold">@a.Curso</td>
+                                                <td class="text-center">@a.Estudiantes</td>
+                                                <td class="text-center">@a.ConRegistro</td>
+                                                <td>
+                                                    @if (a.UltimaFecha.HasValue)
+                                                    {
+                                                        @a.UltimaFecha.Value.ToString("dd/MM/yyyy")
+                                                        <span class="small text-muted"> (hace @a.DiasDesdeUltimo días)</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted small">Sin registros</span>
+                                                    }
+                                                </td>
+                                                <td>
+                                                    @if (a.EnAlerta)
+                                                    {
+                                                        <span class="badge bg-danger">@(a.UltimaFecha.HasValue ? "Sin asistencia reciente" : "Nunca registrada")</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge bg-success-subtle text-success border border-success-subtle">Al día</span>
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td colspan="5" class="text-center text-muted py-4">No hay cursos con estudiantes para medir.</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="small text-muted mt-3 mb-0">
+                    Las materias y los cursos se comparan por nombre (sin distinguir mayúsculas ni tildes), porque las notas guardan la materia como texto.
+                    Si una materia está escrita distinto en las notas y en el plan del curso, aparecerá como incompleta aunque sí tenga notas.
+                </p>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script>
+    (function () {
+        // Estudiantes en riesgo: búsqueda + solo sin plan
+        const buscarRiesgo = document.getElementById('buscarRiesgo');
+        const soloSinPlan = document.getElementById('soloSinPlan');
+
+        function filtrarRiesgo() {
+            const texto = buscarRiesgo.value.toLowerCase().trim();
+            document.querySelectorAll('#tbodyRiesgo .fila-riesgo').forEach(function (fila) {
+                const coincide = fila.textContent.toLowerCase().includes(texto);
+                const sinPlan = fila.getAttribute('data-sinplan') === '1';
+                fila.style.display = (coincide && (!soloSinPlan.checked || sinPlan)) ? '' : 'none';
+            });
+        }
+        buscarRiesgo.addEventListener('input', filtrarRiesgo);
+        soloSinPlan.addEventListener('change', filtrarRiesgo);
+
+        // Cobertura: solo incompletas
+        const soloIncompletas = document.getElementById('soloIncompletas');
+        soloIncompletas.addEventListener('change', function () {
+            document.querySelectorAll('.fila-cobertura').forEach(function (fila) {
+                const incompleta = fila.getAttribute('data-incompleta') === '1';
+                fila.style.display = (!soloIncompletas.checked || incompleta) ? '' : 'none';
+            });
+        });
+    })();
+</script>

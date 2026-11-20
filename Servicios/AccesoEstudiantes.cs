@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using ProyectoPAE.Models;
@@ -85,6 +86,43 @@ namespace ProyectoPAE.Servicios
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// ID_Usuario de los estudiantes vinculados a un acudiente según las relaciones registradas en la base de datos.
+        /// A diferencia de PuedeVerEstudiante, no usa el respaldo de demostración: solo devuelve hijos realmente vinculados.
+        /// </summary>
+        public static List<int> IdsHijos(ApplicationDbContext context, int idUsuarioAcudiente)
+        {
+            var padreTutor = context.PADRE_TUTOR.FirstOrDefault(p => p.id_usuario == idUsuarioAcudiente);
+            int idPadreLegacy = padreTutor != null ? padreTutor.id_padre : idUsuarioAcudiente;
+            var hijosIds = context.ESTUDIANTE_PADRE
+                .Where(ep => ep.ID_PADRE == idPadreLegacy || ep.ID_PADRE == idUsuarioAcudiente)
+                .Select(ep => ep.ID_ESTUDIANTE)
+                .ToList();
+
+            var estudiantesPorIdPadre = context.ESTUDIANTE
+                .Where(e => e.id_padre == idPadreLegacy || e.id_padre == idUsuarioAcudiente)
+                .Select(e => e.id_estudiante)
+                .ToList();
+
+            hijosIds = hijosIds.Union(estudiantesPorIdPadre).Distinct().ToList();
+
+            var estudiantesVinculados = context.ESTUDIANTE
+                .Where(e => hijosIds.Contains(e.id_estudiante) || (e.id_usuario != null && hijosIds.Contains(e.id_usuario.Value)))
+                .ToList();
+
+            var idsUsuarioHijos = estudiantesVinculados
+                .Where(e => e.id_usuario != null)
+                .Select(e => e.id_usuario!.Value)
+                .ToList();
+
+            return context.Usuarios
+                .Where(u => idsUsuarioHijos.Contains(u.ID_Usuario) || hijosIds.Contains(u.ID_Usuario))
+                .AsEnumerable()
+                .Where(u => u.ROL != null && u.ROL.Trim().ToLower() == "estudiante")
+                .Select(u => u.ID_Usuario)
+                .ToList();
         }
     }
 }

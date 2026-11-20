@@ -121,6 +121,10 @@
                             <i class="bi bi-file-earmark-pdf-fill"></i>
                             <span>Certificados</span>
                         </button>
+                        <button type="button" class="pae-sidebar-nav-item" onclick="location.href='@Url.Action("Index", "SolicitudCertificado")'">
+                            <i class="bi bi-hourglass-split"></i>
+                            <span>Solicitudes de Certificados</span>
+                        </button>
                         <button type="button" class="pae-sidebar-nav-item" data-subid="admin-reportes" onclick="verReportes()">
                             <i class="bi bi-graph-up-arrow"></i>
                             <span>Reportes Pro</span>
@@ -147,6 +151,10 @@
                         <button type="button" class="pae-sidebar-nav-item" data-subid="admin-certificados" onclick="verCertificados()">
                             <i class="bi bi-file-earmark-pdf-fill"></i>
                             <span>Certificados</span>
+                        </button>
+                        <button type="button" class="pae-sidebar-nav-item" onclick="location.href='@Url.Action("Index", "SolicitudCertificado")'">
+                            <i class="bi bi-hourglass-split"></i>
+                            <span>Solicitudes de Certificados</span>
                         </button>
                         <button type="button" class="pae-sidebar-nav-item" data-subid="admin-notificaciones" onclick="location.href='@Url.Action("Notificaciones", "Admin")'">
                             <i class="bi bi-megaphone-fill"></i>
@@ -235,6 +243,17 @@
                             <button class="btn btn-admin-solido btn-sm mt-auto w-100 text-white">Ver Certificados</button>
                         </div>
                     </div>
+                    <!-- Solicitudes de Certificados -->
+                    <div class="col-md-4 mb-4">
+                        <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-admin-limpia" 
+                             style="border-top: 2px solid #000000 !important; cursor: pointer;" 
+                             onclick="location.href='@Url.Action("Index", "SolicitudCertificado")'">
+                            <i class="bi bi-hourglass-split fs-2 mb-2" style="color: #e67e22;"></i>
+                            <h5 style="color: #e67e22; font-weight: bold;">Solicitudes de Certificados</h5>
+                            <p class="small text-muted mb-3" style="min-height: 44px; display: flex; align-items: center; justify-content: center;">Gestiona los plazos, entregas y alertas de las solicitudes de certificados.</p>
+                            <a href="@Url.Action("Index", "SolicitudCertificado")" class="btn btn-admin-solido btn-sm mt-auto w-100 text-white" onclick="event.stopPropagation()">Gestionar solicitudes</a>
+                        </div>
+                    </div>
                     <!-- 6. Reportes Pro -->
                     <div class="col-md-4 mb-4">
                         <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-admin-limpia" 
@@ -302,6 +321,17 @@
                             <h5 style="color: #e67e22; font-weight: bold;">Certificados</h5>
                             <p class="small text-muted mb-3" style="min-height: 44px; display: flex; align-items: center; justify-content: center;">Genera y descarga certificados oficiales.</p>
                             <button class="btn btn-admin-solido btn-sm mt-auto w-100 text-white">Ver Certificados</button>
+                        </div>
+                    </div>
+                    <!-- Solicitudes de Certificados -->
+                    <div class="col-md-4 mb-4">
+                        <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-admin-limpia" 
+                             style="border-top: 2px solid #000000 !important; cursor: pointer;" 
+                             onclick="location.href='@Url.Action("Index", "SolicitudCertificado")'">
+                            <i class="bi bi-hourglass-split fs-2 mb-2" style="color: #e67e22;"></i>
+                            <h5 style="color: #e67e22; font-weight: bold;">Solicitudes de Certificados</h5>
+                            <p class="small text-muted mb-3" style="min-height: 44px; display: flex; align-items: center; justify-content: center;">Gestiona los plazos, entregas y alertas de las solicitudes de certificados.</p>
+                            <a href="@Url.Action("Index", "SolicitudCertificado")" class="btn btn-admin-solido btn-sm mt-auto w-100 text-white" onclick="event.stopPropagation()">Gestionar solicitudes</a>
                         </div>
                     </div>
                     <!-- 5. Notificaciones -->
@@ -1356,7 +1386,7 @@
                         <small class="opacity-75">Expedición y verificación de certificados académicos y constancias de estudio</small>
                     </div>
                 </div>
-                <button class="btn btn-pae-volver" onclick="volverAdmin()">Volver al Panel</button>
+                <div class="d-flex gap-2"><a href="/SolicitudCertificado" class="btn btn-warning text-dark fw-bold rounded-pill px-3 shadow-sm"><i class="bi bi-hourglass-split me-1"></i> Solicitudes Radicadas</a><button class="btn btn-pae-volver" onclick="volverAdmin()">Volver al Panel</button></div>
             </div>
             @if (TempData["ErrorMatricula"] != null)
             {
@@ -3146,6 +3176,10 @@
                         <i class="bi bi-chat-heart-fill"></i>
                         <span>Módulo PQR</span>
                     </button>
+                    <button type="button" class="pae-sidebar-nav-item" onclick="location.href='@Url.Action("Index", "SolicitudCertificado")'">
+                        <i class="bi bi-hourglass-split"></i>
+                        <span>Solicitar Certificados</span>
+                    </button>
                 </div>
                 <div class="p-2 border-top bg-light">
                     <button type="button" class="btn btn-sm btn-outline-primary w-100 py-1.5" onclick="abrirModalAyudaContextual('acudiente-calificaciones')" style="font-size: 0.8rem;">
@@ -3250,6 +3284,21 @@
                         </p>
                         <a href="@Url.Action("Index", "Pqr")" class="btn btn-acudiente-solido btn-sm mt-auto w-100 text-white" onclick="event.stopPropagation()">
                             Acceder a PQR
+                        </a>
+                    </div>
+                </div>
+                <!-- 6. Solicitudes de Certificados -->
+                <div class="col-md-3 col-sm-6 mb-4">
+                    <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-acudiente-limpia" 
+                         style="border-top: 2px solid #000000 !important; cursor: pointer;" 
+                         onclick="location.href='@Url.Action("Index", "SolicitudCertificado")'">
+                        <i class="bi bi-hourglass-split fs-2 mb-2" style="color: #27ae60;"></i>
+                        <h5 style="color: #27ae60; font-weight: bold;">Solicitar Certificados</h5>
+                        <p class="small text-muted mb-3" style="min-height: 44px; display: flex; align-items: center; justify-content: center;">
+                            Solicita constancias de estudio y notas para tus hijos y sigue su estado.
+                        </p>
+                        <a href="@Url.Action("Index", "SolicitudCertificado")" class="btn btn-acudiente-solido btn-sm mt-auto w-100 text-white" onclick="event.stopPropagation()">
+                            Solicitar certificados
                         </a>
                     </div>
                 </div>
@@ -3459,6 +3508,10 @@
                         <i class="bi bi-chat-heart-fill"></i>
                         <span>Módulo PQR</span>
                     </button>
+                    <button type="button" class="pae-sidebar-nav-item" onclick="location.href='@Url.Action("Index", "SolicitudCertificado")'">
+                        <i class="bi bi-hourglass-split"></i>
+                        <span>Mis Solicitudes</span>
+                    </button>
                     <button type="button" class="pae-sidebar-nav-item" data-subid="estudiante-mejoras" onclick="verModuloMejoras()">
                         <i class="bi bi-shield-check"></i>
                         <span>Planes de Nivelación</span>
@@ -3544,6 +3597,19 @@
                         <p class="small text-muted">Radica y consulta tus solicitudes, peticiones o inquietudes escolares.</p>
                         <a href="@Url.Action("Index", "Pqr")" class="btn btn-estudiante-solido btn-sm mt-auto w-100 text-white" onclick="event.stopPropagation()">
                             Acceder a PQR
+                        </a>
+                    </div>
+                </div>
+                <!-- 7. Mis Solicitudes de Certificado -->
+                <div class="col-md-4 mb-4">
+                    <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-estudiante-limpia"
+                         style="border-top: 2px solid #000000 !important; cursor: pointer;"
+                         onclick="location.href='@Url.Action("Index", "SolicitudCertificado")'">
+                        <i class="bi bi-hourglass-split fs-2 mb-2" style="color: #6f42c1;"></i>
+                        <h5 style="color: #6f42c1; font-weight: bold;">Mis Solicitudes de Certificado</h5>
+                        <p class="small text-muted">Consulta el estado y la fecha límite de tus certificados solicitados.</p>
+                        <a href="@Url.Action("Index", "SolicitudCertificado")" class="btn btn-estudiante-solido btn-sm mt-auto w-100 text-white" onclick="event.stopPropagation()">
+                            Ver mis solicitudes
                         </a>
                     </div>
                 </div>

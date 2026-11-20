@@ -528,17 +528,34 @@ namespace ProyectoPAE.Controllers
                               _context.HORARIOS.Any(h => idsProfesor.Contains(h.id_profesor));
             }
 
-            usuario.ROL = rolNuevo;
-
-            // 4. Guardamos los cambios del usuario en la base de datos
+            // 4. Guardamos los cambios del usuario en la base de datos (tanto por EF Core como por SQL directo)
             try
             {
+                usuario.ROL = rolNuevo;
+                _context.Entry(usuario).Property(u => u.ROL).IsModified = true;
                 _context.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                // Si falla por triggers de EF, intentaremos con SQL directo
+            }
+
+            try
+            {
+                _context.Database.ExecuteSqlRaw(
+                    "UPDATE [dbo].[GU_Usuario] SET [ROL] = {0} WHERE [ID_Usuario] = {1}",
+                    rolNuevo, usuario.ID_Usuario);
             }
             catch (Exception ex)
             {
                 TempData["Error"] = "Error al actualizar el rol en la base de datos: " + ex.Message;
                 return RedirectToAction("Usuarios");
+            }
+
+            // Si el usuario que inició sesión es el mismo al que se le cambió el rol, actualizamos su sesión de inmediato
+            if (HttpContext.Session.GetInt32("UserId") == usuario.ID_Usuario)
+            {
+                HttpContext.Session.SetString("UserRol", rolNuevo);
             }
 
             // 5. Aviso al usuario afectado (usa el mecanismo de notificaciones del sistema)

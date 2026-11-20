@@ -74,6 +74,11 @@
                     <i class="bi bi-file-earmark-pdf-fill"></i>
                     <span>Certificados</span>
                 </a>
+                <a href="@Url.Action("Index", "SolicitudCertificado")"
+                   class="pae-sidebar-nav-item@(ActiveIf("SolicitudCertificado","Index"))">
+                    <i class="bi bi-hourglass-split"></i>
+                    <span>Solicitudes Certificados</span>
+                </a>
                 <a href="@Url.Action("Dashboard", "Home", new { seccion = "reportes" })"
                    class="pae-sidebar-nav-item@(ActiveIf("Home","Dashboard","reportes"))">
                     <i class="bi bi-graph-up-arrow"></i>
@@ -111,6 +116,11 @@
                    class="pae-sidebar-nav-item@(ActiveIf("Home","Dashboard","certificados"))">
                     <i class="bi bi-file-earmark-pdf-fill"></i>
                     <span>Certificados</span>
+                </a>
+                <a href="@Url.Action("Index", "SolicitudCertificado")"
+                   class="pae-sidebar-nav-item@(ActiveIf("SolicitudCertificado","Index"))">
+                    <i class="bi bi-hourglass-split"></i>
+                    <span>Solicitudes Certificados</span>
                 </a>
                 <a href="@Url.Action("Notificaciones", "Admin")"
                    class="pae-sidebar-nav-item@(ActiveIf("Admin","Notificaciones"))">

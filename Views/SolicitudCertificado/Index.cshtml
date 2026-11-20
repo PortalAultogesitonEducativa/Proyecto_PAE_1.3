@@ -1,0 +1,276 @@
+﻿@model IEnumerable<ProyectoPAE.Models.SolicitudCertificadoItem>
+@using ProyectoPAE.Models
+@{
+    ViewData["Title"] = "Solicitudes de Certificados";
+    bool esGestor = ViewBag.EsGestor ?? false;
+    bool puedeSolicitar = ViewBag.PuedeSolicitar ?? false;
+    string rolActual = ViewBag.RolActual ?? "estudiante";
+    string busqueda = ViewBag.Busqueda ?? "";
+    string estadoFiltro = ViewBag.Estado ?? "todos";
+    string plazoFiltro = ViewBag.Plazo ?? "todos";
+    int totalVencidas = ViewBag.TotalVencidas ?? 0;
+    int totalPorVencer = ViewBag.TotalPorVencer ?? 0;
+}
+
+<div class="container-fluid py-3 px-md-4">
+    <div class="panel-con-sidebar">
+        <!-- Barra lateral contextual según el rol del usuario -->
+        @if (rolActual == "admin" || rolActual == "coordinador")
+        {
+            @await Html.PartialAsync("_SidebarAdmin")
+        }
+        else if (rolActual == "docente")
+        {
+            @await Html.PartialAsync("_SidebarDocente")
+        }
+        else if (rolActual == "acudiente" || rolActual == "padre")
+        {
+            @await Html.PartialAsync("_SidebarAcudiente")
+        }
+        else
+        {
+            @await Html.PartialAsync("_SidebarEstudiante")
+        }
+
+        <main class="submodulo-activo flex-grow-1" role="main" aria-label="Contenido Solicitudes de Certificados">
+            <!-- Encabezado del módulo -->
+            <div class="card pae-header-card border-0 mb-4 p-4 shadow-sm" style="background: linear-gradient(135deg, #0d2a4a 0%, #1a3d66 100%);">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                    <div class="text-white">
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <span class="badge bg-warning text-dark px-2.5 py-1 rounded-pill fw-bold">Secretaría Académica</span>
+                            <small class="text-white-50">Portal PAE &bull; Servicio Institucional</small>
+                        </div>
+                        <h2 class="h3 fw-bold mb-1 text-white">
+                            <i class="bi bi-hourglass-split me-2" style="color: #e67e22;"></i>Solicitudes de Certificados
+                        </h2>
+                        <p class="text-white-50 mb-0 small">
+                            @if (esGestor)
+                            {
+                                @:Registra, gestiona y entrega las solicitudes de certificados dentro del plazo establecido.
+                            }
+                            else if (rolActual == "acudiente" || rolActual == "padre")
+                            {
+                                @:Solicita certificados para tus hijos y consulta la fecha límite y el estado de cada solicitud.
+                            }
+                            else
+                            {
+                                @:Consulta el estado y la fecha límite de entrega de tus solicitudes de certificados.
+                            }
+                        </p>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-2">
+                        @if (puedeSolicitar)
+                        {
+                            <a href="@Url.Action("Crear", "SolicitudCertificado")" class="btn btn-warning text-dark fw-bold rounded-pill px-4 shadow-sm">
+                                <i class="bi bi-plus-circle-fill me-1"></i> Solicitar certificado
+                            </a>
+                        }
+                        <a href="@Url.Action("Dashboard", "Home")" class="btn btn-outline-light rounded-pill px-3" title="Regresar al Panel Principal">
+                            <i class="bi bi-arrow-left me-1"></i> Volver al Panel
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Alertas globales -->
+            @if (TempData["Exito"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 d-flex align-items-center gap-2" role="alert" aria-live="polite">
+                    <i class="bi bi-check-circle-fill fs-5 text-success"></i>
+                    <div>@TempData["Exito"]</div>
+                    <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+                </div>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0 d-flex align-items-center gap-2" role="alert" aria-live="assertive">
+                    <i class="bi bi-exclamation-triangle-fill fs-5 text-danger"></i>
+                    <div>@TempData["Error"]</div>
+                    <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+                </div>
+            }
+
+            <!-- Advertencia de plazos (siempre visible si hay algo por atender) -->
+            @if (totalVencidas > 0 || totalPorVencer > 0)
+            {
+                <div class="alert alert-@(totalVencidas > 0 ? "danger" : "warning") d-flex align-items-center gap-3 shadow-sm border-0" role="alert" aria-live="polite">
+                    <i class="bi bi-exclamation-triangle-fill fs-4"></i>
+                    <div>
+                        <strong>Atención con los plazos de entrega.</strong>
+                        @if (totalVencidas > 0)
+                        {
+                            <span>@(totalVencidas == 1 ? "Hay 1 solicitud vencida." : $"Hay {totalVencidas} solicitudes vencidas.")</span>
+                        }
+                        @if (totalPorVencer > 0)
+                        {
+                            <span>@(totalPorVencer == 1 ? "Hay 1 próxima a vencer." : $"Hay {totalPorVencer} próximas a vencer.")</span>
+                        }
+                    </div>
+                </div>
+            }
+
+            <!-- Tarjetas de resumen -->
+            <div class="row g-3 mb-4">
+                <div class="col-sm-6 col-xl">
+                    <div class="card border-0 shadow-sm p-3 h-100 rounded-3" style="border-left: 4px solid #0d2a4a !important;">
+                        <span class="text-muted small text-uppercase fw-semibold">Total</span>
+                        <div class="d-flex justify-content-between align-items-center mt-2">
+                            <span class="fs-3 fw-bold" style="color: #0d2a4a;">@ViewBag.Total</span>
+                            <span class="badge bg-light text-dark border p-2 rounded-circle"><i class="bi bi-inbox-fill text-primary"></i></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl">
+                    <div class="card border-0 shadow-sm p-3 h-100 rounded-3" style="border-left: 4px solid #0dcaf0 !important;">
+                        <span class="text-muted small text-uppercase fw-semibold">Abiertas</span>
+                        <div class="d-flex justify-content-between align-items-center mt-2">
+                            <span class="fs-3 fw-bold text-info">@ViewBag.TotalAbiertas</span>
+                            <span class="badge bg-light text-dark border p-2 rounded-circle"><i class="bi bi-hourglass-split text-info"></i></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl">
+                    <div class="card border-0 shadow-sm p-3 h-100 rounded-3" style="border-left: 4px solid #dc3545 !important;">
+                        <span class="text-muted small text-uppercase fw-semibold">Vencidas</span>
+                        <div class="d-flex justify-content-between align-items-center mt-2">
+                            <span class="fs-3 fw-bold text-danger">@ViewBag.TotalVencidas</span>
+                            <span class="badge bg-light text-dark border p-2 rounded-circle"><i class="bi bi-exclamation-octagon-fill text-danger"></i></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl">
+                    <div class="card border-0 shadow-sm p-3 h-100 rounded-3" style="border-left: 4px solid #ffc107 !important;">
+                        <span class="text-muted small text-uppercase fw-semibold">Por vencer</span>
+                        <div class="d-flex justify-content-between align-items-center mt-2">
+                            <span class="fs-3 fw-bold text-warning">@ViewBag.TotalPorVencer</span>
+                            <span class="badge bg-light text-dark border p-2 rounded-circle"><i class="bi bi-exclamation-triangle-fill text-warning"></i></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl">
+                    <div class="card border-0 shadow-sm p-3 h-100 rounded-3" style="border-left: 4px solid #198754 !important;">
+                        <span class="text-muted small text-uppercase fw-semibold">Entregadas</span>
+                        <div class="d-flex justify-content-between align-items-center mt-2">
+                            <span class="fs-3 fw-bold text-success">@ViewBag.TotalEntregadas</span>
+                            <span class="badge bg-light text-dark border p-2 rounded-circle"><i class="bi bi-patch-check-fill text-success"></i></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filtros -->
+            <div class="card border-0 shadow-sm rounded-3 mb-3">
+                <div class="card-body">
+                    <form method="get" action="@Url.Action("Index", "SolicitudCertificado")" class="row g-2 align-items-end">
+                        <div class="col-md-4">
+                            <label for="busqueda" class="form-label small fw-semibold mb-1">Buscar</label>
+                            <input type="text" id="busqueda" name="busqueda" value="@busqueda" class="form-control"
+                                   placeholder="@(esGestor ? "Radicado, estudiante o solicitante" : "Radicado o estudiante")" />
+                        </div>
+                        <div class="col-md-3">
+                            <label for="estado" class="form-label small fw-semibold mb-1">Estado</label>
+                            <select id="estado" name="estado" class="form-select">
+                                <option value="todos" selected="@(estadoFiltro == "todos")">Todos</option>
+                                <option value="Pendiente" selected="@(estadoFiltro == "Pendiente")">Pendiente</option>
+                                <option value="En proceso" selected="@(estadoFiltro == "En proceso")">En proceso</option>
+                                <option value="Entregada" selected="@(estadoFiltro == "Entregada")">Entregada</option>
+                                <option value="Cancelada" selected="@(estadoFiltro == "Cancelada")">Cancelada</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="plazo" class="form-label small fw-semibold mb-1">Plazo</label>
+                            <select id="plazo" name="plazo" class="form-select">
+                                <option value="todos" selected="@(plazoFiltro == "todos")">Todos</option>
+                                <option value="vencida" selected="@(plazoFiltro == "vencida")">Vencidas</option>
+                                <option value="por-vencer" selected="@(plazoFiltro == "por-vencer")">Próximas a vencer</option>
+                                <option value="en-plazo" selected="@(plazoFiltro == "en-plazo")">En plazo</option>
+                                <option value="entregada-a-tiempo" selected="@(plazoFiltro == "entregada-a-tiempo")">Entregadas a tiempo</option>
+                                <option value="entregada-con-retraso" selected="@(plazoFiltro == "entregada-con-retraso")">Entregadas con retraso</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2 d-flex gap-2">
+                            <button type="submit" class="btn btn-primary flex-grow-1"><i class="bi bi-funnel-fill me-1"></i>Filtrar</button>
+                            <a href="@Url.Action("Index", "SolicitudCertificado")" class="btn btn-outline-secondary" title="Limpiar filtros"><i class="bi bi-x-lg"></i></a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Listado -->
+            <div class="card border-0 shadow-sm rounded-3">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Radicado</th>
+                                <th>Estudiante</th>
+                                <th>Certificado</th>
+                                <th>Solicitada</th>
+                                <th>Fecha límite</th>
+                                <th>Estado</th>
+                                <th>Plazo</th>
+                                <th>Entrega</th>
+                                <th class="text-end">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.Any())
+                            {
+                                foreach (var item in Model)
+                                {
+                                    var s = item.Solicitud;
+                                    var p = item.Plazo;
+                                    string claseFila = p.Clave == "vencida" ? "table-danger" : (p.Clave == "por-vencer" ? "table-warning" : "");
+                                    string badgePlazo = "bg-" + p.Clase + (p.Clase == "warning" ? " text-dark" : " text-white");
+                                    string badgeEstado = s.Estado == "Entregada" ? "bg-success text-white"
+                                        : s.Estado == "En proceso" ? "bg-info text-dark"
+                                        : s.Estado == "Cancelada" ? "bg-secondary text-white"
+                                        : "bg-light text-dark border";
+
+                                    <tr class="@claseFila">
+                                        <td class="fw-semibold">@s.CodigoRadicado</td>
+                                        <td>
+                                            <div>@s.NombreEstudiante</div>
+                                            @if (esGestor)
+                                            {
+                                                <div class="small text-muted">Solicita: @s.NombreSolicitante (@s.RolSolicitante)</div>
+                                            }
+                                        </td>
+                                        <td>@EstadoSolicitudCertificado.NombreTipo(s.TipoCertificado)</td>
+                                        <td>@s.FechaSolicitud.ToString("dd/MM/yyyy")</td>
+                                        <td class="fw-semibold">@s.FechaLimite.ToString("dd/MM/yyyy")</td>
+                                        <td><span class="badge @badgeEstado">@s.Estado</span></td>
+                                        <td><span class="badge @badgePlazo"><i class="bi @p.Icono me-1"></i>@p.Texto</span></td>
+                                        <td>@(s.FechaEntrega.HasValue ? s.FechaEntrega.Value.ToString("dd/MM/yyyy") : "—")</td>
+                                        <td class="text-end">
+                                            <a href="@Url.Action("Detalle", "SolicitudCertificado", new { id = s.IdSolicitud })" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-eye-fill me-1"></i>Ver
+                                            </a>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="9" class="text-center text-muted py-5">
+                                        <i class="bi bi-inbox fs-2 d-block mb-2"></i>
+                                        No hay solicitudes de certificados para mostrar.
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <p class="small text-muted mt-3 mb-0">
+                <i class="bi bi-info-circle me-1"></i>
+                Plazo estándar de entrega: @ProyectoPAE.Servicios.PlazoCertificado.DiasHabilesPlazo días hábiles desde la solicitud.
+                Se advierte cuando faltan @ProyectoPAE.Servicios.PlazoCertificado.DiasHabilesAviso días hábiles o menos.
+            </p>
+        </main>
+    </div>
+</div>

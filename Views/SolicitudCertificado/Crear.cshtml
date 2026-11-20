@@ -1,0 +1,201 @@
+﻿@model ProyectoPAE.Models.SolicitudCertificadoCrearViewModel
+@using ProyectoPAE.Models
+@{
+    ViewData["Title"] = "Solicitar certificado";
+    string rolActual = ViewBag.RolActual ?? "estudiante";
+    bool esGestor = Model.EsGestor;
+    bool sinHijos = !esGestor && !Model.Hijos.Any();
+}
+
+<div class="container-fluid py-3 px-md-4">
+    <div class="panel-con-sidebar">
+        <!-- Barra lateral contextual según el rol del usuario -->
+        @if (rolActual == "admin" || rolActual == "coordinador")
+        {
+            @await Html.PartialAsync("_SidebarAdmin")
+        }
+        else if (rolActual == "docente")
+        {
+            @await Html.PartialAsync("_SidebarDocente")
+        }
+        else if (rolActual == "acudiente" || rolActual == "padre")
+        {
+            @await Html.PartialAsync("_SidebarAcudiente")
+        }
+        else
+        {
+            @await Html.PartialAsync("_SidebarEstudiante")
+        }
+
+        <main class="submodulo-activo flex-grow-1" role="main" aria-label="Solicitar certificado">
+            <div class="card pae-header-card border-0 mb-4 p-4 shadow-sm" style="background: linear-gradient(135deg, #0d2a4a 0%, #1a3d66 100%);">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                    <div class="text-white">
+                        <h2 class="h3 fw-bold mb-1 text-white">
+                            <i class="bi bi-file-earmark-plus-fill me-2" style="color: #e67e22;"></i>Solicitar certificado
+                        </h2>
+                        <p class="text-white-50 mb-0 small">
+                            @(esGestor
+                                ? "Registra una solicitud a nombre de un estudiante. El plazo de entrega se calcula desde la fecha de solicitud."
+                                : "Elige a tu hijo y el tipo de certificado. La fecha límite de entrega se asigna automáticamente.")
+                        </p>
+                    </div>
+                    <a href="@Url.Action("Index", "SolicitudCertificado")" class="btn btn-outline-light rounded-pill px-3">
+                        <i class="bi bi-arrow-left me-1"></i> Volver a solicitudes
+                    </a>
+                </div>
+            </div>
+
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="alert alert-danger shadow-sm border-0" role="alert" aria-live="assertive">
+                    <div class="d-flex align-items-start gap-2">
+                        <i class="bi bi-exclamation-triangle-fill fs-5 text-danger"></i>
+                        <div>
+                            @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                            {
+                                <div>@error.ErrorMessage</div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+
+            @if (sinHijos)
+            {
+                <div class="alert alert-warning shadow-sm border-0" role="alert">
+                    <i class="bi bi-info-circle-fill me-1"></i>
+                    No encontramos estudiantes vinculados a tu cuenta, por eso no puedes solicitar certificados desde aquí.
+                    Comunícate con la coordinación para que registren el vínculo con tu hijo o registren la solicitud por ti.
+                </div>
+            }
+
+            <div class="card border-0 shadow-sm rounded-3">
+                <div class="card-body p-4">
+                    <form method="post" action="@Url.Action("Crear", "SolicitudCertificado")">
+                        @Html.AntiForgeryToken()
+
+                        @if (esGestor)
+                        {
+                            <div class="mb-3">
+                                <label for="NumeroDocumento" class="form-label fw-semibold">Número de documento del estudiante</label>
+                                <input type="text" id="NumeroDocumento" name="NumeroDocumento" value="@Model.NumeroDocumento"
+                                       class="form-control" maxlength="30" placeholder="Ej: 1234567890" required />
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="mb-3">
+                                <label for="IdEstudiante" class="form-label fw-semibold">Estudiante</label>
+                                <select id="IdEstudiante" name="IdEstudiante" class="form-select" required disabled="@sinHijos">
+                                    <option value="">Selecciona a tu hijo</option>
+                                    @foreach (var hijo in Model.Hijos)
+                                    {
+                                        <option value="@hijo.Id" selected="@(Model.IdEstudiante == hijo.Id)">@hijo.Nombre</option>
+                                    }
+                                </select>
+                            </div>
+                        }
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold d-block">Tipo de certificado</label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="TipoCertificado" id="tipoMatricula"
+                                       value="@EstadoSolicitudCertificado.TipoMatricula" checked="@(Model.TipoCertificado == EstadoSolicitudCertificado.TipoMatricula)" />
+                                <label class="form-check-label" for="tipoMatricula">Constancia de matrícula</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="TipoCertificado" id="tipoNotas"
+                                       value="@EstadoSolicitudCertificado.TipoNotas" checked="@(Model.TipoCertificado == EstadoSolicitudCertificado.TipoNotas)" />
+                                <label class="form-check-label" for="tipoNotas">Certificado de notas</label>
+                            </div>
+                        </div>
+
+                        @if (esGestor)
+                        {
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label for="FechaSolicitud" class="form-label fw-semibold">Fecha de solicitud</label>
+                                    <input type="date" id="FechaSolicitud" name="FechaSolicitud"
+                                           value="@(Model.FechaSolicitud.HasValue ? Model.FechaSolicitud.Value.ToString("yyyy-MM-dd") : "")"
+                                           max="@DateTime.Now.ToString("yyyy-MM-dd")" class="form-control" />
+                                    <div class="form-text">Por defecto es hoy. Cámbiala si el certificado se pidió antes.</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="FechaLimite" class="form-label fw-semibold">Fecha límite de entrega</label>
+                                    <input type="date" id="FechaLimite" name="FechaLimite"
+                                           value="@(Model.FechaLimite.HasValue ? Model.FechaLimite.Value.ToString("yyyy-MM-dd") : "")"
+                                           class="form-control" />
+                                    <div class="form-text">Se calcula con @ProyectoPAE.Servicios.PlazoCertificado.DiasHabilesPlazo días hábiles; puedes ajustarla.</div>
+                                </div>
+                            </div>
+                        }
+
+                        <div class="mb-3">
+                            <label for="Observaciones" class="form-label fw-semibold">Observaciones (opcional)</label>
+                            <textarea id="Observaciones" name="Observaciones" class="form-control" rows="3" maxlength="500"
+                                      placeholder="Ej: Se necesita para un trámite de traslado.">@Model.Observaciones</textarea>
+                        </div>
+
+                        <div class="alert alert-light border small mb-4">
+                            <i class="bi bi-info-circle me-1"></i>
+                            @if (esGestor)
+                            {
+                                @:La solicitud quedará en estado <strong>Pendiente</strong> y se mostrará en las alertas si está próxima a vencer o vencida.
+                            }
+                            else
+                            {
+                                @:El certificado se entrega dentro de <strong>@ProyectoPAE.Servicios.PlazoCertificado.DiasHabilesPlazo días hábiles</strong>. Recibirás una notificación cuando esté listo.
+                            }
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-warning text-dark fw-bold px-4" disabled="@sinHijos">
+                                <i class="bi bi-send-fill me-1"></i> Registrar solicitud
+                            </button>
+                            <a href="@Url.Action("Index", "SolicitudCertificado")" class="btn btn-outline-secondary">Cancelar</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+@if (esGestor)
+{
+    <script>
+        // Recalcula la fecha límite (5 días hábiles) cuando cambia la fecha de solicitud,
+        // salvo que el usuario ya haya fijado una fecha límite manualmente.
+        (function () {
+            const diasPlazo = @ProyectoPAE.Servicios.PlazoCertificado.DiasHabilesPlazo;
+            const campoSolicitud = document.getElementById('FechaSolicitud');
+            const campoLimite = document.getElementById('FechaLimite');
+            let limiteEditado = false;
+
+            function formatear(fecha) {
+                const m = String(fecha.getMonth() + 1).padStart(2, '0');
+                const d = String(fecha.getDate()).padStart(2, '0');
+                return fecha.getFullYear() + '-' + m + '-' + d;
+            }
+
+            function sumarDiasHabiles(texto, dias) {
+                const partes = texto.split('-');
+                const fecha = new Date(parseInt(partes[0], 10), parseInt(partes[1], 10) - 1, parseInt(partes[2], 10));
+                let agregados = 0;
+                while (agregados < dias) {
+                    fecha.setDate(fecha.getDate() + 1);
+                    const dia = fecha.getDay();
+                    if (dia !== 0 && dia !== 6) agregados++;
+                }
+                return fecha;
+            }
+
+            campoLimite.addEventListener('input', function () { limiteEditado = true; });
+            campoSolicitud.addEventListener('change', function () {
+                if (limiteEditado || !campoSolicitud.value) return;
+                campoLimite.value = formatear(sumarDiasHabiles(campoSolicitud.value, diasPlazo));
+            });
+        })();
+    </script>
+}

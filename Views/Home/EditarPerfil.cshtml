@@ -1,25 +1,26 @@
 @model ProyectoPAE.Models.Usuario
+@{
+    ViewData["Title"] = "Editar Mi Perfil";
+    var pendiente = ViewBag.CambioCorreoPendiente as ProyectoPAE.Models.CambioCorreo;
+    string? errorCorreo = TempData["ErrorCorreo"] as string;
+}
 
 <div class="container mt-5">
-    <div class="card shadow-lg border-0">
-        <div class="card-header bg-primary text-white p-3 d-flex justify-content-between align-items-center">
+    <div class="card shadow-lg border-0 rounded-4">
+        <div class="card-header bg-primary text-white p-3 d-flex justify-content-between align-items-center rounded-top-4">
             <h4 class="mb-0"><i class="bi bi-pencil-square me-2"></i>Editar Mi Perfil</h4>
             <a href="@Url.Action("Dashboard", "Home")" class="btn btn-pae-volver">
-                <i class="bi bi-arrow-left me-1"></i> Volver al Dashboard
+                <i class="bi bi-arrow-left me-1"></i> Volver al Panel
             </a>
         </div>
         <div class="card-body p-4">
             <form asp-action="ActualizarPerfil" method="post">
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label class="form-label fw-bold">Correo Electrónico</label>
-                        <input asp-for="CORREO_ELECTRONICO" class="form-control" type="email" required />
-                    </div>
-                    <div class="col-md-6 mb-3">
                         <label class="form-label fw-bold">Teléfono</label>
                         <input asp-for="TELEFONO" class="form-control" type="tel" />
                     </div>
-                    <div class="col-md-12 mb-3">
+                    <div class="col-md-6 mb-3">
                         <label class="form-label fw-bold">Dirección de Residencia</label>
                         <input asp-for="DIRECCION" class="form-control" />
                     </div>
@@ -28,6 +29,54 @@
                 <div class="mt-4 d-flex justify-content-end gap-2">
                     <a href="@Url.Action("Dashboard", "Home")" class="btn btn-pae-volver"><i class="bi bi-arrow-left me-1"></i> Volver</a>
                     <button type="submit" class="btn btn-primary px-4">Guardar Cambios</button>
+                </div>
+            </form>
+
+            <hr class="my-4" />
+
+            <!-- Cambio de correo con confirmación (RF-03.2) -->
+            <h5 class="fw-bold"><i class="bi bi-envelope-at-fill me-2 text-primary"></i>Correo Electrónico</h5>
+            <p class="mb-2">Tu correo actual es <strong>@Model.CORREO_ELECTRONICO</strong>.</p>
+            <p class="text-muted small">
+                Para cambiarlo te enviaremos un enlace de confirmación seguro al <strong>nuevo</strong> correo.
+                Tu correo actual no cambiará hasta que abras y confirmes ese enlace.
+            </p>
+
+            @if (!string.IsNullOrEmpty(errorCorreo))
+            {
+                <div class="alert alert-danger" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-1"></i>@errorCorreo
+                </div>
+            }
+
+            @if (pendiente != null)
+            {
+                <div class="alert alert-info d-flex flex-wrap align-items-center justify-content-between gap-2 rounded-3 shadow-sm" role="alert">
+                    <div>
+                        <i class="bi bi-hourglass-split me-1"></i>
+                        Hay un cambio pendiente a <strong>@pendiente.CorreoNuevo</strong>.
+                        Enviamos el enlace el @pendiente.FechaSolicitud.ToString("dd/MM/yyyy HH:mm") y vence el @pendiente.FechaExpiracion.ToString("dd/MM/yyyy HH:mm").
+                        Revisa tu bandeja de entrada (y la carpeta de spam).
+                    </div>
+                    <form asp-controller="Correo" asp-action="Cancelar" method="post" class="mb-0">
+                        <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3">Cancelar cambio</button>
+                    </form>
+                </div>
+            }
+
+            <form asp-controller="Correo" asp-action="Solicitar" method="post" class="row g-3">
+                <div class="col-md-5">
+                    <label for="correoNuevo" class="form-label fw-bold">Nuevo Correo Electrónico</label>
+                    <input type="email" id="correoNuevo" name="correoNuevo" class="form-control" maxlength="150" required autocomplete="email" placeholder="ejemplo@correo.com" />
+                </div>
+                <div class="col-md-4">
+                    <label for="passwordActual" class="form-label fw-bold">Tu Contraseña Actual</label>
+                    <input type="password" id="passwordActual" name="passwordActual" class="form-control" required autocomplete="current-password" placeholder="Ingresa tu contraseña" />
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-outline-primary w-100 rounded-pill">
+                        <i class="bi bi-send-fill me-1"></i> Enviar Enlace
+                    </button>
                 </div>
             </form>
         </div>
