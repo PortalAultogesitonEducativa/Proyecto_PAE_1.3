@@ -18,6 +18,7 @@ namespace ProyectoPAE.Models
         public double Periodo2 { get; set; }
         public double Periodo3 { get; set; }
         public double Periodo4 { get; set; }
+        public List<string> LogrosPeriodo { get; set; } = new List<string>();
         // Cálculo automático de la definitiva
         public double Definitiva => (Periodo1 + Periodo2 + Periodo3 + Periodo4) / 4;
     }

@@ -101,6 +101,36 @@ public class EstudianteController : Controller
             .ToList();
         ViewBag.AccionesMejora = mejoras;
 
+        // Cargar logros académicos correspondientes al grado del estudiante
+        _context.AsegurarEsquemaLogros();
+        var usuarioEst = _context.Usuarios.Find(userId);
+        var estRecord = _context.ESTUDIANTE.FirstOrDefault(e =>
+            e.id_usuario == userId ||
+            (usuarioEst != null && e.email != null && e.email.ToLower() == usuarioEst.CORREO_ELECTRONICO.ToLower()));
+
+        string cursoRef = estRecord?.curso_asignado ?? "";
+        if (string.IsNullOrEmpty(cursoRef) && estRecord != null)
+        {
+            var matActiva = _context.Matriculas
+                .Where(m => m.id_estudiante == estRecord.id_estudiante)
+                .OrderByDescending(m => m.ano)
+                .FirstOrDefault();
+            if (matActiva?.id_curso != null)
+            {
+                cursoRef = _context.Cursos.Find(matActiva.id_curso)?.nombre_curso ?? "";
+            }
+        }
+
+        int gradoEstudiante = MatriculaAcademicaService.ExtraerGrado(cursoRef, 6);
+        var logrosGrado = _context.Logros
+            .Where(l => l.activo && l.grado == gradoEstudiante)
+            .OrderBy(l => l.periodo)
+            .ThenBy(l => l.id_logro)
+            .ToList();
+
+        ViewBag.GradoEstudiante = gradoEstudiante;
+        ViewBag.LogrosEstudiante = logrosGrado;
+
         return View(notas);
     }
 

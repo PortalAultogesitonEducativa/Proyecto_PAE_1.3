@@ -1727,7 +1727,17 @@
                         <button class="btn btn-docente-solido btn-sm mt-auto w-100 text-white">Ver Observaciones</button>
                     </div>
                 </div>
-
+                <!-- 4. Tarjeta: Reportes Generales -->
+                <div class="col-md-4 mb-4">
+                    <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-docente-limpia" 
+                         style="border-top: 2px solid #000000 !important; cursor: pointer;"
+                         onclick="location.href='@Url.Action("ReporteGrupal", "Docente")'">
+                        <i class="bi bi-bar-chart-line fs-2 mb-2" style="color: #2980b9;"></i>
+                        <h5 style="color: #2980b9; font-weight: bold;">Reportes Generales</h5>
+                        <p class="small text-muted mb-3" style="min-height: 44px; display: flex; align-items: center; justify-content: center;">Estadísticas y promedios grupales del curso.</p>
+                        <a href="@Url.Action("ReporteGrupal", "Docente")" class="btn btn-docente-solido btn-sm mt-auto w-100 text-white">Ver Estadísticas</a>
+                    </div>
+                </div>
                 <!-- 5. Tarjeta: Gestión de Acciones de Mejora -->
                 <div class="col-md-4 mb-4">
                     <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-docente-limpia" 
@@ -1811,14 +1821,32 @@
                     </button>
                 </div>
             </div>
-            <!-- 1. Filtros Previos: Curso, Jornada y Tipo de Nota -->
+            <!-- 1. Filtros en Cascada: Jornada -> Curso -> Estudiante -> Tipo de Nota -->
             <div class="card border-0 shadow-sm p-4 mb-4 rounded-3">
-                <h5 class="fw-bold text-dark mb-3"><i class="bi bi-funnel-fill text-primary me-2"></i>Filtros de Búsqueda y Selección</h5>
-                <div class="row g-3">
+                <h5 class="fw-bold text-dark mb-3">
+                    <i class="bi bi-funnel-fill text-primary me-2"></i>Filtros de Búsqueda y Selección
+                </h5>
+                <div class="row g-3 align-items-end">
+                    
+                    <!-- 1. Jornada (filtra los cursos disponibles en el paso 2) -->
                     <div class="col-md-3">
-                        <label class="form-label small fw-bold">Curso / Grado</label>
+                        <label for="selectJornadaObservador" class="form-label small fw-bold text-dark">
+                            <i class="bi bi-clock-history text-primary me-1"></i>Jornada
+                        </label>
+                        <select class="form-select" id="selectJornadaObservador" onchange="filtrarEstudiantesObservador()">
+                            <option value="Mañana" selected>Mañana</option>
+                            <option value="Tarde">Tarde</option>
+                            <option value="todos">Todas las Jornadas</option>
+                        </select>
+                    </div>
+
+                    <!-- 2. Curso (inicia vacío con "-- Seleccione un Curso --") -->
+                    <div class="col-md-3">
+                        <label for="selectCursoObservador" class="form-label small fw-bold text-dark">
+                            <i class="bi bi-mortarboard text-primary me-1"></i>Curso
+                        </label>
                         <select class="form-select" id="selectCursoObservador" onchange="filtrarEstudiantesObservador()">
-                            <option value="todos">Todos mis Cursos</option>
+                            <option value="">-- Seleccione un Curso --</option>
                             @if (ViewBag.CursosDocente != null)
                             {
                                 foreach (var c in (IEnumerable<string>)ViewBag.CursosDocente)
@@ -1828,16 +1856,12 @@
                             }
                         </select>
                     </div>
+
+                    <!-- 3. Estudiante (se habilita con los alumnos del curso elegido) -->
                     <div class="col-md-3">
-                        <label class="form-label small fw-bold">Jornada</label>
-                        <select class="form-select" id="selectJornadaObservador" onchange="filtrarEstudiantesObservador()">
-                            <option value="todos">Todas las Jornadas</option>
-                            <option value="Mañana" selected>Mañana</option>
-                            <option value="Tarde">Tarde</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label small fw-bold">Estudiante <span class="text-danger">*</span></label>
+                        <label for="selectEstudianteObservacion" class="form-label small fw-bold text-dark">
+                            <i class="bi bi-person-check text-primary me-1"></i>Estudiante <span class="text-danger">*</span>
+                        </label>
                         <select class="form-select" id="selectEstudianteObservacion" required onchange="cargarObservacionesEstudianteSeleccionado()">
                             <option value="">-- Seleccionar Estudiante --</option>
                             @if (ViewBag.EstudiantesAsistencia != null)
@@ -1846,13 +1870,19 @@
                                 foreach (var est in (List<ProyectoPAE.Models.Usuario>)ViewBag.EstudiantesAsistencia)
                                 {
                                     string cursoEst = (gradosMap != null && gradosMap.ContainsKey(est.ID_Usuario)) ? gradosMap[est.ID_Usuario] : "";
-                                    <option value="@est.ID_Usuario" data-curso="@cursoEst">@(!string.IsNullOrEmpty(est.NOMBRES) ? $"{est.NOMBRES} {est.APELLIDOS}".Trim() : est.NOMBRE_USUARIO) @(!string.IsNullOrEmpty(cursoEst) ? $"({cursoEst})" : "")</option>
+                                    <option value="@est.ID_Usuario" data-curso="@cursoEst">
+                                        @(!string.IsNullOrEmpty(est.NOMBRES) ? $"{est.NOMBRES} {est.APELLIDOS}".Trim() : est.NOMBRE_USUARIO) @(!string.IsNullOrEmpty(cursoEst) ? $"({cursoEst})" : "")
+                                    </option>
                                 }
                             }
                         </select>
                     </div>
+
+                    <!-- 4. Tipo de Nota -->
                     <div class="col-md-3">
-                        <label class="form-label small fw-bold">Tipo de Nota <span class="text-danger">*</span></label>
+                        <label for="selectTipoNotaObservacion" class="form-label small fw-bold text-dark">
+                            <i class="bi bi-tag text-primary me-1"></i>Tipo de Nota <span class="text-danger">*</span>
+                        </label>
                         <select class="form-select" id="selectTipoNotaObservacion" onchange="cambiarCamposObservadorPorTipo()">
                             <option value="Positiva / Mérito" class="text-success fw-bold">Positiva / Mérito</option>
                             <option value="Seguimiento Académico" class="text-warning fw-bold">Seguimiento Académico (Compromiso)</option>
@@ -1860,6 +1890,7 @@
                             <option value="Falta al Manual de Convivencia" class="text-danger">Falta al Manual de Convivencia</option>
                         </select>
                     </div>
+
                 </div>
             </div>
             <!-- 2. Formulario Dinámico de Registro según Tipo de Nota -->
@@ -1963,44 +1994,47 @@
                     </div>
                     <div>
                         <h4 class="mb-0 fw-bold">Control de Asistencia</h4>
-                        <small class="opacity-75">Selecciona el curso y la jornada para cargar la lista de estudiantes y registrar la asistencia diaria.</small>
+                        <small class="opacity-75">Selecciona la jornada y el curso para cargar la lista de estudiantes y registrar la asistencia diaria.</small>
                     </div>
                 </div>
                 <button type="button" class="btn btn-pae-volver" onclick="volverDocente()">
                     Volver al Panel
                 </button>
             </div>
-            <!-- Filtros: Fecha, Grupo (Curso), Jornada y Botón Rápido -->
+            <!-- Filtros: Fecha, Jornada, Grupo (Curso) y Botón Rápido -->
             <div class="card border-0 shadow-sm p-4 mb-4 rounded-3">
                 <div class="row g-3 align-items-end">
-                    <!-- 1. Campo Fecha -->
+
+                    <!-- 1. Campo Fecha (Bloqueado a la fecha actual) -->
                     <div class="col-md-3">
                         <label class="form-label fw-bold small text-dark"><i class="bi bi-calendar3 me-1 text-primary"></i>Fecha de Asistencia</label>
-                        <input type="date" class="form-control" id="inputFechaAsistencia" value="@DateTime.Now.ToString("yyyy-MM-dd")">
+                        <input type="date" class="form-control bg-light" id="inputFechaAsistencia"
+                               value="@DateTime.Now.ToString("yyyy-MM-dd")"
+                               min="@DateTime.Now.ToString("yyyy-MM-dd")"
+                               max="@DateTime.Now.ToString("yyyy-MM-dd")"
+                               readonly style="cursor: not-allowed;">
                     </div>
-                    <!-- 2. Seleccionar Grupo / Curso -->
+
+                    <!-- 2. Seleccionar Jornada (Mañana / Tarde). Al elegirla, el selector de curso muestra solo los de esa jornada -->
                     <div class="col-md-3">
-                        <label class="form-label fw-bold small text-dark"><i class="bi bi-mortarboard me-1 text-primary"></i>Curso / Grupo <span class="text-danger">*</span></label>
-                        <select class="form-select" id="selectGrupoAsistencia" onchange="filtrarAsistenciaPorCursoYJornada()">
-                            <option value="todos">Todos mis Cursos</option>
-                            @if (ViewBag.CursosDocente != null && ((IEnumerable<string>)ViewBag.CursosDocente).Any())
-                            {
-                                foreach (var c in (IEnumerable<string>)ViewBag.CursosDocente)
-                                {
-                                    <option value="@c">@c</option>
-                                }
-                            }
-                        </select>
-                    </div>1
-                    <!-- 3. Seleccionar Jornada (Mañana / Tarde) -->
-                    <div class="col-md-3">
-                        <label class="form-label fw-bold small text-dark"><i class="bi bi-clock-history me-1 text-primary"></i>Jornada</label>
-                        <select class="form-select" id="selectJornadaAsistencia" onchange="filtrarAsistenciaPorCursoYJornada()">
-                            <option value="todos">Todas las Jornadas</option>
-                            <option value="Mañana" selected>Mañana</option>
+                        <label class="form-label fw-bold small text-dark"><i class="bi bi-clock-history me-1 text-primary"></i>Jornada <span class="text-danger">*</span></label>
+                        <select class="form-select" id="selectJornadaAsistencia" onchange="actualizarCursosPorJornadaAsistencia()">
+                            <option value="" disabled selected>-- Seleccionar Jornada --</option>
+                            <option value="Mañana">Mañana</option>
                             <option value="Tarde">Tarde</option>
                         </select>
                     </div>
+
+                    <!-- 3. Seleccionar Grupo / Curso (se llena según la jornada elegida) -->
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold small text-dark"><i class="bi bi-mortarboard me-1 text-primary"></i>Curso / Grupo <span class="text-danger">*</span></label>
+                        <select class="form-select" id="selectGrupoAsistencia" disabled
+                                data-cursos='@Html.Raw(System.Text.Json.JsonSerializer.Serialize((ViewBag.CursosDocente as IEnumerable<string>) ?? new List<string>()))'
+                                onchange="filtrarAsistenciaPorCursoYJornada()">
+                            <option value="" selected>-- Selecciona primero la jornada --</option>
+                        </select>
+                    </div>
+
                     <!-- 4. Botón Marcar Todos como Presente -->
                     <div class="col-md-3 text-end">
                         <button type="button" class="btn btn-success w-100 fw-bold shadow-sm" onclick="marcarTodosPresentes()">
@@ -4516,7 +4550,13 @@
     // --- FUNCIONES DE NAVEGACIÓN DOCENTE ---
     function verPlanilla() { location.href = '@Url.Action("Planilla", "Docente")'; }
     function verAsistencia() { ocultarTodo(); mostrarSubpanel('panel-docente', 'docente-asistencia', true); }
-    function verObservaciones() { ocultarTodo(); mostrarSubpanel('panel-docente', 'docente-observaciones', true); }
+    function verObservaciones() {
+        ocultarTodo();
+        mostrarSubpanel('panel-docente', 'docente-observaciones', true);
+        if (typeof filtrarEstudiantesObservador === 'function') {
+            filtrarEstudiantesObservador();
+        }
+    }
     function verModuloMejorasDocente() { ocultarTodo(); mostrarSubpanel('panel-docente', 'docente-mejoras', true); }
     function verCursosExtraDocente() { ocultarTodo(); mostrarSubpanel('panel-docente', 'docente-cursosextra', true); }
     function verActividadesDocente() { 
@@ -7845,28 +7885,74 @@
             const selectJornada = document.getElementById('selectJornadaObservador');
             const selectEst = document.getElementById('selectEstudianteObservacion');
             if (!selectEst) return;
-            const curso = selectCurso ? selectCurso.value.trim().toLowerCase() : 'todos';
-            const jornada = selectJornada ? selectJornada.value.trim().toLowerCase() : 'todos';
-            Array.from(selectEst.options).forEach((opt, idx) => {
-                if (idx === 0) return;
-                const cursoEst = (opt.getAttribute('data-curso') || '').trim().toLowerCase();
-                let matchCurso = (curso === 'todos' || cursoEst === curso);
-                let matchJornada = true;
+
+            const jornada = selectJornada ? selectJornada.value.trim().toLowerCase() : 'mañana';
+
+            // Función auxiliar: verifica si un código de curso (ej. "601 M") pertenece a la jornada elegida
+            const coincideJornada = (nombreCurso) => {
+                const c = (nombreCurso || '').trim().toLowerCase();
+                if (jornada === 'todos' || c === '') return true;
                 if (jornada === 'mañana' || jornada === 'manana' || jornada === 'm') {
-                    matchJornada = cursoEst.endsWith('m') || cursoEst.includes('m') || cursoEst === '';
-                } else if (jornada === 'tarde' || jornada === 't') {
-                    matchJornada = cursoEst.endsWith('t') || cursoEst.includes('t') || cursoEst === '';
+                    return c.endsWith('m') || c.includes(' m');
                 }
-                const visible = matchCurso && matchJornada;
+                if (jornada === 'tarde' || jornada === 't') {
+                    return c.endsWith('t') || c.includes(' t');
+                }
+                return true;
+            };
+
+            // 1. Filtrar las opciones del selector de Curso según la Jornada
+            if (selectCurso) {
+                let cursoActualVisible = false;
+                Array.from(selectCurso.options).forEach((opt, idx) => {
+                    if (idx === 0) { // Opción "-- Seleccione un Curso --" siempre visible
+                        cursoActualVisible = cursoActualVisible || opt.selected;
+                        return;
+                    }
+                    const visibleCurso = coincideJornada(opt.value);
+                    opt.hidden = !visibleCurso;
+                    opt.disabled = !visibleCurso;
+                    opt.style.display = visibleCurso ? '' : 'none';
+                    if (visibleCurso && opt.selected) {
+                        cursoActualVisible = true;
+                    }
+                });
+
+                // Si el curso seleccionado pertenecía a otra jornada, volver a "-- Seleccione un Curso --"
+                if (!cursoActualVisible) {
+                    selectCurso.value = '';
+                }
+            }
+
+            const curso = selectCurso ? selectCurso.value.trim().toLowerCase() : '';
+
+            // 2. Filtrar las opciones del selector de Estudiante según el Curso seleccionado
+            Array.from(selectEst.options).forEach((opt, idx) => {
+                if (idx === 0) return; // Opción "-- Seleccionar Estudiante --" siempre visible
+                const cursoEst = (opt.getAttribute('data-curso') || '').trim().toLowerCase();
+
+                // Si no se ha elegido un curso (curso === ''), ocultar estudiantes para evitar confusión
+                const visible = (curso !== '') && (cursoEst === curso) && coincideJornada(cursoEst);
+
                 opt.hidden = !visible;
                 opt.disabled = !visible;
                 opt.style.display = visible ? '' : 'none';
             });
+
+            // Limpiar el estudiante seleccionado si ya no corresponde al curso actual
             if (selectEst.selectedOptions.length === 0 || selectEst.selectedOptions[0].hidden) {
-                selectEst.value = "";
+                selectEst.value = '';
             }
+
+            if (typeof cargarObservacionesEstudianteSeleccionado === 'function') {
             cargarObservacionesEstudianteSeleccionado();
+            }
         };
+
+        // Ejecutar el filtro inicial apenas cargue el DOM (útil si se entra directo por ?seccion=observaciones)
+        document.addEventListener('DOMContentLoaded', function() {
+            filtrarEstudiantesObservador();
+        });
         window.cambiarCamposObservadorPorTipo = function() {
             const tipo = document.getElementById('selectTipoNotaObservacion') ? document.getElementById('selectTipoNotaObservacion').value : '';
             const bloquePositiva = document.getElementById('bloqueNotaPositiva');
@@ -8005,28 +8091,38 @@
                 });
         };
         window.descargarObservadorDocentePdf = function() {
-            const selectEst = document.getElementById('selectEstudianteObservacion');
             const selectCurso = document.getElementById('selectCursoObservador');
+            const selectEst = document.getElementById('selectEstudianteObservacion');
 
+            // 1. Validar que el docente haya elegido un Curso
+            if (!selectCurso || !selectCurso.value || selectCurso.value === 'todos') {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Selecciona un Curso',
+                    text: 'Por favor, elige primero un Curso en los filtros de búsqueda antes de generar el reporte PDF.',
+                    confirmButtonColor: '#2980b9'
+                });
+                return;
+            }
+
+            // 2. Validar que el docente haya elegido un Estudiante
             if (!selectEst || !selectEst.value) {
                 Swal.fire({
                     icon: 'warning',
-                    title: 'Estudiante no seleccionado',
-                    text: 'Por favor seleccione un estudiante en los filtros de arriba antes de generar y descargar el reporte del observador en PDF.',
-                    confirmButtonColor: '#0d2a4a'
+                    title: 'Selecciona un Estudiante',
+                    text: 'Por favor, selecciona un estudiante del curso para descargar su informe individual del observador en PDF.',
+                    confirmButtonColor: '#2980b9'
                 });
                 return;
             }
 
             let url = '@Url.Action("DescargarObservadorPdf", "Docente")';
-            const params = [];
-            params.push(`idEstudiante=${selectEst.value}`);
-            if (selectCurso && selectCurso.value && selectCurso.value !== 'todos') {
-                params.push(`curso=${encodeURIComponent(selectCurso.value)}`);
-            }
-            if (params.length > 0) {
+            const params = [
+                `idEstudiante=${encodeURIComponent(selectEst.value)}`,
+                `curso=${encodeURIComponent(selectCurso.value)}`
+            ];
+
                 url += '?' + params.join('&');
-            }
             window.open(url, '_blank');
         };
         // Función para enviar Citación a Padres desde Docente
@@ -8102,19 +8198,81 @@
         // ===============================================
         let paginaActualAsistencia = 1;
         const itemsPorPaginaAsistencia = 10;
+        window.actualizarCursosPorJornadaAsistencia = function () {
+            // Llena el selector de curso solo con los cursos de la jornada elegida (601 M = Mañana, 601 T = Tarde)
+            const selectGrupo = document.getElementById('selectGrupoAsistencia');
+            const selectJornada = document.getElementById('selectJornadaAsistencia');
+            if (!selectGrupo || !selectJornada) return;
+
+            let todos = [];
+            try { todos = JSON.parse(selectGrupo.dataset.cursos || '[]'); } catch (e) { todos = []; }
+
+            const jornada = (selectJornada.value || '').trim().toLowerCase();
+            const sufijo = jornada === 'mañana' ? 'm' : (jornada === 'tarde' ? 't' : '');
+
+            selectGrupo.innerHTML = '';
+            if (!sufijo) {
+                selectGrupo.add(new Option('-- Selecciona primero la jornada --', ''));
+                selectGrupo.disabled = true;
+            } else {
+                const cursos = todos.filter(c => {
+                    const m = String(c).trim().toLowerCase().match(/\s([mt])$/);
+                    return !m || m[1] === sufijo;   // un curso sin M/T en el nombre se muestra en ambas jornadas
+                });
+                selectGrupo.add(new Option(cursos.length ? '-- Seleccionar Curso --' : '-- No tienes cursos en esta jornada --', ''));
+                cursos.forEach(c => selectGrupo.add(new Option(c, c)));
+                selectGrupo.disabled = cursos.length === 0;
+            }
+            selectGrupo.value = '';
+            // Limpia la tabla: vuelve a pedir que se seleccione un curso
+            if (window.renderizarPaginacionAsistencia) window.renderizarPaginacionAsistencia();
+        };
         window.filtrarAsistenciaPorCursoYJornada = function() {
             paginaActualAsistencia = 1;
-            renderizarPaginacionAsistencia();
+            const selectGrupo = document.getElementById('selectGrupoAsistencia');
+            const selectJornada = document.getElementById('selectJornadaAsistencia');
+    
+            const cursoSeleccionado = (selectGrupo ? selectGrupo.value : '').trim().toLowerCase();
+            const jornadaSeleccionada = (selectJornada ? selectJornada.value : '').trim().toLowerCase();
+
+            // Validamos que el docente haya seleccionado ambos campos obligatoriamente
+            if (!cursoSeleccionado || !jornadaSeleccionada || jornadaSeleccionada === '') {
+                return;
+            }
+
+            const todasFilas = Array.from(document.querySelectorAll('#tbodyAsistencia .fila-asistencia-estudiante'));
+            let filasFiltradas = todasFilas.filter(fila => {
+                if (!cursoSeleccionado || cursoSeleccionado === 'todos') {
+                    return false;
+                }
+                const cursoFila = (fila.getAttribute('data-curso') || '').trim().toLowerCase();
+                let matchCurso = cursoFila === cursoSeleccionado || cursoFila.startsWith(cursoSeleccionado + ' ');
+                let matchJornada = true;
+
+                if (jornadaSeleccionada !== 'todas' && jornadaSeleccionada !== '') {
+                    if (jornadaSeleccionada === 'mañana') {
+                        matchJornada = cursoFila.endsWith('m') || cursoFila.includes('m') || cursoFila.includes('mañana');
+                    } else if (jornadaSeleccionada === 'tarde') {
+                        matchJornada = cursoFila.endsWith('t') || cursoFila.includes('t') || cursoFila.includes('tarde');
+                    }
+                }
+                return matchCurso && matchJornada;
+            });
+
+            window.renderizarPaginacionAsistencia();
         };
         window.renderizarPaginacionAsistencia = function() {
             const selectGrupo = document.getElementById('selectGrupoAsistencia');
             const selectJornada = document.getElementById('selectJornadaAsistencia');
-            const cursoSeleccionado = (selectGrupo ? selectGrupo.value : 'todos').trim().toLowerCase();
+            const cursoSeleccionado = (selectGrupo ? selectGrupo.value : '').trim().toLowerCase();
             const jornadaSeleccionada = (selectJornada ? selectJornada.value : 'todos').trim().toLowerCase();
             const todasFilas = Array.from(document.querySelectorAll('#tbodyAsistencia .fila-asistencia-estudiante'));
             const filasFiltradas = todasFilas.filter(fila => {
+                if (!cursoSeleccionado || cursoSeleccionado === 'todos') {
+                    return false;
+                }
                 const cursoFila = (fila.getAttribute('data-curso') || '').trim().toLowerCase();
-                let matchCurso = (cursoSeleccionado === 'todos' || cursoFila === cursoSeleccionado);
+                let matchCurso = (cursoFila === cursoSeleccionado || cursoFila.startsWith(cursoSeleccionado));
                 let matchJornada = true;
                 if (jornadaSeleccionada === 'mañana' || jornadaSeleccionada === 'manana' || jornadaSeleccionada === 'm') {
                     matchJornada = cursoFila.endsWith('m') || cursoFila.includes('m') || cursoFila === '';
@@ -8132,8 +8290,10 @@
             filasFiltradas.slice(inicio, fin).forEach(f => f.style.display = '');
             const infoP = document.getElementById('infoAsistenciaPagina');
             if (infoP) {
-                if (totalItems === 0) {
-                    infoP.textContent = 'Mostrando 0 estudiantes para los filtros seleccionados.';
+                if (!cursoSeleccionado || cursoSeleccionado === 'todos') {
+                    infoP.textContent = 'Por favor selecciona un curso para cargar la lista de estudiantes.';
+                } else if (totalItems === 0) {
+                    infoP.textContent = 'No se encontraron estudiantes registrados en el curso seleccionado.';
                 } else {
                     infoP.textContent = `Mostrando ${inicio + 1} - ${Math.min(fin, totalItems)} de ${totalItems} estudiantes (Página ${paginaActualAsistencia} de ${totalPaginas})`;
                 }
@@ -8158,6 +8318,7 @@
         };
         // Inicializar paginación de asistencia al cargar la página
         setTimeout(function() {
+            actualizarCursosPorJornadaAsistencia();
             renderizarPaginacionAsistencia();
         }, 300);
     });

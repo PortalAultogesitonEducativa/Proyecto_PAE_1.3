@@ -27,6 +27,10 @@ namespace ProyectoPAE.Models
         public int anio_escolar { get; set; }
         public int? periodo_academico { get; set; }
 
+        // Indica si el horario ya fue confirmado/publicado por el administrador (false = Borrador, true = Publicado)
+        [Column("publicado")]
+        public bool publicado { get; set; } = false;
+
         [NotMapped]
         public string HoraInicioFormateada => hora_inicio.ToString(@"hh\:mm");
 
@@ -34,8 +38,6 @@ namespace ProyectoPAE.Models
         public string HoraFinFormateada => hora_fin.ToString(@"hh\:mm");
 
         // --- PROPIEDADES DE NAVEGACIÓN ---
-        // Estas propiedades le dicen a Entity Framework cómo unir las tablas
-
         [ForeignKey("id_materia")]
         public virtual Materia? Materia { get; set; }
 
@@ -47,6 +49,5 @@ namespace ProyectoPAE.Models
 
         [ForeignKey("id_aula")]
         public virtual Aula? Aula { get; set; }
-
     }
 }

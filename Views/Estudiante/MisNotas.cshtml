@@ -26,6 +26,8 @@
     int totalMaterias = notasPorMateria.Count;
 
     var mejorasEstudiante = ViewBag.AccionesMejora as List<ProyectoPAE.Models.AccionMejora> ?? new List<ProyectoPAE.Models.AccionMejora>();
+    var logrosEstudiante = ViewBag.LogrosEstudiante as List<ProyectoPAE.Models.Logro> ?? new List<ProyectoPAE.Models.Logro>();
+    int gradoEstudiante = (int)(ViewBag.GradoEstudiante ?? 6);
 
     Func<double, string> badgeDesempeno = (p) =>
         p >= 4.6 ? "Superior" : p >= 4.0 ? "Alto" : p >= 3.0 ? "Básico" : "Bajo";
@@ -219,7 +221,7 @@
                                                     <td class="px-4 py-3">
                                                         <div class="d-flex align-items-center gap-2">
                                                             <div class="rounded-circle bg-secondary-subtle d-flex align-items-center justify-content-center small fw-bold"
-                                                                 style="width:30px;height:30px;">P@cal.Periodo</div>
+                                                                 style="width:30px;height:30px;">P@(cal.Periodo)</div>
                                                             <span class="text-muted small">Periodo @cal.Periodo</span>
                                                         </div>
                                                     </td>
@@ -231,6 +233,41 @@
                                                     </td>
                                                     <td class="px-4 py-3 text-muted small">@cal.FechaRegistro.ToString("dd MMM yyyy")</td>
                                                 </tr>
+                                                string nombreBaseMat = (materia.Materia ?? "").Split(" - ")[0].Trim();
+                                                var logrosPeriodo = logrosEstudiante.Where(l =>
+                                                    l.periodo == cal.Periodo &&
+                                                    (l.materia.Equals(nombreBaseMat, StringComparison.OrdinalIgnoreCase) ||
+                                                     nombreBaseMat.StartsWith(l.materia, StringComparison.OrdinalIgnoreCase) ||
+                                                     l.materia.StartsWith(nombreBaseMat, StringComparison.OrdinalIgnoreCase))
+                                                ).ToList();
+
+                                                if (logrosPeriodo.Any())
+                                                {
+                                                    <tr style="background-color: #f8fafc;">
+                                                        <td colspan="4" class="px-4 py-2 border-top-0">
+                                                            @foreach (var lg in logrosPeriodo)
+                                                            {
+                                                                bool alcanzado = cal.Nota >= 3.0m;
+                                                                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 small">
+                                                                    <div>
+                                                                        <span class="badge bg-secondary-subtle text-dark border me-1">
+                                                                            <i class="bi bi-award text-primary me-1"></i>@(lg.codigo_logro ?? $"LOG-{gradoEstudiante}-P{cal.Periodo}")
+                                                                        </span>
+                                                                        <span class="text-secondary">@lg.descripcion</span>
+                                                                    </div>
+                                                                    @if (alcanzado)
+                                                                    {
+                                                                        <span class="badge bg-success-subtle text-success border border-success-subtle">✓ Logro Alcanzado</span>
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle">⚠ En proceso de superación</span>
+                                                                    }
+                                                                </div>
+                                                            }
+                                                        </td>
+                                                    </tr>
+                                                }
                                             }
                                         </tbody>
                                         <tfoot class="table-light">

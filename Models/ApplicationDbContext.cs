@@ -23,6 +23,7 @@ namespace ProyectoPAE.Models
         public DbSet<Horario> HORARIOS { get; set; }
         public DbSet<Aula> AULA { get; set; }
         public DbSet<ProfesorMateria> PROFESOR_MATERIA { get; set; }
+        public DbSet<Logro> Logros { get; set; }
 
         // --- CURSOS Y HORARIOS ---
         public DbSet<Curso> Cursos { get; set; }
@@ -184,6 +185,24 @@ namespace ProyectoPAE.Models
                             [ID_Usuario] [int] NOT NULL,
                             [FechaLeido] [datetime] NOT NULL DEFAULT GETDATE()
                         );
+                    END
+                ");
+            }
+            catch { }
+        }
+
+        /// <summary>
+        /// Garantiza que la tabla HORARIO tenga la columna 'publicado' para manejar borradores antes de confirmar.
+        /// Los registros antiguos creados antes de esta actualización quedan en 1 (publicados).
+        /// </summary>
+        public void AsegurarEsquemaHorarios()
+        {
+            try
+            {
+                Database.ExecuteSqlRaw(@"
+                    IF NOT EXISTS (SELECT * FROM sys.columns WHERE object_id = OBJECT_ID(N'[dbo].[HORARIO]') AND name = 'publicado')
+                    BEGIN
+                        ALTER TABLE [dbo].[HORARIO] ADD [publicado] BIT NOT NULL CONSTRAINT DF_HORARIO_PUBLICADO DEFAULT 1;
                     END
                 ");
             }
@@ -401,6 +420,358 @@ namespace ProyectoPAE.Models
                             ALTER TABLE [dbo].[ACCION_MEJORA] ADD [fecha_respuesta_estudiante] DATETIME NULL;
                     END
                 ");
+            }
+            catch { }
+        }
+
+        /// <summary>
+        /// Crea la tabla LOGRO si no existe y precarga logros base para grados 6° a 11° y períodos 1 a 4.
+        /// </summary>
+        public void AsegurarEsquemaLogros()
+        {
+            try
+            {
+                Database.ExecuteSqlRaw(@"
+                    IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'LOGRO')
+                    BEGIN
+                        CREATE TABLE [dbo].[LOGRO](
+                            [id_logro] [int] IDENTITY(1,1) NOT NULL PRIMARY KEY,
+                            [grado] [int] NOT NULL,
+                            [materia] [nvarchar](100) NOT NULL,
+                            [periodo] [int] NOT NULL DEFAULT 1,
+                            [codigo_logro] [nvarchar](30) NULL,
+                            [descripcion] [nvarchar](500) NOT NULL,
+                            [activo] [bit] NOT NULL DEFAULT 1
+                        );
+                    END
+                ");
+
+                if (!Logros.Any())
+                {
+                    var logrosIniciales = new List<Logro>();
+
+                    // Banco base por materia y grado (6° a 11°) con progresión para los 4 períodos
+                    var catalogo = new Dictionary<string, Dictionary<int, string[]>>
+                    {
+                        ["Matemáticas"] = new()
+                        {
+                            [6] = new[] {
+                                "Resuelve operaciones y problemas cotidianos con números naturales y sus propiedades.",
+                                "Aplica criterios de divisibilidad, MCM y MCD en la solución de situaciones problema.",
+                                "Opera números fraccionarios y decimales interpretando su representación gráfica y numérica.",
+                                "Calcula perímetros, áreas de figuras planas y analiza datos estadísticos básicos."
+                            },
+                            [7] = new[] {
+                                "Realiza operaciones con números enteros y los ubica correctamente en la recta numérica.",
+                                "Resuelve problemas cotidianos aplicando operaciones básicas con números racionales.",
+                                "Aplica razones, proporciones y regla de tres simple en contextos reales.",
+                                "Calcula porcentajes, probabilidad básica y medidas de tendencia central."
+                            },
+                            [8] = new[] {
+                                "Identifica y opera expresiones algebraicas (monomios y polinomios) con precisión.",
+                                "Aplica productos y cocientes notables en la simplificación de expresiones algebraicas.",
+                                "Descompone expresiones mediante los principales casos de factorización.",
+                                "Plantea y resuelve ecuaciones lineales de primer grado con una incógnita."
+                            },
+                            [9] = new[] {
+                                "Resuelve sistemas de ecuaciones lineales 2x2 mediante métodos gráficos y algebraicos.",
+                                "Aplica propiedades de potenciación, radicación y números complejos en ejercicios prácticos.",
+                                "Analiza y grafica funciones lineales y cuadráticas identificando sus elementos clave.",
+                                "Resuelve ecuaciones cuadráticas y aplica teoremas geométricos de semejanza."
+                            },
+                            [10] = new[] {
+                                "Convierte medidas angulares y aplica razones trigonométricas en triángulos rectángulos.",
+                                "Resuelve triángulos oblicuángulos aplicando los teoremas del seno y del coseno.",
+                                "Grafica funciones trigonométricas identificando amplitud, período y desplazamiento.",
+                                "Demuestra identidades trigonométricas fundamentales y analiza secciones cónicas."
+                            },
+                            [11] = new[] {
+                                "Analiza inecuaciones, intervalos y propiedades de funciones reales de variable real.",
+                                "Calcula límites de funciones aplicando propiedades algebraicas y analiza continuidad.",
+                                "Aplica reglas de derivación para determinar tasas de cambio y rectas tangentes.",
+                                "Resuelve problemas de optimización y análisis de gráficas mediante criterios de derivada."
+                            }
+                        },
+                        ["Español y Literatura"] = new()
+                        {
+                            [6] = new[] {
+                                "Identifica elementos y estructura de textos narrativos como mitos, leyendas y cuentos.",
+                                "Reconoce categorías gramaticales básicas y aplica reglas generales de acentuación.",
+                                "Comprende textos informativos y expositivos extrayendo ideas principales y secundarias.",
+                                "Produce textos cortos coherentes empleando signos de puntuación adecuadamente."
+                            },
+                            [7] = new[] {
+                                "Analiza géneros literarios narrativos y líricos reconociendo figuras retóricas básicas.",
+                                "Redacta párrafos expositivos con cohesión, conectores lógicos y buena ortografía.",
+                                "Interpreta textos periodísticos y diferencia hechos de opiniones en medios de comunicación.",
+                                "Participa en exposiciones orales argumentando sus ideas con claridad y respeto."
+                            },
+                            [8] = new[] {
+                                "Analiza obras de la literatura precolombina y colonial en Colombia.",
+                                "Comprende textos del Romanticismo y Costumbrismo relacionándolos con su contexto histórico.",
+                                "Produce reseñas críticas y textos argumentativos con estructura tesis-argumentos.",
+                                "Aplica normas ortográficas avanzadas y mejora su expresión oral en debates grupales."
+                            },
+                            [9] = new[] {
+                                "Interpreta movimientos literarios latinoamericanos desde el Modernismo hasta el Boom.",
+                                "Analiza recursos estilísticos y simbólicos en textos narrativos y poéticos.",
+                                "Redacta ensayos cortos sustentando posturas críticas con fuentes confiables.",
+                                "Evalúa discursos argumentativos identificando falacias e intención comunicativa."
+                            },
+                            [10] = new[] {
+                                "Analiza obras representativas de la literatura española desde la Edad Media al Siglo de Oro.",
+                                "Interpreta textos filosóficos y ensayísticos aplicando lectura inferencial y crítica.",
+                                "Produce textos argumentativos formales con rigor conceptual y citación adecuada.",
+                                "Sustenta ponencias académicas demostrando dominio discursivo y pensamiento crítico."
+                            },
+                            [11] = new[] {
+                                "Analiza obras de la literatura universal clásica y contemporánea con enfoque crítico.",
+                                "Desarrolla estrategias avanzadas de lectura crítica orientadas a pruebas Saber 11.",
+                                "Redacta ensayos argumentativos estructurados con coherencia, cohesión y estilo propio.",
+                                "Evalúa críticamente discursos mediáticos, culturales y literarios contemporáneos."
+                            }
+                        },
+                        ["Biología"] = new()
+                        {
+                            [6] = new[] {
+                                "Identifica la estructura y función de los organelos en células procariotas y eucariotas.",
+                                "Clasifica los seres vivos en reinos biológicos según sus características celulares.",
+                                "Explica los niveles de organización ecológica y las relaciones tróficas en ecosistemas.",
+                                "Comprende la importancia de conservar los recursos naturales y la biodiversidad local."
+                            },
+                            [7] = new[] {
+                                "Explica los procesos de nutrición y digestión en plantas, animales y el ser humano.",
+                                "Compara los sistemas circulatorio y respiratorio en diferentes grupos de organismos.",
+                                "Analiza los mecanismos de excreción y osmorregulación para mantener el equilibrio interno.",
+                                "Relaciona hábitos de alimentación y actividad física con el cuidado de la salud."
+                            },
+                            [8] = new[] {
+                                "Comprende los procesos de mitosis y meiosis y su papel en la reproducción celular.",
+                                "Explica la reproducción humana, el desarrollo embrionario y la salud sexual responsable.",
+                                "Identifica la estructura y función del sistema nervioso y los órganos de los sentidos.",
+                                "Analiza la regulación hormonal del sistema endocrino e inmunológico humano."
+                            },
+                            [9] = new[] {
+                                "Resuelve problemas de herencia genética aplicando las leyes de Gregorio Mendel.",
+                                "Explica la estructura del ADN, ARN y los procesos de transcripción y síntesis de proteínas.",
+                                "Analiza las teorías evolutivas y las evidencias de la selección natural en las especies.",
+                                "Comprende el origen de la biodiversidad y la taxonomía moderna de los seres vivos."
+                            },
+                            [10] = new[] {
+                                "Analiza rutas metabólicas celulares como fotosíntesis y respiración aerobia/anaerobia.",
+                                "Evalúa el flujo de energía y los ciclos biogeoquímicos en los ecosistemas terrestres.",
+                                "Analiza la dinámica poblacional y el impacto de las actividades humanas en el ambiente.",
+                                "Propone soluciones sostenibles frente al cambio climático y la pérdida de biodiversidad."
+                            },
+                            [11] = new[] {
+                                "Analiza aplicaciones modernas de la biotecnología, ingeniería genética y bioética.",
+                                "Comprende mecanismos avanzados de homeostasis celular y fisiología humana.",
+                                "Evalúa problemáticas ambientales globales desde un enfoque científico y sistémico.",
+                                "Interpreta gráficas, experimentos y situaciones problema de ciencias naturales tipo ICFES."
+                            }
+                        },
+                        ["Ciencias Sociales"] = new()
+                        {
+                            [6] = new[] {
+                                "Reconoce la estructura de la Tierra, coordenadas geográficas y formas del relieve.",
+                                "Analiza el origen del ser humano y el surgimiento de las primeras civilizaciones.",
+                                "Comprende el legado cultural y político de Grecia y Roma en el mundo occidental.",
+                                "Identifica derechos, deberes y mecanismos de participación en el gobierno escolar."
+                            },
+                            [7] = new[] {
+                                "Analiza la organización política, social y económica del feudalismo en la Edad Media.",
+                                "Explica las transformaciones culturales del Renacimiento y la expansión europea.",
+                                "Comprende el proceso de conquista y colonización de América y su impacto social.",
+                                "Analiza la diversidad geográfica y cultural de las regiones naturales de Colombia."
+                            },
+                            [8] = new[] {
+                                "Explica las causas y consecuencias de la Revolución Industrial y la Revolución Francesa.",
+                                "Analiza los procesos de independencia en América Latina y la formación de repúblicas.",
+                                "Comprende los conflictos políticos y territoriales de Colombia en el siglo XIX.",
+                                "Evalúa el impacto ambiental y social de la urbanización e industrialización."
+                            },
+                            [9] = new[] {
+                                "Analiza los principales hechos políticos y económicos de Colombia en el siglo XX.",
+                                "Comprende las causas y consecuencias de las guerras mundiales y la Guerra Fría.",
+                                "Evalúa la evolución de los derechos humanos y la Constitución Política de 1991.",
+                                "Analiza problemáticas sociales contemporáneas proponiendo alternativas de convivencia."
+                            },
+                            [10] = new[] {
+                                "Analiza los conflictos geopolíticos contemporáneos y el papel de organismos internacionales.",
+                                "Comprende la estructura del Estado colombiano y los mecanismos de defensa de derechos.",
+                                "Evalúa el impacto de la globalización económica y cultural en países en desarrollo.",
+                                "Argumenta posturas críticas frente a fenómenos de migración, pobreza y desarrollo."
+                            },
+                            [11] = new[] {
+                                "Analiza procesos de paz, memoria histórica y reconciliación en la sociedad colombiana.",
+                                "Evalúa políticas económicas, deuda externa y modelos de desarrollo sostenible.",
+                                "Interpreta fuentes históricas, mapas y contextos ciudadanos con pensamiento crítico.",
+                                "Ejerce liderazgo democrático y participación ciudadana responsable en su entorno."
+                            }
+                        },
+                        ["Inglés"] = new()
+                        {
+                            [6] = new[] {
+                                "Utiliza saludos, presentaciones personales y vocabulario básico del aula en inglés.",
+                                "Construye oraciones afirmativas y negativas en presente simple con el verbo To Be.",
+                                "Describe rutinas diarias y horarios utilizando adverbios de frecuencia básicos.",
+                                "Comprende textos cortos y diálogos sencillos sobre familia, hogar y pasatiempos."
+                            },
+                            [7] = new[] {
+                                "Contrasta acciones habituales y acciones en progreso usando presente simple y continuo.",
+                                "Expresa cantidades, precios y preferencias utilizando sustantivos contables e incontables.",
+                                "Relata eventos pasados sencillos empleando verbos regulares e irregulares en pasado simple.",
+                                "Formula planes futuros inmediatos usando Going To en conversaciones cotidianas."
+                            },
+                            [8] = new[] {
+                                "Realiza comparaciones entre personas, lugares y objetos usando comparativos y superlativos.",
+                                "Expresa obligaciones, consejos y habilidades empleando verbos modales (should, must, can).",
+                                "Comprende textos narrativos breves identificando secuencia de eventos en pasado.",
+                                "Redacta párrafos descriptivos coherentes sobre experiencias personales y viajes."
+                            },
+                            [9] = new[] {
+                                "Utiliza el presente perfecto para hablar de experiencias de vida y acciones recientes.",
+                                "Construye oraciones condicionales de primer tipo para expresar causas y consecuencias.",
+                                "Comprende audios y lecturas de mediana extensión sobre cultura, ciencia y tecnología.",
+                                "Participa en conversaciones estructuradas expresando opiniones y acuerdos."
+                            },
+                            [10] = new[] {
+                                "Aplica tiempos narrativos (pasado simple, continuo y perfecto) en relatos estructurados.",
+                                "Utiliza voz pasiva y segundo condicional en contextos académicos y formales.",
+                                "Analiza artículos de opinión identificando postura del autor y vocabulario técnico.",
+                                "Realiza presentaciones orales fluidas defendiendo puntos de vista con argumentos."
+                            },
+                            [11] = new[] {
+                                "Emplea estructuras gramaticales avanzadas (reported speech y condicionales mixtos).",
+                                "Comprende textos argumentativos complejos aplicando lectura inferencial en inglés.",
+                                "Redacta ensayos cortos y cartas formales con vocabulario preciso y conectores avanzados.",
+                                "Interactúa con fluidez en discusiones sobre temas globales, académicos y vocacionales."
+                            }
+                        },
+                        ["Tecnología e Informática"] = new()
+                        {
+                            [6] = new[] {
+                                "Identifica componentes de hardware, software y sistemas operativos en equipos de cómputo.",
+                                "Elabora documentos estructurados en procesador de texto aplicando normas básicas de formato.",
+                                "Crea presentaciones multimedia claras integrando texto, imágenes y diseño visual.",
+                                "Practica hábitos de ciudadanía digital, huella digital y navegación segura en internet."
+                            },
+                            [7] = new[] {
+                                "Organiza datos y aplica fórmulas básicas en hojas de cálculo para resolver problemas.",
+                                "Representa información estadística mediante gráficos dinámicos en hojas de cálculo.",
+                                "Reconoce conceptos básicos de redes, internet y seguridad de la información.",
+                                "Diseña proyectos digitales colaborativos respetando derechos de autor."
+                            },
+                            [8] = new[] {
+                                "Comprende el concepto de algoritmo y representa soluciones mediante diagramas de flujo.",
+                                "Desarrolla programas básicos utilizando variables, operadores y estructuras condicionales.",
+                                "Aplica funciones lógicas y de búsqueda en hojas de cálculo de nivel intermedio.",
+                                "Analiza el impacto tecnológico y ambiental de los sistemas informáticos modernos."
+                            },
+                            [9] = new[] {
+                                "Implementa estructuras repetitivas (ciclos) y funciones en un lenguaje de programación.",
+                                "Diseña páginas web estáticas estructuradas mediante etiquetas semánticas HTML5.",
+                                "Aplica estilos visuales y diseño responsivo básico utilizando hojas de estilo CSS3.",
+                                "Documenta soluciones algorítmicas verificando entradas, procesos y salidas."
+                            },
+                            [10] = new[] {
+                                "Modela bases de datos relacionales identificando entidades, atributos y llaves.",
+                                "Construye consultas SQL básicas para insertar, consultar y filtrar información.",
+                                "Desarrolla interactividad en páginas web utilizando fundamentos de JavaScript.",
+                                "Aplica metodologías de trabajo colaborativo y control de versiones en proyectos."
+                            },
+                            [11] = new[] {
+                                "Integra interfaces web con lógica de servidor y bases de datos en un proyecto funcional.",
+                                "Ejecuta pruebas funcionales para detectar y corregir errores en aplicaciones de software.",
+                                "Analiza tendencias tecnológicas como inteligencia artificial, nube y ciberseguridad.",
+                                "Sustenta un proyecto tecnológico aplicado demostrando rigor técnico y documental."
+                            }
+                        },
+                        ["Educación Física"] = new()
+                        {
+                            [6] = new[] { "Desarrolla coordinación visomanual y equilibrio en juegos predeportivos.", "Aplica fundamentos básicos de atletismo y gimnasia formativa.", "Participa en deportes de conjunto respetando reglas y compañeros.", "Reconoce la importancia del calentamiento y la hidratación física." },
+                            [7] = new[] { "Mejora capacidades físicas condicionales de resistencia y velocidad.", "Ejecuta gestos técnicos básicos en baloncesto y voleibol.", "Demuestra juego limpio y trabajo en equipo durante torneos internos.", "Adopta posturas corporales adecuadas en la actividad física diaria." },
+                            [8] = new[] { "Aplica fundamentos técnicos y tácticos básicos en fútbol y baloncesto.", "Desarrolla flexibilidad y fuerza general mediante circuitos motrices.", "Lidera actividades grupales fomentando inclusión y respeto.", "Evalúa su frecuencia cardíaca antes, durante y después del ejercicio." },
+                            [9] = new[] { "Ejecuta sistemas tácticos ofensivos y defensivos en deportes de conjunto.", "Planifica sesiones básicas de acondicionamiento físico saludable.", "Demuestra autocontrol emocional en situaciones competitivas.", "Analiza los beneficios del deporte en la prevención del sedentarismo." },
+                            [10] = new[] { "Diseña rutinas personales de entrenamiento físico según sus capacidades.", "Aplica reglamentos oficiales y arbitraje básico en disciplinas deportivas.", "Promueve hábitos de vida saludable y nutrición equilibrada.", "Ejerce liderazgo positivo en la organización de eventos recreativos." },
+                            [11] = new[] { "Evalúa y ajusta su plan personal de actividad física y bienestar integral.", "Demuestra dominio técnico-táctico y cooperación en deportes colectivos.", "Organiza y gestiona actividades deportivas y recreativas institucionales.", "Integra la actividad física como hábito permanente de autocuidado." }
+                        },
+                        ["Ética y Valores"] = new()
+                        {
+                            [6] = new[] { "Reconoce su identidad, autoestima y dignidad como persona.", "Practica el respeto y la escucha activa en la convivencia escolar.", "Identifica normas básicas de convivencia y solución pacífica de conflictos.", "Valora la importancia de la familia y la solidaridad en su entorno." },
+                            [7] = new[] { "Comprende la empatía y el respeto por la diferencia cultural y social.", "Asume responsabilidad frente a sus deberes académicos y personales.", "Aplica el diálogo como herramienta para resolver desacuerdos.", "Reflexiona sobre el uso ético y respetuoso de las redes sociales." },
+                            [8] = new[] { "Analiza dilemas morales cotidianos tomando decisiones con criterio.", "Promueve la equidad, inclusión y no discriminación en el aula.", "Reconoce la importancia de la honestidad y la integridad personal.", "Participa en iniciativas solidarias en beneficio de su comunidad." },
+                            [9] = new[] { "Reflexiona sobre la autonomía moral y la responsabilidad social.", "Analiza la relación entre libertad, deberes y derechos fundamentales.", "Fortalece habilidades socioemocionales para la toma de decisiones.", "Construye metas personales a corto y mediano plazo." },
+                            [10] = new[] { "Evalúa problemáticas éticas contemporáneas desde los derechos humanos.", "Asume posturas críticas frente a la corrupción y la justicia social.", "Desarrolla liderazgo ético y compromiso ciudadano en su institución.", "Proyecta su vocación profesional y personal con sentido de propósito." },
+                            [11] = new[] { "Argumenta decisiones éticas complejas con responsabilidad y autonomía.", "Ejerce ciudadanía activa basada en la legalidad, respeto y solidaridad.", "Consolida su proyecto de vida profesional, académico y personal.", "Demuestra compromiso ético en su transición hacia la educación superior." }
+                        }
+                    };
+
+                    // Textos genéricos progresivos por período para materias adicionales
+                    string[] plantillasPeriodo = new[]
+                    {
+                        "Comprende los conceptos fundamentales de {0} correspondientes al grado {1}° y los aplica en ejercicios guiados.",
+                        "Analiza situaciones problema y desarrolla habilidades prácticas propias de {0} en grado {1}°.",
+                        "Argumenta y relaciona los contenidos teóricos de {0} con contextos reales y experimentos de grado {1}°.",
+                        "Integra los aprendizajes de {0} demostrando dominio conceptual, autonomía y rigor académico en grado {1}°."
+                    };
+
+                    // 1. Insertar el catálogo principal (6° a 11°, períodos 1 a 4)
+                    foreach (var matEntry in catalogo)
+                    {
+                        string nombreMat = matEntry.Key;
+                        string prefijo = new string(nombreMat.Where(char.IsLetter).Take(3).ToArray()).ToUpper();
+
+                        foreach (var gradoEntry in matEntry.Value)
+                        {
+                            int grado = gradoEntry.Key;
+                            string[] descs = gradoEntry.Value;
+
+                            for (int p = 1; p <= 4; p++)
+                            {
+                                logrosIniciales.Add(new Logro
+                                {
+                                    grado = grado,
+                                    materia = nombreMat,
+                                    periodo = p,
+                                    codigo_logro = $"LOG-{grado}-{prefijo}-P{p}",
+                                    descripcion = descs[p - 1],
+                                    activo = true
+                                });
+                            }
+                        }
+                    }
+
+                    // 2. Garantizar que cualquier otra materia registrada en la tabla MATERIA también tenga logros (6° a 11°)
+                    var materiasEnBD = MATERIA.Select(m => m.nombre_materia).Distinct().ToList();
+                    foreach (var matBD in materiasEnBD)
+                    {
+                        if (string.IsNullOrWhiteSpace(matBD)) continue;
+                        bool yaExiste = logrosIniciales.Any(l => l.materia.Equals(matBD.Trim(), StringComparison.OrdinalIgnoreCase));
+                        if (!yaExiste)
+                        {
+                            string prefijo = new string(matBD.Where(char.IsLetter).Take(3).ToArray()).ToUpper();
+                            for (int g = 6; g <= 11; g++)
+                            {
+                                for (int p = 1; p <= 4; p++)
+                                {
+                                    logrosIniciales.Add(new Logro
+                                    {
+                                        grado = g,
+                                        materia = matBD.Trim(),
+                                        periodo = p,
+                                        codigo_logro = $"LOG-{g}-{prefijo}-P{p}",
+                                        descripcion = string.Format(plantillasPeriodo[p - 1], matBD.Trim(), g),
+                                        activo = true
+                                    });
+                                }
+                            }
+                        }
+                    }
+
+                    Logros.AddRange(logrosIniciales);
+                    SaveChanges();
+                }
             }
             catch { }
         }

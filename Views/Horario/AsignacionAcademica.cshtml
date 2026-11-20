@@ -133,11 +133,18 @@
     </div>
 
     <div class="card shadow-sm mt-4">
-        <div class="card-header bg-dark text-white">
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
             <h5 class="mb-0"><i class="bi bi-calendar3"></i> Vista Previa del Horario <span id="tituloPrevia" class="fw-normal fs-6"></span></h5>
+            <span id="estadoPublicacionBadge" class="badge bg-secondary d-none"></span>
         </div>
         <div class="card-body p-0" id="vistaPreviaContenedor">
             <p class="text-muted text-center my-4">Seleccione una jornada y curso para visualizar la parrilla horaria.</p>
+        </div>
+        <div class="card-footer bg-light d-flex flex-wrap justify-content-between align-items-center gap-2 py-3 d-none" id="footerConfirmarHorario">
+            <small id="textoEstadoHorario" class="text-muted fw-semibold"></small>
+            <button type="button" id="btnConfirmarHorario" class="btn btn-success fw-bold px-4 ms-auto shadow-sm">
+                <i class="bi bi-check2-circle me-1"></i> Confirmar Horario
+            </button>
         </div>
     </div>
 
@@ -164,6 +171,10 @@
             const previa = el("vistaPreviaContenedor");
             const tituloPrevia = el("tituloPrevia");
             const ayudaAula = el("ayudaAula");
+            const footerConfirmar = el("footerConfirmarHorario");
+            const btnConfirmar = el("btnConfirmarHorario");
+            const textoEstadoHorario = el("textoEstadoHorario");
+            const badgeEstadoPub = el("estadoPublicacionBadge");
 
             const DIAS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"];
             let bloquesJornada = [];
@@ -308,6 +319,8 @@
             function limpiarVistaPrevia() {
                 tituloPrevia.textContent = "";
                 previa.innerHTML = '<p class="text-muted text-center my-4">Seleccione una jornada y curso para visualizar la parrilla horaria.</p>';
+                if (footerConfirmar) footerConfirmar.classList.add("d-none");
+                if (badgeEstadoPub) badgeEstadoPub.classList.add("d-none");
             }
 
             function cargarVistaPrevia() {
@@ -324,6 +337,33 @@
                 if (!bloquesJornada.length) return limpiarVistaPrevia();
                 const nombreCurso = selCurso.selectedIndex > 0 ? selCurso.options[selCurso.selectedIndex].text : "";
                 tituloPrevia.textContent = nombreCurso ? "(" + nombreCurso + ")" : "";
+
+                const listaClases = clases || [];
+                const totalClases = listaClases.length;
+                const pendientes = listaClases.filter(c => c.publicado === false).length;
+
+                // Actualizar barra inferior con el botón "Confirmar Horario" abajo a la derecha
+                if (selCurso.value && totalClases > 0) {
+                    footerConfirmar.classList.remove("d-none");
+                    badgeEstadoPub.classList.remove("d-none");
+
+                    if (pendientes > 0) {
+                        badgeEstadoPub.className = "badge bg-warning text-dark";
+                        badgeEstadoPub.innerHTML = `<i class="bi bi-hourglass-split me-1"></i>Borrador (${pendientes} sin publicar)`;
+                        textoEstadoHorario.innerHTML = `<i class="bi bi-info-circle-fill text-warning me-1"></i>Tienes <strong>${pendientes}</strong> asignación(es) en borrador. Estudiantes y docentes aún no las ven.`;
+                        btnConfirmar.className = "btn btn-success fw-bold px-4 ms-auto shadow-sm";
+                        btnConfirmar.innerHTML = `<i class="bi bi-check2-circle me-1"></i> Confirmar Horario`;
+                    } else {
+                        badgeEstadoPub.className = "badge bg-success";
+                        badgeEstadoPub.innerHTML = `<i class="bi bi-check-circle-fill me-1"></i>Horario Publicado`;
+                        textoEstadoHorario.innerHTML = `<i class="bi bi-check-circle-fill text-success me-1"></i>Este horario ya está publicado y visible para estudiantes y docentes.`;
+                        btnConfirmar.className = "btn btn-outline-success fw-bold px-4 ms-auto";
+                        btnConfirmar.innerHTML = `<i class="bi bi-arrow-repeat me-1"></i> Reconfirmar y Notificar`;
+                    }
+                } else {
+                    footerConfirmar.classList.add("d-none");
+                    badgeEstadoPub.classList.add("d-none");
+                }
 
                 let html = '<div class="table-responsive"><table class="table table-bordered align-middle text-center mb-0">' +
                     '<thead class="table-light"><tr><th style="width:14%">Hora</th>' +
@@ -342,7 +382,7 @@
                     DIAS.forEach(d => {
                         if (cubiertas[d] > 0) { cubiertas[d]--; return; }
 
-                        const c = (clases || []).find(x =>
+                        const c = listaClases.find(x =>
                             (x.dia || "").toLowerCase() === d.toLowerCase() &&
                             (x.bloque || "").split(" - ")[0] === b.inicio);
                         if (!c) { html += '<td class="text-muted">-</td>'; return; }
@@ -355,11 +395,17 @@
                         cubiertas[d] = span - 1;
 
                         const doble = span > 1;
-                        html += `<td class="p-2" rowspan="${span}" style="vertical-align:middle;${doble ? "background:#e7f1ff;border-left:4px solid #0d6efd;" : ""}">` +
+                        const esBorrador = c.publicado === false;
+                        const badgeBorrador = esBorrador
+                            ? `<div class="mt-1"><span class="badge bg-warning text-dark" style="font-size:0.65rem;">Borrador</span></div>`
+                            : `<div class="mt-1"><span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size:0.65rem;">Publicado</span></div>`;
+
+                        html += `<td class="p-2" rowspan="${span}" style="vertical-align:middle;${doble ? "background:#e7f1ff;border-left:4px solid #0d6efd;" : ""}${esBorrador ? "background-color:#fffdf5;" : ""}">` +
                             `<div class="fw-bold small">${esc(c.materia)}</div>` +
                             `<div class="text-muted small">${esc(c.docente)}</div>` +
                             (c.aula ? `<div class="text-muted small"><i class="bi bi-geo-alt me-1"></i>${esc(c.aula)}</div>` : "") +
                             (doble ? `<div class="small text-primary"><i class="bi bi-clock me-1"></i>${esc(c.bloque)} · 2 horas</div>` : "") +
+                            badgeBorrador +
                             `<button type="button" class="btn btn-sm btn-outline-danger py-0 mt-1" data-eliminar="${c.id}" title="Eliminar esta asignación"><i class="bi bi-trash"></i></button></td>`;
                     });
                     html += "</tr>";
@@ -368,13 +414,113 @@
                 previa.innerHTML = html + "</tbody></table></div>";
             }
 
+            // ---------- ELIMINAR ASIGNACIÓN DESDE LA VISTA PREVIA (PAPELERA) ----------
             previa.addEventListener("click", function (e) {
-                const btn = e.target.closest("[data-eliminar]");
-                if (!btn || !confirm("¿Eliminar esta asignación del horario?")) return;
-                fetch("/Horario/EliminarHorario", { method: "POST", body: new URLSearchParams({ id: btn.dataset.eliminar }) })
-                    .then(r => r.json())
-                    .then(res => { mostrarAlerta(res.success, res.message); cargarVistaPrevia(); })
-                    .catch(() => mostrarAlerta(false, "No se pudo eliminar la asignación."));
+                // 1. Buscamos si el clic ocurrió en el botón de eliminar o en su ícono interno
+                const btnEliminar = e.target.closest("[data-eliminar]");
+                if (!btnEliminar) return; // Si hizo clic en otra parte de la tabla, no hacemos nada
+
+                // 2. Obtenemos el ID del registro en la tabla HORARIO
+                const idHorario = btnEliminar.dataset.eliminar;
+                if (!idHorario) return;
+
+                // 3. Mostramos confirmación con SweetAlert2
+                Swal.fire({
+                    title: "¿Eliminar esta asignación?",
+                    text: "Se quitará esta materia del horario del curso.",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#dc3545", // Rojo peligro
+                    cancelButtonColor: "#6c757d",  // Gris cancelar
+                    confirmButtonText: '<i class="bi bi-trash me-1"></i> Sí, eliminar',
+                    cancelButtonText: "Cancelar",
+                    reverseButtons: true
+                }).then((result) => {
+                    // Si el usuario presiona "Cancelar", detenemos el proceso
+                    if (!result.isConfirmed) return;
+
+                    // Deshabilitamos el botón temporalmente para evitar doble clic
+                    btnEliminar.disabled = true;
+
+                    // 4. Enviamos la petición POST al controlador HorarioController -> EliminarHorario
+                    fetch("/Horario/EliminarHorario", {
+                        method: "POST",
+                        body: new URLSearchParams({ id: idHorario })
+                    })
+                        .then(r => {
+                            if (!r.ok) throw new Error("Error HTTP " + r.status);
+                            return r.json();
+                        })
+                        .then(res => {
+                            if (res.success) {
+                                // Mostramos alerta de éxito y recargamos la parrilla horaria
+                                mostrarAlerta(true, res.message);
+                                cargarVistaPrevia();
+                            } else {
+                                mostrarAlerta(false, res.message || "No se pudo eliminar la asignación.");
+                                btnEliminar.disabled = false;
+                            }
+                        })
+                        .catch(() => {
+                            mostrarAlerta(false, "Error de comunicación con el servidor al intentar eliminar.");
+                            btnEliminar.disabled = false;
+                        });
+                });
+            });
+
+            // ---------- CONFIRMAR Y PUBLICAR HORARIO (CON ALERTA SWEETALERT2) ----------
+            btnConfirmar.addEventListener("click", function () {
+                const idCurso = selCurso.value;
+                if (!idCurso) return;
+
+                const nombreCurso = selCurso.selectedIndex > 0 ? selCurso.options[selCurso.selectedIndex].text : "este curso";
+
+                Swal.fire({
+                    title: "¿Confirmar y publicar el horario?",
+                    html: `Vas a publicar el horario definitivo del curso <strong>${esc(nombreCurso)}</strong>.<br><br>` +
+                          `<span class="text-muted small">Al confirmar, el horario será visible para los estudiantes y docentes asignados, y se enviará una notificación automática a sus campanitas.</span>`,
+                    icon: "question",
+                    showCancelButton: true,
+                    confirmButtonColor: "#198754",
+                    cancelButtonColor: "#6c757d",
+                    confirmButtonText: '<i class="bi bi-check2-circle me-1"></i> Sí, confirmar horario',
+                    cancelButtonText: "Cancelar, revisar primero",
+                    reverseButtons: true
+                }).then((result) => {
+                    if (!result.isConfirmed) return; // Si cancela, no hace nada y puede seguir editando
+
+                    btnConfirmar.disabled = true;
+
+                    fetch("/Horario/ConfirmarHorario", {
+                        method: "POST",
+                        body: new URLSearchParams({ idCurso: idCurso })
+                    })
+                        .then(r => r.json())
+                        .then(res => {
+                            if (res.success) {
+                                Swal.fire({
+                                    title: "¡Horario Publicado!",
+                                    text: res.message,
+                                    icon: "success",
+                                    confirmButtonColor: "#0d2a4a"
+                                });
+                                cargarVistaPrevia();
+                            } else {
+                                Swal.fire({
+                                    title: "No se pudo confirmar",
+                                    text: res.message,
+                                    icon: "error",
+                                    confirmButtonColor: "#0d2a4a"
+                                });
+                            }
+                        })
+                        .catch(() => {
+                            Swal.fire("Error", "No se pudo conectar con el servidor para confirmar el horario.", "error");
+                        })
+                        .finally(() => {
+                            btnConfirmar.disabled = false;
+                        });
+                });
             });
 
             // ---------- 5. GUARDAR (Inclusión de 'selPeriodo' y 'periodoAcademico') ----------
