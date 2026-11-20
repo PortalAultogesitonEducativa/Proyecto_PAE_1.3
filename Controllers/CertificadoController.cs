@@ -15,11 +15,16 @@ namespace ProyectoPAE.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly CertificadoService _certificadoService;
+        private readonly SolicitudCertificadoService _solicitudService;
 
-        public CertificadoController(ApplicationDbContext context, CertificadoService certificadoService)
+        public CertificadoController(
+            ApplicationDbContext context,
+            CertificadoService certificadoService,
+            SolicitudCertificadoService solicitudService)
         {
             _context = context;
             _certificadoService = certificadoService;
+            _solicitudService = solicitudService;
         }
 
         // ==========================================================
@@ -31,12 +36,15 @@ namespace ProyectoPAE.Controllers
         // GET: /Certificado/Generar/5
         [HttpGet]
         [RequierePermiso(Permisos.GenerarCertificados)]
-        public async Task<IActionResult> Generar(int idEstudiante)
+        public async Task<IActionResult> Generar(int idEstudiante, int? idSolicitud = null)
         {
             _context.AsegurarLimpiezaCalificacionesDuplicadas();
 
             var estudiante = await _context.Usuarios.FindAsync(idEstudiante);
             if (estudiante == null) return NotFound();
+
+            // Si se llega desde una solicitud de certificado, al generar se cierra esa solicitud
+            ViewBag.IdSolicitud = idSolicitud;
 
             var calificacionesRaw = await _context.Calificaciones
                 .Where(c => c.ID_Estudiante == idEstudiante)
@@ -58,12 +66,12 @@ namespace ProyectoPAE.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [RequierePermiso(Permisos.GenerarCertificados)]
-        public async Task<IActionResult> Generar(int idEstudiante, List<int> idsCalificacion, string tipoCertificado)
+        public async Task<IActionResult> Generar(int idEstudiante, List<int> idsCalificacion, string tipoCertificado, int? idSolicitud = null)
         {
             if (idsCalificacion == null || idsCalificacion.Count == 0)
             {
                 ModelState.AddModelError("", "Selecciona al menos una calificación para certificar.");
-                return RedirectToAction(nameof(Generar), new { idEstudiante });
+                return RedirectToAction(nameof(Generar), new { idEstudiante, idSolicitud });
             }
 
             int idUsuarioEmisor = HttpContext.Session.GetInt32("UserId") ?? 1;
@@ -83,6 +91,29 @@ namespace ProyectoPAE.Controllers
                 Prioridad = "leve"
             });
             await _context.SaveChangesAsync();
+
+            // Si el certificado se generó para atender una solicitud, se cierra la solicitud (queda entregada).
+            // El estudiante ya recibió arriba la notificación de que se emitió su certificado.
+            if (idSolicitud.HasValue)
+            {
+                var resultado = await _solicitudService.MarcarEntregadaAsync(
+                    idSolicitud.Value,
+                    certificado.IdCertificado,
+                    DateTime.Now,
+                    idUsuarioEmisor,
+                    "Certificado de notas generado desde el sistema.",
+                    idEstudianteEsperado: idEstudiante,
+                    notificarEstudiante: false);
+
+                if (resultado.Exito)
+                {
+                    TempData["Exito"] = $"{resultado.Mensaje} El certificado quedó generado y enlazado.";
+                    return RedirectToAction("Detalle", "SolicitudCertificado", new { id = idSolicitud.Value });
+                }
+
+                // No se pudo cerrar la solicitud (por ejemplo, ya estaba cerrada): el certificado igual se generó.
+                TempData["Error"] = resultado.Mensaje;
+            }
 
             return RedirectToAction(nameof(Confirmacion), new { id = certificado.IdCertificado });
         }

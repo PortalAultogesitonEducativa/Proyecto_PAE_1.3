@@ -24,6 +24,9 @@ namespace ProyectoPAE.Servicios
         public const string VerCertificados = "VerCertificados";
         public const string GestionarPQR = "GestionarPQR";
         public const string ParticiparPQR = "ParticiparPQR";
+        public const string SolicitarCertificado = "SolicitarCertificado";
+        public const string GestionarSolicitudesCertificado = "GestionarSolicitudesCertificado";
+        public const string VerSolicitudesCertificado = "VerSolicitudesCertificado";
 
         /// <summary>
         /// Normaliza el nombre del rol a minúsculas y alias conocidos (ej. 'administrador' -> 'admin', 'profesor' -> 'docente').
@@ -81,8 +84,11 @@ namespace ProyectoPAE.Servicios
                     GenerarCertificadoMatricula => true,
                     VerCertificados => true,
                     UsarPanelEstudiante => true,
-                    GestionarPQR => false,
+                    GestionarPQR => true,
                     ParticiparPQR => true,
+                    SolicitarCertificado => true,
+                    GestionarSolicitudesCertificado => true,
+                    VerSolicitudesCertificado => true,
                     _ => false
                 },
                 "docente" => permiso switch
@@ -100,12 +106,16 @@ namespace ProyectoPAE.Servicios
                     UsarPanelEstudiante => true,
                     VerCertificados => true,
                     ParticiparPQR => true,
+                    SolicitarCertificado => true,
+                    VerSolicitudesCertificado => true,
                     _ => false
                 },
                 "acudiente" => permiso switch
                 {
                     VerCertificados => true,
                     ParticiparPQR => true,
+                    SolicitarCertificado => true,
+                    VerSolicitudesCertificado => true,
                     _ => false
                 },
                 _ => false

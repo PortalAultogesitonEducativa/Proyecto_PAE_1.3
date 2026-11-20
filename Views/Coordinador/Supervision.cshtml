@@ -1,12 +1,13 @@
 @model ProyectoPAE.Models.SupervisionDocentesViewModel
+@using ProyectoPAE.Models
 @{
-    ViewData["Title"] = "Supervisión Docente y Periodos de Calificaciones";
+    ViewData["Title"] = "Supervisión Docente y Coordinación Académica";
 }
 
 <div class="container-fluid py-3 px-md-4">
     <div class="panel-con-sidebar">
         @await Html.PartialAsync("_SidebarAdmin")
-        <main class="submodulo-activo flex-grow-1" role="main" aria-label="Supervisión docente y coordinación de notas">
+        <main class="submodulo-activo flex-grow-1" role="main" aria-label="Supervisión docente y coordinación académica">
             <div class="card border-0 shadow-sm p-3 p-md-4 bg-white rounded-4">
                 <!-- 1. ENCABEZADO DE COORDINACIÓN -->
                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3 pb-3 border-bottom">
@@ -14,15 +15,25 @@
                         <div class="d-flex align-items-center gap-2 mb-1">
                             <span class="badge bg-warning text-dark px-3 py-1 rounded-pill fw-bold">COORDINACIÓN ACADÉMICA</span>
                             <span class="badge bg-primary text-white px-3 py-1 rounded-pill">Periodo Activo: P@(Model.PeriodoActivo)</span>
+                            @if (Model.AnioEscolar.HasValue)
+                            {
+                                <span class="badge bg-light text-secondary border rounded-pill">Año Escolar: @Model.AnioEscolar</span>
+                            }
                         </div>
                         <h2 class="mb-0 fw-bold" style="color: #0d2a4a;">
                             <i class="bi bi-clipboard-data-fill me-2" style="color: #e67e22;"></i>Supervisión Docente
                         </h2>
-                        <small class="text-muted">Coordina y programa las fechas de apertura y cierre para el registro de calificaciones de los docentes, plazos y supervisión pedagógica.</small>
+                        <small class="text-muted">Coordina y programa las fechas de apertura y cierre para el registro de calificaciones, supervisa la carga académica, cobertura institucional y seguimiento pedagógico.</small>
                     </div>
-                    <div class="d-flex gap-2">
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="@Url.Action("Seguimiento", "Coordinador")" class="btn btn-outline-primary btn-sm rounded-pill px-3 shadow-sm fw-semibold">
+                            <i class="bi bi-people-fill me-1"></i> Seguimiento Estudiantil
+                        </a>
                         <a href="@Url.Action("ReporteGrupal", "Docente")" class="btn btn-outline-warning btn-sm rounded-pill px-3 shadow-sm text-dark fw-semibold">
-                            <i class="bi bi-bar-chart-line-fill me-1 text-warning"></i> Reporte Grupal de Notas
+                            <i class="bi bi-bar-chart-line-fill me-1 text-warning"></i> Reporte Grupal
+                        </a>
+                        <a href="@Url.Action("ExportarSupervision", "Coordinador")" class="btn btn-outline-success btn-sm rounded-pill px-3 shadow-sm fw-semibold" title="Descargar reporte general en formato Excel CSV">
+                            <i class="bi bi-file-earmark-excel-fill me-1"></i> Exportar a Excel
                         </a>
                         <a href="@Url.Action("AsignacionAcademica", "Horario")" class="btn btn-outline-secondary btn-sm rounded-pill px-3 shadow-sm">
                             <i class="bi bi-diagram-3-fill me-1"></i> Asignación Académica
@@ -105,7 +116,7 @@
                 </div>
 
                 <!-- 3. TARJETAS DE MÉTRICAS GENERALES -->
-                <div class="row g-3 mb-4">
+                <div class="row g-3 mb-3">
                     <div class="col-6 col-md-3">
                         <div class="card border-0 shadow-sm h-100 text-center p-3 rounded-3" style="border-top: 4px solid #0d6efd !important;">
                             <div class="fs-3 fw-bold text-dark">@Model.Docentes.Count</div>
@@ -132,14 +143,48 @@
                     </div>
                 </div>
 
+                <!-- 3.1 TARJETAS DE COBERTURA Y ALERTAS INSTITUCIONALES -->
+                <div class="row g-3 mb-4">
+                    <div class="col-6 col-md-3">
+                        <div class="card border-0 shadow-sm h-100 text-center p-3 rounded-3" style="border-top: 4px solid @(Model.DocentesConAlerta > 0 ? "#f39c12" : "#27ae60") !important;">
+                            <div class="fs-3 fw-bold @(Model.DocentesConAlerta > 0 ? "text-warning" : "text-success")">@Model.DocentesConAlerta</div>
+                            <div class="small text-muted">Docentes con Alertas</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="card border-0 shadow-sm h-100 text-center p-3 rounded-3" style="border-top: 4px solid @(Model.MateriasSinDocente.Count > 0 ? "#dc3545" : "#27ae60") !important;">
+                            <div class="fs-3 fw-bold @(Model.MateriasSinDocente.Count > 0 ? "text-danger" : "text-success")">@Model.MateriasSinDocente.Count</div>
+                            <div class="small text-muted">Materias sin Docente</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="card border-0 shadow-sm h-100 text-center p-3 rounded-3" style="border-top: 4px solid @(Model.Choques.Count > 0 ? "#dc3545" : "#27ae60") !important;">
+                            <div class="fs-3 fw-bold @(Model.Choques.Count > 0 ? "text-danger" : "text-success")">@Model.Choques.Count</div>
+                            <div class="small text-muted">Choques de Horario</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="card border-0 shadow-sm h-100 text-center p-3 rounded-3" style="border-top: 4px solid #6f42c1 !important;">
+                            <div class="fs-3 fw-bold text-purple" style="color: #6f42c1;">@Model.TotalClases</div>
+                            <div class="small text-muted">Clases Asignadas</div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- 4. TABLA DE SUPERVISIÓN DOCENTE -->
-                <div class="card border-0 shadow-sm rounded-4">
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
                     <div class="card-body p-4">
-                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
-                            <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-people-fill text-primary me-2"></i>Monitoreo de Carga y Calificaciones por Docente</h5>
-                            <div class="input-group" style="max-width: 340px;">
-                                <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
-                                <input type="text" id="buscarDocente" class="form-control bg-light border-start-0" placeholder="Buscar docente por nombre o correo..." />
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
+                            <h5 class="fw-bold mb-0 text-dark"><i class="bi bi-people-fill text-primary me-2"></i>Monitoreo de Carga, Actividades y Calificaciones por Docente</h5>
+                            <div class="d-flex flex-wrap align-items-center gap-3">
+                                <div class="form-check mb-0">
+                                    <input class="form-check-input" type="checkbox" id="soloAlertas" />
+                                    <label class="form-check-label small fw-semibold" for="soloAlertas">Mostrar solo con alertas</label>
+                                </div>
+                                <div class="input-group" style="max-width: 320px;">
+                                    <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+                                    <input type="text" id="buscarDocente" class="form-control bg-light border-start-0" placeholder="Buscar por docente, materia o curso..." />
+                                </div>
                             </div>
                         </div>
 
@@ -154,8 +199,9 @@
                                         <th class="text-center">Notas Periodo @Model.PeriodoActivo</th>
                                         <th class="text-center">Actividades</th>
                                         <th class="text-center">Sin calificar</th>
-                                        <th>Última actividad</th>
+                                        <th class="text-center">Planes de mejora</th>
                                         <th>Estado General</th>
+                                        <th class="text-center">Acción</th>
                                     </tr>
                                 </thead>
                                 <tbody id="tbodyDocentes">
@@ -163,12 +209,27 @@
                                     {
                                         foreach (var d in Model.Docentes)
                                         {
-                                            <tr class="fila-docente">
+                                            string claseEstado = d.EstadoClase;
+                                            string badgeEstado = "bg-" + claseEstado + (claseEstado == "warning" ? " text-dark" : " text-white");
+
+                                            <tr class="fila-docente" data-alerta="@d.NivelAlerta">
                                                 <td>
-                                                    <div class="fw-semibold text-dark">@d.Nombre</div>
+                                                    <a href="@Url.Action("DetalleDocente", "Coordinador", new { id = d.IdUsuario })" class="fw-semibold text-primary text-decoration-none">
+                                                        @d.Nombre
+                                                    </a>
                                                     <div class="small text-muted">@d.Correo</div>
                                                 </td>
-                                                <td class="text-center fw-bold">@d.Clases</td>
+                                                <td class="text-center">
+                                                    <div class="fw-bold">@d.Clases</div>
+                                                    @if (d.Clases > 0)
+                                                    {
+                                                        <div class="small text-muted">@d.HorasSemanales.ToString("0.#") h/sem</div>
+                                                    }
+                                                    @if (d.ChoquesHorario > 0)
+                                                    {
+                                                        <span class="badge bg-danger mt-1" title="Clases del docente que se cruzan en día y hora">@d.ChoquesHorario choque(s)</span>
+                                                    }
+                                                </td>
                                                 <td>
                                                     @if (d.Materias.Any())
                                                     {
@@ -216,44 +277,45 @@
                                                     {
                                                         <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle" title="Con fecha límite vencida">@d.ActividadesVencidas vencidas</span>
                                                     }
+                                                    <div class="small text-muted mt-1">
+                                                        @(d.UltimaActividad.HasValue ? d.UltimaActividad.Value.ToString("dd/MM/yyyy") : "Sin actividades")
+                                                    </div>
                                                 </td>
                                                 <td class="text-center">
                                                     @if (d.EntregasSinCalificar > 0)
                                                     {
                                                         <span class="badge bg-danger">@d.EntregasSinCalificar</span>
+                                                        @if (d.EntregasSinCalificarAtrasadas > 0)
+                                                        {
+                                                            <div class="small text-danger mt-1 fw-bold">@d.EntregasSinCalificarAtrasadas con más de @SupervisionDocentesViewModel.DiasEntregaAtrasada días</div>
+                                                        }
                                                     }
                                                     else
                                                     {
                                                         <span class="text-muted">0</span>
                                                     }
                                                 </td>
-                                                <td>
-                                                    @if (d.UltimaActividad.HasValue)
+                                                <td class="text-center">
+                                                    @if (d.PlanesMejoraActivos == 0)
                                                     {
-                                                        @d.UltimaActividad.Value.ToString("dd/MM/yyyy")
+                                                        <span class="text-muted small">Sin planes</span>
                                                     }
                                                     else
                                                     {
-                                                        <span class="text-muted small">Sin actividades</span>
+                                                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle" title="Planes de mejora registrados">@d.PlanesMejoraActivos reg.</span>
+                                                        @if (d.PlanesMejoraVencidos > 0)
+                                                        {
+                                                            <div class="small text-danger fw-bold mt-1">@d.PlanesMejoraVencidos vencidos</div>
+                                                        }
                                                     }
                                                 </td>
                                                 <td>
-                                                    @if (d.Clases == 0)
-                                                    {
-                                                        <span class="badge bg-warning text-dark">Sin clases asignadas</span>
-                                                    }
-                                                    else if (d.EntregasSinCalificar > 0)
-                                                    {
-                                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Entregas pendientes</span>
-                                                    }
-                                                    else if (!d.TieneNotasRegistradas)
-                                                    {
-                                                        <span class="badge bg-warning-subtle text-dark border border-warning">Notas P@(Model.PeriodoActivo) pendientes</span>
-                                                    }
-                                                    else
-                                                    {
-                                                        <span class="badge bg-success-subtle text-success border border-success-subtle">Al día</span>
-                                                    }
+                                                    <span class="badge @badgeEstado">@d.EstadoTexto</span>
+                                                </td>
+                                                <td class="text-center">
+                                                    <a href="@Url.Action("DetalleDocente", "Coordinador", new { id = d.IdUsuario })" class="btn btn-sm btn-outline-primary rounded-pill px-2" title="Ver detalle integral del docente">
+                                                        <i class="bi bi-eye"></i> Detalle
+                                                    </a>
                                                 </td>
                                             </tr>
                                         }
@@ -261,7 +323,7 @@
                                     else
                                     {
                                         <tr>
-                                            <td colspan="9" class="text-center text-muted py-4">No hay docentes activos registrados en la institución.</td>
+                                            <td colspan="10" class="text-center text-muted py-4">No hay docentes activos registrados en la institución.</td>
                                         </tr>
                                     }
                                 </tbody>
@@ -270,8 +332,79 @@
                     </div>
                 </div>
 
-                <p class="small text-muted mt-3 mb-0">
-                    Estudiantes activos en el sistema: <strong>@Model.TotalEstudiantes</strong>. La apertura y cierre de notas rige inmediatamente para las planillas de los docentes.
+                <!-- 5. COBERTURA ACADÉMICA Y CONTROL DE CRUCES -->
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-3 text-dark"><i class="bi bi-diagram-3-fill me-2 text-secondary"></i>Cobertura Institucional y Choques de Horarios</h5>
+
+                        <div class="row g-4">
+                            <div class="col-lg-6">
+                                <h6 class="fw-semibold text-dark"><i class="bi bi-exclamation-triangle-fill text-warning me-1"></i> Materias del plan sin docente asignado</h6>
+                                @if (Model.MateriasSinDocente.Any())
+                                {
+                                    <div class="table-responsive border rounded-3 mb-2" style="max-height: 280px; overflow-y: auto;">
+                                        <table class="table table-sm table-hover align-middle mb-0">
+                                            <thead class="table-light">
+                                                <tr><th>Curso</th><th>Materia</th></tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var m in Model.MateriasSinDocente)
+                                                {
+                                                    <tr>
+                                                        <td class="fw-semibold">@m.Curso</td>
+                                                        <td>@m.Materia</td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <a href="@Url.Action("AsignacionAcademica", "Horario")" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+                                        <i class="bi bi-diagram-3-fill me-1"></i> Resolver en Asignación Académica
+                                    </a>
+                                }
+                                else
+                                {
+                                    <div class="alert alert-success small mb-0 rounded-3">
+                                        <i class="bi bi-check-circle-fill me-1"></i> Todas las materias del plan de estudios de cada curso tienen un horario con docente asignado.
+                                    </div>
+                                }
+                            </div>
+
+                            <div class="col-lg-6">
+                                <h6 class="fw-semibold text-dark"><i class="bi bi-calendar-x-fill text-danger me-1"></i> Choques de horario de un mismo docente</h6>
+                                @if (Model.Choques.Any())
+                                {
+                                    <div class="table-responsive border rounded-3" style="max-height: 280px; overflow-y: auto;">
+                                        <table class="table table-sm table-hover align-middle mb-0">
+                                            <thead class="table-light">
+                                                <tr><th>Docente</th><th>Día</th><th>Clases que se cruzan</th></tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var c in Model.Choques)
+                                                {
+                                                    <tr>
+                                                        <td class="fw-semibold">@c.Docente</td>
+                                                        <td><span class="badge bg-secondary-subtle text-secondary border">@c.Dia</span></td>
+                                                        <td class="small text-danger">@c.Detalle</td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="alert alert-success small mb-0 rounded-3">
+                                        <i class="bi bi-check-circle-fill me-1"></i> Ningún docente presenta clases que se crucen en día y hora en la asignación horaria.
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="small text-muted mt-2 mb-0">
+                    Estudiantes activos en el sistema: <strong>@Model.TotalEstudiantes</strong>. La apertura y cierre de subida de notas rige inmediatamente para las planillas de los docentes.
                 </p>
             </div>
         </main>
@@ -318,13 +451,22 @@
 </div>
 
 <script>
-    // Filtro en vivo de docentes
-    document.getElementById('buscarDocente')?.addEventListener('input', function () {
-        const texto = this.value.toLowerCase().trim();
+    // Filtro combinado de búsqueda y solo alertas
+    function aplicarFiltros() {
+        const texto = (document.getElementById('buscarDocente')?.value || '').toLowerCase().trim();
+        const soloAlertas = document.getElementById('soloAlertas')?.checked || false;
+
         document.querySelectorAll('#tbodyDocentes .fila-docente').forEach(function (fila) {
-            fila.style.display = fila.textContent.toLowerCase().includes(texto) ? '' : 'none';
+            const coincideTexto = !texto || fila.textContent.toLowerCase().includes(texto);
+            const alerta = parseInt(fila.getAttribute('data-alerta') || '0', 10);
+            const coincideAlerta = !soloAlertas || alerta > 0;
+
+            fila.style.display = (coincideTexto && coincideAlerta) ? '' : 'none';
         });
-    });
+    }
+
+    document.getElementById('buscarDocente')?.addEventListener('input', aplicarFiltros);
+    document.getElementById('soloAlertas')?.addEventListener('change', aplicarFiltros);
 
     // Cambiar estado (Habilitar / Cerrar subida de notas)
     function cambiarEstadoPeriodoSubida(periodo, nuevoEstado) {
@@ -353,47 +495,47 @@
                     if (data.success) {
                         Swal.fire({
                             icon: 'success',
-                            title: 'Estado actualizado',
+                            title: 'Estado Actualizado',
                             text: data.message,
-                            confirmButtonColor: '#0d2a4a'
+                            timer: 2000,
+                            showConfirmButton: false
                         }).then(() => location.reload());
                     } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: data.message || 'No se pudo actualizar el estado del periodo.'
-                        });
+                        Swal.fire('Error', data.message, 'error');
                     }
                 })
-                .catch(() => {
-                    Swal.fire({ icon: 'error', title: 'Error', text: 'Error al conectar con el servidor.' });
+                .catch(err => {
+                    Swal.fire('Error', 'No se pudo comunicar con el servidor.', 'error');
                 });
             }
         });
     }
 
-    // Modal de edición de plazos
-    function abrirModalEditarFechasPeriodo(periodo, nombre, inicio, cierre, pct, obs) {
+    // Modal para editar fechas del periodo
+    function abrirModalEditarFechasPeriodo(periodo, nombre, inicio, cierre, porcentaje, obs) {
         document.getElementById('cfgPeriodoNumero').value = periodo;
         document.getElementById('modalPeriodoTitulo').innerHTML = `<i class="bi bi-calendar-event me-2"></i>Configurar Fechas: Periodo ${periodo}`;
         document.getElementById('cfgFechaInicio').value = inicio;
         document.getElementById('cfgFechaCierre').value = cierre;
-        document.getElementById('cfgPorcentaje').value = pct || 25;
+        document.getElementById('cfgPorcentaje').value = porcentaje || 25;
         document.getElementById('cfgObservaciones').value = obs || '';
 
-        const modalEl = document.getElementById('modalConfigurarPeriodoSubida');
-        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        const modal = new bootstrap.Modal(document.getElementById('modalConfigurarPeriodoSubida'));
         modal.show();
     }
 
-    // Guardar plazos configurados
-    function guardarFechasPeriodoSubmit(event) {
-        event.preventDefault();
+    function guardarFechasPeriodoSubmit(e) {
+        e.preventDefault();
         const periodo = document.getElementById('cfgPeriodoNumero').value;
         const inicio = document.getElementById('cfgFechaInicio').value;
         const cierre = document.getElementById('cfgFechaCierre').value;
         const porcentaje = document.getElementById('cfgPorcentaje').value;
         const obs = document.getElementById('cfgObservaciones').value;
+
+        if (cierre < inicio) {
+            Swal.fire('Atención', 'La fecha de cierre no puede ser anterior a la de inicio.', 'warning');
+            return;
+        }
 
         const formData = new FormData();
         formData.append('periodo', periodo);
@@ -409,31 +551,33 @@
         .then(r => r.json())
         .then(data => {
             if (data.success) {
+                bootstrap.Modal.getInstance(document.getElementById('modalConfigurarPeriodoSubida'))?.hide();
                 Swal.fire({
                     icon: 'success',
-                    title: 'Plazos actualizados',
+                    title: 'Guardado',
                     text: data.message,
-                    confirmButtonColor: '#0d2a4a'
+                    timer: 2000,
+                    showConfirmButton: false
                 }).then(() => location.reload());
             } else {
-                Swal.fire({ icon: 'error', title: 'Error', text: data.message || 'No se pudo guardar la configuración.' });
+                Swal.fire('Error', data.message, 'error');
             }
         })
-        .catch(() => {
-            Swal.fire({ icon: 'error', title: 'Error', text: 'Error al comunicarse con el servidor.' });
+        .catch(err => {
+            Swal.fire('Error', 'No se pudo guardar la configuración.', 'error');
         });
     }
 
-    // Enviar recordatorio masivo a docentes
+    // Recordatorio masivo institucional a docentes
     function notificarDocentesRecordatorio(periodo) {
         Swal.fire({
-            title: `¿Emitir recordatorio de Periodo ${periodo}?`,
-            text: 'Se enviará una alerta oficial a todos los docentes recordando la fecha límite de subida de notas.',
+            title: `¿Emitir recordatorio oficial para Periodo ${periodo}?`,
+            text: `Se enviará un anuncio institucional a las bandejas de todos los docentes recordando el cierre de subida de notas del Periodo ${periodo}.`,
             icon: 'info',
             showCancelButton: true,
-            confirmButtonColor: '#f39c12',
+            confirmButtonColor: '#0d2a4a',
             cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Sí, Enviar Aviso',
+            confirmButtonText: 'Sí, Enviar Recordatorio',
             cancelButtonText: 'Cancelar'
         }).then((result) => {
             if (result.isConfirmed) {
@@ -447,18 +591,13 @@
                 .then(r => r.json())
                 .then(data => {
                     if (data.success) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Aviso enviado',
-                            text: data.message,
-                            confirmButtonColor: '#0d2a4a'
-                        });
+                        Swal.fire('Enviado', data.message, 'success');
                     } else {
-                        Swal.fire({ icon: 'error', title: 'Error', text: data.message });
+                        Swal.fire('Error', data.message, 'error');
                     }
                 })
-                .catch(() => {
-                    Swal.fire({ icon: 'error', title: 'Error', text: 'Error de conexión con el servidor.' });
+                .catch(err => {
+                    Swal.fire('Error', 'Error de conexión al emitir recordatorio.', 'error');
                 });
             }
         });

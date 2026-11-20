@@ -26,6 +26,8 @@ builder.Services.AddScoped<ServicioEmail>();
 // CERTIFICADOS
 builder.Services.AddScoped<CertificadoService>();
 builder.Services.AddScoped<MatriculaAcademicaService>();
+builder.Services.AddScoped<SolicitudCertificadoService>();
+builder.Services.AddScoped<CambioCorreoService>();
 
 // 4. SERVICIOS DE COPIAS DE SEGURIDAD (DISPARADOR AUTOMÁTICO 24 HORAS)
 builder.Services.AddSingleton<BackupBaseDatosService>();

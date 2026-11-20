@@ -732,6 +732,15 @@ namespace ProyectoPAE.Controllers
             if (userId == null) return RedirectToAction("Index", "Login");
 
             var usuario = _context.Usuarios.Find(userId);
+
+            // Si hay un cambio de correo esperando confirmación, se muestra en la pantalla
+            _context.AsegurarEsquemaCambioCorreo();
+            var ahora = DateTime.Now;
+            ViewBag.CambioCorreoPendiente = _context.CambiosCorreo
+                .Where(cc => cc.IdUsuario == userId.Value && !cc.Usado && cc.FechaExpiracion > ahora)
+                .OrderByDescending(cc => cc.FechaSolicitud)
+                .FirstOrDefault();
+
             return View(usuario);
         }
 
@@ -747,7 +756,7 @@ namespace ProyectoPAE.Controllers
             {
                 usuarioBd.TELEFONO = usuarioEditado.TELEFONO;
                 usuarioBd.DIRECCION = usuarioEditado.DIRECCION;
-                usuarioBd.CORREO_ELECTRONICO = usuarioEditado.CORREO_ELECTRONICO;
+                // El correo NO se cambia aquí: se hace desde Correo/Solicitar y solo se aplica al confirmar el enlace (RF-03.2)
 
                 // Crear notificación de actualización de perfil
                 var notifPerfil = new Notificacion

@@ -12,6 +12,7 @@ namespace ProyectoPAE.Models
         public DbSet<Usuario> Usuarios { get; set; }
         public DbSet<EstudiantePadre> ESTUDIANTE_PADRE { get; set; }
         public DbSet<Asistencia> ASISTENCIAS { get; set; }
+        public DbSet<Asistencia> Asistencias => ASISTENCIAS;
         public DbSet<Evaluacion> EVALUACIONES { get; set; }
         public DbSet<Citacion> CITACIONES { get; set; }
         public DbSet<Calificacion> Calificaciones { get; set; }
@@ -62,6 +63,8 @@ namespace ProyectoPAE.Models
 
         // --- SISTEMA PQR (PETICIONES, QUEJAS Y RECLAMOS) ---
         public DbSet<Pqr> PQRs { get; set; }
+        public DbSet<SolicitudCertificado> SolicitudesCertificado { get; set; }
+        public DbSet<CambioCorreo> CambiosCorreo { get; set; }
 
         // --- PERIODOS DE SUBIDA DE NOTAS (COORDINACIÓN) ---
         public DbSet<PeriodoSubidaNota> PeriodosSubidaNotas { get; set; }
@@ -849,6 +852,95 @@ namespace ProyectoPAE.Models
                     }
                 }
                 catch { }
+            }
+        }
+
+        private static bool _esquemaSolicitudesCertificadoListo;
+
+        /// <summary>
+        /// Crea la tabla SOLICITUD_CERTIFICADO si todavía no existe (mismo script que Scripts/SolicitudCertificado.sql).
+        /// Solo se verifica una vez por ejecución de la aplicación.
+        /// </summary>
+        public void AsegurarEsquemaSolicitudesCertificado()
+        {
+            if (_esquemaSolicitudesCertificadoListo)
+                return;
+
+            try
+            {
+                Database.ExecuteSqlRaw(@"
+                    IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'SOLICITUD_CERTIFICADO')
+                    BEGIN
+                        CREATE TABLE [dbo].[SOLICITUD_CERTIFICADO](
+                            [id_solicitud]              [int] IDENTITY(1,1) NOT NULL PRIMARY KEY,
+                            [codigo_radicado]           [nvarchar](50)  NOT NULL,
+                            [id_estudiante]             [int]           NOT NULL,
+                            [nombre_estudiante]         [nvarchar](150) NOT NULL,
+                            [tipo_certificado]          [nvarchar](50)  NOT NULL,
+                            [observaciones_solicitante] [nvarchar](500) NULL,
+                            [id_solicitante]            [int]           NOT NULL,
+                            [nombre_solicitante]        [nvarchar](150) NOT NULL,
+                            [rol_solicitante]           [nvarchar](50)  NOT NULL,
+                            [fecha_solicitud]           [datetime]      NOT NULL,
+                            [fecha_limite]              [datetime]      NOT NULL,
+                            [estado]                    [nvarchar](30)  NOT NULL DEFAULT 'Pendiente',
+                            [fecha_entrega]             [datetime]      NULL,
+                            [id_usuario_entrega]        [int]           NULL,
+                            [id_certificado]            [int]           NULL,
+                            [motivo_rechazo]            [nvarchar](500) NULL,
+                            [observaciones_cierre]      [nvarchar](500) NULL,
+                            [activo]                    [bit]           NOT NULL DEFAULT 1
+                        );
+
+                        CREATE INDEX IX_SOLICITUD_CERT_estado_limite ON [dbo].[SOLICITUD_CERTIFICADO]([estado], [fecha_limite]);
+                        CREATE INDEX IX_SOLICITUD_CERT_estudiante    ON [dbo].[SOLICITUD_CERTIFICADO]([id_estudiante]);
+                    END
+                ");
+                _esquemaSolicitudesCertificadoListo = true;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Error AsegurarEsquemaSolicitudesCertificado]: {ex.Message}");
+            }
+        }
+
+        private static bool _esquemaCambioCorreoListo;
+
+        /// <summary>
+        /// Crea la tabla GU_CAMBIO_CORREO si todavía no existe (mismo script que Scripts/CambioCorreo.sql).
+        /// Solo se verifica una vez por ejecución de la aplicación.
+        /// </summary>
+        public void AsegurarEsquemaCambioCorreo()
+        {
+            if (_esquemaCambioCorreoListo)
+                return;
+
+            try
+            {
+                Database.ExecuteSqlRaw(@"
+                    IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'GU_CAMBIO_CORREO')
+                    BEGIN
+                        CREATE TABLE [dbo].[GU_CAMBIO_CORREO](
+                            [id_cambio]          [int] IDENTITY(1,1) NOT NULL PRIMARY KEY,
+                            [id_usuario]         [int]           NOT NULL,
+                            [correo_anterior]    [nvarchar](150) NOT NULL,
+                            [correo_nuevo]       [nvarchar](150) NOT NULL,
+                            [token_hash]         [nvarchar](64)  NOT NULL,
+                            [fecha_solicitud]    [datetime]      NOT NULL,
+                            [fecha_expiracion]   [datetime]      NOT NULL,
+                            [usado]              [bit]           NOT NULL DEFAULT 0,
+                            [fecha_confirmacion] [datetime]      NULL
+                        );
+
+                        CREATE UNIQUE INDEX UX_CAMBIO_CORREO_token   ON [dbo].[GU_CAMBIO_CORREO]([token_hash]);
+                        CREATE INDEX        IX_CAMBIO_CORREO_usuario ON [dbo].[GU_CAMBIO_CORREO]([id_usuario], [usado]);
+                    END
+                ");
+                _esquemaCambioCorreoListo = true;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Error AsegurarEsquemaCambioCorreo]: {ex.Message}");
             }
         }
     }

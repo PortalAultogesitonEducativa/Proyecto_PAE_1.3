@@ -1,0 +1,27 @@
+﻿@model ProyectoPAE.Servicios.ResumenAlertasSolicitudes
+@{
+    bool hayVencidas = Model.Vencidas > 0;
+    string claseAlerta = hayVencidas ? "danger" : "warning";
+    string filtro = hayVencidas ? "vencida" : "por-vencer";
+
+    var partes = new System.Collections.Generic.List<string>();
+    if (Model.Vencidas > 0)
+    {
+        partes.Add(Model.Vencidas == 1 ? "1 solicitud vencida" : $"{Model.Vencidas} solicitudes vencidas");
+    }
+    if (Model.PorVencer > 0)
+    {
+        partes.Add(Model.PorVencer == 1 ? "1 próxima a vencer" : $"{Model.PorVencer} próximas a vencer");
+    }
+}
+
+<div class="alert alert-@claseAlerta d-flex align-items-center gap-3 shadow-sm border-0 mb-3" role="alert" aria-live="polite">
+    <i class="bi bi-exclamation-triangle-fill fs-4"></i>
+    <div class="flex-grow-1">
+        <strong>Plazo de entrega de certificados</strong><br />
+        <span class="small">Hay @string.Join(" y ", partes). Atiéndelas antes de que se cumpla la fecha límite.</span>
+    </div>
+    <a href="@Url.Action("Index", "SolicitudCertificado", new { plazo = filtro })" class="btn btn-sm btn-@claseAlerta fw-semibold">
+        <i class="bi bi-arrow-right-circle me-1"></i>Revisar
+    </a>
+</div>
