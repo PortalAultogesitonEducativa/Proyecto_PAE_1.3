@@ -66,12 +66,13 @@
     <table class="table table-bordered table-notas text-center">
         <thead>
             <tr>
-                <th class="text-start">Asignatura</th>
+                <th class="text-start" style="width: 22%;">Asignatura</th>
                 <th>P1</th>
                 <th>P2</th>
                 <th>P3</th>
                 <th>P4</th>
                 <th>Definitiva</th>
+                <th class="text-start" style="width: 42%;">Logros / Indicadores Evaluados</th>
             </tr>
         </thead>
         <tbody>
@@ -80,7 +81,7 @@
                 foreach (var fila in Model.NotasPorMateria)
                 {
                     <tr>
-                        <td class="text-start">@fila.NombreMateria</td>
+                        <td class="text-start fw-bold">@fila.NombreMateria</td>
                         <td>@fila.Periodo1.ToString("N1")</td>
                         <td>@fila.Periodo2.ToString("N1")</td>
                         <td>@fila.Periodo3.ToString("N1")</td>
@@ -88,13 +89,26 @@
                         <td class="fw-bold @(fila.Definitiva < 3 ? "text-danger" : "text-success")">
                             @fila.Definitiva.ToString("N1")
                         </td>
+                        <td class="text-start" style="font-size: 10px; line-height: 1.3;">
+                            @if (fila.LogrosPeriodo != null && fila.LogrosPeriodo.Any())
+                            {
+                                foreach (var logro in fila.LogrosPeriodo)
+                                {
+                                    <div class="mb-1">• @logro</div>
+                                }
+                            }
+                            else
+                            {
+                                <span class="text-muted">Sin indicadores registrados</span>
+                            }
+                        </td>
                     </tr>
                 }
             }
             else
             {
                 <tr>
-                    <td colspan="6" class="text-center">No hay calificaciones registradas para este estudiante.</td>
+                    <td colspan="7" class="text-center">No hay calificaciones registradas para este estudiante.</td>
                 </tr>
             }
         </tbody>

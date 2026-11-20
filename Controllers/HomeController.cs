@@ -400,7 +400,7 @@ namespace ProyectoPAE.Controllers
                             }
 
                             var horarioEstudiante = _context.HORARIOS
-                                .Where(h => h.id_curso == matriculaActiva.id_curso)
+                                .Where(h => h.id_curso == matriculaActiva.id_curso && h.publicado)
                                 .OrderBy(h => h.dia)
                                 .ThenBy(h => h.hora_inicio)
                                 .ToList();

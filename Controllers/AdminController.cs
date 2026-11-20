@@ -582,10 +582,27 @@ namespace ProyectoPAE.Controllers
         [RequierePermiso(Permisos.VerReportes)]
         public IActionResult DescargarReportePro(int id)
         {
+            _context.AsegurarEsquemaLogros();
+
             // 1. Buscamos al estudiante
             var estudiante = _context.ESTUDIANTE.FirstOrDefault(e => e.id_estudiante == id);
             if (estudiante == null) return NotFound();
 
+            string cursoEst = estudiante.curso_asignado ?? "";
+            if (string.IsNullOrEmpty(cursoEst))
+            {
+                var mat = _context.Matriculas.FirstOrDefault(m => m.id_estudiante == id);
+                if (mat?.id_curso != null)
+                {
+                    cursoEst = _context.Cursos.Find(mat.id_curso)?.nombre_curso ?? "";
+                }
+            }
+            int gradoEst = ProyectoPAE.Servicios.MatriculaAcademicaService.ExtraerGrado(cursoEst, 6);
+
+            var logrosGrado = _context.Logros
+                .Where(l => l.activo && l.grado == gradoEst)
+                .OrderBy(l => l.periodo)
+                .ToList();
 
             var modelo = new ReporteEstudianteViewModel
             {
@@ -594,36 +611,41 @@ namespace ProyectoPAE.Controllers
                 Codigo = estudiante.codigo_estudiante
             };
 
-
-            // 2. Consulta ajustada a tu tabla real
+            // 2. Consulta agrupada por asignatura con sus logros por período
             var notasAgrupadas = _context.Calificaciones
                 .Where(c => c.ID_Estudiante == id)
                 .ToList()
-                .GroupBy(c => c.Materia) // Agrupamos por el nombre de la materia ("Matemáticas", etc.)
-                .Select(grupo => new FilaNota
+                .GroupBy(c => c.Materia)
+                .Select(grupo =>
                 {
-                    NombreMateria = grupo.Key, // El nombre que ya tienes en la tabla
-                                               // Filtramos por la columna 'Periodo' de tu SQL
-                    Periodo1 = (double)(grupo.FirstOrDefault(x => x.Periodo == 1)?.Nota ?? 0),
-                    Periodo2 = (double)(grupo.FirstOrDefault(x => x.Periodo == 2)?.Nota ?? 0),
-                    Periodo3 = (double)(grupo.FirstOrDefault(x => x.Periodo == 3)?.Nota ?? 0),
-                    Periodo4 = (double)(grupo.FirstOrDefault(x => x.Periodo == 4)?.Nota ?? 0)
-                }).ToList();
+                    string matBase = (grupo.Key ?? "").Split(" - ")[0].Trim();
+                    var logrosMat = logrosGrado
+                        .Where(l => l.materia.Equals(matBase, StringComparison.OrdinalIgnoreCase) ||
+                                    matBase.StartsWith(l.materia, StringComparison.OrdinalIgnoreCase))
+                        .Select(l => $"P{l.periodo}: {l.descripcion}")
+                        .ToList();
 
+                    return new FilaNota
+                    {
+                        NombreMateria = grupo.Key,
+                        Periodo1 = (double)(grupo.FirstOrDefault(x => x.Periodo == 1)?.Nota ?? 0),
+                        Periodo2 = (double)(grupo.FirstOrDefault(x => x.Periodo == 2)?.Nota ?? 0),
+                        Periodo3 = (double)(grupo.FirstOrDefault(x => x.Periodo == 3)?.Nota ?? 0),
+                        Periodo4 = (double)(grupo.FirstOrDefault(x => x.Periodo == 4)?.Nota ?? 0),
+                        LogrosPeriodo = logrosMat
+                    };
+                }).ToList();
 
             modelo.NotasPorMateria = notasAgrupadas;
 
-
-            // 3. Generación del PDF sin tildes en el nombre para evitar errores
             return new ViewAsPdf("VistaReportePDF", modelo)
             {
                 FileName = "ReporteAcademico.pdf",
                 PageOrientation = Rotativa.AspNetCore.Options.Orientation.Portrait,
                 PageSize = Rotativa.AspNetCore.Options.Size.A4,
-                CustomSwitches = "--allow ./" // Ayuda a cargar imágenes locales
+                CustomSwitches = "--allow ./"
             };
         }
-
 
         // --- GESTIÓN DE NOTIFICACIONES / COMUNICADOS POR ROL ---
         [HttpGet]

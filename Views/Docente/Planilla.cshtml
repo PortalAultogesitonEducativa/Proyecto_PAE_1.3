@@ -5,10 +5,6 @@
     VISTA: Planilla.cshtml
     PROPÓSITO: Planilla interactiva para el registro, edición y guardado de
                calificaciones de los estudiantes por asignatura y periodo.
-    CARACTERÍSTICAS:
-    - Selección dinámica de Grado, Asignatura y Periodo.
-    - Notificaciones emergentes (Toasts) mediante SweetAlert2.
-    - Cálculo automático de definitivas y estado de aprobación.
     ===================================================================
 *@
 
@@ -24,135 +20,140 @@
 
         <div class="submodulo-activo">
 
-    <!-- 1. Encabezado Institucional con Degradado Azul PAE -->
-    <div class="card border-0 shadow-sm mb-4 rounded-3 overflow-hidden">
-        <div class="d-flex flex-wrap justify-content-between align-items-center px-4 py-3 text-white"
-             style="background: var(--pae-gradient-primary);">
-            <div class="d-flex align-items-center gap-3">
-                <div class="rounded-circle d-flex align-items-center justify-content-center"
-                     style="width:48px;height:48px;background:rgba(255,255,255,0.15);">
-                    <i class="bi bi-pencil-square fs-4 text-white"></i>
+            <!-- 1. Encabezado Institucional con Degradado Azul PAE -->
+            <div class="card border-0 shadow-sm mb-4 rounded-3 overflow-hidden">
+                <div class="d-flex flex-wrap justify-content-between align-items-center px-4 py-3 text-white"
+                     style="background: var(--pae-gradient-primary);">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-circle d-flex align-items-center justify-content-center"
+                             style="width:48px;height:48px;background:rgba(255,255,255,0.15);">
+                            <i class="bi bi-pencil-square fs-4 text-white"></i>
+                        </div>
+                        <div>
+                            <h4 class="mb-0 fw-bold">Planilla de Calificaciones</h4>
+                            <span class="badge bg-light text-dark fw-bold mt-1 px-3 py-1" style="font-size:0.85rem;">
+                                <i class="bi bi-person-badge-fill me-1 text-primary"></i> Registro, Edición y Control de Notas
+                            </span>
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <h4 class="mb-0 fw-bold">Planilla de Calificaciones</h4>
-                    <span class="badge bg-light text-dark fw-bold mt-1 px-3 py-1" style="font-size:0.85rem;">
-                        <i class="bi bi-person-badge-fill me-1 text-primary"></i> Registro, Edición y Control de Notas
-                    </span>
+            </div>
+
+            <!-- 2. Banners de Notificación de Éxito o Error -->
+            @if (TempData["MensajeNota"] != null)
+            {
+                <script>
+                                document.addEventListener("DOMContentLoaded", function() {
+                                    Swal.fire({
+                                        toast: true,
+                                        position: 'top-end',
+                                        icon: 'success',
+                                        title: '@TempData["MensajeNota"]',
+                                        showConfirmButton: false,
+                                        timer: 3500,
+                                        timerProgressBar: true
+                                    });
+                                });
+                </script>
+            }
+
+            @if (TempData["ErrorNota"] != null)
+            {
+                <script>
+                                document.addEventListener("DOMContentLoaded", function() {
+                                    Swal.fire({
+                                        toast: true,
+                                        position: 'top-end',
+                                        icon: 'error',
+                                        title: '@TempData["ErrorNota"]',
+                                        showConfirmButton: false,
+                                        timer: 4000,
+                                        timerProgressBar: true
+                                    });
+                                });
+                </script>
+            }
+
+           <!-- 3. Filtros en orden jerárquico: Período -> Jornada -> Curso -> Asignatura -->
+            <div class="card border-0 shadow-sm p-4 mb-4">
+                <div class="row g-3 align-items-end">
+                    
+                    <!-- 1. Período Académico -->
+                    <div class="col-md-3">
+                        <label for="selectPeriodo" class="form-label fw-bold text-dark mb-1">
+                            <i class="bi bi-calendar2-week me-1 text-primary"></i>Período Académico
+                        </label>
+                        <select class="form-select" id="selectPeriodo" name="selectPeriodo" onchange="verificarEstadoPeriodoPlanilla()">
+                            @if (ViewBag.Periodos != null)
+                            {
+                                foreach (var p in (List<ProyectoPAE.Models.PeriodoSubidaNota>)ViewBag.Periodos)
+                                {
+                                    bool esActivo = (ViewBag.PeriodoActivo != null && (int)ViewBag.PeriodoActivo == p.Periodo);
+                                    <option value="@p.Periodo" selected="@(esActivo ? "selected" : null)" data-activo="@(p.Activo.ToString().ToLower())" data-nombre="@p.Nombre" data-cierre="@p.FechaCierre.ToString("dd/MM/yyyy")">
+                                        Período @p.Periodo @(!p.Activo ? " (Cerrado)" : "")
+                                    </option>
+                                }
+                            }
+                            else
+                            {
+                                <option value="1" data-activo="true">Período 1</option>
+                                <option value="2" data-activo="false">Período 2 (Cerrado)</option>
+                                <option value="3" data-activo="false">Período 3 (Cerrado)</option>
+                                <option value="4" data-activo="false">Período 4 (Cerrado)</option>
+                            }
+                        </select>
+                    </div>
+
+                    <!-- 2. Jornada (filtra los cursos disponibles en el siguiente selector) -->
+                    <div class="col-md-3">
+                        <label for="selectJornada" class="form-label fw-bold text-dark mb-1">
+                            <i class="bi bi-clock-history me-1 text-primary"></i>Jornada
+                        </label>
+                        <select class="form-select" id="selectJornada" name="selectJornada">
+                            <option value="Mañana">Mañana</option>
+                            <option value="Tarde">Tarde</option>
+                        </select>
+                    </div>
+
+                    <!-- 3. Curso (mantiene id="selectGrado" para compatibilidad con JS y Controlador) -->
+                    <div class="col-md-3">
+                        <label for="selectGrado" class="form-label fw-bold text-dark mb-1">
+                            <i class="bi bi-mortarboard me-1 text-primary"></i>Curso
+                        </label>
+                        <select class="form-select" id="selectGrado" name="selectGrado">
+                            <option value="">-- Seleccione un Curso --</option>
+                            @if (ViewBag.Grados != null && ((IEnumerable<string>)ViewBag.Grados).Any())
+                            {
+                                foreach (var grado in ViewBag.Grados)
+                                {
+                                    <option value="@grado">@grado</option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <!-- 4. Asignatura -->
+                    <div class="col-md-3">
+                        <label for="selectAsignatura" class="form-label fw-bold text-dark mb-1">
+                            <i class="bi bi-book me-1 text-primary"></i>Asignatura
+                        </label>
+                        <select class="form-select" id="selectAsignatura" name="selectAsignatura">
+                            @if (ViewBag.Asignaturas != null && ((IEnumerable<string>)ViewBag.Asignaturas).Any())
+                            {
+                                foreach (var nombre in ViewBag.Asignaturas)
+                                {
+                                    <option value="@nombre">@nombre</option>
+                                }
+                            }
+                            else
+                            {
+                                <option value="">Sin asignaturas disponibles</option>
+                            }
+                        </select>
+                    </div>
+
                 </div>
             </div>
-        </div>
-    </div>
-
-    <!-- 2. Banners de Notificación de Éxito o Error (Toast estilo Notificación) -->
-    @if (TempData["MensajeNota"] != null)
-    {
-        <script>
-                document.addEventListener("DOMContentLoaded", function() {
-                    Swal.fire({
-                        toast: true,
-                        position: 'top-end',
-                        icon: 'success',
-                        title: '@TempData["MensajeNota"]',
-                        showConfirmButton: false,
-                        timer: 3500,
-                        timerProgressBar: true
-                    });
-                });
-        </script>
-    }
-
-    @if (TempData["ErrorNota"] != null)
-    {
-        <script>
-                document.addEventListener("DOMContentLoaded", function() {
-                    Swal.fire({
-                        toast: true,
-                        position: 'top-end',
-                        icon: 'error',
-                        title: '@TempData["ErrorNota"]',
-                        showConfirmButton: false,
-                        timer: 4000,
-                        timerProgressBar: true
-                    });
-                });
-        </script>
-    }
-
-    <!-- 3. Filtros de Grado, Asignatura, Periodo y Jornada -->
-    <div class="card border-0 shadow-sm p-4 mb-4">
-        <div class="row g-3 align-items-end">
-            <div class="col-md-3">
-                <label class="form-label fw-bold text-dark mb-1">
-                    <i class="bi bi-mortarboard me-1 text-primary"></i>Grado / Curso
-                </label>
-                <select class="form-select" id="selectGrado" name="selectGrado">
-                    <option value="todos">Todos los Grados Asignados</option>
-                    @if (ViewBag.Grados != null && ((IEnumerable<string>)ViewBag.Grados).Any())
-                    {
-                        foreach (var grado in ViewBag.Grados)
-                        {
-                            <option value="@grado">@grado</option>
-                        }
-                    }
-                    else
-                    {
-                        <option value="">Sin cursos asignados</option>
-                    }
-                </select>
-            </div>
-            <div class="col-md-3">
-                <label class="form-label fw-bold text-dark mb-1">
-                    <i class="bi bi-book me-1 text-primary"></i>Asignatura
-                </label>
-                <select class="form-select" id="selectAsignatura" name="selectAsignatura">
-                    @if (ViewBag.Asignaturas != null && ((IEnumerable<string>)ViewBag.Asignaturas).Any())
-                    {
-                        foreach (var nombre in ViewBag.Asignaturas)
-                        {
-                            <option value="@nombre">@nombre</option>
-                        }
-                    }
-                    else
-                    {
-                        <option value="">Sin asignaturas asignadas</option>
-                    }
-                </select>
-            </div>
-            <div class="col-md-3">
-                <label class="form-label fw-bold text-dark mb-1">
-                    <i class="bi bi-calendar2-range me-1 text-primary"></i>Periodo Académico
-                </label>
-                <select class="form-select" id="selectPeriodo" name="selectPeriodo" onchange="verificarEstadoPeriodoPlanilla()">
-                    @if (ViewBag.Periodos != null)
-                    {
-                        foreach (var p in (List<ProyectoPAE.Models.PeriodoSubidaNota>)ViewBag.Periodos)
-                        {
-                            bool esActivo = (ViewBag.PeriodoActivo != null && (int)ViewBag.PeriodoActivo == p.Periodo);
-                            <option value="@p.Periodo" selected="@(esActivo ? "selected" : null)" data-activo="@(p.Activo.ToString().ToLower())" data-nombre="@p.Nombre" data-cierre="@p.FechaCierre.ToString("dd/MM/yyyy")">
-                                Periodo @p.Periodo @(!p.Activo ? " (Cerrado)" : "")
-                            </option>
-                        }
-                    }
-                    else
-                    {
-                        <option value="1" data-activo="true">Periodo 1</option>
-                        <option value="2" data-activo="false">Periodo 2 (Cerrado)</option>
-                        <option value="3" data-activo="false">Periodo 3 (Cerrado)</option>
-                        <option value="4" data-activo="false">Periodo 4 (Cerrado)</option>
-                    }
-                </select>
-            </div>
-            <div class="col-md-3">
-                <label class="form-label fw-bold text-dark mb-1">
-                    <i class="bi bi-clock-history me-1 text-primary"></i>Jornada
-                </label>
-                <select class="form-select" id="selectJornada" name="selectJornada">
-                    <option value="Mañana">Mañana</option>
-                    <option value="Tarde">Tarde</option>
-                </select>
-            </div>
-        </div>
-    </div>
 
     <!-- BANNER DE ALERTA: SUBIDA DE CALIFICACIONES CERRADA -->
     <div id="alertaPeriodoCerrado" class="alert alert-danger d-flex align-items-center justify-content-between p-3 rounded-4 mb-4 shadow-sm d-none" style="border-left: 6px solid #dc3545; background-color: #fff5f5;">
@@ -170,942 +171,1209 @@
         <span class="badge bg-danger rounded-pill px-3 py-2 fw-bold text-uppercase">Subida Bloqueada</span>
     </div>
 
-    <!-- 4. Tabla de Calificaciones y Botón Agregar Nota -->
-    <div class="card border-0 shadow-sm overflow-hidden mb-4">
-        <div class="p-3 border-bottom d-flex align-items-center justify-content-between bg-light">
-            <h5 class="fw-bold mb-0 text-dark">Estudiantes Inscritos (@(Model?.Count ?? 0))</h5>
-            <button type="button" class="btn btn-sm btn-success fw-bold" id="btnAgregarNota">
-                <i class="bi bi-plus-circle me-1"></i> Agregar Nota
-            </button>
-        </div>
+            <!-- 3B. TARJETA DINÁMICA DE LOGROS ACADÉMICOS DEL GRADO Y PERÍODO -->
+            <div class="card border-0 shadow-sm mb-4" style="border-left: 4px solid #0d2a4a !important;">
+                <div class="card-body py-3 px-4">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+                        <div>
+                            <h6 class="fw-bold mb-0 text-dark">
+                                <i class="bi bi-award-fill text-warning me-1"></i>
+                                Logros / Indicadores de Desempeño <span id="badgeInfoLogros" class="badge bg-primary-subtle text-primary ms-1">Seleccione un curso</span>
+                            </h6>
+                            <small class="text-muted">Aplica para todos los cursos del mismo grado en jornada Mañana y Tarde.</small>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-primary fw-semibold" id="btnGestionarLogro">
+                            <i class="bi bi-plus-circle me-1"></i> Agregar Logro
+                        </button>
+                    </div>
+                    <div id="contenedorLogrosPlanilla" class="mt-2">
+                        <span class="text-muted small">Seleccione un Grado / Curso para visualizar los logros del período.</span>
+                    </div>
+                </div>
+            </div>
 
-        <form action="@Url.Action("GuardarNota", "Docente")" method="post">
-            @Html.AntiForgeryToken()
-            <div class="table-responsive">
-                <table class="table align-middle mb-0 table-hover" id="tablaPlanilla">
-                    <thead class="table-dark">
-                        <tr>
-                            <th class="ps-3">Estudiante</th>
-                            <th class="text-center" style="width: 170px;">
-                                <span class="titulo-col">Tarea 1</span>
-                                <button type="button" class="btn btn-sm btn-outline-warning text-white p-0 px-1 ms-1 btn-editar-col" title="Renombrar nota">
-                                    <i class="bi bi-pencil"></i>
-                                </button>
-                                <button type="button" class="btn btn-sm btn-outline-danger text-white p-0 px-1 ms-1 btn-eliminar-col" title="Eliminar nota">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </th>
-                            <th class="text-center" style="width: 170px;">
-                                <span class="titulo-col">Examen</span>
-                                <button type="button" class="btn btn-sm btn-outline-warning text-white p-0 px-1 ms-1 btn-editar-col" title="Renombrar nota">
-                                    <i class="bi bi-pencil"></i>
-                                </button>
-                                <button type="button" class="btn btn-sm btn-outline-danger text-white p-0 px-1 ms-1 btn-eliminar-col" title="Eliminar nota">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </th>
-                            <th class="text-center" style="width: 170px;">
-                                <span class="titulo-col">Actitudinal</span>
-                                <button type="button" class="btn btn-sm btn-outline-warning text-white p-0 px-1 ms-1 btn-editar-col" title="Renombrar nota">
-                                    <i class="bi bi-pencil"></i>
-                                </button>
-                                <button type="button" class="btn btn-sm btn-outline-danger text-white p-0 px-1 ms-1 btn-eliminar-col" title="Eliminar nota">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </th>
-                            <th class="text-center" style="width: 130px;">Definitiva</th>
-                            <th class="text-center" style="width: 140px;">Desempeño</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tbodyPlanilla">
-                        @if (Model != null && Model.Any())
-                        {
-                            foreach (var estudiante in Model)
-                            {
-                                string gradoEst = "";
-                                if (estGrados != null && estGrados.ContainsKey(estudiante.ID_Usuario))
+            <!-- 4. Tabla de Calificaciones y Botón Agregar Nota -->
+            <div class="card border-0 shadow-sm overflow-hidden mb-4">
+                <div class="p-3 border-bottom d-flex align-items-center justify-content-between bg-light">
+                    <h5 class="fw-bold mb-0 text-dark" id="tituloEstudiantesInscritos">Estudiantes Inscritos (0)</h5>
+                    <button type="button" class="btn btn-sm btn-success fw-bold" id="btnAgregarNota">
+                        <i class="bi bi-plus-circle me-1"></i> Agregar Nota
+                    </button>
+                </div>
+
+                <form action="@Url.Action("GuardarNota", "Docente")" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="selectGrado" id="hiddenGradoForm" value="" />
+                    <input type="hidden" name="selectAsignatura" id="hiddenAsignaturaForm" value="" />
+                    <input type="hidden" name="selectJornada" id="hiddenJornadaForm" value="Mañana" />
+                    <input type="hidden" name="selectPeriodo" id="hiddenPeriodoForm" value="1" />
+                    <div class="table-responsive">
+                        <table class="table align-middle mb-0 table-hover" id="tablaPlanilla">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th class="ps-3">Estudiante</th>
+                                    <th class="text-center" style="width: 170px;">
+                                        <span class="titulo-col">Tarea 1</span>
+                                        <button type="button" class="btn btn-sm btn-outline-warning text-white p-0 px-1 ms-1 btn-editar-col" title="Renombrar nota">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-danger text-white p-0 px-1 ms-1 btn-eliminar-col" title="Eliminar nota">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </th>
+                                    <th class="text-center" style="width: 170px;">
+                                        <span class="titulo-col">Examen</span>
+                                        <button type="button" class="btn btn-sm btn-outline-warning text-white p-0 px-1 ms-1 btn-editar-col" title="Renombrar nota">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-danger text-white p-0 px-1 ms-1 btn-eliminar-col" title="Eliminar nota">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </th>
+                                    <th class="text-center" style="width: 170px;">
+                                        <span class="titulo-col">Actitudinal</span>
+                                        <button type="button" class="btn btn-sm btn-outline-warning text-white p-0 px-1 ms-1 btn-editar-col" title="Renombrar nota">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-danger text-white p-0 px-1 ms-1 btn-eliminar-col" title="Eliminar nota">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </th>
+                                    <th class="text-center" style="width: 130px;">Definitiva</th>
+                                    <th class="text-center" style="width: 140px;">Desempeño</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbodyPlanilla">
+                                <!-- FILA DE MENSAJE DINÁMICO CUANDO NO HAY CURSO SELECCIONADO -->
+                                <tr id="filaMensajeTabla">
+                                    <td colspan="6" class="text-center text-muted py-4 fw-semibold" id="celdaMensajeTabla">
+                                        📋 Por favor, seleccione un Grado / Curso para visualizar la lista de estudiantes.
+                                    </td>
+                                </tr>
+
+                                @if (Model != null && Model.Any())
                                 {
-                                    gradoEst = estGrados[estudiante.ID_Usuario] ?? "";
-                                }
-                                <tr class="fila-estudiante" data-grado="@gradoEst">
-                                    <td class="ps-3 fw-bold">
-                                        <input type="hidden" name="estudiante_id" value="@estudiante.ID_Usuario" />
-                                        <div class="d-flex align-items-center justify-content-between">
-                                            <span>@estudiante.NOMBRES @estudiante.APELLIDOS</span>
-                                            @if (!string.IsNullOrEmpty(gradoEst))
-                                            {
-                                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle ms-2">@gradoEst</span>
-                                            }
-                                        </div>
-                                        @{
-                                            var todasMejoras = ViewBag.AccionesMejora as List<ProyectoPAE.Models.AccionMejora> ?? new List<ProyectoPAE.Models.AccionMejora>();
-                                            var mejorasEst = todasMejoras.Where(m => m.IdEstudiante == estudiante.ID_Usuario).ToList();
-                                        }
-                                        @if (mejorasEst.Any())
+                                    foreach (var estudiante in Model)
+                                    {
+                                        string gradoEst = "";
+                                        if (estGrados != null && estGrados.ContainsKey(estudiante.ID_Usuario))
                                         {
-                                            <div class="mt-2 p-2 rounded-3 border accion-mejora-planilla-box" style="background: #fffdf5; border-color: #fde68a !important; font-weight: normal;">
-                                                @foreach (var mej in mejorasEst)
+                                            gradoEst = estGrados[estudiante.ID_Usuario] ?? "";
+                                        }
+                                        <tr class="fila-estudiante" data-grado="@gradoEst" style="display: none;">
+                                            <td class="ps-3 fw-bold">
+                                                <input type="hidden" name="estudiante_id" value="@estudiante.ID_Usuario" />
+                                                <div class="d-flex align-items-center justify-content-between">
+                                                    <span>@estudiante.NOMBRES @estudiante.APELLIDOS</span>
+                                                    @if (!string.IsNullOrEmpty(gradoEst))
+                                                    {
+                                                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle ms-2">@gradoEst</span>
+                                                    }
+                                                </div>
+                                                @{
+                                                    var todasMejoras = ViewBag.AccionesMejora as List<ProyectoPAE.Models.AccionMejora> ?? new List<ProyectoPAE.Models.AccionMejora>();
+                                                    var mejorasEst = todasMejoras.Where(m => m.IdEstudiante == estudiante.ID_Usuario).ToList();
+                                                }
+                                                @if (mejorasEst.Any())
                                                 {
-                                                    string badgeSegColor = mej.EstadoSeguimiento == "Cumplido" ? "success" : mej.EstadoSeguimiento == "No Cumplido" ? "danger" : "warning";
-                                                    <div class="mb-1 pb-1 border-bottom border-light">
-                                                        <div class="d-flex align-items-center justify-content-between">
-                                                            <span class="badge bg-warning text-dark px-2 py-1" style="font-size: 0.72rem;">
-                                                                <i class="bi bi-arrow-up-right-circle me-1"></i> Acción de Mejora: @mej.Materia (P@(mej.Periodo))
-                                                            </span>
-                                                            <span class="badge bg-@badgeSegColor text-white" style="font-size: 0.7rem;">
-                                                                Seguimiento: @mej.EstadoSeguimiento
-                                                            </span>
-                                                        </div>
-                                                        <div class="text-muted small mt-1" style="font-size: 0.78rem;">
-                                                            <strong>Aspecto:</strong> @mej.AspectoMejorar
-                                                        </div>
-                                                        <div class="text-dark small" style="font-size: 0.78rem;">
-                                                            <strong>Compromiso:</strong> @mej.CompromisoEstudiante
-                                                        </div>
-                                                        @if (!string.IsNullOrEmpty(mej.ObservacionSeguimiento))
+                                                    <div class="mt-2 p-2 rounded-3 border accion-mejora-planilla-box" style="background: #fffdf5; border-color: #fde68a !important; font-weight: normal;">
+                                                        @foreach (var mej in mejorasEst)
                                                         {
-                                                            <div class="text-primary small mt-1" style="font-size: 0.76rem;">
-                                                                <strong>Docente Seguimiento:</strong> @mej.ObservacionSeguimiento
+                                                            string badgeSegColor = mej.EstadoSeguimiento == "Cumplido" ? "success" : mej.EstadoSeguimiento == "No Cumplido" ? "danger" : "warning";
+                                                            <div class="mb-1 pb-1 border-bottom border-light">
+                                                                <div class="d-flex align-items-center justify-content-between">
+                                                                    <span class="badge bg-warning text-dark px-2 py-1" style="font-size: 0.72rem;">
+                                                                        <i class="bi bi-arrow-up-right-circle me-1"></i> Acción de Mejora: @mej.Materia (P@(mej.Periodo))
+                                                                    </span>
+                                                                    <span class="badge bg-@badgeSegColor text-white" style="font-size: 0.7rem;">
+                                                                        Seguimiento: @mej.EstadoSeguimiento
+                                                                    </span>
+                                                                </div>
+                                                                <div class="text-muted small mt-1" style="font-size: 0.78rem;">
+                                                                    <strong>Aspecto:</strong> @mej.AspectoMejorar
+                                                                </div>
+                                                                <div class="text-dark small" style="font-size: 0.78rem;">
+                                                                    <strong>Compromiso:</strong> @mej.CompromisoEstudiante
+                                                                </div>
+                                                                @if (!string.IsNullOrEmpty(mej.ObservacionSeguimiento))
+                                                                {
+                                                                    <div class="text-primary small mt-1" style="font-size: 0.76rem;">
+                                                                        <strong>Docente Seguimiento:</strong> @mej.ObservacionSeguimiento
+                                                                    </div>
+                                                                }
                                                             </div>
                                                         }
                                                     </div>
                                                 }
-                                            </div>
-                                        }
-                                    </td>
-                                    <td>
-                                        <div class="input-group input-group-sm nota-group mx-auto" style="width: 95px;">
-                                            <input type="text" inputmode="decimal" class="form-control form-control-sm text-center nota-input px-1" value="0.0" maxlength="3" placeholder="0.0">
-                                            <div class="input-group-text p-0 d-flex flex-column justify-content-center bg-light border-start-0" style="width: 18px; cursor: pointer;">
-                                                <i class="bi bi-chevron-up btn-step-up text-secondary" style="font-size: 8px; line-height: 8px; padding: 2px 0;" title="Aumentar 0.1"></i>
-                                                <i class="bi bi-chevron-down btn-step-down text-secondary" style="font-size: 8px; line-height: 8px; padding: 2px 0;" title="Disminuir 0.1"></i>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="input-group input-group-sm nota-group mx-auto" style="width: 95px;">
-                                            <input type="text" inputmode="decimal" class="form-control form-control-sm text-center nota-input px-1" value="0.0" maxlength="3" placeholder="0.0">
-                                            <div class="input-group-text p-0 d-flex flex-column justify-content-center bg-light border-start-0" style="width: 18px; cursor: pointer;">
-                                                <i class="bi bi-chevron-up btn-step-up text-secondary" style="font-size: 8px; line-height: 8px; padding: 2px 0;" title="Aumentar 0.1"></i>
-                                                <i class="bi bi-chevron-down btn-step-down text-secondary" style="font-size: 8px; line-height: 8px; padding: 2px 0;" title="Disminuir 0.1"></i>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="input-group input-group-sm nota-group mx-auto" style="width: 95px;">
-                                            <input type="text" inputmode="decimal" class="form-control form-control-sm text-center nota-input px-1" value="0.0" maxlength="3" placeholder="0.0">
-                                            <div class="input-group-text p-0 d-flex flex-column justify-content-center bg-light border-start-0" style="width: 18px; cursor: pointer;">
-                                                <i class="bi bi-chevron-up btn-step-up text-secondary" style="font-size: 8px; line-height: 8px; padding: 2px 0;" title="Aumentar 0.1"></i>
-                                                <i class="bi bi-chevron-down btn-step-down text-secondary" style="font-size: 8px; line-height: 8px; padding: 2px 0;" title="Disminuir 0.1"></i>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td class="text-center">
-                                        <input type="hidden" name="nota_valor" class="input-nota-valor" value="0.0" />
-                                        <span class="badge bg-danger fs-6 nota-definitiva">0.0</span>
-                                    </td>
-                                    <td class="text-center">
-                                        <span class="badge bg-danger fs-6 badge-desempeno">Bajo</span>
-                                    </td>
-                                </tr>
-                            }
-                        }
-                        else
-                        {
-                            <tr>
-                                <td colspan="6" class="text-center text-muted py-4">No hay estudiantes registrados.</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- PAGINACIÓN CLIENT-SIDE PLANILLA -->
-            <div class="card-footer bg-white d-flex flex-wrap align-items-center justify-content-between gap-2 px-3 py-2 border-top">
-                <p class="text-muted small mb-0" id="infoPlanillaPagina">Cargando...</p>
-                <nav aria-label="Paginación planilla">
-                    <ul class="pagination pagination-sm mb-0" id="paginacionPlanilla"></ul>
-                </nav>
-            </div>
-
-            <!-- Botón Guardar Calificaciones (CRUD) -->
-            <div class="p-3 bg-light text-end border-top">
-                <button type="submit" class="btn text-white fw-bold rounded-pill px-4 shadow-sm" style="background-color: #2980b9;" id="btnSubmitPlanilla">
-                    <i class="bi bi-save me-2"></i>Guardar Calificaciones
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<!-- Lógica interactiva en JavaScript con Confirmación y Caché -->
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-
-        const selectGrado = document.getElementById('selectGrado');
-        const selectAsignatura = document.getElementById('selectAsignatura');
-        const selectJornada = document.getElementById('selectJornada');
-        const tabla = document.getElementById('tablaPlanilla');
-        const formPlanilla = document.querySelector('form[action*="GuardarNota"]');
-
-        // --- PARSEO Y VALIDACIÓN DE NOTAS (0.0 a 5.0, MÁX 3 CARACTERES) ---
-        function parsearNota(valStr) {
-            if (valStr === null || valStr === undefined) return NaN;
-            let str = valStr.toString().trim().replace(',', '.');
-            if (str === '') return NaN;
-            return parseFloat(str);
-        }
-
-        function validarYFormatearInput(input, mostrarAlerta = true) {
-            let rawVal = input.value ? input.value.trim() : '';
-            if (rawVal === '') {
-                input.value = "0.0";
-                return true;
-            }
-
-            // Truncar si excede los 3 caracteres
-            if (rawVal.length > 3) {
-                rawVal = rawVal.substring(0, 3);
-                input.value = rawVal;
-            }
-
-            let num = parsearNota(rawVal);
-
-            // Rechazar valores NaN, menores a 0.0 (negativos) o mayores a 5.0
-            if (isNaN(num) || num < 0.0 || num > 5.0) {
-                if (mostrarAlerta) {
-                    Swal.fire({
-                        toast: true,
-                        position: 'top-end',
-                        icon: 'error',
-                        title: '¡Nota inválida!',
-                        text: 'La calificación debe estar entre 0.0 y 5.0 (máximo 3 caracteres).',
-                        showConfirmButton: false,
-                        timer: 3500,
-                        timerProgressBar: true
-                    });
-                }
-                input.value = "0.0";
-                return false;
-            } else {
-                // Formato decimal con punto (ej. 3.5, 5.0)
-                input.value = (Math.round(num * 10) / 10).toFixed(1);
-                return true;
-            }
-        }
-
-        // --- A. GESTIÓN DE CACHÉ (LocalStorage) ---
-        function obtenerClaveCache() {
-            const g = selectGrado ? selectGrado.value : '6A';
-            const a = selectAsignatura ? selectAsignatura.value : 'Matematicas';
-            const j = selectJornada ? selectJornada.value : 'Manana';
-            return `planilla_cache_${g}_${a}_${j}`;
-        }
-
-        function guardarEnCache() {
-            if (!tabla) return;
-            const clave = obtenerClaveCache();
-
-            // 1. Guardar los nombres de las columnas de evaluación
-            const columnas = [];
-            tabla.querySelectorAll('thead tr th').forEach(th => {
-                const span = th.querySelector('.titulo-col');
-                if (span) {
-                    columnas.push(span.textContent.trim());
-                }
-            });
-
-            // 2. Guardar las notas por estudiante
-            const notasEstudiantes = {};
-            tabla.querySelectorAll('tbody tr').forEach(fila => {
-                const estIdInput = fila.querySelector('input[name="estudiante_id"]');
-                if (!estIdInput) return;
-                const estId = estIdInput.value;
-
-                const valores = [];
-                fila.querySelectorAll('.nota-input').forEach(input => {
-                    valores.push(input.value);
-                });
-                notasEstudiantes[estId] = valores;
-            });
-
-            const datosCache = {
-                columnas: columnas,
-                notas: notasEstudiantes
-            };
-
-            localStorage.setItem(clave, JSON.stringify(datosCache));
-        }
-
-        function crearHTMLThNota(titulo) {
-            const th = document.createElement('th');
-            th.className = 'text-center';
-            th.style.width = '170px';
-            th.innerHTML = `
-                    <span class="titulo-col">${titulo}</span>
-                    <button type="button" class="btn btn-sm btn-outline-warning text-white p-0 px-1 ms-1 btn-editar-col" title="Renombrar nota">
-                        <i class="bi bi-pencil"></i>
-                    </button>
-                    <button type="button" class="btn btn-sm btn-outline-danger text-white p-0 px-1 ms-1 btn-eliminar-col" title="Eliminar nota">
-                        <i class="bi bi-trash"></i>
-                    </button>
-                `;
-            return th;
-        }
-
-        function crearHTMLTdNota(valor = "0.0") {
-            const td = document.createElement('td');
-            td.innerHTML = `
-                    <div class="input-group input-group-sm nota-group mx-auto" style="width: 95px;">
-                        <input type="text" inputmode="decimal" class="form-control form-control-sm text-center nota-input px-1" value="${valor}" maxlength="3" placeholder="0.0">
-                        <div class="input-group-text p-0 d-flex flex-column justify-content-center bg-light border-start-0" style="width: 18px; cursor: pointer;">
-                            <i class="bi bi-chevron-up btn-step-up text-secondary" style="font-size: 8px; line-height: 8px; padding: 2px 0;" title="Aumentar 0.1"></i>
-                            <i class="bi bi-chevron-down btn-step-down text-secondary" style="font-size: 8px; line-height: 8px; padding: 2px 0;" title="Disminuir 0.1"></i>
-                        </div>
-                    </div>
-                `;
-            return td;
-        }
-
-        function cargarDesdeCache() {
-            if (!tabla) return;
-            const clave = obtenerClaveCache();
-            const cache = localStorage.getItem(clave);
-            if (!cache) return;
-
-            try {
-                const datosCache = JSON.parse(cache);
-                if (!datosCache) return;
-
-                const columnasGuardadas = datosCache.columnas || [];
-                const notasEstudiantes = datosCache.notas || (typeof datosCache === 'object' && !datosCache.columnas ? datosCache : {});
-
-                // Reconstruir columnas del Header si existen en el caché
-                if (columnasGuardadas.length > 0) {
-                    const trHeader = tabla.querySelector('thead tr');
-                    if (trHeader) {
-                        const thsActuales = Array.from(trHeader.querySelectorAll('th'));
-                        thsActuales.forEach(th => {
-                            if (th.querySelector('.titulo-col')) {
-                                th.remove();
-                            }
-                        });
-
-                        const thDefinitiva = Array.from(trHeader.children).find(th => th.textContent.trim().includes('Definitiva')) || trHeader.lastElementChild;
-
-                        columnasGuardadas.forEach(titulo => {
-                            const nuevoTh = crearHTMLThNota(titulo);
-                            trHeader.insertBefore(nuevoTh, thDefinitiva);
-                        });
-                    }
-
-                    // Reconstruir celdas de nota en cada fila de estudiante
-                    tabla.querySelectorAll('tbody tr').forEach(fila => {
-                        const tdsActuales = Array.from(fila.children);
-                        tdsActuales.forEach(td => {
-                            if (td.querySelector('.nota-input')) {
-                                td.remove();
-                            }
-                        });
-
-                        const tdDefinitiva = Array.from(fila.children).find(td => td.querySelector('.nota-definitiva')) || fila.lastElementChild;
-
-                        columnasGuardadas.forEach(() => {
-                            const nuevoTd = crearHTMLTdNota("0.0");
-                            fila.insertBefore(nuevoTd, tdDefinitiva);
-                        });
-                    });
-                }
-
-                // Cargar valores de notas guardados
-                tabla.querySelectorAll('tbody tr').forEach(fila => {
-                    const estIdInput = fila.querySelector('input[name="estudiante_id"]');
-                    if (!estIdInput) return;
-                    const estId = estIdInput.value;
-
-                    if (notasEstudiantes[estId]) {
-                        const inputs = fila.querySelectorAll('.nota-input');
-                        notasEstudiantes[estId].forEach((val, idx) => {
-                            if (inputs[idx]) {
-                                let cleanVal = val ? val.toString().replace(',', '.') : "0.0";
-                                let num = parseFloat(cleanVal);
-                                if (isNaN(num) || num < 0.0 || num > 5.0) {
-                                    cleanVal = "0.0";
-                                } else {
-                                    cleanVal = (Math.round(num * 10) / 10).toFixed(1);
+                                            </td>
+                                            <td>
+                                                <div class="input-group input-group-sm nota-group mx-auto" style="width: 95px;">
+                                                    <input type="text" inputmode="decimal" class="form-control form-control-sm text-center nota-input px-1" value="0.0" maxlength="3" placeholder="0.0">
+                                                    <div class="input-group-text p-0 d-flex flex-column justify-content-center bg-light border-start-0" style="width: 18px; cursor: pointer;">
+                                                        <i class="bi bi-chevron-up btn-step-up text-secondary" style="font-size: 8px; line-height: 8px; padding: 2px 0;" title="Aumentar 0.1"></i>
+                                                        <i class="bi bi-chevron-down btn-step-down text-secondary" style="font-size: 8px; line-height: 8px; padding: 2px 0;" title="Disminuir 0.1"></i>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="input-group input-group-sm nota-group mx-auto" style="width: 95px;">
+                                                    <input type="text" inputmode="decimal" class="form-control form-control-sm text-center nota-input px-1" value="0.0" maxlength="3" placeholder="0.0">
+                                                    <div class="input-group-text p-0 d-flex flex-column justify-content-center bg-light border-start-0" style="width: 18px; cursor: pointer;">
+                                                        <i class="bi bi-chevron-up btn-step-up text-secondary" style="font-size: 8px; line-height: 8px; padding: 2px 0;" title="Aumentar 0.1"></i>
+                                                        <i class="bi bi-chevron-down btn-step-down text-secondary" style="font-size: 8px; line-height: 8px; padding: 2px 0;" title="Disminuir 0.1"></i>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="input-group input-group-sm nota-group mx-auto" style="width: 95px;">
+                                                    <input type="text" inputmode="decimal" class="form-control form-control-sm text-center nota-input px-1" value="0.0" maxlength="3" placeholder="0.0">
+                                                    <div class="input-group-text p-0 d-flex flex-column justify-content-center bg-light border-start-0" style="width: 18px; cursor: pointer;">
+                                                        <i class="bi bi-chevron-up btn-step-up text-secondary" style="font-size: 8px; line-height: 8px; padding: 2px 0;" title="Aumentar 0.1"></i>
+                                                        <i class="bi bi-chevron-down btn-step-down text-secondary" style="font-size: 8px; line-height: 8px; padding: 2px 0;" title="Disminuir 0.1"></i>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <input type="hidden" name="nota_valor" class="input-nota-valor" value="0.0" />
+                                                <span class="badge bg-danger fs-6 nota-definitiva">0.0</span>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge bg-danger fs-6 badge-desempeno">Bajo</span>
+                                            </td>
+                                        </tr>
+                                    }
                                 }
-                                inputs[idx].value = cleanVal;
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted py-4">No hay estudiantes registrados.</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- PAGINACIÓN CLIENT-SIDE PLANILLA -->
+                    <div class="card-footer bg-white d-flex flex-wrap align-items-center justify-content-between gap-2 px-3 py-2 border-top">
+                        <p class="text-muted small mb-0" id="infoPlanillaPagina">Cargando...</p>
+                        <nav aria-label="Paginación planilla">
+                            <ul class="pagination pagination-sm mb-0" id="paginacionPlanilla"></ul>
+                        </nav>
+                    </div>
+
+                    <!-- Botón Guardar Calificaciones (CRUD) -->
+                    <div class="p-3 bg-light text-end border-top">
+                        <button type="submit" class="btn text-white fw-bold rounded-pill px-4 shadow-sm" style="background-color: #2980b9;" id="btnSubmitPlanilla">
+                            <i class="bi bi-save me-2"></i>Guardar Calificaciones
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Lógica interactiva en JavaScript con Confirmación y Caché -->
+        <script>
+                    document.addEventListener("DOMContentLoaded", function() {
+
+                        const selectGrado = document.getElementById('selectGrado');
+                        const selectAsignatura = document.getElementById('selectAsignatura');
+                        const selectJornada = document.getElementById('selectJornada');
+                        const tabla = document.getElementById('tablaPlanilla');
+                        const formPlanilla = document.querySelector('form[action*="GuardarNota"]');
+
+                        // --- PARSEO Y VALIDACIÓN DE NOTAS (0.0 a 5.0, MÁX 3 CARACTERES) ---
+                        function parsearNota(valStr) {
+                            if (valStr === null || valStr === undefined) return NaN;
+                            let str = valStr.toString().trim().replace(',', '.');
+                            if (str === '') return NaN;
+                            return parseFloat(str);
+                        }
+
+                        function validarYFormatearInput(input, mostrarAlerta = true) {
+                            let rawVal = input.value ? input.value.trim() : '';
+                            if (rawVal === '') {
+                                input.value = "0.0";
+                                return true;
                             }
-                        });
-                    }
-                    calcularDefinitiva(fila);
-                });
-            } catch (e) {
-                console.error("Error al cargar caché de notas:", e);
-            }
-        }
 
-        // --- B. CÁLCULO DE DEFINITIVA Y DESEMPEÑO ---
-        function calcularDefinitiva(fila) {
-            const inputs = fila.querySelectorAll('.nota-input');
-            const badgeDefinitiva = fila.querySelector('.nota-definitiva');
-            const badgeDesempeno = fila.querySelector('.badge-desempeno');
-            const hiddenValor = fila.querySelector('.input-nota-valor');
+                            if (rawVal.length > 3) {
+                                rawVal = rawVal.substring(0, 3);
+                                input.value = rawVal;
+                            }
 
-            if (!inputs.length || !badgeDefinitiva) return;
+                            let num = parsearNota(rawVal);
 
-            let suma = 0;
-            let cantidad = 0;
-
-            inputs.forEach(input => {
-                let val = parsearNota(input.value);
-
-                if (!isNaN(val)) {
-                    suma += val;
-                    cantidad++;
-                }
-            });
-
-            if (cantidad > 0) {
-                const promedio = suma / cantidad;
-                const promedioStr = promedio.toFixed(1);
-                badgeDefinitiva.textContent = promedioStr;
-
-                if (hiddenValor) {
-                    hiddenValor.value = promedioStr;
-                }
-
-                badgeDefinitiva.className = promedio >= 3.0
-                    ? "badge bg-success fs-6 nota-definitiva"
-                    : "badge bg-danger fs-6 nota-definitiva";
-
-                // --- DESEMPEÑO (No modificable) ---
-                if (badgeDesempeno) {
-                    const promRedondeado = Math.round(promedio * 10) / 10;
-
-                    if (promRedondeado >= 5.0) {
-                        badgeDesempeno.textContent = "Superior";
-                        badgeDesempeno.className = "badge bg-success fs-6 badge-desempeno";
-                    } else if (promRedondeado >= 4.0) {
-                        badgeDesempeno.textContent = "Alto";
-                        badgeDesempeno.className = "badge bg-primary fs-6 badge-desempeno";
-                    } else if (promRedondeado >= 3.0) {
-                        badgeDesempeno.textContent = "Básico";
-                        badgeDesempeno.className = "badge bg-warning text-dark fs-6 badge-desempeno";
-                    } else {
-                        badgeDesempeno.textContent = "Bajo";
-                        badgeDesempeno.className = "badge bg-danger fs-6 badge-desempeno";
-                    }
-                }
-            }
-        }
-
-        // Inicializar tabla y cargar caché existente
-        if (tabla) {
-            cargarDesdeCache();
-            tabla.querySelectorAll('tbody tr').forEach(fila => {
-                fila.querySelectorAll('.nota-input').forEach(input => {
-                    validarYFormatearInput(input, false);
-                });
-                calcularDefinitiva(fila);
-            });
-
-            // Auto-selección completa del texto al enfocar o hacer clic
-            // Permite al docente escribir directamente la nota reemplazando el "0.0" sin tener que borrarlo manualmente
-            tabla.addEventListener('focusin', function(e) {
-                if (e.target.classList.contains('nota-input')) {
-                    setTimeout(function() {
-                        e.target.select();
-                    }, 20);
-                }
-            });
-
-            tabla.addEventListener('click', function(e) {
-                if (e.target.classList.contains('nota-input')) {
-                    e.target.select();
-                }
-            });
-
-            // Formatear y validar al salir del campo (blur), restaurando "0.0" si la casilla queda vacía
-            tabla.addEventListener('blur', function(e) {
-                if (e.target.classList.contains('nota-input')) {
-                    validarYFormatearInput(e.target, true);
-                    const fila = e.target.closest('tr');
-                    calcularDefinitiva(fila);
-                    guardarEnCache();
-                }
-            }, true);
-
-            // Control de flechitas de incremento y decremento (▲ y ▼)
-            tabla.addEventListener('click', function(e) {
-                const btnUp = e.target.closest('.btn-step-up');
-                const btnDown = e.target.closest('.btn-step-down');
-
-                if (btnUp || btnDown) {
-                    const group = e.target.closest('.nota-group');
-                    if (!group) return;
-                    const input = group.querySelector('.nota-input');
-                    if (!input) return;
-
-                    let val = parseFloat(input.value.replace(',', '.')) || 0.0;
-                    if (btnUp) {
-                        val = Math.min(5.0, Math.round((val + 0.1) * 10) / 10);
-                    } else if (btnDown) {
-                        val = Math.max(0.0, Math.round((val - 0.1) * 10) / 10);
-                    }
-                    input.value = val.toFixed(1);
-                    const fila = input.closest('tr');
-                    calcularDefinitiva(fila);
-                    guardarEnCache();
-                }
-            });
-
-            // Control de teclas de navegación (flecha arriba / abajo en teclado)
-            tabla.addEventListener('keydown', function(e) {
-                if (e.target.classList.contains('nota-input')) {
-                    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-                        e.preventDefault();
-                        let val = parseFloat(e.target.value.replace(',', '.')) || 0.0;
-                        if (e.key === 'ArrowUp') {
-                            val = Math.min(5.0, Math.round((val + 0.1) * 10) / 10);
-                        } else {
-                            val = Math.max(0.0, Math.round((val - 0.1) * 10) / 10);
+                            if (isNaN(num) || num < 0.0 || num > 5.0) {
+                                if (mostrarAlerta) {
+                                    Swal.fire({
+                                        toast: true,
+                                        position: 'top-end',
+                                        icon: 'error',
+                                        title: '¡Nota inválida!',
+                                        text: 'La calificación debe estar entre 0.0 y 5.0 (máximo 3 caracteres).',
+                                        showConfirmButton: false,
+                                        timer: 3500,
+                                        timerProgressBar: true
+                                    });
+                                }
+                                input.value = "0.0";
+                                return false;
+                            } else {
+                                input.value = (Math.round(num * 10) / 10).toFixed(1);
+                                return true;
+                            }
                         }
-                        e.target.value = val.toFixed(1);
-                        const fila = e.target.closest('tr');
-                        calcularDefinitiva(fila);
-                        guardarEnCache();
-                    }
-                }
-            });
 
-            tabla.addEventListener('change', function(e) {
-                if (e.target.classList.contains('nota-input')) {
-                    validarYFormatearInput(e.target, true);
-                    const fila = e.target.closest('tr');
-                    calcularDefinitiva(fila);
-                    guardarEnCache();
-                }
-            });
-
-            // Validación inmediata MIENTRAS el docente escribe
-            tabla.addEventListener('input', function(e) {
-                if (e.target.classList.contains('nota-input')) {
-                    let valStr = e.target.value.replace(',', '.');
-
-                    if (valStr.length > 3) {
-                        valStr = valStr.substring(0, 3);
-                        e.target.value = valStr;
-                    }
-
-                    let num = parseFloat(valStr);
-
-                    if (!isNaN(num) && (num > 5.0 || num < 0.0)) {
-                        Swal.fire({
-                            toast: true,
-                            position: 'top-end',
-                            icon: 'error',
-                            title: '¡Nota fuera de rango!',
-                            text: 'La calificación no puede ser mayor a 5.0 ni menor a 0.0.',
-                            showConfirmButton: false,
-                            timer: 2500,
-                            timerProgressBar: true
-                        });
-                        e.target.value = "0.0";
-                    }
-
-                    const fila = e.target.closest('tr');
-                    calcularDefinitiva(fila);
-                }
-            });
-        }
-
-        // --- FILTRADO POR CURSO Y PAGINACIÓN CLIENT-SIDE (20 por página) ---
-        let planillaPaginaActual = 1;
-        const PLANILLA_POR_PAGINA = 20;
-
-        function getFilasPlanillaFiltradas() {
-            const selGrado = document.getElementById('selectGrado');
-            const valGrado = selGrado ? selGrado.value.toLowerCase().trim() : 'todos';
-
-            const todasFilas = Array.from(document.querySelectorAll('#tablaPlanilla tbody tr.fila-estudiante'));
-            return todasFilas.filter(fila => {
-                if (valGrado === 'todos' || valGrado === '') return true;
-                const gradoFila = (fila.getAttribute('data-grado') || '').toLowerCase().trim();
-                return gradoFila === valGrado || gradoFila.includes(valGrado) || valGrado.includes(gradoFila);
-            });
-        }
-
-        function renderizarPaginacionPlanilla() {
-            const filasFiltradas = getFilasPlanillaFiltradas();
-            const totalFilas = filasFiltradas.length;
-            const totalPaginas = Math.max(1, Math.ceil(totalFilas / PLANILLA_POR_PAGINA));
-
-            if (planillaPaginaActual > totalPaginas) planillaPaginaActual = totalPaginas;
-
-            // Ocultar todas las filas
-            document.querySelectorAll('#tablaPlanilla tbody tr.fila-estudiante').forEach(f => f.style.display = 'none');
-
-            // Mostrar las de la página actual
-            const inicio = (planillaPaginaActual - 1) * PLANILLA_POR_PAGINA;
-            const fin = Math.min(inicio + PLANILLA_POR_PAGINA, totalFilas);
-            for (let i = inicio; i < fin; i++) {
-                filasFiltradas[i].style.display = '';
-            }
-
-            // Info de paginación
-            const info = document.getElementById('infoPlanillaPagina');
-            if (info) {
-                if (totalFilas === 0) {
-                    info.textContent = 'Sin estudiantes para el curso seleccionado';
-                } else {
-                    info.textContent = `Mostrando ${inicio + 1}–${fin} de ${totalFilas} estudiantes`;
-                }
-            }
-
-            // Barra de navegación
-            const ul = document.getElementById('paginacionPlanilla');
-            if (!ul) return;
-            ul.innerHTML = '';
-
-            if (totalPaginas <= 1) return;
-
-            const crearLi = (label, pagina, activo, disabled) => {
-                const li = document.createElement('li');
-                li.className = `page-item${activo ? ' active' : ''}${disabled ? ' disabled' : ''}`;
-                const a = document.createElement('a');
-                a.className = 'page-link';
-                a.innerHTML = label;
-                a.href = '#';
-                if (!disabled && !activo) {
-                    a.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        planillaPaginaActual = pagina;
-                        renderizarPaginacionPlanilla();
-                    });
-                }
-                li.appendChild(a);
-                ul.appendChild(li);
-            };
-
-            crearLi('&laquo;', planillaPaginaActual - 1, false, planillaPaginaActual === 1);
-
-            const rango = 2;
-            for (let p = 1; p <= totalPaginas; p++) {
-                if (p === 1 || p === totalPaginas || (p >= planillaPaginaActual - rango && p <= planillaPaginaActual + rango)) {
-                    crearLi(p, p, p === planillaPaginaActual, false);
-                } else if (p === planillaPaginaActual - rango - 1 || p === planillaPaginaActual + rango + 1) {
-                    crearLi('...', p, false, true);
-                }
-            }
-
-            crearLi('&raquo;', planillaPaginaActual + 1, false, planillaPaginaActual === totalPaginas);
-        }
-
-        function filtrarPlanilla() {
-            planillaPaginaActual = 1;
-            renderizarPaginacionPlanilla();
-        }
-
-        // Filtrado dinámico de Grados según la Jornada (Mañana -> M / Tarde -> T)
-        function filtrarGradosPorJornada() {
-            if (!selectGrado || !selectJornada) return;
-
-            const jornada = selectJornada.value || '';
-            const esManana = jornada.toLowerCase().includes('mañana') || jornada.toLowerCase().includes('manana') || jornada.toLowerCase().startsWith('m');
-            const esTarde = jornada.toLowerCase().includes('tarde') || jornada.toLowerCase().startsWith('t');
-
-            let seleccionadoVisible = false;
-
-            Array.from(selectGrado.options).forEach(opt => {
-                const txt = opt.text.trim();
-                const val = opt.value.trim();
-                let mostrar = true;
-
-                if (val === 'todos' || txt.toLowerCase().includes('todos')) {
-                    mostrar = true;
-                } else if (esManana) {
-                    mostrar = txt.endsWith('M') || txt.includes(' M') || val.endsWith('M');
-                } else if (esTarde) {
-                    mostrar = txt.endsWith('T') || txt.includes(' T') || val.endsWith('T');
-                }
-
-                opt.hidden = !mostrar;
-                opt.disabled = !mostrar;
-                opt.style.display = mostrar ? '' : 'none';
-
-                if (mostrar && opt.selected) {
-                    seleccionadoVisible = true;
-                }
-            });
-
-            if (!seleccionadoVisible) {
-                const primerVisible = Array.from(selectGrado.options).find(opt => !opt.hidden && !opt.disabled);
-                if (primerVisible) {
-                    selectGrado.value = primerVisible.value;
-                }
-            }
-        }
-
-        if (selectJornada) {
-            selectJornada.addEventListener('change', function() {
-                filtrarGradosPorJornada();
-                filtrarPlanilla();
-                cargarDesdeCache();
-            });
-        }
-
-        // Verificar si el periodo actual se encuentra habilitado o cerrado por Coordinación
-        window.verificarEstadoPeriodoPlanilla = function() {
-            const selectPeriodo = document.getElementById('selectPeriodo');
-            if (!selectPeriodo) return;
-            const opt = selectPeriodo.options[selectPeriodo.selectedIndex];
-            const activo = opt ? (opt.getAttribute('data-activo') === 'true') : true;
-            const alerta = document.getElementById('alertaPeriodoCerrado');
-            const btnGuardar = document.getElementById('btnSubmitPlanilla');
-            const btnAgregar = document.getElementById('btnAgregarNota');
-            const inputs = document.querySelectorAll('.nota-input');
-
-            if (!activo) {
-                if (alerta) alerta.classList.remove('d-none');
-                if (btnGuardar) {
-                    btnGuardar.disabled = true;
-                    btnGuardar.classList.remove('text-white');
-                    btnGuardar.classList.add('btn-secondary');
-                    btnGuardar.style.backgroundColor = '#6c757d';
-                    btnGuardar.innerHTML = '<i class="bi bi-lock-fill me-2"></i>Subida Cerrada (Periodo Bloqueado)';
-                }
-                if (btnAgregar) {
-                    btnAgregar.disabled = true;
-                    btnAgregar.classList.add('disabled');
-                }
-                inputs.forEach(inp => {
-                    inp.disabled = true;
-                    inp.readOnly = true;
-                    inp.classList.add('bg-light');
-                    inp.style.cursor = 'not-allowed';
-                });
-            } else {
-                if (alerta) alerta.classList.add('d-none');
-                if (btnGuardar) {
-                    btnGuardar.disabled = false;
-                    btnGuardar.classList.add('text-white');
-                    btnGuardar.classList.remove('btn-secondary');
-                    btnGuardar.style.backgroundColor = '#2980b9';
-                    btnGuardar.innerHTML = '<i class="bi bi-save me-2"></i>Guardar Calificaciones';
-                }
-                if (btnAgregar) {
-                    btnAgregar.disabled = false;
-                    btnAgregar.classList.remove('disabled');
-                }
-                inputs.forEach(inp => {
-                    inp.disabled = false;
-                    inp.readOnly = false;
-                    inp.classList.remove('bg-light');
-                    inp.style.cursor = '';
-                });
-            }
-        };
-
-        // Recargar caché y actualizar filtro cuando cambie el Grado o la Asignatura
-        if (selectGrado) {
-            selectGrado.addEventListener('change', function() {
-                filtrarPlanilla();
-                cargarDesdeCache();
-                verificarEstadoPeriodoPlanilla();
-            });
-        }
-        if (selectAsignatura) {
-            selectAsignatura.addEventListener('change', function() {
-                cargarDesdeCache();
-                verificarEstadoPeriodoPlanilla();
-            });
-        }
-
-        // Ejecutar filtrado inicial y paginación al cargar la vista
-        filtrarGradosPorJornada();
-        renderizarPaginacionPlanilla();
-        verificarEstadoPeriodoPlanilla();
-
-        // --- C. CONFIRMACIÓN ANTES DE GUARDAR FORMULARIO ---
-        if (formPlanilla) {
-            formPlanilla.addEventListener('submit', function(e) {
-                let hayErrores = false;
-                tabla.querySelectorAll('.nota-input').forEach(input => {
-                    if (!validarYFormatearInput(input, false)) {
-                        hayErrores = true;
-                    }
-                });
-
-                if (hayErrores) {
-                    e.preventDefault();
-                    Swal.fire({
-                        toast: true,
-                        position: 'top-end',
-                        icon: 'error',
-                        title: '¡Calificación inválida!',
-                        text: 'Existen notas con formato o rango incorrecto (0.0 a 5.0, máx 3 caracteres).',
-                        showConfirmButton: false,
-                        timer: 3500,
-                        timerProgressBar: true
-                    });
-                    return;
-                }
-
-                if (formPlanilla.dataset.confirmado === "true") return;
-
-                e.preventDefault();
-
-                Swal.fire({
-                    title: '¿Guardar Calificaciones?',
-                    text: '¿Deseas guardar los cambios realizados en la planilla actual?',
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#0d6efd',
-                    cancelButtonColor: '#6c757d',
-                    confirmButtonText: '<i class="bi bi-save me-1"></i> Sí, guardar',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        guardarEnCache(); // Asegurar guardado en caché antes de enviar
-                        formPlanilla.dataset.confirmado = "true";
-                        formPlanilla.submit();
-                    }
-                });
-            });
-        }
-
-        // --- D. AGREGAR COLUMNA ---
-        let contadorNotas = 2;
-        const btnAgregar = document.getElementById('btnAgregarNota');
-
-        if (btnAgregar) {
-            btnAgregar.addEventListener('click', function() {
-                Swal.fire({
-                    title: 'Agregar Calificación',
-                    text: 'Escriba el nombre de la nueva columna/evaluación:',
-                    input: 'text',
-                    inputValue: `Nota ${contadorNotas}`,
-                    showCancelButton: true,
-                    confirmButtonText: '<i class="bi bi-check-lg"></i> Agregar',
-                    cancelButtonText: 'Cancelar',
-                    confirmButtonColor: '#198754',
-                    inputValidator: (value) => {
-                        if (!value || !value.trim()) {
-                            return '¡Debes ingresar un nombre!';
+                        // --- A. GESTIÓN DE CACHÉ (LocalStorage) ---
+                        function obtenerClaveCache() {
+                            const g = selectGrado ? selectGrado.value : '6A';
+                            const a = selectAsignatura ? selectAsignatura.value : 'Matematicas';
+                            const j = selectJornada ? selectJornada.value : 'Manana';
+                            return `planilla_cache_${g}_${a}_${j}`;
                         }
-                    }
-                }).then((result) => {
-                    if (result.isConfirmed && result.value) {
-                        const tituloFinal = result.value.trim();
-                        contadorNotas++;
 
-                        const trHeader = document.querySelector('#tablaPlanilla thead tr');
-                        const thDefinitiva = Array.from(trHeader.children).find(th => th.textContent.trim().includes('Definitiva')) || trHeader.lastElementChild;
+                        function guardarEnCache() {
+                            if (!tabla) return;
+                            const clave = obtenerClaveCache();
 
-                        const nuevoTh = document.createElement('th');
-                        nuevoTh.className = 'text-center';
-                        nuevoTh.style.width = '170px';
-                        nuevoTh.innerHTML = `
-                                <span class="titulo-col">${tituloFinal}</span>
-                                <button type="button" class="btn btn-sm btn-outline-warning text-white p-0 px-1 ms-1 btn-editar-col" title="Renombrar nota">
-                                    <i class="bi bi-pencil"></i>
-                                </button>
-                                <button type="button" class="btn btn-sm btn-outline-danger text-white p-0 px-1 ms-1 btn-eliminar-col" title="Eliminar nota">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            `;
+                            const columnas = [];
+                            tabla.querySelectorAll('thead tr th').forEach(th => {
+                                const span = th.querySelector('.titulo-col');
+                                if (span) {
+                                    columnas.push(span.textContent.trim());
+                                }
+                            });
 
-                        trHeader.insertBefore(nuevoTh, thDefinitiva);
+                            const notasEstudiantes = {};
+                            tabla.querySelectorAll('tbody tr').forEach(fila => {
+                                const estIdInput = fila.querySelector('input[name="estudiante_id"]');
+                                if (!estIdInput) return;
+                                const estId = estIdInput.value;
 
-                        const filasBody = document.querySelectorAll('#tablaPlanilla tbody tr');
-                        filasBody.forEach(fila => {
-                            const tdDefinitiva = Array.from(fila.children).find(td => td.querySelector('.nota-definitiva')) || fila.lastElementChild;
-                            const nuevoTd = document.createElement('td');
-                            nuevoTd.innerHTML = `
+                                const valores = [];
+                                fila.querySelectorAll('.nota-input').forEach(input => {
+                                    valores.push(input.value);
+                                });
+                                notasEstudiantes[estId] = valores;
+                            });
+
+                            const datosCache = {
+                                columnas: columnas,
+                                notas: notasEstudiantes
+                            };
+
+                            localStorage.setItem(clave, JSON.stringify(datosCache));
+                        }
+
+                        function crearHTMLThNota(titulo) {
+                            const th = document.createElement('th');
+                            th.className = 'text-center';
+                            th.style.width = '170px';
+                            th.innerHTML = `
+                                    <span class="titulo-col">${titulo}</span>
+                                    <button type="button" class="btn btn-sm btn-outline-warning text-white p-0 px-1 ms-1 btn-editar-col" title="Renombrar nota">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger text-white p-0 px-1 ms-1 btn-eliminar-col" title="Eliminar nota">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                `;
+                            return th;
+                        }
+
+                        function crearHTMLTdNota(valor = "0.0") {
+                            const td = document.createElement('td');
+                            td.innerHTML = `
                                     <div class="input-group input-group-sm nota-group mx-auto" style="width: 95px;">
-                                        <input type="text" inputmode="decimal" class="form-control form-control-sm text-center nota-input px-1" value="0.0" maxlength="3" placeholder="0.0">
+                                        <input type="text" inputmode="decimal" class="form-control form-control-sm text-center nota-input px-1" value="${valor}" maxlength="3" placeholder="0.0">
                                         <div class="input-group-text p-0 d-flex flex-column justify-content-center bg-light border-start-0" style="width: 18px; cursor: pointer;">
                                             <i class="bi bi-chevron-up btn-step-up text-secondary" style="font-size: 8px; line-height: 8px; padding: 2px 0;" title="Aumentar 0.1"></i>
                                             <i class="bi bi-chevron-down btn-step-down text-secondary" style="font-size: 8px; line-height: 8px; padding: 2px 0;" title="Disminuir 0.1"></i>
                                         </div>
                                     </div>
                                 `;
-                            fila.insertBefore(nuevoTd, tdDefinitiva);
-                            calcularDefinitiva(fila);
-                        });
-
-                        guardarEnCache();
-                    }
-                });
-            });
-        }
-
-        // --- E. RENOMBRAR Y ELIMINAR COLUMNAS ---
-        document.addEventListener('click', function(e) {
-            const btnEditar = e.target.closest('.btn-editar-col');
-            if (btnEditar) {
-                const th = btnEditar.closest('th');
-                const spanTitulo = th.querySelector('.titulo-col');
-                const tituloActual = spanTitulo ? spanTitulo.textContent.trim() : 'Nota';
-
-                Swal.fire({
-                    title: 'Renombrar Calificación',
-                    text: 'Ingrese el nuevo nombre para esta columna:',
-                    input: 'text',
-                    inputValue: tituloActual,
-                    showCancelButton: true,
-                    confirmButtonText: 'Guardar',
-                    cancelButtonText: 'Cancelar',
-                    confirmButtonColor: '#ffc107',
-                    inputValidator: (value) => {
-                        if (!value || !value.trim()) {
-                            return 'El nombre no puede estar vacío';
+                            return td;
                         }
-                    }
-                }).then((result) => {
-                    if (result.isConfirmed && result.value) {
-                        if (spanTitulo) {
-                            spanTitulo.textContent = result.value.trim();
-                            guardarEnCache();
+
+                        function cargarDesdeCache() {
+                            if (!tabla) return;
+                            const clave = obtenerClaveCache();
+                            const cache = localStorage.getItem(clave);
+                            if (!cache) return;
+
+                            try {
+                                const datosCache = JSON.parse(cache);
+                                if (!datosCache) return;
+
+                                const columnasGuardadas = datosCache.columnas || [];
+                                const notasEstudiantes = datosCache.notas || (typeof datosCache === 'object' && !datosCache.columnas ? datosCache : {});
+
+                                if (columnasGuardadas.length > 0) {
+                                    const trHeader = tabla.querySelector('thead tr');
+                                    if (trHeader) {
+                                        const thsActuales = Array.from(trHeader.querySelectorAll('th'));
+                                        thsActuales.forEach(th => {
+                                            if (th.querySelector('.titulo-col')) {
+                                                th.remove();
+                                            }
+                                        });
+
+                                        const thDefinitiva = Array.from(trHeader.children).find(th => th.textContent.trim().includes('Definitiva')) || trHeader.lastElementChild;
+
+                                        columnasGuardadas.forEach(titulo => {
+                                            const nuevoTh = crearHTMLThNota(titulo);
+                                            trHeader.insertBefore(nuevoTh, thDefinitiva);
+                                        });
+                                    }
+
+                                    tabla.querySelectorAll('tbody tr').forEach(fila => {
+                                        const tdsActuales = Array.from(fila.children);
+                                        tdsActuales.forEach(td => {
+                                            if (td.querySelector('.nota-input')) {
+                                                td.remove();
+                                            }
+                                        });
+
+                                        const tdDefinitiva = Array.from(fila.children).find(td => td.querySelector('.nota-definitiva')) || fila.lastElementChild;
+
+                                        columnasGuardadas.forEach(() => {
+                                            const nuevoTd = crearHTMLTdNota("0.0");
+                                            fila.insertBefore(nuevoTd, tdDefinitiva);
+                                        });
+                                    });
+                                }
+
+                                tabla.querySelectorAll('tbody tr').forEach(fila => {
+                                    const estIdInput = fila.querySelector('input[name="estudiante_id"]');
+                                    if (!estIdInput) return;
+                                    const estId = estIdInput.value;
+
+                                    if (notasEstudiantes[estId]) {
+                                        const inputs = fila.querySelectorAll('.nota-input');
+                                        notasEstudiantes[estId].forEach((val, idx) => {
+                                            if (inputs[idx]) {
+                                                let cleanVal = val ? val.toString().replace(',', '.') : "0.0";
+                                                let num = parseFloat(cleanVal);
+                                                if (isNaN(num) || num < 0.0 || num > 5.0) {
+                                                    cleanVal = "0.0";
+                                                } else {
+                                                    cleanVal = (Math.round(num * 10) / 10).toFixed(1);
+                                                }
+                                                inputs[idx].value = cleanVal;
+                                            }
+                                        });
+                                    }
+                                    calcularDefinitiva(fila);
+                                });
+                            } catch (e) {
+                                console.error("Error al cargar caché de notas:", e);
+                            }
                         }
-                    }
-                });
-            }
 
-            const btnEliminar = e.target.closest('.btn-eliminar-col');
-            if (btnEliminar) {
-                const th = btnEliminar.closest('th');
-                const spanTitulo = th.querySelector('.titulo-col');
-                const nombreCol = spanTitulo ? spanTitulo.textContent.trim() : 'esta nota';
-                const colIndex = th.cellIndex;
+                        // --- B. CÁLCULO DE DEFINITIVA Y DESEMPEÑO ---
+                        function calcularDefinitiva(fila) {
+                            const inputs = fila.querySelectorAll('.nota-input');
+                            const badgeDefinitiva = fila.querySelector('.nota-definitiva');
+                            const badgeDesempeno = fila.querySelector('.badge-desempeno');
+                            const hiddenValor = fila.querySelector('.input-nota-valor');
 
-                Swal.fire({
-                    title: '¿Eliminar columna?',
-                    text: `¿Está seguro de eliminar "${nombreCol}"? Se perderán las notas de esta columna.`,
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#dc3545',
-                    cancelButtonColor: '#6c757d',
-                    confirmButtonText: 'Sí, eliminar',
-                    cancelButtonText: 'Cancelar'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        th.remove();
-                        document.querySelectorAll('#tablaPlanilla tbody tr').forEach(fila => {
-                            if (fila.cells[colIndex]) {
-                                fila.cells[colIndex].remove();
+                            if (!inputs.length || !badgeDefinitiva) return;
+
+                            let suma = 0;
+                            let cantidad = 0;
+
+                            inputs.forEach(input => {
+                                let val = parsearNota(input.value);
+
+                                if (!isNaN(val)) {
+                                    suma += val;
+                                    cantidad++;
+                                }
+                            });
+
+                            if (cantidad > 0) {
+                                const promedio = suma / cantidad;
+                                const promedioStr = promedio.toFixed(1);
+                                badgeDefinitiva.textContent = promedioStr;
+
+                                if (hiddenValor) {
+                                    hiddenValor.value = promedioStr;
+                                }
+
+                                badgeDefinitiva.className = promedio >= 3.0
+                                    ? "badge bg-success fs-6 nota-definitiva"
+                                    : "badge bg-danger fs-6 nota-definitiva";
+
+                                if (badgeDesempeno) {
+                                    const promRedondeado = Math.round(promedio * 10) / 10;
+
+                                    if (promRedondeado >= 5.0) {
+                                        badgeDesempeno.textContent = "Superior";
+                                        badgeDesempeno.className = "badge bg-success fs-6 badge-desempeno";
+                                    } else if (promRedondeado >= 4.0) {
+                                        badgeDesempeno.textContent = "Alto";
+                                        badgeDesempeno.className = "badge bg-primary fs-6 badge-desempeno";
+                                    } else if (promRedondeado >= 3.0) {
+                                        badgeDesempeno.textContent = "Básico";
+                                        badgeDesempeno.className = "badge bg-warning text-dark fs-6 badge-desempeno";
+                                    } else {
+                                        badgeDesempeno.textContent = "Bajo";
+                                        badgeDesempeno.className = "badge bg-danger fs-6 badge-desempeno";
+                                    }
+                                }
+                            }
+                        }
+
+                        if (tabla) {
+                            cargarDesdeCache();
+                            tabla.querySelectorAll('tbody tr').forEach(fila => {
+                                fila.querySelectorAll('.nota-input').forEach(input => {
+                                    validarYFormatearInput(input, false);
+                                });
                                 calcularDefinitiva(fila);
+                            });
+
+                            tabla.addEventListener('focusin', function(e) {
+                                if (e.target.classList.contains('nota-input')) {
+                                    setTimeout(function() {
+                                        e.target.select();
+                                    }, 20);
+                                }
+                            });
+
+                            tabla.addEventListener('click', function(e) {
+                                if (e.target.classList.contains('nota-input')) {
+                                    e.target.select();
+                                }
+                            });
+
+                            tabla.addEventListener('blur', function(e) {
+                                if (e.target.classList.contains('nota-input')) {
+                                    validarYFormatearInput(e.target, true);
+                                    const fila = e.target.closest('tr');
+                                    calcularDefinitiva(fila);
+                                    guardarEnCache();
+                                }
+                            }, true);
+
+                            tabla.addEventListener('click', function(e) {
+                                const btnUp = e.target.closest('.btn-step-up');
+                                const btnDown = e.target.closest('.btn-step-down');
+
+                                if (btnUp || btnDown) {
+                                    const group = e.target.closest('.nota-group');
+                                    if (!group) return;
+                                    const input = group.querySelector('.nota-input');
+                                    if (!input) return;
+
+                                    let val = parseFloat(input.value.replace(',', '.')) || 0.0;
+                                    if (btnUp) {
+                                        val = Math.min(5.0, Math.round((val + 0.1) * 10) / 10);
+                                    } else if (btnDown) {
+                                        val = Math.max(0.0, Math.round((val - 0.1) * 10) / 10);
+                                    }
+                                    input.value = val.toFixed(1);
+                                    const fila = input.closest('tr');
+                                    calcularDefinitiva(fila);
+                                    guardarEnCache();
+                                }
+                            });
+
+                            tabla.addEventListener('keydown', function(e) {
+                                if (e.target.classList.contains('nota-input')) {
+                                    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                                        e.preventDefault();
+                                        let val = parseFloat(e.target.value.replace(',', '.')) || 0.0;
+                                        if (e.key === 'ArrowUp') {
+                                            val = Math.min(5.0, Math.round((val + 0.1) * 10) / 10);
+                                        } else {
+                                            val = Math.max(0.0, Math.round((val - 0.1) * 10) / 10);
+                                        }
+                                        e.target.value = val.toFixed(1);
+                                        const fila = e.target.closest('tr');
+                                        calcularDefinitiva(fila);
+                                        guardarEnCache();
+                                    }
+                                }
+                            });
+
+                            tabla.addEventListener('change', function(e) {
+                                if (e.target.classList.contains('nota-input')) {
+                                    validarYFormatearInput(e.target, true);
+                                    const fila = e.target.closest('tr');
+                                    calcularDefinitiva(fila);
+                                    guardarEnCache();
+                                }
+                            });
+
+                            tabla.addEventListener('input', function(e) {
+                                if (e.target.classList.contains('nota-input')) {
+                                    let valStr = e.target.value.replace(',', '.');
+
+                                    if (valStr.length > 3) {
+                                        valStr = valStr.substring(0, 3);
+                                        e.target.value = valStr;
+                                    }
+
+                                    let num = parseFloat(valStr);
+
+                                    if (!isNaN(num) && (num > 5.0 || num < 0.0)) {
+                                        Swal.fire({
+                                            toast: true,
+                                            position: 'top-end',
+                                            icon: 'error',
+                                            title: '¡Nota fuera de rango!',
+                                            text: 'La calificación no puede ser mayor a 5.0 ni menor a 0.0.',
+                                            showConfirmButton: false,
+                                            timer: 2500,
+                                            timerProgressBar: true
+                                        });
+                                        e.target.value = "0.0";
+                                    }
+
+                                    const fila = e.target.closest('tr');
+                                    calcularDefinitiva(fila);
+                                }
+                            });
+                        }
+
+                        // ===================================================================
+                        // FILTRADO POR CURSO Y PAGINACIÓN CLIENT-SIDE CON CONTROL DE MENSAJES
+                        // ===================================================================
+
+                        let planillaPaginaActual = 1;
+                        const PLANILLA_POR_PAGINA = 20;
+
+                        function normalizarTexto(str) {
+                            if (!str) return '';
+                            return str.toString().toLowerCase().replace(/[\s\-_]/g, '').trim();
+                        }
+
+                        function getFilasPlanillaFiltradas() {
+                            const selGrado = document.getElementById('selectGrado');
+                            const valGradoRaw = selGrado ? selGrado.value.trim() : '';
+                            const valGradoNorm = normalizarTexto(valGradoRaw);
+
+                            if (!valGradoRaw || valGradoRaw === '' || valGradoRaw === 'todos') {
+                                return [];
+                            }
+
+                            const todasFilas = Array.from(document.querySelectorAll('#tablaPlanilla tbody tr.fila-estudiante'));
+                            return todasFilas.filter(fila => {
+                                const gradoFilaRaw = fila.getAttribute('data-grado') || '';
+                                const gradoFilaNorm = normalizarTexto(gradoFilaRaw);
+
+                                return gradoFilaNorm === valGradoNorm ||
+                                       gradoFilaNorm.includes(valGradoNorm) ||
+                                       valGradoNorm.includes(gradoFilaNorm);
+                            });
+                        }
+
+                        function filtrarPlanilla() {
+                            planillaPaginaActual = 1;
+                            renderizarPaginacionPlanilla();
+                        }
+
+                        function renderizarPaginacionPlanilla() {
+                            const selGrado = document.getElementById('selectGrado');
+                            const valGradoRaw = selGrado ? selGrado.value.trim() : '';
+
+                            const filaMensaje = document.getElementById('filaMensajeTabla');
+                            const celdaMensaje = document.getElementById('celdaMensajeTabla');
+                            const tituloConteo = document.getElementById('tituloEstudiantesInscritos');
+
+                            const filasFiltradas = getFilasPlanillaFiltradas();
+                            const totalFilas = filasFiltradas.length;
+                            const totalPaginas = Math.max(1, Math.ceil(totalFilas / PLANILLA_POR_PAGINA));
+
+                            if (planillaPaginaActual > totalPaginas) planillaPaginaActual = totalPaginas;
+
+                            document.querySelectorAll('#tablaPlanilla tbody tr.fila-estudiante').forEach(f => f.style.display = 'none');
+
+                            if (!valGradoRaw || valGradoRaw === '' || valGradoRaw === 'todos') {
+                                if (filaMensaje && celdaMensaje) {
+                                    filaMensaje.style.display = '';
+                                    celdaMensaje.innerHTML = '📋 <strong>Por favor, seleccione un Grado / Curso</strong> para visualizar la lista de estudiantes.';
+                                }
+                                if (tituloConteo) tituloConteo.textContent = 'Estudiantes Inscritos (0)';
+
+                            } else if (totalFilas === 0) {
+                                if (filaMensaje && celdaMensaje) {
+                                    filaMensaje.style.display = '';
+                                    celdaMensaje.innerHTML = '⚠️ No hay estudiantes registrados para el curso seleccionado.';
+                                }
+                                if (tituloConteo) tituloConteo.textContent = 'Estudiantes Inscritos (0)';
+
+                            } else {
+                                if (filaMensaje) filaMensaje.style.display = 'none';
+                                if (tituloConteo) tituloConteo.textContent = `Estudiantes Inscritos (${totalFilas})`;
+
+                                const inicio = (planillaPaginaActual - 1) * PLANILLA_POR_PAGINA;
+                                const fin = Math.min(inicio + PLANILLA_POR_PAGINA, totalFilas);
+                                for (let i = inicio; i < fin; i++) {
+                                    if (filasFiltradas[i]) {
+                                        filasFiltradas[i].style.display = '';
+                                    }
+                                }
+                            }
+
+                            const info = document.getElementById('infoPlanillaPagina');
+                            if (info) {
+                                if (!valGradoRaw || valGradoRaw === '' || valGradoRaw === 'todos') {
+                                    info.textContent = 'Selección de curso requerida.';
+                                } else if (totalFilas === 0) {
+                                    info.textContent = '0 estudiantes encontrados.';
+                                } else {
+                                    const inicio = (planillaPaginaActual - 1) * PLANILLA_POR_PAGINA;
+                                    const fin = Math.min(inicio + PLANILLA_POR_PAGINA, totalFilas);
+                                    info.textContent = `Mostrando ${inicio + 1}–${fin} de ${totalFilas} estudiantes`;
+                                }
+                            }
+
+                            const ul = document.getElementById('paginacionPlanilla');
+                            if (!ul) return;
+                            ul.innerHTML = '';
+
+                            if (totalPaginas <= 1 || !valGradoRaw || valGradoRaw === '' || valGradoRaw === 'todos') return;
+
+                            const crearLi = (label, pagina, activo, disabled) => {
+                                const li = document.createElement('li');
+                                li.className = `page-item${activo ? ' active' : ''}${disabled ? ' disabled' : ''}`;
+                                const a = document.createElement('a');
+                                a.className = 'page-link';
+                                a.innerHTML = label;
+                                a.href = '#';
+                                if (!disabled && !activo) {
+                                    a.addEventListener('click', (e) => {
+                                        e.preventDefault();
+                                        planillaPaginaActual = pagina;
+                                        renderizarPaginacionPlanilla();
+                                    });
+                                }
+                                li.appendChild(a);
+                                ul.appendChild(li);
+                            };
+
+                            crearLi('&laquo;', planillaPaginaActual - 1, false, planillaPaginaActual === 1);
+
+                            const rango = 2;
+                            for (let p = 1; p <= totalPaginas; p++) {
+                                if (p === 1 || p === totalPaginas || (p >= planillaPaginaActual - rango && p <= planillaPaginaActual + rango)) {
+                                    crearLi(p, p, p === planillaPaginaActual, false);
+                                } else if (p === planillaPaginaActual - rango - 1 || p === planillaPaginaActual + rango + 1) {
+                                    crearLi('...', p, false, true);
+                                }
+                            }
+
+                            crearLi('&raquo;', planillaPaginaActual + 1, false, planillaPaginaActual === totalPaginas);
+                        }
+
+                        function filtrarGradosPorJornada() {
+                            if (!selectGrado || !selectJornada) return;
+
+                            const jornada = selectJornada.value || '';
+                            const esManana = jornada.toLowerCase().includes('mañana') || jornada.toLowerCase().includes('manana') || jornada.toLowerCase().startsWith('m');
+                            const esTarde = jornada.toLowerCase().includes('tarde') || jornada.toLowerCase().startsWith('t');
+
+                            let seleccionadoVisible = false;
+
+                            Array.from(selectGrado.options).forEach(opt => {
+                                const txt = opt.text.trim();
+                                const val = opt.value.trim();
+                                let mostrar = true;
+
+                                if (val === '' || txt.toLowerCase().includes('seleccione')) {
+                                    mostrar = true;
+                                } else if (esManana) {
+                                    mostrar = txt.endsWith('M') || txt.includes(' M') || val.endsWith('M');
+                                } else if (esTarde) {
+                                    mostrar = txt.endsWith('T') || txt.includes(' T') || val.endsWith('T');
+                                }
+
+                                opt.hidden = !mostrar;
+                                opt.disabled = !mostrar;
+                                opt.style.display = mostrar ? '' : 'none';
+
+                                if (mostrar && opt.selected) {
+                                    seleccionadoVisible = true;
+                                }
+                            });
+
+                            if (!seleccionadoVisible) {
+                                selectGrado.value = "";
+                            }
+                        }
+
+                        if (selectJornada) {
+                            selectJornada.addEventListener('change', function() {
+                                filtrarGradosPorJornada();
+                                filtrarPlanilla();
+                                cargarDesdeCache();
+                            });
+                        }
+
+                        if (selectGrado) {
+                            selectGrado.addEventListener('change', function() {
+                                filtrarPlanilla();
+                                cargarDesdeCache();
+                            });
+                        }
+                        if (selectAsignatura) {
+                            selectAsignatura.addEventListener('change', cargarDesdeCache);
+                        }
+
+                        filtrarGradosPorJornada();
+                        renderizarPaginacionPlanilla();
+                        // --- GESTIÓN DINÁMICA DE LOGROS POR GRADO, MATERIA Y PERÍODO ---
+                        const selPeriodo = document.getElementById('selectPeriodo');
+                        const hiddenPeriodo = document.getElementById('hiddenPeriodoForm');
+                        const contenedorLogros = document.getElementById('contenedorLogrosPlanilla');
+                        const badgeInfoLogros = document.getElementById('badgeInfoLogros');
+                        const btnGestionarLogro = document.getElementById('btnGestionarLogro');
+
+                        function cargarLogrosPlanilla() {
+                            const gradoVal = selectGrado ? selectGrado.value.trim() : '';
+                            const materiaVal = selectAsignatura ? selectAsignatura.value.trim() : '';
+                            const periodoVal = selPeriodo ? selPeriodo.value : '1';
+
+                            if (hiddenPeriodo) hiddenPeriodo.value = periodoVal;
+
+                            if (!gradoVal || !materiaVal) {
+                                if (badgeInfoLogros) badgeInfoLogros.textContent = 'Seleccione un curso';
+                                if (contenedorLogros) {
+                                    contenedorLogros.innerHTML = '<span class="text-muted small">Seleccione un Grado / Curso para visualizar los logros del período.</span>';
+                                }
+                                return;
+                            }
+
+                            fetch(`/Docente/ObtenerLogros?grado=${encodeURIComponent(gradoVal)}&materia=${encodeURIComponent(materiaVal)}&periodo=${encodeURIComponent(periodoVal)}`)
+                                .then(r => r.json())
+                                .then(res => {
+                                    if (!res.success) return;
+                                    if (badgeInfoLogros) {
+                                        badgeInfoLogros.textContent = `Grado ${res.grado}° · ${materiaVal} · Período ${periodoVal}`;
+                                    }
+                                    if (!res.logros || res.logros.length === 0) {
+                                        contenedorLogros.innerHTML = '<div class="alert alert-light border mb-0 py-2 small text-muted">No hay logros registrados para este grado y período. Usa <strong>"Agregar Logro"</strong> para crear uno.</div>';
+                                        return;
+                                    }
+
+                                    contenedorLogros.innerHTML = res.logros.map(l => `
+                                        <div class="d-flex justify-content-between align-items-start gap-2 p-2 mb-1 rounded bg-light border">
+                                            <div class="small">
+                                                <span class="badge bg-dark me-1">${l.codigo_logro || 'LOG'}</span>
+                                                <span class="text-dark">${l.descripcion}</span>
+                                            </div>
+                                            <div class="d-flex gap-1 flex-shrink-0">
+                                                <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-1 btn-editar-logro"
+                                                        data-id="${l.id_logro}" data-codigo="${l.codigo_logro || ''}" data-desc="${l.descripcion.replace(/"/g, '&quot;')}" title="Editar logro">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-outline-danger py-0 px-1 btn-eliminar-logro"
+                                                        data-id="${l.id_logro}" title="Eliminar logro">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    `).join('');
+                                })
+                                .catch(() => {
+                                    if (contenedorLogros) contenedorLogros.innerHTML = '<span class="text-danger small">No se pudieron cargar los logros.</span>';
+                                });
+                        }
+
+                        function abrirModalLogro(idLogro = 0, codigoActual = '', descActual = '') {
+                            const gradoVal = selectGrado ? selectGrado.value.trim() : '';
+                            const materiaVal = selectAsignatura ? selectAsignatura.value.trim() : '';
+                            const periodoVal = selPeriodo ? selPeriodo.value : '1';
+
+                            if (!gradoVal || !materiaVal) {
+                                Swal.fire('Atención', 'Selecciona primero un Grado / Curso y una Asignatura.', 'warning');
+                                return;
+                            }
+
+                            Swal.fire({
+                                title: idLogro > 0 ? 'Editar Logro Académico' : 'Nuevo Logro Académico',
+                                html: `
+                                    <div class="text-start">
+                                        <p class="small text-muted mb-2">Curso: <strong>${gradoVal}</strong> · Materia: <strong>${materiaVal}</strong> · Período: <strong>${periodoVal}</strong></p>
+                                        <label class="form-label small fw-bold">Código del Logro (opcional)</label>
+                                        <input id="swalCodigoLogro" class="form-control form-control-sm mb-2" placeholder="Ej: LOG-11-BIO-P1" value="${codigoActual}">
+                                        <label class="form-label small fw-bold">Descripción del Logro / Indicador</label>
+                                        <textarea id="swalDescLogro" class="form-control form-control-sm" rows="3" placeholder="Ej: Analiza procesos bioquímicos celulares...">${descActual}</textarea>
+                                    </div>
+                                `,
+                                showCancelButton: true,
+                                confirmButtonText: 'Guardar Logro',
+                                cancelButtonText: 'Cancelar',
+                                confirmButtonColor: '#0d2a4a',
+                                preConfirm: () => {
+                                    const desc = document.getElementById('swalDescLogro').value.trim();
+                                    if (!desc) {
+                                        Swal.showValidationMessage('Escribe la descripción del logro.');
+                                        return false;
+                                    }
+                                    return {
+                                        codigo: document.getElementById('swalCodigoLogro').value.trim(),
+                                        descripcion: desc
+                                    };
+                                }
+                            }).then(result => {
+                                if (!result.isConfirmed) return;
+                                fetch('/Docente/GuardarLogro', {
+                                    method: 'POST',
+                                    body: new URLSearchParams({
+                                        id_logro: idLogro,
+                                        grado: gradoVal,
+                                        materia: materiaVal,
+                                        periodo: periodoVal,
+                                        codigo_logro: result.value.codigo,
+                                        descripcion: result.value.descripcion
+                                    })
+                                })
+                                    .then(r => r.json())
+                                    .then(res => {
+                                        if (res.success) {
+                                            Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: res.message, showConfirmButton: false, timer: 2500 });
+                                            cargarLogrosPlanilla();
+                                        } else {
+                                            Swal.fire('Error', res.message, 'error');
+                                        }
+                                    });
+                            });
+                        }
+
+                        if (btnGestionarLogro) {
+                            btnGestionarLogro.addEventListener('click', () => abrirModalLogro());
+                        }
+
+                        if (contenedorLogros) {
+                            contenedorLogros.addEventListener('click', function (e) {
+                                const btnEdit = e.target.closest('.btn-editar-logro');
+                                if (btnEdit) {
+                                    abrirModalLogro(parseInt(btnEdit.dataset.id), btnEdit.dataset.codigo, btnEdit.dataset.desc);
+                                    return;
+                                }
+                                const btnDel = e.target.closest('.btn-eliminar-logro');
+                                if (btnDel) {
+                                    Swal.fire({
+                                        title: '¿Eliminar este logro?',
+                                        icon: 'warning',
+                                        showCancelButton: true,
+                                        confirmButtonColor: '#dc3545',
+                                        confirmButtonText: 'Sí, eliminar',
+                                        cancelButtonText: 'Cancelar'
+                                    }).then(r => {
+                                        if (!r.isConfirmed) return;
+                                        fetch('/Docente/EliminarLogro', {
+                                            method: 'POST',
+                                            body: new URLSearchParams({ id_logro: btnDel.dataset.id })
+                                        })
+                                            .then(res => res.json())
+                                            .then(data => {
+                                                if (data.success) cargarLogrosPlanilla();
+                                            });
+                                    });
+                                }
+                            });
+                        }
+
+                        if (selectGrado) selectGrado.addEventListener('change', cargarLogrosPlanilla);
+                        if (selectAsignatura) selectAsignatura.addEventListener('change', cargarLogrosPlanilla);
+                        if (selectJornada) selectJornada.addEventListener('change', cargarLogrosPlanilla);
+                        if (selPeriodo) selPeriodo.addEventListener('change', cargarLogrosPlanilla);
+
+                        // Verificar si el periodo actual se encuentra habilitado o cerrado por Coordinación
+                        window.verificarEstadoPeriodoPlanilla = function() {
+                            const selectPeriodo = document.getElementById('selectPeriodo');
+                            if (!selectPeriodo) return;
+                            const opt = selectPeriodo.options[selectPeriodo.selectedIndex];
+                            const activo = opt ? (opt.getAttribute('data-activo') === 'true') : true;
+                            const alerta = document.getElementById('alertaPeriodoCerrado');
+                            const btnGuardar = document.getElementById('btnSubmitPlanilla');
+                            const btnAgregar = document.getElementById('btnAgregarNota');
+                            const inputs = document.querySelectorAll('.nota-input');
+
+                            if (!activo) {
+                                if (alerta) alerta.classList.remove('d-none');
+                                if (btnGuardar) {
+                                    btnGuardar.disabled = true;
+                                    btnGuardar.classList.remove('text-white');
+                                    btnGuardar.classList.add('btn-secondary');
+                                    btnGuardar.style.backgroundColor = '#6c757d';
+                                    btnGuardar.innerHTML = '<i class="bi bi-lock-fill me-2"></i>Subida Cerrada (Periodo Bloqueado)';
+                                }
+                                if (btnAgregar) {
+                                    btnAgregar.disabled = true;
+                                    btnAgregar.classList.add('disabled');
+                                }
+                                inputs.forEach(inp => {
+                                    inp.disabled = true;
+                                    inp.readOnly = true;
+                                    inp.classList.add('bg-light');
+                                    inp.style.cursor = 'not-allowed';
+                                });
+                            } else {
+                                if (alerta) alerta.classList.add('d-none');
+                                if (btnGuardar) {
+                                    btnGuardar.disabled = false;
+                                    btnGuardar.classList.add('text-white');
+                                    btnGuardar.classList.remove('btn-secondary');
+                                    btnGuardar.style.backgroundColor = '#2980b9';
+                                    btnGuardar.innerHTML = '<i class="bi bi-save me-2"></i>Guardar Calificaciones';
+                                }
+                                if (btnAgregar) {
+                                    btnAgregar.disabled = false;
+                                    btnAgregar.classList.remove('disabled');
+                                }
+                                inputs.forEach(inp => {
+                                    inp.disabled = false;
+                                    inp.readOnly = false;
+                                    inp.classList.remove('bg-light');
+                                    inp.style.cursor = '';
+                                });
+                            }
+                        };
+
+                        if (selectGrado) selectGrado.addEventListener('change', verificarEstadoPeriodoPlanilla);
+                        if (selectAsignatura) selectAsignatura.addEventListener('change', verificarEstadoPeriodoPlanilla);
+                        verificarEstadoPeriodoPlanilla();
+                        // --- C. CONFIRMACIÓN ANTES DE GUARDAR FORMULARIO ---
+                        if (formPlanilla) {
+                            formPlanilla.addEventListener('submit', function(e) {
+                                const gradoActual = selectGrado ? selectGrado.value.trim() : '';
+                                const asignaturaActual = selectAsignatura ? selectAsignatura.value.trim() : '';
+                                const jornadaActual = selectJornada ? selectJornada.value.trim() : 'Mañana';
+                                const periodoActual = document.getElementById('selectPeriodo')?.value || '1';
+
+                                if (!gradoActual) {
+                                    e.preventDefault();
+                                    Swal.fire('Atención', 'Selecciona un Grado / Curso antes de guardar.', 'warning');
+                                    return;
+                                }
+
+                                // Sincronizar filtros con los campos ocultos del formulario
+                                const hGrado = document.getElementById('hiddenGradoForm');
+                                const hAsig = document.getElementById('hiddenAsignaturaForm');
+                                const hJor = document.getElementById('hiddenJornadaForm');
+                                const hPer = document.getElementById('hiddenPeriodoForm');
+                                if (hGrado) hGrado.value = gradoActual;
+                                if (hAsig) hAsig.value = asignaturaActual;
+                                if (hJor) hJor.value = jornadaActual;
+                                if (hPer) hPer.value = periodoActual;
+
+                                const filasDelCurso = getFilasPlanillaFiltradas();
+                                let hayErrores = false;
+
+                                filasDelCurso.forEach(fila => {
+                                    fila.querySelectorAll('.nota-input').forEach(input => {
+                                        if (!validarYFormatearInput(input, false)) {
+                                            hayErrores = true;
+                                        }
+                                    });
+                                });
+
+                                if (hayErrores) {
+                                    e.preventDefault();
+                                    Swal.fire({
+                                        toast: true,
+                                        position: 'top-end',
+                                        icon: 'error',
+                                        title: '¡Calificación inválida!',
+                                        text: 'Existen notas con formato o rango incorrecto (0.0 a 5.0, máx 3 caracteres).',
+                                        showConfirmButton: false,
+                                        timer: 3500,
+                                        timerProgressBar: true
+                                    });
+                                    return;
+                                }
+
+                                // Recalcular definitivas del curso activo y contar estudiantes calificados (> 0.0)
+                                const idsDelCurso = new Set();
+                                filasDelCurso.forEach(f => {
+                                    calcularDefinitiva(f);
+                                    const idInp = f.querySelector('input[name="estudiante_id"]');
+                                    if (idInp) idsDelCurso.add(idInp.value);
+                                });
+
+                                const filasConNota = filasDelCurso.filter(fila => {
+                                    const valDef = parseFloat(fila.querySelector('.input-nota-valor')?.value || '0');
+                                    return valDef > 0;
+                                });
+
+                                if (filasConNota.length === 0) {
+                                    e.preventDefault();
+                                    Swal.fire('Sin calificaciones', 'Ingresa al menos una calificación mayor a 0.0 antes de guardar.', 'info');
+                                    return;
+                                }
+
+                                if (formPlanilla.dataset.confirmado === "true") {
+                                    // Deshabilitar filas de otros cursos y filas sin nota (0.0) para no exceder 1024 campos
+                                    // ni sobrescribir con 0.0 a compañeros aún no calificados
+                                    document.querySelectorAll('#tablaPlanilla tbody tr.fila-estudiante').forEach(fila => {
+                                        const idEst = fila.querySelector('input[name="estudiante_id"]')?.value || '';
+                                        const valDef = parseFloat(fila.querySelector('.input-nota-valor')?.value || '0');
+                                        const enviarFila = idsDelCurso.has(idEst) && valDef > 0;
+
+                                        fila.querySelectorAll('input').forEach(inp => {
+                                            inp.disabled = !enviarFila;
+                                        });
+                                    });
+                                    return;
+                                }
+
+                                e.preventDefault();
+
+                                Swal.fire({
+                                    title: '¿Guardar Calificaciones?',
+                                    text: `Se guardarán las calificaciones de ${filasConNota.length} estudiante(s) en ${asignaturaActual} (${gradoActual} - Período ${periodoActual}).`,
+                                    icon: 'question',
+                                    showCancelButton: true,
+                                    confirmButtonColor: '#0d6efd',
+                                    cancelButtonColor: '#6c757d',
+                                    confirmButtonText: '<i class="bi bi-save me-1"></i> Sí, guardar',
+                                    cancelButtonText: 'Cancelar'
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        guardarEnCache();
+                                        formPlanilla.dataset.confirmado = "true";
+                                        formPlanilla.requestSubmit();
+                                    }
+                                });
+                            });
+                        }
+
+                        // --- D. AGREGAR COLUMNA ---
+                        let contadorNotas = 2;
+                        const btnAgregar = document.getElementById('btnAgregarNota');
+
+                        if (btnAgregar) {
+                            btnAgregar.addEventListener('click', function() {
+                                Swal.fire({
+                                    title: 'Agregar Calificación',
+                                    text: 'Escriba el nombre de la nueva columna/evaluación:',
+                                    input: 'text',
+                                    inputValue: `Nota ${contadorNotas}`,
+                                    showCancelButton: true,
+                                    confirmButtonText: '<i class="bi bi-check-lg"></i> Agregar',
+                                    cancelButtonText: 'Cancelar',
+                                    confirmButtonColor: '#198754',
+                                    inputValidator: (value) => {
+                                        if (!value || !value.trim()) {
+                                            return '¡Debes ingresar un nombre!';
+                                        }
+                                    }
+                                }).then((result) => {
+                                    if (result.isConfirmed && result.value) {
+                                        const tituloFinal = result.value.trim();
+                                        contadorNotas++;
+
+                                        const trHeader = document.querySelector('#tablaPlanilla thead tr');
+                                        const thDefinitiva = Array.from(trHeader.children).find(th => th.textContent.trim().includes('Definitiva')) || trHeader.lastElementChild;
+
+                                        const nuevoTh = document.createElement('th');
+                                        nuevoTh.className = 'text-center';
+                                        nuevoTh.style.width = '170px';
+                                        nuevoTh.innerHTML = `
+                                                <span class="titulo-col">${tituloFinal}</span>
+                                                <button type="button" class="btn btn-sm btn-outline-warning text-white p-0 px-1 ms-1 btn-editar-col" title="Renombrar nota">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-sm btn-outline-danger text-white p-0 px-1 ms-1 btn-eliminar-col" title="Eliminar nota">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            `;
+
+                                        trHeader.insertBefore(nuevoTh, thDefinitiva);
+
+                                        const filasBody = document.querySelectorAll('#tablaPlanilla tbody tr');
+                                        filasBody.forEach(fila => {
+                                            const tdDefinitiva = Array.from(fila.children).find(td => td.querySelector('.nota-definitiva')) || fila.lastElementChild;
+                                            const nuevoTd = document.createElement('td');
+                                            nuevoTd.innerHTML = `
+                                                    <div class="input-group input-group-sm nota-group mx-auto" style="width: 95px;">
+                                                        <input type="text" inputmode="decimal" class="form-control form-control-sm text-center nota-input px-1" value="0.0" maxlength="3" placeholder="0.0">
+                                                        <div class="input-group-text p-0 d-flex flex-column justify-content-center bg-light border-start-0" style="width: 18px; cursor: pointer;">
+                                                            <i class="bi bi-chevron-up btn-step-up text-secondary" style="font-size: 8px; line-height: 8px; padding: 2px 0;" title="Aumentar 0.1"></i>
+                                                            <i class="bi bi-chevron-down btn-step-down text-secondary" style="font-size: 8px; line-height: 8px; padding: 2px 0;" title="Disminuir 0.1"></i>
+                                                        </div>
+                                                    </div>
+                                                `;
+                                            fila.insertBefore(nuevoTd, tdDefinitiva);
+                                            calcularDefinitiva(fila);
+                                        });
+
+                                        guardarEnCache();
+                                    }
+                                });
+                            });
+                        }
+
+                        // --- E. RENOMBRAR Y ELIMINAR COLUMNAS ---
+                        document.addEventListener('click', function(e) {
+                            const btnEditar = e.target.closest('.btn-editar-col');
+                            if (btnEditar) {
+                                const th = btnEditar.closest('th');
+                                const spanTitulo = th.querySelector('.titulo-col');
+                                const tituloActual = spanTitulo ? spanTitulo.textContent.trim() : 'Nota';
+
+                                Swal.fire({
+                                    title: 'Renombrar Calificación',
+                                    text: 'Ingrese el nuevo nombre para esta columna:',
+                                    input: 'text',
+                                    inputValue: tituloActual,
+                                    showCancelButton: true,
+                                    confirmButtonText: 'Guardar',
+                                    cancelButtonText: 'Cancelar',
+                                    confirmButtonColor: '#ffc107',
+                                    inputValidator: (value) => {
+                                        if (!value || !value.trim()) {
+                                            return 'El nombre no puede estar vacío';
+                                        }
+                                    }
+                                }).then((result) => {
+                                    if (result.isConfirmed && result.value) {
+                                        if (spanTitulo) {
+                                            spanTitulo.textContent = result.value.trim();
+                                            guardarEnCache();
+                                        }
+                                    }
+                                });
+                            }
+
+                            const btnEliminar = e.target.closest('.btn-eliminar-col');
+                            if (btnEliminar) {
+                                const th = btnEliminar.closest('th');
+                                const spanTitulo = th.querySelector('.titulo-col');
+                                const nombreCol = spanTitulo ? spanTitulo.textContent.trim() : 'esta nota';
+                                const colIndex = th.cellIndex;
+
+                                Swal.fire({
+                                    title: '¿Eliminar columna?',
+                                    text: `¿Está seguro de eliminar "${nombreCol}"? Se perderán las notas de esta columna.`,
+                                    icon: 'warning',
+                                    showCancelButton: true,
+                                    confirmButtonColor: '#dc3545',
+                                    cancelButtonColor: '#6c757d',
+                                    confirmButtonText: 'Sí, eliminar',
+                                    cancelButtonText: 'Cancelar'
+                                }).then((result) => {
+                                    if (result.isConfirmed) {
+                                        th.remove();
+                                        document.querySelectorAll('#tablaPlanilla tbody tr').forEach(fila => {
+                                            if (fila.cells[colIndex]) {
+                                                fila.cells[colIndex].remove();
+                                                calcularDefinitiva(fila);
+                                            }
+                                        });
+                                        guardarEnCache();
+                                    }
+                                });
                             }
                         });
-                        guardarEnCache();
-                    }
-                });
-            }
-        });
-    });
-</script>
+                    });
+        </script>
 
-        </div><!-- /.submodulo-activo -->
-    </div><!-- /.panel-con-sidebar -->
+    </div><!-- /.submodulo-activo -->
+</div><!-- /.panel-con-sidebar -->
 </div><!-- /.container-fluid -->

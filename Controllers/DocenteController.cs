@@ -23,6 +23,7 @@ namespace ProyectoPAE.Controllers
         public IActionResult Planilla()
         {
             _context.AsegurarEsquemaEstudiantes();
+            _context.AsegurarEsquemaLogros();
 
             // 1. Verificación de sesión y autorización por rol (docente o admin)
             var rol = (HttpContext.Session.GetString("UserRol") ?? "").ToLower().Trim();
@@ -313,6 +314,136 @@ namespace ProyectoPAE.Controllers
             }
 
             return RedirectToAction("Planilla");
+        }
+
+        /// <summary>
+        /// Obtiene los logros activos para un curso/grado, materia y período específico.
+        /// </summary>
+        [HttpGet]
+        public JsonResult ObtenerLogros(string grado, string materia, int periodo = 1)
+        {
+            _context.AsegurarEsquemaLogros();
+
+            int numGrado = MatriculaAcademicaService.ExtraerGrado(grado, 0);
+            string matBase = (materia ?? "").Split(" - ")[0].Trim();
+
+            if (numGrado < 6 || numGrado > 11 || string.IsNullOrEmpty(matBase))
+            {
+                return Json(new { success = true, grado = numGrado, logros = new List<object>() });
+            }
+
+            var logrosBase = _context.Logros
+                .Where(l => l.activo && l.grado == numGrado && l.periodo == periodo)
+                .ToList();
+
+            // 1. Buscar primero coincidencia exacta con el nombre de la asignatura
+            var filtrados = logrosBase
+                .Where(l => l.materia.Equals(matBase, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            // 2. Solo si no hay exactos, buscar por prefijo
+            if (!filtrados.Any())
+            {
+                filtrados = logrosBase
+                    .Where(l => l.materia.StartsWith(matBase, StringComparison.OrdinalIgnoreCase) ||
+                                matBase.StartsWith(l.materia, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+            }
+
+            var logros = filtrados
+                .OrderBy(l => l.id_logro)
+                .Select(l => new
+                {
+                    id_logro = l.id_logro,
+                    grado = l.grado,
+                    materia = l.materia,
+                    periodo = l.periodo,
+                    codigo_logro = l.codigo_logro ?? "",
+                    descripcion = l.descripcion
+                })
+                .ToList();
+
+            return Json(new { success = true, grado = numGrado, logros });
+        }
+
+        /// <summary>
+        /// Crea o actualiza un logro académico para un grado, materia y período.
+        /// </summary>
+        [HttpPost]
+        [RequierePermiso(Permisos.GestionarClases)]
+        public JsonResult GuardarLogro(int? id_logro, string grado, string materia, int periodo, string? codigo_logro, string descripcion)
+        {
+            try
+            {
+                _context.AsegurarEsquemaLogros();
+
+                int numGrado = MatriculaAcademicaService.ExtraerGrado(grado, 0);
+                string matBase = (materia ?? "").Split(" - ")[0].Trim();
+
+                if (numGrado < 6 || numGrado > 11)
+                    return Json(new { success = false, message = "Selecciona primero un curso válido (6° a 11°)." });
+
+                if (string.IsNullOrWhiteSpace(matBase))
+                    return Json(new { success = false, message = "Selecciona una asignatura." });
+
+                if (string.IsNullOrWhiteSpace(descripcion))
+                    return Json(new { success = false, message = "La descripción del logro es obligatoria." });
+
+                if (id_logro.HasValue && id_logro.Value > 0)
+                {
+                    var existente = _context.Logros.Find(id_logro.Value);
+                    if (existente == null)
+                        return Json(new { success = false, message = "No se encontró el logro a editar." });
+
+                    existente.codigo_logro = string.IsNullOrWhiteSpace(codigo_logro) ? existente.codigo_logro : codigo_logro.Trim();
+                    existente.descripcion = descripcion.Trim();
+                    existente.periodo = periodo;
+                }
+                else
+                {
+                    string prefijo = new string(matBase.Where(char.IsLetter).Take(3).ToArray()).ToUpper();
+                    var nuevo = new Logro
+                    {
+                        grado = numGrado,
+                        materia = matBase,
+                        periodo = periodo,
+                        codigo_logro = string.IsNullOrWhiteSpace(codigo_logro) ? $"LOG-{numGrado}-{prefijo}-P{periodo}" : codigo_logro.Trim(),
+                        descripcion = descripcion.Trim(),
+                        activo = true
+                    };
+                    _context.Logros.Add(nuevo);
+                }
+
+                _context.SaveChanges();
+                return Json(new { success = true, message = "Logro académico guardado correctamente." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Error al guardar el logro: " + ex.Message });
+            }
+        }
+
+        /// <summary>
+        /// Desactiva un logro académico.
+        /// </summary>
+        [HttpPost]
+        [RequierePermiso(Permisos.GestionarClases)]
+        public JsonResult EliminarLogro(int id_logro)
+        {
+            try
+            {
+                var logro = _context.Logros.Find(id_logro);
+                if (logro == null)
+                    return Json(new { success = false, message = "Logro no encontrado." });
+
+                logro.activo = false;
+                _context.SaveChanges();
+                return Json(new { success = true, message = "Logro eliminado correctamente." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "No se pudo eliminar el logro: " + ex.Message });
+            }
         }
 
         /// <summary>

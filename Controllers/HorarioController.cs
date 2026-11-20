@@ -31,6 +31,8 @@ namespace ProyectoPAE.Controllers
         [RequierePermiso(Permisos.AsignarAcademica)]
         public async Task<IActionResult> AsignacionAcademica()
         {
+            _context.AsegurarEsquemaHorarios();
+
             try
             {
                 ViewBag.Profesores = await _context.PROFESOR.ToListAsync();
@@ -348,6 +350,7 @@ namespace ProyectoPAE.Controllers
                     return View(new List<HorarioDetalleViewModel>());
                 }
 
+                // Dentro de CASO A: DOCENTE / PROFESOR (reemplaza la consulta var query)
                 var query = from h in _context.HORARIOS
                             join c in _context.Cursos on h.id_curso equals c.id_curso into cGroup
                             from curso in cGroup.DefaultIfEmpty()
@@ -355,7 +358,7 @@ namespace ProyectoPAE.Controllers
                             from materia in mGroup.DefaultIfEmpty()
                             join a in _context.AULA on h.id_aula equals a.id_aula into aGroup
                             from aula in aGroup.DefaultIfEmpty()
-                            where h.id_profesor == idProfesorConsulta.Value
+                            where h.id_profesor == idProfesorConsulta.Value && h.publicado
                             select new HorarioDetalleViewModel
                             {
                                 DiaSemana = h.dia,
@@ -439,6 +442,7 @@ namespace ProyectoPAE.Controllers
             ViewBag.NombreCurso = cursoObj?.nombre_curso ?? "Curso Desconocido";
             ViewBag.Jornada = cursoObj?.jornada;
 
+            // Dentro de CASO B: ESTUDIANTE (reemplaza la consulta var horariosEstudiante)
             var horariosEstudiante = await (from h in _context.HORARIOS
                                             join m in _context.MATERIA on h.id_materia equals m.id_materia into mGroup
                                             from mat in mGroup.DefaultIfEmpty()
@@ -446,7 +450,7 @@ namespace ProyectoPAE.Controllers
                                             from prof in pGroup.DefaultIfEmpty()
                                             join a in _context.AULA on h.id_aula equals a.id_aula into aGroup
                                             from aul in aGroup.DefaultIfEmpty()
-                                            where h.id_curso == matricula.id_curso
+                                            where h.id_curso == matricula.id_curso && h.publicado
                                             select new HorarioDetalleViewModel
                                             {
                                                 DiaSemana = h.dia,
@@ -515,7 +519,8 @@ namespace ProyectoPAE.Controllers
                     materia = h.Materia != null ? h.Materia.nombre_materia : "Sin Materia",
                     curso = h.Curso != null ? h.Curso.nombre_curso : "",
                     docente = h.Profesor != null ? (h.Profesor.nombre + " " + h.Profesor.apellido) : "",
-                    aula = codigosAula.GetValueOrDefault(h.id_aula, "")
+                    aula = codigosAula.GetValueOrDefault(h.id_aula, ""),
+                    publicado = h.publicado
                 });
 
                 return Json(resultado);
@@ -728,9 +733,11 @@ namespace ProyectoPAE.Controllers
                 return Json(new { success = false, message = "Esa aula ya está ocupada ese día en esa franja para este período." });
             }
 
-            // 5. Guardado incluyendo el período académico
+            // 5. Guardado en modo BORRADOR (publicado = false) hasta que el admin confirme el horario
             try
             {
+                _context.AsegurarEsquemaHorarios();
+
                 _context.HORARIOS.Add(new Horario
                 {
                     id_curso = idCurso,
@@ -741,7 +748,8 @@ namespace ProyectoPAE.Controllers
                     hora_inicio = inicio,
                     hora_fin = fin,
                     anio_escolar = anioEscolar,
-                    periodo_academico = periodoAcademico // <--- Asignación correcta
+                    periodo_academico = periodoAcademico,
+                    publicado = false // <--- Queda en borrador en la vista previa
                 });
                 await _context.SaveChangesAsync();
             }
@@ -750,7 +758,151 @@ namespace ProyectoPAE.Controllers
                 return Json(new { success = false, message = "No se pudo guardar: " + (ex.InnerException?.Message ?? ex.Message) });
             }
 
-            return Json(new { success = true, message = $"Horario guardado: Período {periodoAcademico}, {curso.nombre_curso}, {dia} {bloque.Etiqueta}." });
+            return Json(new
+            {
+                success = true,
+                message = $"Asignación agregada a la vista previa (Borrador): Período {periodoAcademico}, {curso.nombre_curso}, {dia} {bloque.Etiqueta}. Presiona 'Confirmar Horario' abajo a la derecha cuando esté listo."
+            });
+        }
+
+        // =========================================================================
+        // 10. CONFIRMAR Y PUBLICAR HORARIO + ENVIAR NOTIFICACIONES A LA CAMPANA
+        // =========================================================================
+        [HttpPost]
+        [RequierePermiso(Permisos.AsignarAcademica)]
+        public async Task<JsonResult> ConfirmarHorario(int idCurso)
+        {
+            if (idCurso <= 0)
+            {
+                return Json(new { success = false, message = "Seleccione un curso válido antes de confirmar el horario." });
+            }
+
+            try
+            {
+                _context.AsegurarEsquemaHorarios();
+                _context.AsegurarEsquemaNotificaciones();
+
+                var curso = await _context.Cursos.FindAsync(idCurso);
+                if (curso == null)
+                {
+                    return Json(new { success = false, message = "El curso seleccionado no existe." });
+                }
+
+                // Buscamos todas las clases asignadas a este curso
+                var horariosCurso = await _context.HORARIOS
+                    .Where(h => h.id_curso == idCurso)
+                    .ToListAsync();
+
+                if (!horariosCurso.Any())
+                {
+                    return Json(new { success = false, message = $"El curso {curso.nombre_curso} aún no tiene materias asignadas en la vista previa." });
+                }
+
+                // 1. Publicamos todos los bloques del horario del curso
+                foreach (var item in horariosCurso)
+                {
+                    item.publicado = true;
+                }
+
+                // 2. Identificamos al administrador emisor de la notificación
+                int idEmisor = HttpContext.Session.GetInt32("UserId") ?? 0;
+                if (idEmisor <= 0)
+                {
+                    var adminFallback = await _context.Usuarios.FirstOrDefaultAsync(u => u.ROL != null && u.ROL.ToLower() == "admin");
+                    idEmisor = adminFallback?.ID_Usuario ?? 1;
+                }
+
+                // 3. Obtenemos los ID_Usuario de los ESTUDIANTES matriculados en ese curso
+                var idsUsuariosEstudiantes = await (from m in _context.Matriculas
+                                                    join e in _context.ESTUDIANTE on m.id_estudiante equals e.id_estudiante
+                                                    where m.id_curso == idCurso
+                                                          && e.id_usuario != null
+                                                          && (m.estado == null || m.estado.ToLower() == "activa" || m.estado.ToLower() == "activo")
+                                                    select e.id_usuario!.Value)
+                                                   .Distinct()
+                                                   .ToListAsync();
+
+                // También respaldamos por si algún estudiante tiene id_curso directo en ESTUDIANTE
+                var idsEstudiantesDirectos = await _context.ESTUDIANTE
+                    .Where(e => e.id_curso == idCurso && e.id_usuario != null)
+                    .Select(e => e.id_usuario!.Value)
+                    .ToListAsync();
+
+                var destinatariosEstudiantes = idsUsuariosEstudiantes
+                    .Union(idsEstudiantesDirectos)
+                    .Distinct()
+                    .ToList();
+
+                // 4. Obtenemos los ID_Usuario de los DOCENTES que tienen clase en ese curso
+                var idsProfesoresCurso = horariosCurso.Select(h => h.id_profesor).Distinct().ToList();
+                var profesoresCurso = await _context.PROFESOR
+                    .Where(p => idsProfesoresCurso.Contains(p.id_profesor))
+                    .ToListAsync();
+
+                var destinatariosDocentes = new HashSet<int>();
+                foreach (var prof in profesoresCurso)
+                {
+                    if (prof.id_usuario.HasValue && prof.id_usuario.Value > 0)
+                    {
+                        destinatariosDocentes.Add(prof.id_usuario.Value);
+                    }
+                    else if (!string.IsNullOrWhiteSpace(prof.email))
+                    {
+                        var usr = await _context.Usuarios
+                            .FirstOrDefaultAsync(u => u.CORREO_ELECTRONICO != null && u.CORREO_ELECTRONICO.ToLower() == prof.email.ToLower());
+                        if (usr != null) destinatariosDocentes.Add(usr.ID_Usuario);
+                    }
+                }
+
+                // Parámetros configurables de la notificación
+                int periodo = horariosCurso.Select(h => h.periodo_academico).FirstOrDefault(p => p != null) ?? 1;
+                DateTime ahora = DateTime.Now;
+                DateTime expiracion = ahora.AddDays(15); // La alerta dura 15 días en la campana
+                string prioridadNotif = "leve";          // "leve" (el usuario puede marcarla como leída) o "alta" (fija)
+
+                // 5. Creamos las notificaciones individuales en GU_NOTIFICACION (compatibles con la campana de _Layout)
+                foreach (var idUsrEst in destinatariosEstudiantes)
+                {
+                    _context.Notificaciones.Add(new Notificacion
+                    {
+                        Titulo = $"📅 Horario Académico Disponible ({curso.nombre_curso})",
+                        Mensaje = $"Tu horario de clases para el curso {curso.nombre_curso} (Período {periodo}) ya fue confirmado y publicado. Ya puedes consultarlo en el módulo 'Mi Horario'.",
+                        RolDestino = $"user_{idUsrEst}",
+                        FechaCreacion = ahora,
+                        ID_UsuarioEmisor = idEmisor,
+                        Activa = true,
+                        Prioridad = prioridadNotif,
+                        FechaExpiracion = expiracion
+                    });
+                }
+
+                foreach (var idUsrDoc in destinatariosDocentes)
+                {
+                    _context.Notificaciones.Add(new Notificacion
+                    {
+                        Titulo = $"📅 Nueva Asignación de Horario ({curso.nombre_curso})",
+                        Mensaje = $"Se ha confirmado y publicado el horario del curso {curso.nombre_curso} (Período {periodo}), donde tienes clases asignadas. Ya puedes visualizarlo en 'Mi Horario'.",
+                        RolDestino = $"user_{idUsrDoc}",
+                        FechaCreacion = ahora,
+                        ID_UsuarioEmisor = idEmisor,
+                        Activa = true,
+                        Prioridad = prioridadNotif,
+                        FechaExpiracion = expiracion
+                    });
+                }
+
+                await _context.SaveChangesAsync();
+
+                return Json(new
+                {
+                    success = true,
+                    message = $"¡Horario de {curso.nombre_curso} confirmado y publicado! Se notificó a {destinatariosEstudiantes.Count} estudiante(s) y {destinatariosDocentes.Count} docente(s)."
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Error al confirmar el horario: " + (ex.InnerException?.Message ?? ex.Message) });
+            }
         }
     }
 }
