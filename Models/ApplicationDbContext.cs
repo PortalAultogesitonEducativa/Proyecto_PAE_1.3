@@ -858,8 +858,8 @@ namespace ProyectoPAE.Models
         private static bool _esquemaSolicitudesCertificadoListo;
 
         /// <summary>
-        /// Crea la tabla SOLICITUD_CERTIFICADO si todavía no existe (mismo script que Scripts/SolicitudCertificado.sql).
-        /// Solo se verifica una vez por ejecución de la aplicación.
+        /// Garantiza que la tabla SOLICITUD_CERTIFICADO
+        /// tenga todas las columnas necesarias.
         /// </summary>
         public void AsegurarEsquemaSolicitudesCertificado()
         {
@@ -869,38 +869,61 @@ namespace ProyectoPAE.Models
             try
             {
                 Database.ExecuteSqlRaw(@"
-                    IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'SOLICITUD_CERTIFICADO')
-                    BEGIN
-                        CREATE TABLE [dbo].[SOLICITUD_CERTIFICADO](
-                            [id_solicitud]              [int] IDENTITY(1,1) NOT NULL PRIMARY KEY,
-                            [codigo_radicado]           [nvarchar](50)  NOT NULL,
-                            [id_estudiante]             [int]           NOT NULL,
-                            [nombre_estudiante]         [nvarchar](150) NOT NULL,
-                            [tipo_certificado]          [nvarchar](50)  NOT NULL,
-                            [observaciones_solicitante] [nvarchar](500) NULL,
-                            [id_solicitante]            [int]           NOT NULL,
-                            [nombre_solicitante]        [nvarchar](150) NOT NULL,
-                            [rol_solicitante]           [nvarchar](50)  NOT NULL,
-                            [fecha_solicitud]           [datetime]      NOT NULL,
-                            [fecha_limite]              [datetime]      NOT NULL,
-                            [estado]                    [nvarchar](30)  NOT NULL DEFAULT 'Pendiente',
-                            [fecha_entrega]             [datetime]      NULL,
-                            [id_usuario_entrega]        [int]           NULL,
-                            [id_certificado]            [int]           NULL,
-                            [motivo_rechazo]            [nvarchar](500) NULL,
-                            [observaciones_cierre]      [nvarchar](500) NULL,
-                            [activo]                    [bit]           NOT NULL DEFAULT 1
-                        );
+            IF NOT EXISTS (
+                SELECT *
+                FROM sys.tables
+                WHERE name = 'SOLICITUD_CERTIFICADO'
+            )
+            BEGIN
+                CREATE TABLE [dbo].[SOLICITUD_CERTIFICADO](
+                    [id_solicitud] INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+                    [codigo_radicado] NVARCHAR(50) NOT NULL,
+                    [id_estudiante] INT NOT NULL,
+                    [nombre_estudiante] NVARCHAR(150) NOT NULL,
+                    [tipo_certificado] NVARCHAR(50) NOT NULL,
+                    [observaciones_solicitante] NVARCHAR(500) NULL,
+                    [id_solicitante] INT NOT NULL,
+                    [nombre_solicitante] NVARCHAR(150) NOT NULL,
+                    [rol_solicitante] NVARCHAR(50) NOT NULL,
+                    [fecha_solicitud] DATETIME NOT NULL,
+                    [fecha_limite] DATETIME NOT NULL,
+                    [estado] NVARCHAR(30) NOT NULL DEFAULT 'Pendiente',
+                    [fecha_entrega] DATETIME NULL,
+                    [id_usuario_entrega] INT NULL,
+                    [id_certificado] INT NULL,
+                    [motivo_rechazo] NVARCHAR(500) NULL,
+                    [observaciones_cierre] NVARCHAR(500) NULL,
+                    [activo] BIT NOT NULL DEFAULT 1
+                );
 
-                        CREATE INDEX IX_SOLICITUD_CERT_estado_limite ON [dbo].[SOLICITUD_CERTIFICADO]([estado], [fecha_limite]);
-                        CREATE INDEX IX_SOLICITUD_CERT_estudiante    ON [dbo].[SOLICITUD_CERTIFICADO]([id_estudiante]);
-                    END
-                ");
+                CREATE INDEX IX_SOLICITUD_CERT_estado_limite
+                ON [dbo].[SOLICITUD_CERTIFICADO]([estado], [fecha_limite]);
+
+                CREATE INDEX IX_SOLICITUD_CERT_estudiante
+                ON [dbo].[SOLICITUD_CERTIFICADO]([id_estudiante]);
+            END;
+
+            -- Agregar columnas de gestión si no existen
+
+            IF COL_LENGTH('dbo.SOLICITUD_CERTIFICADO', 'id_usuario_gestor') IS NULL
+                ALTER TABLE [dbo].[SOLICITUD_CERTIFICADO]
+                ADD [id_usuario_gestor] INT NULL;
+
+            IF COL_LENGTH('dbo.SOLICITUD_CERTIFICADO', 'nombre_gestor') IS NULL
+                ALTER TABLE [dbo].[SOLICITUD_CERTIFICADO]
+                ADD [nombre_gestor] NVARCHAR(150) NULL;
+
+            IF COL_LENGTH('dbo.SOLICITUD_CERTIFICADO', 'observaciones_gestion') IS NULL
+                ALTER TABLE [dbo].[SOLICITUD_CERTIFICADO]
+                ADD [observaciones_gestion] NVARCHAR(MAX) NULL;
+        ");
+
                 _esquemaSolicitudesCertificadoListo = true;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"[Error AsegurarEsquemaSolicitudesCertificado]: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine(
+                    $"[Error AsegurarEsquemaSolicitudesCertificado]: {ex.Message}");
             }
         }
 
