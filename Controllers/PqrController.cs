@@ -126,12 +126,49 @@ namespace ProyectoPAE.Controllers
                         pqr.RolUsuario,
                         pqr.Respuesta,
                         FechaRespuesta = pqr.FechaRespuesta?.ToString("dd/MM/yyyy HH:mm"),
-                        pqr.RespondidoPor
+                        pqr.RespondidoPor,
+                        diasHabilesPlazo = pqr.DiasHabilesPlazo,
+                        fechaLimite = pqr.FechaLimiteRespuesta.ToString("dd/MM/yyyy"),
+                        diasHabilesRestantes = pqr.DiasHabilesRestantes,
+                        estadoSla = pqr.EstadoSla,
+                        badgeClaseSla = pqr.BadgeClaseSla
                     }
                 });
             }
 
             return View(pqr);
+        }
+
+        /// <summary>
+        /// Obtiene la fecha y hora oficial del sistema garantizando independencia absoluta del reloj del ordenador cliente.
+        /// Consulta directamente el motor de base de datos SQL Server (GETDATE()); en caso de contingencia
+        /// toma la hora legal de la República de Colombia (UTC-5 / SA Pacific Standard Time).
+        /// </summary>
+        private async Task<DateTime> ObtenerFechaOficialServidorAsync()
+        {
+            try
+            {
+                using var cmd = _context.Database.GetDbConnection().CreateCommand();
+                cmd.CommandText = "SELECT GETDATE()";
+                if (cmd.Connection.State != System.Data.ConnectionState.Open)
+                    await cmd.Connection.OpenAsync();
+                var res = await cmd.ExecuteScalarAsync();
+                if (res is DateTime dt) return dt;
+            }
+            catch
+            {
+                // Fallback seguro a conversión de hora oficial UTC-5
+            }
+
+            try
+            {
+                var zonaColombia = TimeZoneInfo.FindSystemTimeZoneById("SA Pacific Standard Time");
+                return TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, zonaColombia);
+            }
+            catch
+            {
+                return DateTime.UtcNow.AddHours(-5);
+            }
         }
 
         // GET: /Pqr/Crear
@@ -167,15 +204,19 @@ namespace ProyectoPAE.Controllers
                 var usuario = await _context.Usuarios.FindAsync(userId.Value);
                 string? correo = usuario?.CORREO_ELECTRONICO;
 
-                // Generar radicado único y correlativo
-                int correlativo = await _context.PQRs.CountAsync() + 1;
-                string radicado = $"PQR-{DateTime.Now.Year}-{correlativo:D4}";
+                // 1. Obtener fecha y hora oficial infalsificable del servidor / BD (independiente del reloj local de la PC)
+                DateTime fechaOficialServidor = await ObtenerFechaOficialServidorAsync();
+                int anioOficial = fechaOficialServidor.Year;
+
+                // 2. Generar radicado único y correlativo según el año oficial del servidor
+                int correlativo = await _context.PQRs.CountAsync(p => p.FechaRegistro.Year == anioOficial) + 1;
+                string radicado = $"PQR-{anioOficial}-{correlativo:D4}";
 
                 // Evitar colisión accidental de radicado
                 while (await _context.PQRs.AnyAsync(p => p.CodigoRadicado == radicado))
                 {
                     correlativo++;
-                    radicado = $"PQR-{DateTime.Now.Year}-{correlativo:D4}";
+                    radicado = $"PQR-{anioOficial}-{correlativo:D4}";
                 }
 
                 var pqr = new Pqr
@@ -188,7 +229,7 @@ namespace ProyectoPAE.Controllers
                     Tipo = modelo.Tipo,
                     Asunto = modelo.Asunto.Trim(),
                     Descripcion = modelo.Descripcion.Trim(),
-                    FechaRegistro = DateTime.Now,
+                    FechaRegistro = fechaOficialServidor, // Estampa inmutable provista por SQL Server (UTC-5)
                     Estado = "Recibida",
                     Activo = true
                 };
@@ -196,7 +237,7 @@ namespace ProyectoPAE.Controllers
                 _context.PQRs.Add(pqr);
                 await _context.SaveChangesAsync();
 
-                TempData["Exito"] = $"Su solicitud fue radicada con éxito con el código {pqr.CodigoRadicado}.";
+                TempData["Exito"] = $"Su solicitud fue radicada con éxito con el código {pqr.CodigoRadicado}. Término de respuesta legal: {pqr.DiasHabilesPlazo} días hábiles (Fecha límite estimada: {pqr.FechaLimiteRespuesta:dd/MM/yyyy}).";
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
@@ -232,7 +273,7 @@ namespace ProyectoPAE.Controllers
                 string respondidoPor = HttpContext.Session.GetString("NombreUsuario") ?? "Administración PAE";
                 pqr.Respuesta = modelo.Respuesta.Trim();
                 pqr.Estado = string.IsNullOrWhiteSpace(modelo.Estado) ? "Respondida" : modelo.Estado;
-                pqr.FechaRespuesta = DateTime.Now;
+                pqr.FechaRespuesta = await ObtenerFechaOficialServidorAsync(); // Estampa oficial del servidor
                 pqr.RespondidoPor = respondidoPor;
 
                 await _context.SaveChangesAsync();
