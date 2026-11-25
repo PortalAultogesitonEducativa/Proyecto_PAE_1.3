@@ -45,13 +45,47 @@
             </div>
 
             <div class="card border-0 shadow-sm rounded-4 p-4 mb-4">
-                <div class="d-flex flex-wrap gap-2 mb-3">
+                <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
                     <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-1.5 rounded-pill">
-                        Tipo: @Model.Tipo
+                        Tipo: @Model.Tipo (@Model.DiasHabilesPlazo días hábiles)
                     </span>
                     <span class="badge bg-warning text-dark px-3 py-1.5 rounded-pill">
                         Estado: @Model.Estado
                     </span>
+                    <span class="badge @Model.BadgeClaseSla px-3 py-1.5 rounded-pill">
+                        @if (Model.EstadoSla == "Respondida")
+                        {
+                            <i class="bi bi-check-circle-fill me-1"></i><span>Trámite Atendido</span>
+                        }
+                        else if (Model.EstadoSla == "Vencida")
+                        {
+                            <i class="bi bi-exclamation-octagon-fill me-1"></i><span>Plazo Vencido (@Math.Abs(Model.DiasHabilesRestantes) d extemporáneo)</span>
+                        }
+                        else if (Model.EstadoSla == "Por vencer")
+                        {
+                            <i class="bi bi-hourglass-bottom me-1"></i><span>Por Vencer (@Model.DiasHabilesRestantes d restantes)</span>
+                        }
+                        else
+                        {
+                            <i class="bi bi-clock-history me-1"></i><span>En Término (@Model.DiasHabilesRestantes d hábiles restantes)</span>
+                        }
+                    </span>
+                </div>
+
+                <!-- Resumen de SLA -->
+                <div class="row g-3 mb-4 p-3 bg-light rounded-3 border">
+                    <div class="col-md-4">
+                        <small class="text-muted d-block">Término Legal Aplicable:</small>
+                        <strong class="text-dark">@Model.DiasHabilesPlazo días hábiles</strong> <small class="text-muted">(Ley 1755/2015)</small>
+                    </div>
+                    <div class="col-md-4">
+                        <small class="text-muted d-block">Fecha de Radicación Oficial:</small>
+                        <strong class="text-dark">@Model.FechaRegistro.ToString("dd/MM/yyyy HH:mm")</strong> <small class="text-muted">(UTC-5)</small>
+                    </div>
+                    <div class="col-md-4">
+                        <small class="text-muted d-block">Fecha Límite Estimada:</small>
+                        <strong class="text-dark">@Model.FechaLimiteRespuesta.ToString("dd/MM/yyyy")</strong>
+                    </div>
                 </div>
 
                 <div class="mb-4">
@@ -66,7 +100,7 @@
                         <strong>Solicitante:</strong> @Model.NombreUsuario (@Model.RolUsuario)
                     </div>
                     <div class="col-md-6 text-md-end">
-                        <strong>Fecha de radicación:</strong> @Model.FechaRegistro.ToString("f")
+                        <strong>Radicado Oficial del Sistema:</strong> <code>@Model.CodigoRadicado</code>
                     </div>
                 </div>
             </div>

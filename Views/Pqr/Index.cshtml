@@ -132,9 +132,11 @@
                         <div class="col-md-3">
                             <select name="tipo" class="form-select" onchange="this.form.submit()" aria-label="Filtrar por tipo de solicitud">
                                 <option value="todos" selected="@(tipoFiltro == "todos")">Todos los Tipos</option>
-                                <option value="Petición" selected="@(tipoFiltro == "Petición")">Petición</option>
-                                <option value="Queja" selected="@(tipoFiltro == "Queja")">Queja</option>
-                                <option value="Reclamo" selected="@(tipoFiltro == "Reclamo")">Reclamo</option>
+                                <option value="Petición" selected="@(tipoFiltro == "Petición")">Petición (10 días)</option>
+                                <option value="Queja" selected="@(tipoFiltro == "Queja")">Queja (15 días)</option>
+                                <option value="Reclamo" selected="@(tipoFiltro == "Reclamo")">Reclamo (15 días)</option>
+                                <option value="Sugerencia" selected="@(tipoFiltro == "Sugerencia")">Sugerencia (10 días)</option>
+                                <option value="Consulta" selected="@(tipoFiltro == "Consulta")">Consulta (30 días)</option>
                             </select>
                         </div>
                         <div class="col-md-3">
@@ -195,7 +197,8 @@
                                     {
                                         <th class="py-3">Solicitante</th>
                                     }
-                                    <th class="py-3">Fecha</th>
+                                    <th class="py-3">Fecha Radicación</th>
+                                    <th class="py-3">Término Legal / SLA</th>
                                     <th class="py-3 text-center">Estado</th>
                                     <th class="pe-4 py-3 text-end">Acciones</th>
                                 </tr>
@@ -208,6 +211,8 @@
                                         "Petición" => "bg-primary-subtle text-primary border border-primary-subtle",
                                         "Queja" => "bg-warning-subtle text-warning-emphasis border border-warning-subtle",
                                         "Reclamo" => "bg-danger-subtle text-danger border border-danger-subtle",
+                                        "Sugerencia" => "bg-info-subtle text-info-emphasis border border-info-subtle",
+                                        "Consulta" => "bg-purple-subtle text-purple border border-purple-subtle",
                                         _ => "bg-light text-dark"
                                     };
 
@@ -226,12 +231,13 @@
                                         </td>
                                         <td class="py-3">
                                             <span class="badge @badgeTipo rounded-pill px-2.5 py-1">@item.Tipo</span>
+                                            <small class="text-muted d-block" style="font-size: 0.72rem;">@item.DiasHabilesPlazo d hábiles</small>
                                         </td>
                                         <td class="py-3">
-                                            <div class="fw-semibold text-dark text-truncate" style="max-width: 260px;" title="@item.Asunto">
+                                            <div class="fw-semibold text-dark text-truncate" style="max-width: 240px;" title="@item.Asunto">
                                                 @item.Asunto
                                             </div>
-                                            <small class="text-muted text-truncate d-block" style="max-width: 260px;">
+                                            <small class="text-muted text-truncate d-block" style="max-width: 240px;">
                                                 @item.Descripcion
                                             </small>
                                         </td>
@@ -243,7 +249,31 @@
                                             </td>
                                         }
                                         <td class="py-3 text-nowrap small text-muted">
-                                            @item.FechaRegistro.ToString("dd/MM/yyyy HH:mm")
+                                            <div><i class="bi bi-calendar3 me-1"></i>@item.FechaRegistro.ToString("dd/MM/yyyy")</div>
+                                            <div style="font-size: 0.72rem;"><i class="bi bi-clock me-1"></i>@item.FechaRegistro.ToString("HH:mm") (UTC-5)</div>
+                                        </td>
+                                        <td class="py-3 text-nowrap">
+                                            <span class="badge @item.BadgeClaseSla rounded-pill px-2.5 py-1" title="Plazo: @item.DiasHabilesPlazo días hábiles (Ley 1755 de 2015)">
+                                                @if (item.EstadoSla == "Respondida")
+                                                {
+                                                    <i class="bi bi-check-circle-fill me-1"></i><span>Atendida</span>
+                                                }
+                                                else if (item.EstadoSla == "Vencida")
+                                                {
+                                                    <i class="bi bi-exclamation-octagon-fill me-1"></i><span>Vencida (@Math.Abs(item.DiasHabilesRestantes) d)</span>
+                                                }
+                                                else if (item.EstadoSla == "Por vencer")
+                                                {
+                                                    <i class="bi bi-hourglass-bottom me-1"></i><span>@item.DiasHabilesRestantes d restantes</span>
+                                                }
+                                                else
+                                                {
+                                                    <i class="bi bi-clock-history me-1"></i><span>@item.DiasHabilesRestantes d hábiles</span>
+                                                }
+                                            </span>
+                                            <div class="small text-muted" style="font-size: 0.72rem;">
+                                                Límite: @item.FechaLimiteRespuesta.ToString("dd/MM/yyyy")
+                                            </div>
                                         </td>
                                         <td class="py-3 text-center">
                                             <span class="badge @badgeEstado rounded-pill px-2.5 py-1">@item.Estado</span>
@@ -294,14 +324,24 @@
                         </div>
                     </div>
 
+                    <!-- Mensaje de garantía de fecha oficial del servidor -->
+                    <div class="alert alert-primary-subtle border border-primary-subtle p-3 rounded-3 mb-3 d-flex align-items-center gap-3 small">
+                        <i class="bi bi-shield-check text-primary fs-4 flex-shrink-0"></i>
+                        <div>
+                            <strong>Estampa de Tiempo Oficial (UTC-5):</strong> La fecha y el código consecutivo de radicación se generan de forma protegida en el servidor central (Hora Legal de Colombia), garantizando el cómputo exacto de los términos de respuesta con independencia del reloj de su ordenador.
+                        </div>
+                    </div>
+
                     <div class="row g-3 bg-white p-3 rounded-3 shadow-sm border-0">
                         <!-- Tipo de Solicitud -->
                         <div class="col-md-6">
                             <label class="form-label fw-bold small text-dark">Tipo de Solicitud <span class="text-danger">*</span></label>
                             <select name="Tipo" id="crearPqrTipo" class="form-select" required>
-                                <option value="Petición">Petición (Solicitud formal de información o trámite)</option>
-                                <option value="Queja">Queja (Inconformidad con la atención o servicio)</option>
-                                <option value="Reclamo">Reclamo (Disconformidad con un derecho o exigencia)</option>
+                                <option value="Petición">Petición (Término legal: 10 días hábiles - Copias / Información)</option>
+                                <option value="Queja">Queja (Término legal: 15 días hábiles - Inconformidad con conducta o atención)</option>
+                                <option value="Reclamo">Reclamo (Término legal: 15 días hábiles - Deficiencia en servicios educativos)</option>
+                                <option value="Sugerencia">Sugerencia (Término pedagógico: 10 días hábiles - Propuesta institucional)</option>
+                                <option value="Consulta">Consulta (Término legal: 30 días hábiles - Concepto técnico/normativo)</option>
                             </select>
                         </div>
 
@@ -351,6 +391,23 @@
                         </div>
                         <small class="text-muted" id="detPqrFecha"><i class="bi bi-clock me-1"></i>--/--/----</small>
                     </div>
+
+                    <!-- Indicador de SLA y Términos Legales -->
+                    <div class="row g-2 my-2 py-2 border-top border-bottom bg-light rounded-3 px-1">
+                        <div class="col-sm-4">
+                            <span class="text-muted d-block small" style="font-size: 0.72rem;">Término Legal:</span>
+                            <strong class="text-dark small" id="detPqrPlazoLegal">-- días hábiles</strong>
+                        </div>
+                        <div class="col-sm-4">
+                            <span class="text-muted d-block small" style="font-size: 0.72rem;">Fecha Límite Estimada:</span>
+                            <strong class="text-dark small" id="detPqrFechaLimite">--/--/----</strong>
+                        </div>
+                        <div class="col-sm-4">
+                            <span class="text-muted d-block small" style="font-size: 0.72rem;">Estado del Plazo:</span>
+                            <span id="detPqrEstadoSlaBadge" class="badge bg-light text-dark">--</span>
+                        </div>
+                    </div>
+
                     <h5 class="fw-bold mb-2 text-dark" id="detPqrAsunto">Cargando asunto...</h5>
                     <div class="p-3 bg-light rounded-3 small text-secondary" id="detPqrDescripcion" style="white-space: pre-line; line-height: 1.6;">
                         Cargando contenido...
@@ -448,7 +505,16 @@
                     document.getElementById('detPqrBadgeRadicado').textContent = p.codigoRadicado;
                     document.getElementById('detPqrTipo').textContent = p.tipo;
                     document.getElementById('detPqrEstado').textContent = p.estado;
-                    document.getElementById('detPqrFecha').innerHTML = `<i class="bi bi-clock me-1"></i>${p.fechaRegistro}`;
+                    document.getElementById('detPqrFecha').innerHTML = `<i class="bi bi-clock me-1"></i>${p.fechaRegistro} (Hora Oficial Servidor)`;
+                    document.getElementById('detPqrPlazoLegal').textContent = `${p.diasHabilesPlazo || 15} días hábiles (Ley 1755/2015)`;
+                    document.getElementById('detPqrFechaLimite').textContent = p.fechaLimite || '--';
+                    
+                    const badgeSla = document.getElementById('detPqrEstadoSlaBadge');
+                    if (badgeSla) {
+                        badgeSla.className = `badge ${p.badgeClaseSla || 'bg-light text-dark'}`;
+                        badgeSla.textContent = p.estadoSla || 'En término';
+                    }
+
                     document.getElementById('detPqrAsunto').textContent = p.asunto;
                     document.getElementById('detPqrDescripcion').textContent = p.descripcion;
                     document.getElementById('detPqrUsuario').textContent = p.nombreUsuario;

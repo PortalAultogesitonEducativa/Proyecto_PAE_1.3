@@ -52,17 +52,28 @@
             }
 
             <div class="card border-0 shadow-sm rounded-4 p-4">
+                <!-- Alerta informativa de fecha oficial del servidor -->
+                <div class="alert alert-primary-subtle border border-primary-subtle p-3 rounded-3 mb-4 d-flex align-items-center gap-3">
+                    <i class="bi bi-shield-check text-primary fs-3 flex-shrink-0"></i>
+                    <div class="small">
+                        <strong>Estampa de Tiempo Oficial (Hora Legal de Colombia UTC-5):</strong><br />
+                        La fecha, hora y código de radicado se generan de forma protegida en el servidor central conforme a la normativa vigente (Ley 1755 de 2015), garantizando la transparencia de los términos de respuesta con total independencia de la configuración de su equipo.
+                    </div>
+                </div>
+
                 <form asp-action="Crear" method="post" id="formCrearDirectoPqr" onsubmit="validarEnvioPqr(event)">
                     @Html.AntiForgeryToken()
                     <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label asp-for="Tipo" class="form-label fw-bold small text-dark"></label>
+                            <label asp-for="Tipo" class="form-label fw-bold small text-dark">Tipo de Solicitud <span class="text-danger">*</span></label>
                             <select asp-for="Tipo" class="form-select" required>
-                                <option value="Petición">Petición</option>
-                                <option value="Queja">Queja</option>
-                                <option value="Reclamo">Reclamo</option>
+                                <option value="Petición">Petición (Término legal: 10 días hábiles - Copias / Información)</option>
+                                <option value="Queja">Queja (Término legal: 15 días hábiles - Inconformidad con conducta o atención)</option>
+                                <option value="Reclamo">Reclamo (Término legal: 15 días hábiles - Deficiencia en servicios educativos)</option>
+                                <option value="Sugerencia">Sugerencia (Término de mejora: 10 días hábiles - Propuesta institucional)</option>
+                                <option value="Consulta">Consulta (Término legal: 30 días hábiles - Concepto técnico/normativo)</option>
                             </select>
                             <span asp-validation-for="Tipo" class="text-danger small"></span>
                         </div>
