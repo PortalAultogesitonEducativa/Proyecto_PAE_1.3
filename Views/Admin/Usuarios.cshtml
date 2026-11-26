@@ -101,31 +101,67 @@
                                 @(rolNormalizado == "coordinador" ? "Coordinador" : (usuario.ROL ?? "Sin Rol"))
                             </span>
                         </td>
-                        <td><span class="badge bg-success-subtle text-success border border-success-subtle">Activo</span></td>
                         <td>
-                            @if (esModificable)
+                            @if (usuario.ACTIVO)
                             {
-                                <button type="button"
-                                        class="btn btn-sm btn-outline-primary"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#modalCambiarRol"
-                                        data-bs-id="@usuario.ID_Usuario"
-                                        data-bs-correo="@usuario.CORREO_ELECTRONICO"
-                                        data-bs-nombre="@usuario.NOMBRES @usuario.APELLIDOS"
-                                        data-bs-rol="@rolNormalizado"
-                                        title="Gestionar ascenso a Coordinador o rol docente">
-                                    <i class="bi bi-person-gear me-1"></i>Cambiar Rol
-                                </button>
+                                <span class="badge bg-success-subtle text-success border border-success-subtle">Activo</span>
                             }
                             else
                             {
-                                <button type="button"
-                                        class="btn btn-sm btn-outline-secondary opacity-75"
-                                        disabled
-                                        title="@(usuario.ID_Usuario == 1 ? "El administrador principal no se puede modificar." : "Rol protegido del sistema. Solo se permite ascenso/retiro entre Docente y Coordinador.")">
-                                    <i class="bi bi-lock-fill me-1"></i>Bloqueado
-                                </button>
+                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Inactivo</span>
                             }
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center gap-1">
+                                @if (esModificable)
+                                {
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-primary px-2"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#modalCambiarRol"
+                                            data-bs-id="@usuario.ID_Usuario"
+                                            data-bs-correo="@usuario.CORREO_ELECTRONICO"
+                                            data-bs-nombre="@usuario.NOMBRES @usuario.APELLIDOS"
+                                            data-bs-rol="@rolNormalizado"
+                                            title="Cambiar rol: Docente ↔ Coordinador">
+                                        <i class="bi bi-person-gear"></i>
+                                    </button>
+                                }
+
+                                @if (usuario.ID_Usuario != 1)
+                                {
+                                    @* Botón Activar / Desactivar (solo ícono) *@
+                                    <form asp-action="CambiarEstadoUsuario" asp-controller="Admin" method="post" class="d-inline"
+                                          onsubmit="return confirm('¿Desea @(usuario.ACTIVO ? "desactivar" : "activar") a este usuario?');">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="idUsuario" value="@usuario.ID_Usuario" />
+                                        <button type="submit"
+                                                class="btn btn-sm px-2 @(usuario.ACTIVO ? "btn-outline-warning" : "btn-outline-success")"
+                                                title="@(usuario.ACTIVO ? "Desactivar usuario" : "Activar usuario")">
+                                            <i class="bi @(usuario.ACTIVO ? "bi-person-slash" : "bi-person-check")"></i>
+                                        </button>
+                                    </form>
+
+                                    @* Botón Eliminar (solo ícono) *@
+                                    <form asp-action="EliminarUsuario" asp-controller="Admin" method="post" class="d-inline"
+                                          onsubmit="return confirm('¿Eliminar este usuario? Si tiene historial académico, quedará desactivado permanentemente.');">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="idUsuario" value="@usuario.ID_Usuario" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger px-2" title="Eliminar usuario">
+                                            <i class="bi bi-trash3"></i>
+                                        </button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-secondary px-2 opacity-50"
+                                            disabled
+                                            title="Administrador principal: no se puede modificar.">
+                                        <i class="bi bi-lock-fill"></i>
+                                    </button>
+                                }
+                            </div>
                         </td>
                     </tr>
                 }

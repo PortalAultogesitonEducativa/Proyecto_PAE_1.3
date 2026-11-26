@@ -1024,6 +1024,25 @@ namespace ProyectoPAE.Controllers
             if (matricula != null)
             {
                 matricula.estado = nuevoEstado;
+
+                // Regla Req 2: Al cancelar o finalizar la matrícula, el estudiante queda vetado/inactivo
+                var estudiante = await _context.ESTUDIANTE.FindAsync(matricula.id_estudiante);
+                if (estudiante != null && estudiante.id_usuario.HasValue)
+                {
+                    var userEst = await _context.Usuarios.FindAsync(estudiante.id_usuario.Value);
+                    if (userEst != null)
+                    {
+                        if (nuevoEstado == "Cancelada" || nuevoEstado == "Finalizada")
+                        {
+                            userEst.ACTIVO = false;
+                        }
+                        else if (nuevoEstado == "Activa" || nuevoEstado == "En Curso")
+                        {
+                            userEst.ACTIVO = true;
+                        }
+                    }
+                }
+
                 await _context.SaveChangesAsync();
                 TempData["MensajeMatriculas"] = $"Estado de matrícula cambiado a '{nuevoEstado}' correctamente.";
             }
@@ -1289,6 +1308,80 @@ namespace ProyectoPAE.Controllers
             {
                 return Json(new { success = false, message = $"Error al generar el respaldo: {ex.Message}" });
             }
+        }
+
+        /// <summary>
+        /// Activa o desactiva a un usuario (docente, coordinador o estudiante) desde Gestión de Usuarios.
+        /// </summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [RequierePermiso(Permisos.AdministrarUsuarios)]
+        public async Task<IActionResult> CambiarEstadoUsuario(int idUsuario)
+        {
+            if (idUsuario == 1)
+            {
+                TempData["Error"] = "El administrador principal no puede ser desactivado.";
+                return RedirectToAction("Usuarios");
+            }
+
+            var usuario = await _context.Usuarios.FindAsync(idUsuario);
+            if (usuario == null)
+            {
+                TempData["Error"] = "El usuario seleccionado no existe.";
+                return RedirectToAction("Usuarios");
+            }
+
+            usuario.ACTIVO = !usuario.ACTIVO;
+            await _context.SaveChangesAsync();
+
+            TempData["Mensaje"] = $"El usuario {usuario.NOMBRES} {usuario.APELLIDOS} ha sido {(usuario.ACTIVO ? "activado" : "desactivado")} exitosamente.";
+            return RedirectToAction("Usuarios");
+        }
+
+        /// <summary>
+        /// Elimina permanentemente o inhabilita a un usuario (docente, coordinador u otro).
+        /// </summary>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [RequierePermiso(Permisos.AdministrarUsuarios)]
+        public async Task<IActionResult> EliminarUsuario(int idUsuario)
+        {
+            if (idUsuario == 1)
+            {
+                TempData["Error"] = "El administrador principal no puede ser eliminado.";
+                return RedirectToAction("Usuarios");
+            }
+
+            var usuario = await _context.Usuarios.FindAsync(idUsuario);
+            if (usuario == null)
+            {
+                TempData["Error"] = "El usuario no existe.";
+                return RedirectToAction("Usuarios");
+            }
+
+            try
+            {
+                var intentos = _context.IntentosLogin.Where(i => i.id_usuario == idUsuario);
+                _context.IntentosLogin.RemoveRange(intentos);
+
+                var tokens = _context.RecuperacionesPassword.Where(r => r.id_usuario == idUsuario);
+                _context.RecuperacionesPassword.RemoveRange(tokens);
+
+                var historial = _context.HistorialPasswords.Where(h => h.id_usuario == idUsuario);
+                _context.HistorialPasswords.RemoveRange(historial);
+
+                _context.Usuarios.Remove(usuario);
+                await _context.SaveChangesAsync();
+                TempData["Mensaje"] = $"El usuario {usuario.NOMBRES} {usuario.APELLIDOS} ha sido eliminado definitivamente.";
+            }
+            catch (Exception)
+            {
+                usuario.ACTIVO = false;
+                await _context.SaveChangesAsync();
+                TempData["Mensaje"] = $"El usuario {usuario.NOMBRES} {usuario.APELLIDOS} cuenta con registros académicos asociados, por lo que fue desactivado permanentemente para proteger la integridad histórica.";
+            }
+
+            return RedirectToAction("Usuarios");
         }
     }
 }

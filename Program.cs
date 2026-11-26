@@ -23,17 +23,26 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-// 2. CONFIGURAR EL SERVICIO DE SESIONES
+// 2. CONFIGURAR EL SERVICIO DE SESIONES Y POLÍTICAS DE COOKIES SEGURAS
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromMinutes(15); // Tiempo de inactividad
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; // Forzar HTTPS estricto para cookies
 });
 
-// 3. REGISTRAR SERVICIO DE CORREO
+builder.Services.Configure<CookiePolicyOptions>(options =>
+{
+    options.CheckConsentNeeded = context => false;
+    options.MinimumSameSitePolicy = SameSiteMode.Lax;
+    options.Secure = CookieSecurePolicy.Always; // Forzar que todas las cookies se envíen únicamente por HTTPS
+});
+
+// 3. REGISTRAR SERVICIO DE CORREO Y GESTIÓN DOCUMENTAL
 builder.Services.AddScoped<ServicioEmail>();
+builder.Services.AddScoped<GestorDocumentalService>();
 
 // CERTIFICADOS
 builder.Services.AddScoped<CertificadoService>();
@@ -65,7 +74,8 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 
-// 4. HABILITAR EL USO DE SESIONES
+// 4. HABILITAR POLÍTICAS DE COOKIES Y USO DE SESIONES
+app.UseCookiePolicy();
 app.UseSession();
 app.UseAuthorization();
 

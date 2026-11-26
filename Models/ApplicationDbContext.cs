@@ -69,6 +69,11 @@ namespace ProyectoPAE.Models
         // --- PERIODOS DE SUBIDA DE NOTAS (COORDINACIÓN) ---
         public DbSet<PeriodoSubidaNota> PeriodosSubidaNotas { get; set; }
 
+        // --- GESTIÓN DOCUMENTAL, VERSIONES Y ETIQUETAS DE PROTECCIÓN DE DATOS ---
+        public DbSet<Documento> Documentos { get; set; }
+        public DbSet<DocumentoVersion> DocumentoVersiones { get; set; }
+        public DbSet<DocumentoEtiqueta> DocumentoEtiquetas { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

@@ -95,6 +95,25 @@
                     </div>
                 </div>
 
+                @if (!string.IsNullOrEmpty(Model.ArchivoAdjunto))
+                {
+                    <div class="mb-4">
+                        <h6 class="fw-bold text-dark"><i class="bi bi-paperclip me-1"></i>Evidencia Adjunta:</h6>
+                        <div class="p-3 bg-light rounded-3 border d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-file-earmark-arrow-down fs-4 text-primary"></i>
+                                <div>
+                                    <strong class="d-block text-dark">@(Model.NombreArchivoOriginal ?? "Evidencia_PQR")</strong>
+                                    <small class="text-muted">Archivo de soporte radicado con consecutivo seguro</small>
+                                </div>
+                            </div>
+                            <a href="@Model.ArchivoAdjunto" target="_blank" download class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                                <i class="bi bi-download me-1"></i> Descargar / Ver
+                            </a>
+                        </div>
+                    </div>
+                }
+
                 <div class="row g-3 small text-muted border-top pt-3">
                     <div class="col-md-6">
                         <strong>Solicitante:</strong> @Model.NombreUsuario (@Model.RolUsuario)

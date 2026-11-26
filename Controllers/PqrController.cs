@@ -13,10 +13,12 @@ namespace ProyectoPAE.Controllers
     public class PqrController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly GestorDocumentalService _gestorDocumental;
 
-        public PqrController(ApplicationDbContext context)
+        public PqrController(ApplicationDbContext context, GestorDocumentalService gestorDocumental)
         {
             _context = context;
+            _gestorDocumental = gestorDocumental;
         }
 
         // GET: /Pqr o /Pqr/Index
@@ -131,7 +133,9 @@ namespace ProyectoPAE.Controllers
                         fechaLimite = pqr.FechaLimiteRespuesta.ToString("dd/MM/yyyy"),
                         diasHabilesRestantes = pqr.DiasHabilesRestantes,
                         estadoSla = pqr.EstadoSla,
-                        badgeClaseSla = pqr.BadgeClaseSla
+                        badgeClaseSla = pqr.BadgeClaseSla,
+                        archivoAdjunto = pqr.ArchivoAdjunto,
+                        nombreArchivoOriginal = pqr.NombreArchivoOriginal
                     }
                 });
             }
@@ -200,6 +204,39 @@ namespace ProyectoPAE.Controllers
 
             try
             {
+                // Validación y procesamiento de archivo de evidencia (máximo 5 MB y formatos permitidos)
+                string? rutaAdjunto = null;
+                string? nombreOriginalAdjunto = null;
+
+                if (modelo.ArchivoEvidencia != null && modelo.ArchivoEvidencia.Length > 0)
+                {
+                    if (modelo.ArchivoEvidencia.Length > 5 * 1024 * 1024)
+                    {
+                        TempData["Error"] = "El archivo de evidencia supera el tamaño máximo permitido de 5 MB.";
+                        return View(modelo);
+                    }
+
+                    var extPermitidas = new[] { ".pdf", ".docx", ".doc", ".xlsx", ".xls", ".pptx", ".ppt", ".jpg", ".jpeg", ".png" };
+                    var ext = System.IO.Path.GetExtension(modelo.ArchivoEvidencia.FileName).ToLowerInvariant();
+                    if (!extPermitidas.Contains(ext))
+                    {
+                        TempData["Error"] = "Formato de archivo no permitido. Solo se admiten archivos PDF, Word, Excel, PowerPoint o imágenes (JPG, PNG).";
+                        return View(modelo);
+                    }
+
+                    // Guardar mediante GestorDocumentalService en wwwroot/uploads/pqrs/ con consecutivo PQR_0000X y persistencia en DOCUMENTO
+                    var docResultado = await _gestorDocumental.GuardarArchivoAsync(
+                        archivo: modelo.ArchivoEvidencia,
+                        subcarpeta: "pqrs",
+                        idUsuario: userId.Value,
+                        esCriticoMenor: false,
+                        tipoEtiqueta: "Evidencia PQR"
+                    );
+
+                    rutaAdjunto = docResultado.RutaRelativa;
+                    nombreOriginalAdjunto = docResultado.NombreOriginal;
+                }
+
                 // Obtener datos del usuario para asignar correo
                 var usuario = await _context.Usuarios.FindAsync(userId.Value);
                 string? correo = usuario?.CORREO_ELECTRONICO;
@@ -229,6 +266,8 @@ namespace ProyectoPAE.Controllers
                     Tipo = modelo.Tipo,
                     Asunto = modelo.Asunto.Trim(),
                     Descripcion = modelo.Descripcion.Trim(),
+                    ArchivoAdjunto = rutaAdjunto,
+                    NombreArchivoOriginal = nombreOriginalAdjunto,
                     FechaRegistro = fechaOficialServidor, // Estampa inmutable provista por SQL Server (UTC-5)
                     Estado = "Recibida",
                     Activo = true

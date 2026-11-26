@@ -7252,37 +7252,48 @@
             inputEl.value = '';
             return;
         }
-        const formData = new FormData();
-        formData.append('idInscripcion', idInscripcion);
-        formData.append('tipoDocumento', tipoDoc);
-        formData.append('archivo', archivo);
-        fetch('@Url.Action("SubirDocumentoExtraCurso", "Estudiante")', {
-            method: 'POST',
-            body: formData
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.success) {
-                if (typeof Swal !== 'undefined') {
-                    Swal.fire({
-                        icon: 'success',
-                        title: '¡Documento Cargado!',
-                        text: data.message,
-                        timer: 2000,
-                        showConfirmButton: false
-                    }).then(() => window.location.reload());
+
+        const ejecutarSubida = () => {
+            const formData = new FormData();
+            formData.append('idInscripcion', idInscripcion);
+            formData.append('tipoDocumento', tipoDoc);
+            formData.append('archivo', archivo);
+            fetch('@Url.Action("SubirDocumentoExtraCurso", "Estudiante")', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'success',
+                            title: '¡Documento Cargado!',
+                            text: data.message,
+                            timer: 2000,
+                            showConfirmButton: false
+                        }).then(() => window.location.reload());
+                    } else {
+                        alert(data.message);
+                        window.location.reload();
+                    }
                 } else {
-                    alert(data.message);
-                    window.location.reload();
+                    alert('Error: ' + data.message);
                 }
-            } else {
-                alert('Error: ' + data.message);
-            }
-        })
-        .catch(err => {
-            console.error(err);
-            alert('Ocurrió un error al subir el documento.');
-        });
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Ocurrió un error al subir el documento.');
+            });
+        };
+
+        const tMin = (tipoDoc || '').toLowerCase();
+        const esCritico = tMin.includes('foto') || tMin.includes('carnet') || tMin.includes('paz') || tMin.includes('salvo') || tMin.includes('identidad') || tMin.includes('eps');
+        if (esCritico && typeof abrirModalProteccionDatosMenor === 'function') {
+            abrirModalProteccionDatosMenor(ejecutarSubida);
+        } else {
+            ejecutarSubida();
+        }
     }
     // 3. Docente: Cambiar estado activo/pausado
     function cambiarEstadoCursoExtra(idCurso, activo) {
@@ -7439,29 +7450,40 @@
             inputEl.value = '';
             return;
         }
-        document.getElementById(`docEstado_${idx}`).innerHTML =
-            `<span class="text-muted small"><div class="spinner-border spinner-border-sm me-1"></div>Subiendo archivo...</span>`;
-        const fd = new FormData();
-        fd.append('idInscripcion', idInscripcion);
-        fd.append('tipoDocumento', tipo);
-        fd.append('archivo', archivo);
-        try {
-            const res = await fetch('@Url.Action("SubirDocumentoExtraCurso", "Estudiante")', { method: 'POST', body: fd });
-            const data = await res.json();
-            if (data.success) {
-                document.getElementById(`docEstado_${idx}`).innerHTML =
-                    `<span class="text-success small fw-bold"><i class="bi bi-check-circle-fill me-1"></i>Cargado: ${archivo.name}</span>`;
-                const btnEl = document.getElementById(`docBtn_${idx}`);
-                btnEl.style.backgroundColor = '#198754';
-                btnEl.innerHTML = `<i class="bi bi-arrow-repeat me-1"></i>Reemplazar<input type="file" class="d-none" data-tipo="${tipo}" data-idinscripcion="${idInscripcion}" data-idx="${idx}" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" onchange="subirDocInscripcion(this)">`;
-                actualizarEstadoBotonEnvio();
-            } else {
-                document.getElementById(`docEstado_${idx}`).innerHTML =
-                    `<span class="text-danger small"><i class="bi bi-exclamation-triangle me-1"></i>${data.message || 'Error al subir.'}</span>`;
-            }
-        } catch (err) {
+
+        const ejecutarSubidaInscripcion = async () => {
             document.getElementById(`docEstado_${idx}`).innerHTML =
-                `<span class="text-danger small"><i class="bi bi-wifi-off me-1"></i>Error de conexión.</span>`;
+                `<span class="text-muted small"><div class="spinner-border spinner-border-sm me-1"></div>Subiendo archivo...</span>`;
+            const fd = new FormData();
+            fd.append('idInscripcion', idInscripcion);
+            fd.append('tipoDocumento', tipo);
+            fd.append('archivo', archivo);
+            try {
+                const res = await fetch('@Url.Action("SubirDocumentoExtraCurso", "Estudiante")', { method: 'POST', body: fd });
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById(`docEstado_${idx}`).innerHTML =
+                        `<span class="text-success small fw-bold"><i class="bi bi-check-circle-fill me-1"></i>Cargado: ${archivo.name}</span>`;
+                    const btnEl = document.getElementById(`docBtn_${idx}`);
+                    btnEl.style.backgroundColor = '#198754';
+                    btnEl.innerHTML = `<i class="bi bi-arrow-repeat me-1"></i>Reemplazar<input type="file" class="d-none" data-tipo="${tipo}" data-idinscripcion="${idInscripcion}" data-idx="${idx}" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" onchange="subirDocInscripcion(this)">`;
+                    actualizarEstadoBotonEnvio();
+                } else {
+                    document.getElementById(`docEstado_${idx}`).innerHTML =
+                        `<span class="text-danger small"><i class="bi bi-exclamation-triangle me-1"></i>${data.message || 'Error al subir.'}</span>`;
+                }
+            } catch (err) {
+                document.getElementById(`docEstado_${idx}`).innerHTML =
+                    `<span class="text-danger small"><i class="bi bi-wifi-off me-1"></i>Error de conexión.</span>`;
+            }
+        };
+
+        const tMin = (tipo || '').toLowerCase();
+        const esCritico = tMin.includes('foto') || tMin.includes('carnet') || tMin.includes('paz') || tMin.includes('salvo') || tMin.includes('identidad') || tMin.includes('eps');
+        if (esCritico && typeof abrirModalProteccionDatosMenor === 'function') {
+            abrirModalProteccionDatosMenor(ejecutarSubidaInscripcion);
+        } else {
+            await ejecutarSubidaInscripcion();
         }
     }
     function finalizarDocumentosInscripcion() {
