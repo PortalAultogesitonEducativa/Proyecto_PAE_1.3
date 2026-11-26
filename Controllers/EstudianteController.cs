@@ -6,7 +6,13 @@ using Microsoft.EntityFrameworkCore;
 public class EstudianteController : Controller
 {
     private readonly ApplicationDbContext _context;
-    public EstudianteController(ApplicationDbContext context) { _context = context; }
+    private readonly GestorDocumentalService _gestorDocumental;
+
+    public EstudianteController(ApplicationDbContext context, GestorDocumentalService gestorDocumental)
+    {
+        _context = context;
+        _gestorDocumental = gestorDocumental;
+    }
     // Solo debe existir una versión de este método en el archivo
     public IActionResult MisNotas(int? idEstudiante)
     {
@@ -576,15 +582,17 @@ public class EstudianteController : Controller
             if (archivo.Length > 5 * 1024 * 1024) // 5 MB máximo según especificación
                 return Json(new { success = false, message = "El archivo supera el tamaño máximo permitido de 5 MB." });
 
-            var carpeta = Path.Combine("wwwroot", "uploads", "actividades");
-            Directory.CreateDirectory(carpeta);
+            // Guardado clasificado con numeración consecutiva en wwwroot/uploads/actividades/
+            var docRes = await _gestorDocumental.GuardarArchivoAsync(
+                archivo: archivo,
+                subcarpeta: "actividades",
+                idUsuario: userId.Value,
+                esCriticoMenor: false,
+                tipoEtiqueta: "Entrega de Actividad"
+            );
 
-            nombreArchivo = $"{userId}_{idActividad}_{DateTime.Now:yyyyMMddHHmmss}{extension}";
-            rutaArchivo = Path.Combine("/uploads/actividades", nombreArchivo);
-            var rutaFisica = Path.Combine(carpeta, nombreArchivo);
-
-            using var stream = new FileStream(rutaFisica, FileMode.Create);
-            await archivo.CopyToAsync(stream);
+            nombreArchivo = docRes.NombreOriginal;
+            rutaArchivo = docRes.RutaRelativa;
         }
 
         if (string.IsNullOrWhiteSpace(comentario) && (archivo == null || archivo.Length == 0))
@@ -855,19 +863,28 @@ public class EstudianteController : Controller
         if (archivo.Length > 5 * 1024 * 1024)
             return Json(new { success = false, message = "El archivo supera el tamaño máximo permitido de 5 MB." });
 
-        var carpeta = Path.Combine("wwwroot", "uploads", "documentos_extra");
-        Directory.CreateDirectory(carpeta);
+        // Identificación de documentos con datos sensibles de menores según Decreto 1074/2015 Art. 2.2.2.25.2.9
+        var tipoDocMin = tipoDocumento.ToLowerInvariant();
+        bool esCriticoMenor = tipoDocMin.Contains("foto") ||
+                              tipoDocMin.Contains("carnet") ||
+                              tipoDocMin.Contains("paz") ||
+                              tipoDocMin.Contains("salvo") ||
+                              tipoDocMin.Contains("tarjeta") ||
+                              tipoDocMin.Contains("identidad") ||
+                              tipoDocMin.Contains("eps") ||
+                              tipoDocMin.Contains("medico") ||
+                              tipoDocMin.Contains("salud");
 
-        var safeNombreDoc = string.Concat(tipoDocumento.Split(Path.GetInvalidFileNameChars())).Replace(" ", "_");
-        var nombreGuardado = $"doc_{idInscripcion}_{safeNombreDoc}_{DateTime.Now:yyyyMMddHHmmss}{ext}";
-        var rutaFisica = Path.Combine(carpeta, nombreGuardado);
+        // Almacenamiento seguro clasificado con numeración consecutiva y registro en DOCUMENTO, VERSION y ETIQUETAS
+        var docResultado = await _gestorDocumental.GuardarArchivoAsync(
+            archivo: archivo,
+            subcarpeta: "extracurriculares",
+            idUsuario: userId.Value,
+            esCriticoMenor: esCriticoMenor,
+            tipoEtiqueta: $"Extracurricular: {tipoDocumento}"
+        );
 
-        using (var stream = new FileStream(rutaFisica, FileMode.Create))
-        {
-            await archivo.CopyToAsync(stream);
-        }
-
-        var rutaWeb = $"/uploads/documentos_extra/{nombreGuardado}";
+        var rutaWeb = docResultado.RutaRelativa;
 
         var docExistente = _context.ExtraDocumentosInscripciones
             .FirstOrDefault(d => d.IdExtraInscripcion == idInscripcion && d.TipoDocumento.ToLower() == tipoDocumento.ToLower());
@@ -875,7 +892,7 @@ public class EstudianteController : Controller
         if (docExistente != null)
         {
             docExistente.ArchivoRuta = rutaWeb;
-            docExistente.ArchivoNombre = archivo.FileName;
+            docExistente.ArchivoNombre = docResultado.NombreOriginal;
             docExistente.FechaSubida = DateTime.Now;
             docExistente.Estado = "Cargado";
         }
@@ -886,13 +903,13 @@ public class EstudianteController : Controller
                 IdExtraInscripcion = idInscripcion,
                 TipoDocumento = tipoDocumento,
                 ArchivoRuta = rutaWeb,
-                ArchivoNombre = archivo.FileName,
+                ArchivoNombre = docResultado.NombreOriginal,
                 FechaSubida = DateTime.Now,
                 Estado = "Cargado"
             });
         }
 
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
 
         return Json(new
         {

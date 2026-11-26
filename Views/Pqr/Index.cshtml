@@ -236,6 +236,10 @@
                                         <td class="py-3">
                                             <div class="fw-semibold text-dark text-truncate" style="max-width: 240px;" title="@item.Asunto">
                                                 @item.Asunto
+                                                @if (!string.IsNullOrEmpty(item.ArchivoAdjunto))
+                                                {
+                                                    <i class="bi bi-paperclip text-primary ms-1" title="Contiene evidencia adjunta (@(item.NombreArchivoOriginal ?? "archivo"))"></i>
+                                                }
                                             </div>
                                             <small class="text-muted text-truncate d-block" style="max-width: 240px;">
                                                 @item.Descripcion
@@ -312,7 +316,7 @@
                 </div>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
-            <form asp-action="Crear" method="post" id="formRadicarPqr" onsubmit="validarYEnviarPqr(event)">
+            <form asp-action="Crear" method="post" enctype="multipart/form-data" id="formRadicarPqr" onsubmit="validarYEnviarPqr(event)">
                 @Html.AntiForgeryToken()
                 <div class="modal-body p-4 bg-light">
                     <div class="card border-0 shadow-sm p-3 mb-3 bg-white rounded-3">
@@ -357,6 +361,15 @@
                             <label class="form-label fw-bold small text-dark">Descripción Detallada <span class="text-danger">*</span></label>
                             <textarea name="Descripcion" id="crearPqrDescripcion" rows="5" class="form-control" placeholder="Describa con claridad los hechos, razones y la solicitud concreta..." minlength="10" maxlength="4000" required></textarea>
                             <div class="form-text small">Proporcione detalles claros para facilitar una respuesta rápida y precisa.</div>
+                        </div>
+
+                        <!-- Archivo de Evidencia (Req 5) -->
+                        <div class="col-12">
+                            <label class="form-label fw-bold small text-dark">
+                                <i class="bi bi-paperclip me-1"></i>Adjuntar Evidencia o Soporte (Opcional - Máx. 5 MB)
+                            </label>
+                            <input type="file" name="ArchivoEvidencia" id="crearPqrArchivo" class="form-control" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png">
+                            <div class="form-text small">Admite PDF, Word, Excel, PowerPoint, JPG o PNG. Se archivará clasificado con consecutivo único en el servidor.</div>
                         </div>
                     </div>
                 </div>
@@ -414,6 +427,22 @@
                     </div>
                     <div class="mt-2 text-muted small" id="detPqrUsuarioRow">
                         <i class="bi bi-person-circle me-1 text-primary"></i> <span id="detPqrUsuario">--</span> (<span id="detPqrRol">--</span>)
+                    </div>
+                </div>
+
+                <!-- Bloque de Evidencia Adjunta (si existe) -->
+                <div class="card border-0 shadow-sm p-3 mb-3 bg-white rounded-3" id="detPqrAdjuntoContainer" style="display: none;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-paperclip fs-4 text-primary"></i>
+                            <div>
+                                <strong class="d-block text-dark small" id="detPqrAdjuntoNombre">Evidencia</strong>
+                                <small class="text-muted">Documento de soporte adjunto</small>
+                            </div>
+                        </div>
+                        <a href="#" id="detPqrAdjuntoLink" target="_blank" download class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                            <i class="bi bi-download me-1"></i> Descargar / Ver
+                        </a>
                     </div>
                 </div>
 
@@ -519,6 +548,20 @@
                     document.getElementById('detPqrDescripcion').textContent = p.descripcion;
                     document.getElementById('detPqrUsuario').textContent = p.nombreUsuario;
                     document.getElementById('detPqrRol').textContent = p.rolUsuario;
+
+                    // Mostrar evidencia adjunta si existe
+                    const contAdjunto = document.getElementById('detPqrAdjuntoContainer');
+                    const linkAdjunto = document.getElementById('detPqrAdjuntoLink');
+                    const nombreAdjunto = document.getElementById('detPqrAdjuntoNombre');
+                    if (contAdjunto && linkAdjunto && nombreAdjunto) {
+                        if (p.archivoAdjunto) {
+                            contAdjunto.style.display = 'block';
+                            linkAdjunto.href = p.archivoAdjunto;
+                            nombreAdjunto.textContent = p.nombreArchivoOriginal || 'Archivo de evidencia';
+                        } else {
+                            contAdjunto.style.display = 'none';
+                        }
+                    }
 
                     const contResp = document.getElementById('detPqrRespuestaContainer');
                     const txtResp = document.getElementById('detPqrRespuestaTexto');

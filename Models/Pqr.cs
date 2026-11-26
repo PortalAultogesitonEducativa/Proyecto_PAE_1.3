@@ -66,6 +66,14 @@ namespace ProyectoPAE.Models
         [Column("respondido_por")]
         public string? RespondidoPor { get; set; }
 
+        [StringLength(255)]
+        [Column("archivo_adjunto")]
+        public string? ArchivoAdjunto { get; set; }
+
+        [StringLength(255)]
+        [Column("nombre_archivo_original")]
+        public string? NombreArchivoOriginal { get; set; }
+
         [Column("activo")]
         public bool Activo { get; set; } = true;
 
@@ -216,6 +224,9 @@ namespace ProyectoPAE.Models
         [StringLength(4000, MinimumLength = 10, ErrorMessage = "La descripción debe tener entre 10 y 4000 caracteres.")]
         [Display(Name = "Descripción detallada")]
         public string Descripcion { get; set; } = string.Empty;
+
+        [Display(Name = "Archivo o evidencia (PDF, Word, Excel, PowerPoint, JPG, PNG - Máx 5 MB)")]
+        public Microsoft.AspNetCore.Http.IFormFile? ArchivoEvidencia { get; set; }
     }
 
     public class PqrResponderViewModel

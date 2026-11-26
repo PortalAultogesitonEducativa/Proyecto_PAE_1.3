@@ -1,0 +1,97 @@
+<!-- MODAL DE CONSENTIMIENTO Y PROTECCIÓN DE DATOS DE MENORES DE EDAD (DECRETO 1074 DE 2015, ART. 2.2.2.25.2.9) -->
+<div class="modal fade" id="modalProteccionDatosMenor" tabindex="-1" aria-labelledby="modalProteccionDatosMenorTitulo" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header text-white py-3 px-4" style="background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 100%);">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-shield-lock-fill text-warning fs-3"></i>
+                    <div>
+                        <h5 class="modal-title fw-bold mb-0" id="modalProteccionDatosMenorTitulo">
+                            Aviso Especial: Documento con Datos Sensibles de Menores de Edad
+                        </h5>
+                        <small class="text-white-50">Clasificación: Estado Crítico &bull; Decreto 1074 de 2015 (Art. 2.2.2.25.2.9)</small>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-body p-4 bg-light">
+                <div class="alert alert-warning border border-warning-subtle d-flex align-items-start gap-3 p-3 rounded-3 mb-3 bg-white">
+                    <i class="bi bi-exclamation-triangle-fill text-warning fs-2 flex-shrink-0"></i>
+                    <div class="small">
+                        <strong class="text-dark d-block mb-1">TRATAMIENTO DE DATOS PERSONALES DE NIÑAS, NIÑOS Y ADOLESCENTES:</strong>
+                        Conforme al <strong>Artículo 2.2.2.25.2.9 del Decreto Único Reglamentario 1074 de 2015</strong> y la <strong>Ley 1581 de 2012</strong>, los documentos que contienen fotografías, paz y salvos, registros médicos, valoraciones académicas o de convivencia de menores de edad son de <strong>ESTADO CRÍTICO</strong> y gozan de protección prevalente.
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm p-3 mb-3 bg-white rounded-3 small text-secondary" style="line-height: 1.6;">
+                    <h6 class="fw-bold text-dark mb-2">Requisitos Legales Obligatorios:</h6>
+                    <ul class="mb-0 ps-3">
+                        <li>El tratamiento responde estrictamente al <strong>interés superior de los menores</strong> y asegura el respeto de sus derechos fundamentales.</li>
+                        <li>Se valora la opinión del menor titular de acuerdo con su madurez y capacidad.</li>
+                        <li>Se requiere la autorización expresa y facultativa del <strong>representante legal, padre o acudiente tutor</strong> debidamente acreditado.</li>
+                        <li>Queda terminantemente prohibida la divulgación, descarga no autorizada o comercialización de este material bajo sanciones de la <strong>Ley 1273 de 2009</strong>.</li>
+                    </ul>
+                </div>
+
+                <div class="form-check p-3 bg-white rounded-3 border">
+                    <input class="form-check-input ms-0 me-2" type="checkbox" id="chkAceptoProteccionMenores" onchange="toggleBotonAceptacionMenor()">
+                    <label class="form-check-label fw-bold text-dark small" for="chkAceptoProteccionMenores" style="cursor: pointer;">
+                        Confirmo que actúo como acudiente / docente debidamente autorizado y he leído las condiciones de tratamiento de datos personales de menores de edad conforme a la legislación colombiana.
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer bg-white border-top px-4 py-3 justify-content-between">
+                <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal" onclick="cancelarAccionMenor()">
+                    <i class="bi bi-x-circle me-1"></i> Cancelar
+                </button>
+                <button type="button" class="btn btn-danger rounded-pill px-4 shadow-sm" id="btnConfirmarProteccionMenor" disabled onclick="confirmarAccionMenor()">
+                    <i class="bi bi-check-circle-fill me-1"></i> Aceptar y Continuar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let accionPendienteProteccionMenor = null;
+
+    function abrirModalProteccionDatosMenor(callbackAceptacion) {
+        accionPendienteProteccionMenor = callbackAceptacion;
+        const chk = document.getElementById('chkAceptoProteccionMenores');
+        const btn = document.getElementById('btnConfirmarProteccionMenor');
+        if (chk) chk.checked = false;
+        if (btn) btn.disabled = true;
+
+        const modalEl = document.getElementById('modalProteccionDatosMenor');
+        if (modalEl) {
+            const modal = new bootstrap.Modal(modalEl);
+            modal.show();
+        } else if (typeof callbackAceptacion === 'function') {
+            callbackAceptacion();
+        }
+    }
+
+    function toggleBotonAceptacionMenor() {
+        const chk = document.getElementById('chkAceptoProteccionMenores');
+        const btn = document.getElementById('btnConfirmarProteccionMenor');
+        if (btn && chk) {
+            btn.disabled = !chk.checked;
+        }
+    }
+
+    function confirmarAccionMenor() {
+        const modalEl = document.getElementById('modalProteccionDatosMenor');
+        if (modalEl) {
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) modal.hide();
+        }
+        if (typeof accionPendienteProteccionMenor === 'function') {
+            const cb = accionPendienteProteccionMenor;
+            accionPendienteProteccionMenor = null;
+            cb();
+        }
+    }
+
+    function cancelarAccionMenor() {
+        accionPendienteProteccionMenor = null;
+    }
+</script>

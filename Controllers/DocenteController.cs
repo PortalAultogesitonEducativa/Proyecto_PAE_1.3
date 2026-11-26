@@ -9,12 +9,18 @@ namespace ProyectoPAE.Controllers
     public class DocenteController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly GestorDocumentalService _gestorDocumental;
 
         /// <summary>
-        /// Constructor con inyección de contexto de base de datos.
+        /// Constructor con inyección de contexto de base de datos y gestor documental centralizado.
         /// </summary>
         /// <param name="context">Instancia del DbContext principal</param>
-        public DocenteController(ApplicationDbContext context) { _context = context; }
+        /// <param name="gestorDocumental">Servicio central de gestión y archivo consecutivo de documentos</param>
+        public DocenteController(ApplicationDbContext context, GestorDocumentalService gestorDocumental)
+        {
+            _context = context;
+            _gestorDocumental = gestorDocumental;
+        }
 
         /// <summary>
         /// Muestra la vista de la Planilla de Calificaciones con la lista de estudiantes y la oferta de cursos disponible.
@@ -1028,17 +1034,16 @@ namespace ProyectoPAE.Controllers
                     return Json(new { success = false, message = "El archivo supera el tamaño máximo permitido de 25 MB." });
                 }
 
-                var carpeta = Path.Combine("wwwroot", "uploads", "guias");
-                Directory.CreateDirectory(carpeta);
+                // Guardado consecutivo clasificado mediante GestorDocumentalService en wwwroot/uploads/actividades/
+                var docRes = await _gestorDocumental.GuardarArchivoAsync(
+                    archivo: archivo,
+                    subcarpeta: "actividades",
+                    idUsuario: userId ?? 1,
+                    esCriticoMenor: false,
+                    tipoEtiqueta: "Guía de Actividad"
+                );
 
-                var nombreGuardado = $"guia_{DateTime.Now:yyyyMMddHHmmss}_{Path.GetFileName(archivo.FileName)}";
-                var rutaFisica = Path.Combine(carpeta, nombreGuardado);
-                using (var stream = new FileStream(rutaFisica, FileMode.Create))
-                {
-                    await archivo.CopyToAsync(stream);
-                }
-
-                model.ArchivoAdjunto = $"/uploads/guias/{nombreGuardado}";
+                model.ArchivoAdjunto = docRes.RutaRelativa;
             }
 
             _context.Actividades.Add(model);
@@ -1152,17 +1157,16 @@ namespace ProyectoPAE.Controllers
                     return Json(new { success = false, message = "El archivo supera el tamaño máximo permitido de 25 MB." });
                 }
 
-                var carpeta = Path.Combine("wwwroot", "uploads", "guias");
-                Directory.CreateDirectory(carpeta);
+                // Guardado consecutivo clasificado mediante GestorDocumentalService en wwwroot/uploads/actividades/
+                var docRes = await _gestorDocumental.GuardarArchivoAsync(
+                    archivo: archivo,
+                    subcarpeta: "actividades",
+                    idUsuario: userId ?? 1,
+                    esCriticoMenor: false,
+                    tipoEtiqueta: "Guía de Actividad (Actualización)"
+                );
 
-                var nombreGuardado = $"guia_{DateTime.Now:yyyyMMddHHmmss}_{Path.GetFileName(archivo.FileName)}";
-                var rutaFisica = Path.Combine(carpeta, nombreGuardado);
-                using (var stream = new FileStream(rutaFisica, FileMode.Create))
-                {
-                    await archivo.CopyToAsync(stream);
-                }
-
-                actividad.ArchivoAdjunto = $"/uploads/guias/{nombreGuardado}";
+                actividad.ArchivoAdjunto = docRes.RutaRelativa;
             }
 
             await _context.SaveChangesAsync();

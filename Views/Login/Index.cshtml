@@ -204,33 +204,128 @@
     </div>
 }
  
-@* {{!-- MODAL CUENTA BLOQUEADA --}} *@
-@if (ViewBag.CuentaBloqueada == true)
+@* {{!-- MODAL BLOQUEO TEMPORAL (15 MINUTOS) --}} *@
+@if (ViewBag.BloqueoTemporal == true)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.6);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+                <div class="modal-header border-0" style="background-color: #d97706; border-radius: 16px 16px 0 0;">
+                    <h5 class="modal-title text-white w-100 text-center pb-1">
+                        <i class="bi bi-clock-history me-2"></i>Acceso Bloqueado Temporalmente
+                    </h5>
+                </div>
+                <div class="modal-body text-center px-4 py-4">
+                    <i class="bi bi-hourglass-split text-warning mb-3" style="font-size: 3rem;"></i>
+                    <h5 class="fw-bold mb-2">Bloqueo de 15 minutos</h5>
+                    <p class="text-secondary small mb-2">
+                        @(ViewBag.MensajeBloqueo ?? $"Ha fallado 3 intentos consecutivos. Su acceso se ha pausado por {ViewBag.MinutosRestantes ?? 15} minutos.")
+                    </p>
+                    <div class="alert alert-warning py-2 mb-0 small">
+                        <i class="bi bi-shield-exclamation me-1"></i>
+                        Al transcurrir este lapso, el sistema le habilitará automáticamente 3 nuevos intentos.
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0 px-4 pb-4">
+                    <button type="button" class="btn btn-warning w-100 text-white fw-bold" style="border-radius: 10px;" onclick="cerrarModal(this)">
+                        Entendido, esperaré el tiempo
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@* {{!-- MODAL ESTUDIANTE VETADO (MATRÍCULA CANCELADA O FINALIZADA) --}} *@
+@if (ViewBag.EstudianteVetado == true)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.65);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+                <div class="modal-header border-0 bg-danger text-white" style="border-radius: 16px 16px 0 0;">
+                    <h5 class="modal-title text-white w-100 text-center pb-1">
+                        <i class="bi bi-slash-circle-fill me-2"></i>Acceso Denegado (Matrícula Inactiva)
+                    </h5>
+                </div>
+                <div class="modal-body text-center px-4 py-4">
+                    <i class="bi bi-person-x-fill text-danger mb-3" style="font-size: 3.2rem;"></i>
+                    <h5 class="fw-bold mb-2 text-danger">Usuario Inactivo / Vetado</h5>
+                    <p class="text-secondary small mb-3">
+                        @(ViewBag.MensajeBloqueo ?? "Su matrícula académica ha sido Cancelada o Finalizada. Su cuenta ha sido inhabilitada para acceder al portal.")
+                    </p>
+                    <div class="alert alert-danger py-2 mb-0 small text-start">
+                        <i class="bi bi-info-circle-fill me-1"></i>
+                        <strong>Motivo institucional:</strong> Al no contar con una matrícula activa vigente, los servicios de acompañamiento y notas han sido suspendidos. Por favor comuníquese con Secretaría Académica.
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0 px-4 pb-4">
+                    <button type="button" class="btn btn-secondary w-100" style="border-radius: 10px;" onclick="cerrarModal(this)">
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@* {{!-- MODAL CUENTA INACTIVA / DESACTIVADA --}} *@
+@if (ViewBag.CuentaInactiva == true)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.65);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
+                <div class="modal-header border-0 bg-secondary text-white" style="border-radius: 16px 16px 0 0;">
+                    <h5 class="modal-title text-white w-100 text-center pb-1">
+                        <i class="bi bi-person-slash me-2"></i>Cuenta Inactiva
+                    </h5>
+                </div>
+                <div class="modal-body text-center px-4 py-4">
+                    <i class="bi bi-shield-x text-secondary mb-3" style="font-size: 3.2rem;"></i>
+                    <h5 class="fw-bold mb-2">Usuario Deshabilitado</h5>
+                    <p class="text-secondary small mb-0">
+                        @(ViewBag.MensajeBloqueo ?? "Su cuenta se encuentra desactivada en la plataforma. Comuníquese con la administración.")
+                    </p>
+                </div>
+                <div class="modal-footer border-0 pt-0 px-4 pb-4">
+                    <button type="button" class="btn btn-secondary w-100" style="border-radius: 10px;" onclick="cerrarModal(this)">
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@* {{!-- MODAL CUENTA BLOQUEADA DEFINITIVA (3ER CICLO: RECUPERACIÓN OBLIGATORIA) --}} *@
+@if (ViewBag.CuentaBloqueadaDefinitiva == true || ViewBag.CuentaBloqueada == true)
 {
     <div class="modal fade show d-block" tabindex="-1"
-         style="background: rgba(0,0,0,0.55);">
+         style="background: rgba(0,0,0,0.65);">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg" style="border-radius: 16px;">
                 <div class="modal-header border-0"
                      style="background-color: #7f1d1d; border-radius: 16px 16px 0 0;">
                     <h5 class="modal-title text-white w-100 text-center pb-2">
-                        <i class="bi bi-shield-lock-fill me-2"></i>Cuenta bloqueada
+                        <i class="bi bi-shield-lock-fill me-2"></i>Bloqueo Definitivo de Seguridad
                     </h5>
                 </div>
                 <div class="modal-body text-center px-4 py-4">
-                    <i class="bi bi-exclamation-circle-fill text-danger mb-3"
-                       style="font-size: 2.5rem;"></i>
-                    <p class="fw-bold mb-1">Demasiados intentos fallidos.</p>
-                    <p class="text-muted small">
-                        Tu cuenta fue bloqueada por seguridad. Te enviamos un correo
-                        con un enlace para restablecer tu contraseña y reactivar tu acceso.
+                    <i class="bi bi-exclamation-triangle-fill text-danger mb-3"
+                       style="font-size: 3rem;"></i>
+                    <h5 class="fw-bold mb-2">Tercer Ciclo de Fallos Agotado</h5>
+                    <p class="text-secondary small mb-3">
+                        @(ViewBag.MensajeBloqueo ?? "Su cuenta ha sido bloqueada definitivamente. Se ha enviado un correo con instrucciones para restablecer obligatoriamente su contraseña.")
                     </p>
+                    <div class="alert alert-danger py-2 mb-0 small text-start">
+                        <i class="bi bi-key-fill me-1"></i>
+                        <strong>Recuperación Obligatoria:</strong> Debe ingresar a su correo institucional o hacer clic a continuación para generar una nueva clave segura y desbloquear su cuenta.
+                    </div>
                 </div>
                 <div class="modal-footer border-0 pt-0 px-4 pb-4">
                     <a href="/Login/OlvideContraseña"
-                       class="btn btn-danger w-100"
+                       class="btn btn-danger w-100 fw-bold"
                        style="border-radius: 10px;">
-                        <i class="bi bi-envelope me-2"></i>Ir a restablecer contraseña
+                        <i class="bi bi-envelope-paper-heart-fill me-2"></i>Ir a Restablecer Contraseña
                     </a>
                 </div>
             </div>
