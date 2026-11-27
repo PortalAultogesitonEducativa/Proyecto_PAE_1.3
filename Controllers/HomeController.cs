@@ -1121,6 +1121,52 @@ namespace ProyectoPAE.Controllers
 
             return RedirectToAction("Index", "Home");
         }
+
+        // ─── DESCARGA DIRECTA DEL APK MÓVIL (PROXY SIN EXPONER GITHUB) ────────────────────────
+        [HttpGet]
+        public async Task<IActionResult> DescargarAppMovil(
+            [FromServices] IConfiguration config,
+            [FromServices] IWebHostEnvironment env)
+        {
+            string apkUrl = config["AppMovil:ApkUrl"]
+                ?? "https://github.com/PortalAultogesitonEducativa/Proyecto_PAE_1.3/releases/download/AppMovil/com.companyname.paeappmovil1.x0-Signed.apk";
+            string nombreArchivo = config["AppMovil:NombreArchivo"] ?? "PAE-App-Movil.apk";
+
+            try
+            {
+                var http = new System.Net.Http.HttpClient
+                {
+                    Timeout = TimeSpan.FromMinutes(3)
+                };
+                http.DefaultRequestHeaders.UserAgent.ParseAdd("ProyectoPAE/1.0");
+                HttpContext.Response.RegisterForDispose(http);
+
+                var response = await http.GetAsync(apkUrl, System.Net.Http.HttpCompletionOption.ResponseHeadersRead);
+                if (response.IsSuccessStatusCode)
+                {
+                    HttpContext.Response.RegisterForDispose(response);
+                    var stream = await response.Content.ReadAsStreamAsync();
+                    return File(stream, "application/vnd.android.package-archive", nombreArchivo);
+                }
+                response.Dispose();
+            }
+            catch
+            {
+                // Si GitHub no responde, intentamos servir el APK compilado localmente.
+            }
+
+            string rutaLocal = System.IO.Path.Combine(
+                env.ContentRootPath,
+                "PAE APP MOVIL 1.0", "bin", "Release", "net10.0-android", "publish",
+                "com.companyname.paeappmovil1.x0-Signed.apk");
+
+            if (System.IO.File.Exists(rutaLocal))
+            {
+                return PhysicalFile(rutaLocal, "application/vnd.android.package-archive", nombreArchivo);
+            }
+
+            return NotFound("El instalador de la aplicación móvil no está disponible en este momento.");
+        }
     }
 
     // ─── CLASES AUXILIARES ──────────────────────────────
