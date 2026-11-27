@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="PAE_APP_MOVIL_1._0.AcudienteDashboardPage"
+             BackgroundColor="#F8F3ED"
+             Title="PAE">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16,16,16,28" Spacing="14">
+
+            <!-- Banner -->
+            <Border BackgroundColor="#17375E" Stroke="Transparent" Padding="16">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="14" />
+                </Border.StrokeShape>
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                    <Border Grid.Column="0"
+                            BackgroundColor="#2A4D7A"
+                            Stroke="Transparent"
+                            WidthRequest="44"
+                            HeightRequest="44"
+                            VerticalOptions="Center">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="10" />
+                        </Border.StrokeShape>
+                        <Label Text="👪" FontSize="22" HorizontalOptions="Center" VerticalOptions="Center" />
+                    </Border>
+
+                    <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                        <Label Text="Panel de Padres"
+                               FontSize="20"
+                               FontAttributes="Bold"
+                               TextColor="White" />
+                        <Label x:Name="BienvenidaLabel"
+                               Text="Bienvenido/a"
+                               FontSize="12"
+                               TextColor="#C5D3E6" />
+                    </VerticalStackLayout>
+
+                    <Border Grid.Column="2"
+                            BackgroundColor="Transparent"
+                            Stroke="White"
+                            StrokeThickness="1"
+                            Padding="12,6"
+                            VerticalOptions="Start">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="16" />
+                        </Border.StrokeShape>
+                        <Label Text="Cerrar sesión"
+                               TextColor="White"
+                               FontAttributes="Bold"
+                               FontSize="12">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnCerrarSesionClicked" />
+                            </Label.GestureRecognizers>
+                        </Label>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- Selector de hijo(a) -->
+            <Border BackgroundColor="White" Stroke="#E9E2D8" StrokeThickness="1" Padding="0">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="12" />
+                </Border.StrokeShape>
+                <Grid ColumnDefinitions="5,*">
+                    <BoxView Grid.Column="0" Color="#E48C1C" />
+                    <VerticalStackLayout Grid.Column="1" Padding="16,10" Spacing="0">
+                        <Label Text="HIJO(A)"
+                               FontSize="10"
+                               FontAttributes="Bold"
+                               TextColor="#8A8A8A" />
+                        <Picker x:Name="HijoPicker"
+                                Title="Selecciona un estudiante"
+                                TextColor="#17375E"
+                                TitleColor="#8A8A8A"
+                                BackgroundColor="Transparent"
+                                SelectedIndexChanged="OnHijoSeleccionado" />
+                    </VerticalStackLayout>
+                </Grid>
+            </Border>
+
+            <!-- Calificaciones -->
+            <Border BackgroundColor="White" Stroke="#E9E2D8" StrokeThickness="1" Padding="0">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="12" />
+                </Border.StrokeShape>
+                <Grid ColumnDefinitions="5,*">
+                    <BoxView Grid.Column="0" Color="#3A8565" />
+                    <VerticalStackLayout Grid.Column="1" Padding="16,14" Spacing="12">
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                            <Border Grid.Column="0"
+                                    BackgroundColor="#E4F1EB"
+                                    Stroke="Transparent"
+                                    WidthRequest="44"
+                                    HeightRequest="44"
+                                    VerticalOptions="Center">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="10" />
+                                </Border.StrokeShape>
+                                <Label Text="📋" FontSize="22" HorizontalOptions="Center" VerticalOptions="Center" />
+                            </Border>
+                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                                <Label Text="Calificaciones"
+                                       FontSize="16"
+                                       FontAttributes="Bold"
+                                       TextColor="#17375E" />
+                                <Label x:Name="PromedioLabel"
+                                       Text="Cargando..."
+                                       FontSize="13"
+                                       FontAttributes="Bold"
+                                       TextColor="#3A8565" />
+                            </VerticalStackLayout>
+                        </Grid>
+                        <Button Text="Ver Reporte"
+                                BackgroundColor="#17375E"
+                                TextColor="White"
+                                FontSize="14"
+                                CornerRadius="20"
+                                HeightRequest="40"
+                                Clicked="OnVerCalificacionesClicked" />
+                    </VerticalStackLayout>
+                </Grid>
+            </Border>
+
+            <!-- Asistencia -->
+            <Border BackgroundColor="White" Stroke="#E9E2D8" StrokeThickness="1" Padding="0">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="12" />
+                </Border.StrokeShape>
+                <Grid ColumnDefinitions="5,*">
+                    <BoxView Grid.Column="0" Color="#33C4DE" />
+                    <VerticalStackLayout Grid.Column="1" Padding="16,14" Spacing="12">
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                            <Border Grid.Column="0"
+                                    BackgroundColor="#E3F6FA"
+                                    Stroke="Transparent"
+                                    WidthRequest="44"
+                                    HeightRequest="44"
+                                    VerticalOptions="Center">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="10" />
+                                </Border.StrokeShape>
+                                <Label Text="✅" FontSize="22" HorizontalOptions="Center" VerticalOptions="Center" />
+                            </Border>
+                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                                <Label Text="Asistencia"
+                                       FontSize="16"
+                                       FontAttributes="Bold"
+                                       TextColor="#17375E" />
+                                <Label x:Name="FallasLabel"
+                                       Text="Cargando..."
+                                       FontSize="13"
+                                       TextColor="#8A8A8A" />
+                            </VerticalStackLayout>
+                        </Grid>
+                        <Button Text="Ver Detalle"
+                                BackgroundColor="#17375E"
+                                TextColor="White"
+                                FontSize="14"
+                                CornerRadius="20"
+                                HeightRequest="40"
+                                Clicked="OnAsistenciaClicked" />
+                    </VerticalStackLayout>
+                </Grid>
+            </Border>
+
+            <!-- Citaciones -->
+            <Border BackgroundColor="White" Stroke="#E9E2D8" StrokeThickness="1" Padding="0">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="12" />
+                </Border.StrokeShape>
+                <Grid ColumnDefinitions="5,*">
+                    <BoxView Grid.Column="0" Color="#F3C03F" />
+                    <VerticalStackLayout Grid.Column="1" Padding="16,14" Spacing="12">
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                            <Border Grid.Column="0"
+                                    BackgroundColor="#FDF3D6"
+                                    Stroke="Transparent"
+                                    WidthRequest="44"
+                                    HeightRequest="44"
+                                    VerticalOptions="Center">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="10" />
+                                </Border.StrokeShape>
+                                <Label Text="💬" FontSize="22" HorizontalOptions="Center" VerticalOptions="Center" />
+                            </Border>
+                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                                <Label Text="Citaciones"
+                                       FontSize="16"
+                                       FontAttributes="Bold"
+                                       TextColor="#17375E" />
+                                <Label Text="Mensajes de profesores citando a reunión."
+                                       FontSize="12"
+                                       TextColor="#8A8A8A" />
+                            </VerticalStackLayout>
+                        </Grid>
+                        <Button Text="Ver Citaciones"
+                                BackgroundColor="#17375E"
+                                TextColor="White"
+                                FontSize="14"
+                                CornerRadius="20"
+                                HeightRequest="40"
+                                Clicked="OnCitacionesClicked" />
+                    </VerticalStackLayout>
+                </Grid>
+            </Border>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

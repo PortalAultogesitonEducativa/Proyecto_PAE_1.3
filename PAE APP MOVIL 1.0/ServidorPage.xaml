@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="PAE_APP_MOVIL_1._0.ServidorPage"
+             Title="Configurar servidor"
+             BackgroundColor="#FDF3EA">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="24,24" Spacing="0">
+
+            <Border BackgroundColor="White"
+                    Stroke="Transparent"
+                    Padding="24,28">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="24" />
+                </Border.StrokeShape>
+
+                <VerticalStackLayout Spacing="16">
+
+                    <Label Text="Conexión al portal PAE"
+                           FontSize="20"
+                           FontAttributes="Bold"
+                           TextColor="#152A4E" />
+
+                    <Label Text="La aplicación se conecta a la base de datos a través del dominio seguro del portal en Cloudflare."
+                           FontSize="13"
+                           TextColor="#8A8A8A" />
+
+                    <Label Text="Dominio / URL del servidor"
+                           FontSize="14"
+                           FontAttributes="Bold"
+                           TextColor="#152A4E" />
+
+                    <Border BackgroundColor="#FAFAFA"
+                            Stroke="#DDDDDD"
+                            StrokeThickness="1"
+                            Padding="12,4">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="10" />
+                        </Border.StrokeShape>
+                        <Entry Text="{Binding UrlServidor}"
+                               Placeholder="https://pae-portal.lat"
+                               Keyboard="Url"
+                               BackgroundColor="Transparent"
+                               PlaceholderColor="#B0B0B0" />
+                    </Border>
+
+                    <Button Text="Probar conexión"
+                            BackgroundColor="#7B5FE0"
+                            TextColor="White"
+                            FontAttributes="Bold"
+                            CornerRadius="24"
+                            HeightRequest="48"
+                            Margin="0,6,0,0"
+                            IsEnabled="{Binding NoOcupado}"
+                            Command="{Binding ProbarConexionCommand}" />
+
+                    <Button Text="Guardar"
+                            BackgroundColor="#152A4E"
+                            TextColor="White"
+                            FontAttributes="Bold"
+                            CornerRadius="24"
+                            HeightRequest="48"
+                            IsEnabled="{Binding NoOcupado}"
+                            Command="{Binding GuardarCommand}" />
+
+                    <Button Text="Restablecer valores originales"
+                            BackgroundColor="Transparent"
+                            TextColor="#152A4E"
+                            FontSize="13"
+                            IsEnabled="{Binding NoOcupado}"
+                            Command="{Binding RestablecerCommand}" />
+
+                    <ActivityIndicator IsRunning="{Binding IsBusy}"
+                                       IsVisible="{Binding IsBusy}"
+                                       Color="#152A4E" />
+
+                </VerticalStackLayout>
+            </Border>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

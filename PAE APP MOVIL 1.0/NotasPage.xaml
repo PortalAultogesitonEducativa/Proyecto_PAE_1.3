@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="PAE_APP_MOVIL_1._0.NotasPage"
+             Title="Calificaciones"
+             BackgroundColor="#F8F3ED">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16,16,16,28" Spacing="14">
+
+            <!-- Banner -->
+            <Border BackgroundColor="#17375E" Stroke="Transparent" Padding="16">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="14" />
+                </Border.StrokeShape>
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                    <Border Grid.Column="0"
+                            BackgroundColor="#2A4D7A"
+                            Stroke="Transparent"
+                            WidthRequest="44"
+                            HeightRequest="44"
+                            VerticalOptions="Center">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="10" />
+                        </Border.StrokeShape>
+                        <Label Text="📋" FontSize="22" HorizontalOptions="Center" VerticalOptions="Center" />
+                    </Border>
+                    <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                        <Label Text="{Binding Titulo}"
+                               FontSize="20"
+                               FontAttributes="Bold"
+                               TextColor="White" />
+                        <Label Text="{Binding Subtitulo}"
+                               FontSize="12"
+                               TextColor="#C5D3E6" />
+                    </VerticalStackLayout>
+                </Grid>
+            </Border>
+
+            <!-- Tarjetas de resumen -->
+            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="10" RowSpacing="10">
+
+                <Border Grid.Row="0" Grid.Column="0" BackgroundColor="White" Stroke="#E9E2D8" StrokeThickness="1" Padding="0">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="10" />
+                    </Border.StrokeShape>
+                    <Grid ColumnDefinitions="4,*">
+                        <BoxView Grid.Column="0" Color="#17375E" />
+                        <VerticalStackLayout Grid.Column="1" Padding="12,10" Spacing="2">
+                            <Label Text="MATERIAS" FontSize="10" FontAttributes="Bold" TextColor="#8A8A8A" />
+                            <Label Text="{Binding TotalMaterias}" FontSize="24" FontAttributes="Bold" TextColor="#17375E" />
+                            <Label Text="con notas en el periodo" FontSize="11" TextColor="#8A8A8A" />
+                        </VerticalStackLayout>
+                    </Grid>
+                </Border>
+
+                <Border Grid.Row="0" Grid.Column="1" BackgroundColor="White" Stroke="#E9E2D8" StrokeThickness="1" Padding="0">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="10" />
+                    </Border.StrokeShape>
+                    <Grid ColumnDefinitions="4,*">
+                        <BoxView Grid.Column="0" Color="#3A8565" />
+                        <VerticalStackLayout Grid.Column="1" Padding="12,10" Spacing="2">
+                            <Label Text="PROMEDIO" FontSize="10" FontAttributes="Bold" TextColor="#8A8A8A" />
+                            <Label Text="{Binding PromedioGeneralTexto}"
+                                   FontSize="24"
+                                   FontAttributes="Bold"
+                                   TextColor="{Binding PromedioColor}" />
+                            <Label Text="promedio de las materias" FontSize="11" TextColor="#8A8A8A" />
+                        </VerticalStackLayout>
+                    </Grid>
+                </Border>
+
+                <Border Grid.Row="1" Grid.Column="0" BackgroundColor="White" Stroke="#E9E2D8" StrokeThickness="1" Padding="0">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="10" />
+                    </Border.StrokeShape>
+                    <Grid ColumnDefinitions="4,*">
+                        <BoxView Grid.Column="0" Color="#F3C03F" />
+                        <VerticalStackLayout Grid.Column="1" Padding="12,10" Spacing="2">
+                            <Label Text="PERIODO" FontSize="10" FontAttributes="Bold" TextColor="#8A8A8A" />
+                            <Label Text="{Binding PeriodoTexto}" FontSize="20" FontAttributes="Bold" TextColor="#17375E" />
+                            <Label Text="periodo seleccionado" FontSize="11" TextColor="#8A8A8A" />
+                        </VerticalStackLayout>
+                    </Grid>
+                </Border>
+
+                <Border Grid.Row="1" Grid.Column="1" BackgroundColor="White" Stroke="#E9E2D8" StrokeThickness="1" Padding="0">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="10" />
+                    </Border.StrokeShape>
+                    <Grid ColumnDefinitions="4,*">
+                        <BoxView Grid.Column="0" Color="#33C4DE" />
+                        <VerticalStackLayout Grid.Column="1" Padding="12,10" Spacing="2">
+                            <Label Text="NOTAS" FontSize="10" FontAttributes="Bold" TextColor="#8A8A8A" />
+                            <Label Text="{Binding TotalNotas}" FontSize="24" FontAttributes="Bold" TextColor="#17375E" />
+                            <Label Text="calificaciones registradas" FontSize="11" TextColor="#8A8A8A" />
+                        </VerticalStackLayout>
+                    </Grid>
+                </Border>
+
+            </Grid>
+
+            <!-- Selector de periodo -->
+            <VerticalStackLayout Spacing="6">
+                <Label Text="Periodo académico" FontSize="13" FontAttributes="Bold" TextColor="#17375E" />
+                <Border BackgroundColor="White" Stroke="#E9E2D8" StrokeThickness="1" Padding="12,0">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="10" />
+                    </Border.StrokeShape>
+                    <Picker Title="Selecciona un periodo"
+                            ItemsSource="{Binding Periodos}"
+                            ItemDisplayBinding="{Binding Texto}"
+                            SelectedItem="{Binding PeriodoSeleccionado}"
+                            TextColor="#17375E"
+                            TitleColor="#8A8A8A"
+                            BackgroundColor="Transparent" />
+                </Border>
+            </VerticalStackLayout>
+
+            <!-- Materias del periodo -->
+            <VerticalStackLayout Spacing="10" BindableLayout.ItemsSource="{Binding Materias}">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate>
+                        <Border BackgroundColor="White" Stroke="#E9E2D8" StrokeThickness="1" Padding="0">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="12" />
+                            </Border.StrokeShape>
+                            <Grid ColumnDefinitions="5,*">
+                                <BoxView Grid.Column="0" Color="{Binding ColorEstado}" />
+                                <VerticalStackLayout Grid.Column="1" Padding="14,12" Spacing="4">
+
+                                    <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+                                        <Grid.GestureRecognizers>
+                                            <TapGestureRecognizer Command="{Binding AlternarDetalleCommand}" />
+                                        </Grid.GestureRecognizers>
+                                        <VerticalStackLayout Grid.Column="0" VerticalOptions="Center" Spacing="2">
+                                            <Label Text="{Binding Titulo}"
+                                                   FontSize="16"
+                                                   FontAttributes="Bold"
+                                                   TextColor="#17375E" />
+                                            <Label Text="{Binding Subtitulo}"
+                                                   FontSize="12"
+                                                   TextColor="#8A8A8A" />
+                                        </VerticalStackLayout>
+                                        <Label Grid.Column="1"
+                                               Text="{Binding PromedioTexto}"
+                                               FontSize="26"
+                                               FontAttributes="Bold"
+                                               TextColor="{Binding ColorEstado}"
+                                               VerticalOptions="Center" />
+                                        <Label Grid.Column="2"
+                                               Text="{Binding Flecha}"
+                                               FontSize="12"
+                                               TextColor="#8A8A8A"
+                                               VerticalOptions="Center" />
+                                    </Grid>
+
+                                    <VerticalStackLayout IsVisible="{Binding IsExpanded}"
+                                                         Margin="0,8,0,0"
+                                                         BindableLayout.ItemsSource="{Binding Detalle}">
+                                        <BindableLayout.ItemTemplate>
+                                            <DataTemplate>
+                                                <Grid RowDefinitions="1,Auto" ColumnDefinitions="*,Auto">
+                                                    <BoxView Grid.Row="0" Grid.ColumnSpan="2" HeightRequest="1" Color="#EFE9E0" />
+                                                    <VerticalStackLayout Grid.Row="1" Grid.Column="0" Padding="0,8" Spacing="1">
+                                                        <Label Text="{Binding Etiqueta}"
+                                                               FontSize="13"
+                                                               FontAttributes="Bold"
+                                                               TextColor="#17375E" />
+                                                        <Label Text="{Binding FechaTexto}"
+                                                               FontSize="11"
+                                                               TextColor="#8A8A8A" />
+                                                    </VerticalStackLayout>
+                                                    <Label Grid.Row="1" Grid.Column="1"
+                                                           Text="{Binding NotaTexto}"
+                                                           FontSize="18"
+                                                           FontAttributes="Bold"
+                                                           TextColor="{Binding ColorNota}"
+                                                           VerticalOptions="Center" />
+                                                </Grid>
+                                            </DataTemplate>
+                                        </BindableLayout.ItemTemplate>
+                                    </VerticalStackLayout>
+
+                                </VerticalStackLayout>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </VerticalStackLayout>
+
+            <Label Text="Aún no hay calificaciones registradas."
+                   IsVisible="{Binding SinNotas}"
+                   FontSize="14"
+                   TextColor="#8A8A8A"
+                   HorizontalOptions="Center"
+                   Margin="0,16,0,0" />
+
+            <ActivityIndicator IsRunning="{Binding IsBusy}"
+                               IsVisible="{Binding IsBusy}"
+                               Color="#17375E" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

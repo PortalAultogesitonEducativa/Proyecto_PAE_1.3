@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="PAE_APP_MOVIL_1._0.StudentDashboardPage"
+             BackgroundColor="#F8F3ED"
+             Title="PAE">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16,16,16,28" Spacing="14">
+
+            <!-- Banner -->
+            <Border BackgroundColor="#17375E" Stroke="Transparent" Padding="16">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="14" />
+                </Border.StrokeShape>
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                    <Border Grid.Column="0"
+                            BackgroundColor="#2A4D7A"
+                            Stroke="Transparent"
+                            WidthRequest="44"
+                            HeightRequest="44"
+                            VerticalOptions="Center">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="10" />
+                        </Border.StrokeShape>
+                        <Label Text="🎓" FontSize="22" HorizontalOptions="Center" VerticalOptions="Center" />
+                    </Border>
+
+                    <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                        <Label Text="Mi Panel Académico"
+                               FontSize="20"
+                               FontAttributes="Bold"
+                               TextColor="White" />
+                        <Label x:Name="BienvenidaLabel"
+                               Text="Bienvenido/a"
+                               FontSize="12"
+                               TextColor="#C5D3E6" />
+                    </VerticalStackLayout>
+
+                    <Border Grid.Column="2"
+                            BackgroundColor="Transparent"
+                            Stroke="White"
+                            StrokeThickness="1"
+                            Padding="12,6"
+                            VerticalOptions="Start">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="16" />
+                        </Border.StrokeShape>
+                        <Label Text="Cerrar sesión"
+                               TextColor="White"
+                               FontAttributes="Bold"
+                               FontSize="12">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnCerrarSesionClicked" />
+                            </Label.GestureRecognizers>
+                        </Label>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- Horario -->
+            <Border BackgroundColor="White" Stroke="#E9E2D8" StrokeThickness="1" Padding="0">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="12" />
+                </Border.StrokeShape>
+                <Grid ColumnDefinitions="5,*">
+                    <BoxView Grid.Column="0" Color="#33C4DE" />
+                    <VerticalStackLayout Grid.Column="1" Padding="16,14" Spacing="12">
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                            <Border Grid.Column="0"
+                                    BackgroundColor="#E3F6FA"
+                                    Stroke="Transparent"
+                                    WidthRequest="44"
+                                    HeightRequest="44"
+                                    VerticalOptions="Center">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="10" />
+                                </Border.StrokeShape>
+                                <Label Text="📅" FontSize="22" HorizontalOptions="Center" VerticalOptions="Center" />
+                            </Border>
+                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                                <Label Text="Horario de Clases"
+                                       FontSize="16"
+                                       FontAttributes="Bold"
+                                       TextColor="#17375E" />
+                                <Label Text="Consulta tus materias y salones."
+                                       FontSize="12"
+                                       TextColor="#8A8A8A" />
+                            </VerticalStackLayout>
+                        </Grid>
+                        <Button Text="Ver Horario"
+                                BackgroundColor="#17375E"
+                                TextColor="White"
+                                FontSize="14"
+                                CornerRadius="20"
+                                HeightRequest="40"
+                                Clicked="OnHorarioClicked" />
+                    </VerticalStackLayout>
+                </Grid>
+            </Border>
+
+            <!-- Calificaciones -->
+            <Border BackgroundColor="White" Stroke="#E9E2D8" StrokeThickness="1" Padding="0">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="12" />
+                </Border.StrokeShape>
+                <Grid ColumnDefinitions="5,*">
+                    <BoxView Grid.Column="0" Color="#3A8565" />
+                    <VerticalStackLayout Grid.Column="1" Padding="16,14" Spacing="12">
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                            <Border Grid.Column="0"
+                                    BackgroundColor="#E4F1EB"
+                                    Stroke="Transparent"
+                                    WidthRequest="44"
+                                    HeightRequest="44"
+                                    VerticalOptions="Center">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="10" />
+                                </Border.StrokeShape>
+                                <Label Text="📋" FontSize="22" HorizontalOptions="Center" VerticalOptions="Center" />
+                            </Border>
+                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                                <Label Text="Calificaciones"
+                                       FontSize="16"
+                                       FontAttributes="Bold"
+                                       TextColor="#17375E" />
+                                <Label Text="Mira tus notas por materia y periodo."
+                                       FontSize="12"
+                                       TextColor="#8A8A8A" />
+                            </VerticalStackLayout>
+                        </Grid>
+                        <Button Text="Ver Notas"
+                                BackgroundColor="#17375E"
+                                TextColor="White"
+                                FontSize="14"
+                                CornerRadius="20"
+                                HeightRequest="40"
+                                Clicked="OnVerNotasClicked" />
+                    </VerticalStackLayout>
+                </Grid>
+            </Border>
+
+            <!-- Actividades -->
+            <Border BackgroundColor="White" Stroke="#E9E2D8" StrokeThickness="1" Padding="0">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="12" />
+                </Border.StrokeShape>
+                <Grid ColumnDefinitions="5,*">
+                    <BoxView Grid.Column="0" Color="#F3C03F" />
+                    <VerticalStackLayout Grid.Column="1" Padding="16,14" Spacing="12">
+                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                            <Border Grid.Column="0"
+                                    BackgroundColor="#FDF3D6"
+                                    Stroke="Transparent"
+                                    WidthRequest="44"
+                                    HeightRequest="44"
+                                    VerticalOptions="Center">
+                                <Border.StrokeShape>
+                                    <RoundRectangle CornerRadius="10" />
+                                </Border.StrokeShape>
+                                <Label Text="📝" FontSize="22" HorizontalOptions="Center" VerticalOptions="Center" />
+                            </Border>
+                            <VerticalStackLayout Grid.Column="1" VerticalOptions="Center" Spacing="2">
+                                <Label Text="Actividades"
+                                       FontSize="16"
+                                       FontAttributes="Bold"
+                                       TextColor="#17375E" />
+                                <Label Text="Consulta tus tareas y entregas."
+                                       FontSize="12"
+                                       TextColor="#8A8A8A" />
+                            </VerticalStackLayout>
+                        </Grid>
+                        <Button Text="Ver Actividades"
+                                BackgroundColor="#17375E"
+                                TextColor="White"
+                                FontSize="14"
+                                CornerRadius="20"
+                                HeightRequest="40"
+                                Clicked="OnActividadesClicked" />
+                    </VerticalStackLayout>
+                </Grid>
+            </Border>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>
