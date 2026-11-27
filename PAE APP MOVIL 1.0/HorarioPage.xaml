@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="PAE_APP_MOVIL_1._0.HorarioPage"
+             BackgroundColor="#F5F5F7"
+             Title="Horario">
+
+    <Grid RowDefinitions="Auto,*,Auto" Padding="20,20">
+
+        <Label Grid.Row="0"
+               Text="Mi Horario"
+               FontSize="20"
+               FontAttributes="Bold"
+               TextColor="#152A4E"
+               Margin="0,0,0,12" />
+
+        <CollectionView x:Name="HorarioCollection" Grid.Row="1">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Border BackgroundColor="White"
+                            Padding="16"
+                            Margin="0,0,0,10"
+                            Stroke="#EEEEEE"
+                            StrokeThickness="1">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="10" />
+                        </Border.StrokeShape>
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="{Binding NombreCurso}"
+                                   FontSize="16"
+                                   FontAttributes="Bold"
+                                   TextColor="#152A4E" />
+                            <Label Text="{Binding Dia}"
+                                   FontSize="13"
+                                   TextColor="#7B5FE0" />
+                            <Label FontSize="13" TextColor="#333333">
+                                <Label.FormattedText>
+                                    <FormattedString>
+                                        <Span Text="{Binding HoraInicio, StringFormat='{0:hh\\:mm}'}" />
+                                        <Span Text=" - " />
+                                        <Span Text="{Binding HoraFin, StringFormat='{0:hh\\:mm}'}" />
+                                    </FormattedString>
+                                </Label.FormattedText>
+                            </Label>
+                            <Label Text="{Binding Aula, StringFormat='Salón: {0}'}"
+                                   FontSize="12"
+                                   TextColor="#8A8A8A" />
+                            <Label Text="{Binding Profesor, StringFormat='Docente: {0}'}"
+                                   FontSize="12"
+                                   TextColor="#8A8A8A" />
+                        </VerticalStackLayout>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <Label x:Name="SinHorarioLabel"
+               Grid.Row="1"
+               Text="No hay horario registrado."
+               FontSize="14"
+               TextColor="#8A8A8A"
+               HorizontalOptions="Center"
+               VerticalOptions="Center"
+               IsVisible="False" />
+
+        <ActivityIndicator x:Name="CargandoIndicator"
+                           Grid.Row="2"
+                           IsRunning="False"
+                           IsVisible="False"
+                           Color="#152A4E" />
+
+    </Grid>
+
+</ContentPage>

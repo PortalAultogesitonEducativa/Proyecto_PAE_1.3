@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="PAE_APP_MOVIL_1._0.CitacionesPage"
+             BackgroundColor="#F5F5F7"
+             Title="Citaciones">
+
+    <Grid RowDefinitions="Auto,*,Auto" Padding="20,20">
+
+        <Label x:Name="TituloLabel"
+               Grid.Row="0"
+               Text="Citaciones"
+               FontSize="20"
+               FontAttributes="Bold"
+               TextColor="#152A4E"
+               Margin="0,0,0,12" />
+
+        <CollectionView x:Name="CitacionesCollection" Grid.Row="1">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Border BackgroundColor="White"
+                            Padding="16"
+                            Margin="0,0,0,10"
+                            Stroke="#EEEEEE"
+                            StrokeThickness="1">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="10" />
+                        </Border.StrokeShape>
+                        <VerticalStackLayout Spacing="4">
+                            <Label Text="{Binding asunto}"
+                                   FontSize="16"
+                                   FontAttributes="Bold"
+                                   TextColor="#152A4E" />
+                            <Label Text="{Binding remitente, StringFormat='De: {0}'}"
+                                   FontSize="13"
+                                   TextColor="#1E8E5A" />
+                            <Label Text="{Binding mensaje}"
+                                   FontSize="14"
+                                   TextColor="#333333"
+                                   Margin="0,4,0,0" />
+                            <Label Text="{Binding fecha, StringFormat='{0:dd/MM/yyyy}'}"
+                                   FontSize="12"
+                                   TextColor="#8A8A8A"
+                                   Margin="0,4,0,0" />
+                        </VerticalStackLayout>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <Label x:Name="SinCitacionesLabel"
+               Grid.Row="1"
+               Text="No hay citaciones registradas."
+               FontSize="14"
+               TextColor="#8A8A8A"
+               HorizontalOptions="Center"
+               VerticalOptions="Center"
+               IsVisible="False" />
+
+        <ActivityIndicator x:Name="CargandoIndicator"
+                           Grid.Row="2"
+                           IsRunning="False"
+                           IsVisible="False"
+                           Color="#152A4E" />
+
+    </Grid>
+
+</ContentPage>

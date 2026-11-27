@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="PAE_APP_MOVIL_1._0.LoginPage"
+             BackgroundColor="#F8F3ED">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="24,40" Spacing="0" VerticalOptions="Center">
+
+            <Border BackgroundColor="White"
+                    Stroke="Transparent"
+                    Padding="28,32">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="24" />
+                </Border.StrokeShape>
+
+                <VerticalStackLayout Spacing="18">
+
+                    <Image Source="logo_pae.png"
+                           HeightRequest="90"
+                           WidthRequest="90"
+                           Aspect="AspectFit"
+                           HorizontalOptions="Center" />
+
+                    <Label Text="Bienvenido a PAE"
+                           FontSize="24"
+                           FontAttributes="Bold"
+                           TextColor="#17375E"
+                           HorizontalOptions="Center" />
+
+                    <Label Text="Portal de Autogestión Educativa"
+                           FontSize="14"
+                           TextColor="#8A8A8A"
+                           HorizontalOptions="Center"
+                           Margin="0,-12,0,10" />
+
+                    <Grid x:Name="SelectorGrid"
+                          HeightRequest="44"
+                          ColumnDefinitions="*,*"
+                          Margin="0,0,0,4"
+                          SizeChanged="SelectorGrid_SizeChanged">
+
+                        <Border Grid.ColumnSpan="2"
+                                BackgroundColor="#F0F0F0"
+                                Stroke="Transparent">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="20" />
+                            </Border.StrokeShape>
+                        </Border>
+
+                        <Border x:Name="IndicadorBorder"
+                                Grid.Column="0"
+                                BackgroundColor="#17375E"
+                                Stroke="Transparent"
+                                HorizontalOptions="Start">
+                            <Border.StrokeShape>
+                                <RoundRectangle CornerRadius="20" />
+                            </Border.StrokeShape>
+                        </Border>
+
+                        <BoxView Grid.Column="0"
+                                 BackgroundColor="Transparent"
+                                 InputTransparent="False">
+                            <BoxView.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SeleccionarRolCommand}" CommandParameter="estudiante" />
+                            </BoxView.GestureRecognizers>
+                        </BoxView>
+
+                        <BoxView Grid.Column="1"
+                                 BackgroundColor="Transparent"
+                                 InputTransparent="False">
+                            <BoxView.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SeleccionarRolCommand}" CommandParameter="acudiente" />
+                            </BoxView.GestureRecognizers>
+                        </BoxView>
+
+                        <Label x:Name="EstudianteTabLabel"
+                               Grid.Column="0"
+                               Text="Estudiante"
+                               TextColor="White"
+                               FontAttributes="Bold"
+                               FontSize="14"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center"
+                               InputTransparent="False">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SeleccionarRolCommand}" CommandParameter="estudiante" />
+                            </Label.GestureRecognizers>
+                        </Label>
+
+                        <Label x:Name="AcudienteTabLabel"
+                               Grid.Column="1"
+                               Text="Acudiente"
+                               TextColor="#17375E"
+                               FontAttributes="Bold"
+                               FontSize="14"
+                               HorizontalOptions="Center"
+                               VerticalOptions="Center"
+                               InputTransparent="False">
+                            <Label.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding SeleccionarRolCommand}" CommandParameter="acudiente" />
+                            </Label.GestureRecognizers>
+                        </Label>
+
+                    </Grid>
+
+                    <Label Text="Usuario o Correo"
+                           FontSize="14"
+                           FontAttributes="Bold"
+                           TextColor="#17375E" />
+
+                    <Border BackgroundColor="#FAFAFA"
+                            Stroke="#DDDDDD"
+                            StrokeThickness="1"
+                            Padding="12,4">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="10" />
+                        </Border.StrokeShape>
+                        <Entry Text="{Binding Usuario}"
+                               Placeholder="correo@ejemplo.com"
+                               BackgroundColor="Transparent"
+                               PlaceholderColor="#B0B0B0" />
+                    </Border>
+
+                    <Label Text="Contraseña"
+                           FontSize="14"
+                           FontAttributes="Bold"
+                           TextColor="#17375E" />
+
+                    <Border BackgroundColor="#FAFAFA"
+                            Stroke="#DDDDDD"
+                            StrokeThickness="1"
+                            Padding="12,4">
+                        <Border.StrokeShape>
+                            <RoundRectangle CornerRadius="10" />
+                        </Border.StrokeShape>
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Entry Text="{Binding Password}"
+                                   Grid.Column="0"
+                                   Placeholder="••••••••"
+                                   IsPassword="{Binding PasswordOculto}"
+                                   BackgroundColor="Transparent"
+                                   PlaceholderColor="#B0B0B0" />
+                            <Button 
+                                    Grid.Column="1"
+                                    Text="{Binding IconoPassword}"
+                                    FontSize="16"
+                                    BackgroundColor="Transparent"
+                                    TextColor="#17375E"
+                                    Padding="4,0"
+                                    Command="{Binding AlternarPasswordCommand}" />
+                        </Grid>
+                    </Border>
+
+                    <Label Text="¿Olvidó su contraseña?"
+                           FontSize="13"
+                           TextColor="#17375E"
+                           HorizontalOptions="End"
+                           Margin="0,0,0,6">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding OlvidoPasswordCommand}" />
+                        </Label.GestureRecognizers>
+                    </Label>
+
+                    <Button 
+                            Text="Ingresar al Sistema"
+                            BackgroundColor="#17375E"
+                            TextColor="White"
+                            FontAttributes="Bold"
+                            CornerRadius="24"
+                            HeightRequest="48"
+                            Command="{Binding IngresarCommand}" />
+
+                    <ActivityIndicator IsRunning="{Binding IsBusy}"
+                                       IsVisible="{Binding IsBusy}"
+                                       Color="#17375E" />
+
+                    <Label Text="⚙ Configurar servidor"
+                           FontSize="12"
+                           TextColor="#8A8A8A"
+                           HorizontalOptions="Center"
+                           Margin="0,6,0,0">
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding ConfigurarServidorCommand}" />
+                        </Label.GestureRecognizers>
+                    </Label>
+
+                </VerticalStackLayout>
+            </Border>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>
