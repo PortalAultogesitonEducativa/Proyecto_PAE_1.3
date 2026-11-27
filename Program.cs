@@ -1,4 +1,6 @@
+using System.Globalization;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using ProyectoPAE.Models;
 using ProyectoPAE.Services;
@@ -8,6 +10,7 @@ using Rotativa.AspNetCore;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddLocalization();
 builder.Services.AddControllersWithViews();
 
 // CONFIGURACIÓN DE PROXY INVERSO (CLOUDFLARE TUNNEL)
@@ -44,7 +47,7 @@ builder.Services.Configure<CookiePolicyOptions>(options =>
 builder.Services.AddScoped<ServicioEmail>();
 builder.Services.AddScoped<GestorDocumentalService>();
 
-// CERTIFICADOS
+// CERTIFICADOS Y MATRÍCULAS
 builder.Services.AddScoped<CertificadoService>();
 builder.Services.AddScoped<MatriculaAcademicaService>();
 builder.Services.AddScoped<SolicitudCertificadoService>();
@@ -74,7 +77,20 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
 
-// 4. HABILITAR POLÍTICAS DE COOKIES Y USO DE SESIONES
+// 5. INTERNACIONALIZACIÓN (Español por defecto + Inglés opcional)
+var culturasSoportadas = new[] { new CultureInfo("es"), new CultureInfo("en") };
+var localizationOptions = new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new RequestCulture("es"),
+    SupportedCultures = culturasSoportadas,
+    SupportedUICultures = culturasSoportadas
+};
+// Solo usar la cookie explícita del usuario para que por defecto SIEMPRE arranque en Español
+localizationOptions.RequestCultureProviders.Clear();
+localizationOptions.RequestCultureProviders.Add(new CookieRequestCultureProvider());
+app.UseRequestLocalization(localizationOptions);
+
+// 6. HABILITAR POLÍTICAS DE COOKIES, SESIONES Y AUTORIZACIÓN
 app.UseCookiePolicy();
 app.UseSession();
 app.UseAuthorization();

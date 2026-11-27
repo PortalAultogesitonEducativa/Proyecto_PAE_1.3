@@ -1,5 +1,10 @@
+@using ProyectoPAE.Servicios
+@{
+    string idiomaActual = IdiomaService.ObtenerIdiomaActual(Context);
+    string urlActual = Context.Request.Path + Context.Request.QueryString;
+}
 <!DOCTYPE html>
-<html lang="es">
+<html lang="@idiomaActual">
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -70,6 +75,37 @@
                         {
                             <div class="flex-grow-1"></div>
                         }
+                        <!-- Selector de Idioma (Español por defecto / Inglés) -->
+                        <div class="dropdown me-2" data-no-i18n="true">
+                            <button class="btn btn-outline-primary btn-sm dropdown-toggle rounded-pill px-3 d-flex align-items-center fw-semibold"
+                                    type="button" id="dropdownIdiomaPAE" data-bs-toggle="dropdown" aria-expanded="false"
+                                    title="@IdiomaService.T("CambiarIdioma", Context)">
+                                <i class="bi bi-translate me-1"></i>
+                                <span>@(idiomaActual == "en" ? "EN" : "ES")</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3" aria-labelledby="dropdownIdiomaPAE" style="min-width: 165px;">
+                                <li>
+                                    <a class="dropdown-item d-flex align-items-center justify-content-between py-2 @(idiomaActual == "es" ? "active fw-bold" : "")"
+                                       href="@Url.Action("CambiarIdioma", "Home", new { cultura = "es", returnUrl = urlActual })">
+                                        <span>🇨🇴 Español (ES)</span>
+                                        @if (idiomaActual == "es")
+                                        {
+                                            <i class="bi bi-check-lg"></i>
+                                        }
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item d-flex align-items-center justify-content-between py-2 @(idiomaActual == "en" ? "active fw-bold" : "")"
+                                       href="@Url.Action("CambiarIdioma", "Home", new { cultura = "en", returnUrl = urlActual })">
+                                        <span>🇺🇸 English (EN)</span>
+                                        @if (idiomaActual == "en")
+                                        {
+                                            <i class="bi bi-check-lg"></i>
+                                        }
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
                         <div class="d-flex align-items-center">
                             @if (Context.Session.GetString("NombreUsuario") != null)
                             {
@@ -230,6 +266,7 @@
         <script src="~/lib/jquery/dist/jquery.min.js"></script>
         <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
         <script src="~/js/site.js" asp-append-version="true"></script>
+        <script src="~/js/i18n-pae.js" asp-append-version="true"></script>
         @await RenderSectionAsync("Scripts", required: false)
 
         @if (Context.Session.GetString("NombreUsuario") != null)
@@ -849,274 +886,186 @@
             </div>
         </div>
 
-        <!-- ─── SCRIPT CHATBOT IDALGO (TEMA AZUL PAE) ───────────── -->
         <script>
+            // Base de conocimiento de la mascota Idalgo (Español e Inglés)
+            const chatIdalgoRespuestasES = {
+                saludo: "¡Hola! Soy <strong>Idalgo</strong> 🦉, la mascota guía de PAE. Puedo explicarte cómo entregar tareas, qué pasa cuando vence la fecha límite, cómo ver tus notas, cómo funcionan los planes de mejora o cómo radicar una PQR.",
+                entrega: "<strong>📝 ¿Cómo entrego tareas?</strong><br>1. Ingresa a <em>Actividades y Classroom</em> y selecciona tu materia.<br>2. Haz clic en la tarea pendiente.<br>3. Escribe tu respuesta en el cuadro de texto y/o adjunta tus archivos (PDF, Word, Excel, PowerPoint, ZIP o imágenes hasta 25 MB).<br>4. Presiona el botón <strong>Entregar</strong>.<br><em>Nota:</em> Puedes revertir la entrega mientras el docente no la haya calificado y el plazo siga abierto.",
+                plazo: "<strong>⏰ ¿Qué pasa si vence la fecha límite?</strong><br>Una vez llega la fecha y hora límite configurada por el docente:<br>• El sistema bloquea automáticamente nuevas entregas y ediciones.<br>• No podrás enviar ni revertir archivos.<br>• Si tienes una excusa justificada, comunícate con tu docente mediante los <em>comentarios privados</em> de la tarea o solicita un plan de apoyo.",
+                notas: "<strong>📈 ¿Dónde veo mis notas?</strong><br>Puedes consultar tus calificaciones por período y el promedio acumulado entrando al módulo <strong>Mis Calificaciones</strong> desde el menú principal o la barra lateral. Allí también verás si aprobaste o si tienes planes de mejora asignados.",
+                mejora: "<strong>🔄 Planes de Apoyo y Mejoras</strong><br>Si obtuviste desempeño bajo en alguna asignatura, tu docente puede asignarte un compromiso pedagógico en <strong>Planes de Nivelación / Mejoras</strong>:<br>• <strong>Fase 1:</strong> Revisa el aspecto a mejorar y envía tu evidencia o avance.<br>• <strong>Fase 2:</strong> El docente evalúa tu cumplimiento y actualiza tu seguimiento académico.",
+                comentarios: "<strong>💬 Comentarios de clase y privados</strong><br>Dentro de cada tarea en Classroom encontrarás dos espacios:<br>• <strong>Comentarios de la clase:</strong> Visibles para el docente y todos los compañeros del curso.<br>• <strong>Comentarios privados:</strong> Comunicación directa y confidencial únicamente entre tú y el docente de la materia.",
+                cursos: "<strong>⚽ Cursos Extracurriculares</strong><br>En el módulo <strong>Cursos Extra</strong> puedes explorar talleres deportivos, artísticos, científicos o de servicio social. Revisa los cupos disponibles, adjunta los documentos requeridos (si el curso los pide) y envía tu solicitud.",
+                certificados: "<strong>📄 Certificados de Estudio</strong><br>Los certificados oficiales de matrícula y notas cuentan con código alfanumérico único y código QR de verificación institucional. Puedes solicitarlos o validarlos desde el módulo de <strong>Certificados</strong>.",
+                pqr: "<strong>📬 ¿Cómo radicar PQR?</strong><br>Si necesitas presentar una Petición, Queja o Reclamo formal ante la institución, haz clic en <strong>PQR</strong> en la barra superior o en el botón <em>Ir al Módulo PQR</em>. Recibirás un número de radicado único para hacer seguimiento a la respuesta.",
+                ayuda: "Puedo ayudarte con cualquiera de estos temas:<br>• <strong>Entrega de tareas</strong> en Classroom<br>• <strong>Fechas límite</strong> y bloqueos<br>• <strong>Calificaciones</strong> y boletines<br>• <strong>Planes de apoyo / mejoras</strong><br>• <strong>Cursos extracurriculares</strong><br>• <strong>Certificados y PQR</strong><br>Escribe una palabra clave o elige un botón de la izquierda."
+            };
+
+            const chatIdalgoRespuestasEN = {
+                saludo: "Hello! I'm <strong>Idalgo</strong> 🦉, PAE's guide mascot. I can explain how to submit assignments, what happens after a due date, how to check your grades, how remedial plans work, or how to submit a PQR request.",
+                entrega: "<strong>📝 How do I submit assignments?</strong><br>1. Go to <em>Activities & Classroom</em> and select your subject.<br>2. Click on the pending assignment.<br>3. Type your response and/or attach your files (PDF, Word, Excel, PowerPoint, ZIP, or images up to 25 MB).<br>4. Click the <strong>Submit</strong> button.<br><em>Note:</em> You can unsubmit your work as long as the teacher has not graded it and the deadline has not passed.",
+                plazo: "<strong>⏰ What happens after the due date?</strong><br>Once the deadline set by the teacher passes:<br>• The system automatically locks new submissions and edits.<br>• You will no longer be able to upload or unsubmit files.<br>• If you have a valid excuse, contact your teacher via <em>private comments</em> on the assignment or request a support plan.",
+                notas: "<strong>📈 Where can I see my grades?</strong><br>You can check your grades per term and your cumulative average in the <strong>My Grades</strong> module from the main dashboard or sidebar. You will also see whether you passed or have assigned remedial plans.",
+                mejora: "<strong>🔄 Support & Remedial Plans</strong><br>If you had low performance in a subject, your teacher may assign a pedagogical commitment in <strong>Remedial Plans / Improvements</strong>:<br>• <strong>Phase 1:</strong> Review the area to improve and submit your evidence or progress.<br>• <strong>Phase 2:</strong> The teacher evaluates your completion and updates your academic record.",
+                comentarios: "<strong>💬 Class & private comments</strong><br>Inside each Classroom assignment you will find two spaces:<br>• <strong>Class comments:</strong> Visible to the teacher and all classmates in the course.<br>• <strong>Private comments:</strong> Direct, confidential communication solely between you and the subject teacher.",
+                cursos: "<strong>⚽ Extracurricular Courses</strong><br>In the <strong>Extra Courses</strong> module you can explore sports, arts, academic, or community service workshops. Check available spots, attach required documents (if any), and submit your application.",
+                certificados: "<strong>📄 Study Certificates</strong><br>Official enrollment and grade certificates include a unique alphanumeric code and an institutional verification QR code. You can request or validate them in the <strong>Certificates</strong> module.",
+                pqr: "<strong>📬 How do I submit a PQR?</strong><br>If you need to file a formal Petition, Complaint, or Claim with the institution, click <strong>Requests</strong> in the top bar or <em>Go to PQR Module</em>. You will receive a unique tracking ID to follow up on the official response.",
+                ayuda: "I can help you with any of these topics:<br>• <strong>Submitting assignments</strong> in Classroom<br>• <strong>Due dates</strong> and submission locks<br>• <strong>Grades</strong> and academic reports<br>• <strong>Support / remedial plans</strong><br>• <strong>Extracurricular courses</strong><br>• <strong>Certificates and PQR requests</strong><br>Type a keyword or select one of the buttons on the left."
+            };
+
+            function esIdiomaInglesIdalgo() {
+                return (window.PAE_IDIOMA === 'en') ||
+                    (document.documentElement.getAttribute('lang') || '').toLowerCase().startsWith('en') ||
+                    document.cookie.includes('c=en') || document.cookie.includes('uic=en');
+            }
+
+            function obtenerDiccionarioIdalgo() {
+                return esIdiomaInglesIdalgo() ? chatIdalgoRespuestasEN : chatIdalgoRespuestasES;
+            }
+
+            function obtenerEtiquetaUsuarioIdalgo() {
+                return esIdiomaInglesIdalgo() ? 'You' : 'Tú';
+            }
+
+            // 1. Función que abre el modal grande de Idalgo y cierra el modal de ayuda previo
             function abrirChatIdalgo() {
                 const modalAyudaEl = document.getElementById('modalAyudaPAE');
-                if (modalAyudaEl) {
-                    const mAyuda = bootstrap.Modal.getInstance(modalAyudaEl);
-                    if (mAyuda) mAyuda.hide();
+                const modalChatEl = document.getElementById('modalChatIdalgo');
+
+                if (modalAyudaEl && typeof bootstrap !== 'undefined') {
+                    const instanciaAyuda = bootstrap.Modal.getInstance(modalAyudaEl);
+                    if (instanciaAyuda) instanciaAyuda.hide();
                 }
 
-                const chatModalEl = document.getElementById('modalChatIdalgo');
-                if (chatModalEl) {
-                    const modalChat = new bootstrap.Modal(chatModalEl);
-                    modalChat.show();
+                if (modalChatEl && typeof bootstrap !== 'undefined') {
+                    const instanciaChat = bootstrap.Modal.getOrCreateInstance(modalChatEl);
+                    instanciaChat.show();
                     setTimeout(() => {
                         const input = document.getElementById('chatIdalgoInput');
                         if (input) input.focus();
-                    }, 400);
+                    }, 300);
                 }
             }
 
-            function reiniciarChatIdalgo() {
-                const cont = document.getElementById('chatIdalgoMensajes');
-                if (!cont) return;
-                cont.innerHTML = `
-                    <div class="d-flex align-items-start gap-3 mb-3">
-                        <img src="/images/idalgo.png" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid #f59e0b; background: #fff; flex-shrink: 0;" alt="Idalgo" />
-                        <div class="p-3 rounded-4 shadow-sm text-white" style="background: #134074; border: 1px solid rgba(255,255,255,0.15); max-width: 90%;">
-                            <div class="fw-bold text-warning mb-1 small d-flex align-items-center gap-1">
-                                <span>🦉 Idalgo &bull; Mascota Guía PAE</span>
-                            </div>
-                            <p class="mb-2 small" style="line-height: 1.5; color: #f1f5f9;">
-                                ¡Hola de nuevo! 👋 Conversación reiniciada. ¿En qué otro tema puedo orientarte hoy?
-                            </p>
-                            <div class="d-flex flex-wrap gap-1.5 mt-2">
-                                <button type="button" class="btn btn-sm text-white rounded-pill py-1 px-2.5 small" style="background: #0b2545; border: 1px solid #38bdf8;" onclick="seleccionarPreguntaIdalgo('entregar_tarea')">📝 ¿Cómo entrego tareas?</button>
-                                <button type="button" class="btn btn-sm text-white rounded-pill py-1 px-2.5 small" style="background: #0b2545; border: 1px solid #f87171;" onclick="seleccionarPreguntaIdalgo('fecha_limite')">⏰ ¿Qué pasa si vence la fecha límite?</button>
-                                <button type="button" class="btn btn-sm text-white rounded-pill py-1 px-2.5 small" style="background: #0b2545; border: 1px solid #4ade80;" onclick="seleccionarPreguntaIdalgo('calificaciones')">📈 ¿Dónde veo mis notas?</button>
-                                <button type="button" class="btn btn-sm text-white rounded-pill py-1 px-2.5 small" style="background: #0b2545; border: 1px solid #c084fc;" onclick="seleccionarPreguntaIdalgo('mejoras')">🔄 Planes de Apoyo / Mejoras</button>
-                                <button type="button" class="btn btn-sm text-white rounded-pill py-1 px-2.5 small" style="background: #0b2545; border: 1px solid #fbbf24;" onclick="seleccionarPreguntaIdalgo('comentarios')">💬 Comentarios de clase y privados</button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
+            // 2. Función para los botones laterales y chips rápidos dentro del chat
+            function seleccionarPreguntaIdalgo(claveTema) {
+                const dict = obtenerDiccionarioIdalgo();
+                const en = esIdiomaInglesIdalgo();
 
-            const chatIdalgoRespuestas = {
-                'entregar_tarea': {
-                    titulo: '📝 ¿Cómo entrego una actividad o tarea?',
-                    contenido: `<p class="mb-2 text-white"><strong>Pasos para enviar tu actividad:</strong></p>
-                    <ol class="ps-3 mb-2 small" style="color: #e2e8f0;">
-                        <li>Ingresa al módulo <strong>Actividades y Classroom</strong> desde tu menú lateral.</li>
-                        <li>Haz clic en <strong>Entrar a la Materia</strong> correspondiente.</li>
-                        <li>En el tablón, presiona sobre la tarea asignada.</li>
-                        <li>En la columna derecha <strong>"Tu trabajo"</strong>, escribe tu respuesta o pega enlaces, y si lo deseas adjunta tu archivo (PDF, Word, Excel, PowerPoint o imagen de hasta 5 MB).</li>
-                        <li>Presiona el botón azul <strong>"Entregar"</strong>.</li>
-                    </ol>
-                    <div class="p-2 rounded-3 small mb-0" style="background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); color: #7dd3fc;"><i class="bi bi-lightbulb-fill text-warning me-1"></i>¡Asegúrate de entregar antes de la fecha límite!</div>`
-                },
-                'fecha_limite': {
-                    titulo: '⏰ ¿Qué pasa si vence la fecha límite de entrega?',
-                    contenido: `<p class="mb-2 text-white"><strong>Regla estricta de plazos en el PAE:</strong></p>
-                    <ul class="ps-3 mb-2 small" style="color: #e2e8f0;">
-                        <li>Cada actividad asignada por tu profesor cuenta con una <strong>fecha y hora límite</strong>.</li>
-                        <li><strong>Una vez vencido el plazo:</strong> el sistema <strong>bloquea automáticamente</strong> cualquier envío nuevo o modificación de trabajos ya entregados.</li>
-                        <li>El botón cambiará a <span class="badge bg-danger">Entrega Cerrada (Plazo Vencido)</span> y los campos quedarán desactivados.</li>
-                        <li>Esta regla aplica de igual forma para las <strong>Actividades de Clase</strong> como para los <strong>Planes de Apoyo y Mejoras</strong>.</li>
-                    </ul>
-                    <p class="mb-0 small" style="color: #94a3b8;"><i class="bi bi-chat-lock-fill me-1 text-warning"></i>Si tuviste una fuerza mayor justificada, comunícate con tu profesor a través de los <strong>Comentarios Privados</strong> de la tarea.</p>`
-                },
-                'calificaciones': {
-                    titulo: '📈 ¿Dónde consulto mis notas y calificaciones?',
-                    contenido: `<p class="mb-2 text-white"><strong>Consulta académica y boletines:</strong></p>
-                    <ul class="ps-3 mb-2 small" style="color: #e2e8f0;">
-                        <li>Ve al módulo <strong>Mis Calificaciones</strong> en tu panel de estudiante.</li>
-                        <li>Allí encontrarás tus asignaturas con las calificaciones registradas por periodo (1, 2, 3 y 4), tu promedio ponderado y la escala de desempeño (Superior, Alto, Básico o Bajo).</li>
-                        <li>También tienes acceso al botón para descargar tu <strong>Boletín de Calificaciones en PDF</strong> con la firma institucional.</li>
-                    </ul>`
-                },
-                'mejoras': {
-                    titulo: '🔄 ¿Cómo funcionan los Planes de Apoyo y Nivelación (Mejoras)?',
-                    contenido: `<p class="mb-2 text-white"><strong>Módulo de Planes de Apoyo:</strong></p>
-                    <ul class="ps-3 mb-2 small" style="color: #e2e8f0;">
-                        <li>Ingresa a <strong>Planes de Apoyo</strong> en el menú lateral.</li>
-                        <li>Verás tus materias asignadas exactamente igual que en Actividades y Classroom.</li>
-                        <li>Al hacer clic en <strong>Entrar a la Materia</strong>, accederás al <strong>Classroom de Mejoras</strong>, donde tu profesor publica talleres pedagógicos, guías de recuperación y compromisos.</li>
-                        <li>Podrás subir tus trabajos de nivelación antes de la fecha límite para mejorar tu valoración académica.</li>
-                    </ul>`
-                },
-                'comentarios': {
-                    titulo: '💬 ¿Cómo funcionan los comentarios de clase y comentarios privados?',
-                    contenido: `<p class="mb-2 text-white"><strong>Canales de comunicación en Classroom:</strong></p>
-                    <ul class="ps-3 mb-2 small" style="color: #e2e8f0;">
-                        <li><strong>Comentarios de la clase:</strong> Ubicados debajo de las instrucciones de la tarea. Son visibles para todos tus compañeros de aula y el profesor. Ideales para preguntas generales sobre el tema.</li>
-                        <li><strong>Comentarios privados:</strong> Ubicados en la tarjeta derecha "Tu trabajo". Solo los pueden leer <strong>tú y tu profesor</strong>. Ideales para justificaciones personales o dudas puntuales de tu entrega.</li>
-                    </ul>`
-                },
-                'extracurriculares': {
-                    titulo: '⚽ ¿Cómo me inscribo a un Curso Extracurricular?',
-                    contenido: `<p class="mb-2 text-white"><strong>Inscripción a Cursos y Talleres:</strong></p>
-                    <ol class="ps-3 mb-2 small" style="color: #e2e8f0;">
-                        <li>Ve a <strong>Cursos Extracurriculares</strong>.</li>
-                        <li>El sistema filtra los cursos permitidos para tu grado escolar (de 6° a 11°).</li>
-                        <li>Haz clic en <strong>Inscribirme</strong>.</li>
-                        <li><strong>Requisito obligatorio:</strong> Debes adjuntar todos los documentos requeridos (ej: autorización de acudiente, EPS o certificado médico).</li>
-                        <li>Al enviar los documentos, tu solicitud entrará a la lista de espera del docente para su revisión y aprobación.</li>
-                    </ol>`
-                },
-                'certificados': {
-                    titulo: '📄 ¿Cómo solicito un Certificado de Estudio?',
-                    contenido: `<p class="mb-2 text-white"><strong>Expedición de Certificados Oficiales:</strong></p>
-                    <ul class="ps-3 mb-2 small" style="color: #e2e8f0;">
-                        <li>Ingresa al módulo <strong>Certificados</strong>.</li>
-                        <li>Selecciona el tipo de documento requerido (Certificado de Estudio, Certificado de Calificaciones, etc.).</li>
-                        <li>Verifica tus datos escolares y presiona <strong>Generar</strong>.</li>
-                        <li>El documento se genera de forma inmediata con firma electrónica y código QR de autenticidad institucional.</li>
-                    </ul>`
-                },
-                'pqr': {
-                    titulo: '📬 ¿Cómo radicar una PQR (Petición, Queja o Reclamo)?',
-                    contenido: `<p class="mb-2 text-white"><strong>Módulo PQR oficial:</strong></p>
-                    <ul class="ps-3 mb-2 small" style="color: #e2e8f0;">
-                        <li>Haz clic en el botón <strong>PQR</strong> ubicado en la parte superior derecha de la pantalla.</li>
-                        <li>Elige el tipo de solicitud: Petición, Queja, Reclamo, Sugerencia o Felicitación.</li>
-                        <li>Redacta detalladamente tu solicitud y adjunta evidencias si las tienes.</li>
-                        <li>El sistema te generará un código de radicado único para consultar el estado y la respuesta de la institución.</li>
-                    </ul>`
-                }
-            };
+                const mapaTemas = {
+                    entregar_tarea: {
+                        pregunta: en ? "How do I submit assignments?" : "¿Cómo entrego tareas?",
+                        respuesta: dict.entrega
+                    },
+                    fecha_limite: {
+                        pregunta: en ? "What happens after the due date?" : "¿Qué pasa si vence la fecha límite?",
+                        respuesta: dict.plazo
+                    },
+                    calificaciones: {
+                        pregunta: en ? "Where can I see my grades?" : "¿Dónde veo mis notas?",
+                        respuesta: dict.notas
+                    },
+                    mejoras: {
+                        pregunta: en ? "Support & Remedial Plans" : "Planes de Apoyo / Mejoras",
+                        respuesta: dict.mejora
+                    },
+                    comentarios: {
+                        pregunta: en ? "Class & private comments" : "Comentarios de clase y privados",
+                        respuesta: dict.comentarios
+                    },
+                    extracurriculares: {
+                        pregunta: en ? "Extracurricular Courses" : "Cursos Extracurriculares",
+                        respuesta: dict.cursos
+                    },
+                    certificados: {
+                        pregunta: en ? "Study Certificates" : "Certificados de Estudio",
+                        respuesta: dict.certificados
+                    },
+                    pqr: {
+                        pregunta: en ? "How do I submit a PQR?" : "¿Cómo radicar una PQR?",
+                        respuesta: dict.pqr
+                    }
+                };
 
-            function seleccionarPreguntaIdalgo(clave) {
-                const info = chatIdalgoRespuestas[clave];
-                if (!info) return;
+                const item = mapaTemas[claveTema];
+                if (!item) return;
 
-                agregarBurbujaUsuario(info.titulo);
-                mostrarEscribiendoIdalgo();
-
+                agregarBurbujaIdalgo(item.pregunta, true);
                 setTimeout(() => {
-                    quitarEscribiendoIdalgo();
-                    agregarBurbujaIdalgo(info.contenido);
-                }, 350);
+                    agregarBurbujaIdalgo(item.respuesta, false);
+                }, 200);
             }
 
+            function obtenerRespuestaIdalgo(texto) {
+                const dict = obtenerDiccionarioIdalgo();
+                const q = (texto || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                if (q.includes("hola") || q.includes("buenos") || q.includes("buenas") || q.includes("quien eres") || q.includes("hello") || q.includes("hi")) return dict.saludo;
+                if (q.includes("entreg") || q.includes("subir") || q.includes("tarea") || q.includes("archivo") || q.includes("enviar") || q.includes("submit") || q.includes("upload") || q.includes("task")) return dict.entrega;
+                if (q.includes("plazo") || q.includes("limite") || q.includes("venc") || q.includes("tarde") || q.includes("cerrad") || q.includes("bloque") || q.includes("deadline") || q.includes("due") || q.includes("late")) return dict.plazo;
+                if (q.includes("nota") || q.includes("calific") || q.includes("boletin") || q.includes("promedio") || q.includes("grade") || q.includes("score")) return dict.notas;
+                if (q.includes("mejor") || q.includes("apoyo") || q.includes("nivelac") || q.includes("recuper") || q.includes("compromiso") || q.includes("remedial") || q.includes("support")) return dict.mejora;
+                if (q.includes("coment") || q.includes("privad") || q.includes("mensaje") || q.includes("profesor") || q.includes("docente") || q.includes("comment") || q.includes("private")) return dict.comentarios;
+                if (q.includes("curso") || q.includes("extra") || q.includes("taller") || q.includes("inscri") || q.includes("cupo") || q.includes("course")) return dict.cursos;
+                if (q.includes("certific") || q.includes("constancia") || q.includes("qr") || q.includes("pdf")) return dict.certificados;
+                if (q.includes("pqr") || q.includes("queja") || q.includes("reclamo") || q.includes("peticion") || q.includes("radic") || q.includes("request") || q.includes("claim")) return dict.pqr;
+                return dict.ayuda;
+            }
+
+            function agregarBurbujaIdalgo(htmlContenido, esUsuario) {
+                const contenedor = document.getElementById('chatIdalgoMensajes');
+                if (!contenedor) return;
+
+                const wrapper = document.createElement('div');
+                wrapper.className = esUsuario
+                    ? 'd-flex justify-content-end mb-3'
+                    : 'd-flex align-items-start gap-3 mb-3';
+
+                if (esUsuario) {
+                    wrapper.innerHTML = `
+                        <div class="bg-warning text-dark rounded-4 p-3 shadow-sm fw-medium" style="max-width: 82%; font-size: 0.9rem;">
+                            <div class="small opacity-75 fw-bold mb-1 text-end">${obtenerEtiquetaUsuarioIdalgo()}</div>
+                            <div>${htmlContenido}</div>
+                        </div>`;
+                } else {
+                    wrapper.innerHTML = `
+                        <img src="/images/idalgo.png" alt="Idalgo" class="rounded-circle bg-white shadow-sm flex-shrink-0" style="width: 40px; height: 40px; object-fit: cover; border: 2px solid #f59e0b;" onerror="this.src='/images/buho.png'">
+                        <div class="p-3 rounded-4 shadow-sm text-white" style="background: #134074; border: 1px solid rgba(255,255,255,0.15); max-width: 85%; font-size: 0.9rem; line-height: 1.5;">
+                            <div class="fw-bold text-warning small mb-1">🦉 Idalgo</div>
+                            <div style="color: #f1f5f9;">${htmlContenido}</div>
+                        </div>`;
+                }
+
+                contenedor.appendChild(wrapper);
+                contenedor.scrollTop = contenedor.scrollHeight;
+            }
+
+            function enviarPreguntaIdalgo(texto) {
+                const clean = (texto || "").trim();
+                if (!clean) return;
+                const safeText = clean.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                agregarBurbujaIdalgo(safeText, true);
+                setTimeout(() => {
+                    agregarBurbujaIdalgo(obtenerRespuestaIdalgo(clean), false);
+                }, 220);
+            }
+
+            // 3. Función conectada al input #chatIdalgoInput y al botón de enviar
             function enviarMensajeIdalgo() {
                 const input = document.getElementById('chatIdalgoInput');
                 if (!input) return;
-                const texto = input.value.trim();
-                if (!texto) return;
-
+                const texto = input.value;
                 input.value = '';
-                agregarBurbujaUsuario(texto);
-                mostrarEscribiendoIdalgo();
-
-                setTimeout(() => {
-                    quitarEscribiendoIdalgo();
-                    procesarConsultaTextoIdalgo(texto);
-                }, 380);
+                enviarPreguntaIdalgo(texto);
+                input.focus();
             }
 
-            function procesarConsultaTextoIdalgo(texto) {
-                const q = texto.toLowerCase();
-
-                if (q.includes('tarea') || q.includes('actividad') || q.includes('subir') || q.includes('adjunt') || q.includes('entreg')) {
-                    seleccionarPreguntaIdalgoDirecta('entregar_tarea');
-                } else if (q.includes('plazo') || q.includes('limite') || q.includes('venc') || q.includes('tiempo') || q.includes('tard') || q.includes('cerrad')) {
-                    seleccionarPreguntaIdalgoDirecta('fecha_limite');
-                } else if (q.includes('nota') || q.includes('calific') || q.includes('promedio') || q.includes('boletin')) {
-                    seleccionarPreguntaIdalgoDirecta('calificaciones');
-                } else if (q.includes('mejora') || q.includes('nivelac') || q.includes('apoyo') || q.includes('recuper')) {
-                    seleccionarPreguntaIdalgoDirecta('mejoras');
-                } else if (q.includes('comentario') || q.includes('privad') || q.includes('mensaje') || q.includes('profesor') || q.includes('docente')) {
-                    seleccionarPreguntaIdalgoDirecta('comentarios');
-                } else if (q.includes('extra') || q.includes('curso') || q.includes('futbol') || q.includes('arte') || q.includes('deporte') || q.includes('taller')) {
-                    seleccionarPreguntaIdalgoDirecta('extracurriculares');
-                } else if (q.includes('certific') || q.includes('constancia') || q.includes('documento')) {
-                    seleccionarPreguntaIdalgoDirecta('certificados');
-                } else if (q.includes('pqr') || q.includes('reclamo') || q.includes('queja') || q.includes('peticion') || q.includes('ayuda') || q.includes('soporte')) {
-                    seleccionarPreguntaIdalgoDirecta('pqr');
-                } else {
-                    const fallbackHtml = `
-                        <p class="mb-2 text-white">Comprendo tu inquietud sobre: <em>"${texto}"</em>.</p>
-                        <p class="mb-2 small text-white-50">Aquí tienes los temas más consultados donde puedes encontrar la respuesta:</p>
-                        <div class="d-flex flex-wrap gap-1.5 mb-2">
-                            <button type="button" class="btn btn-sm text-white rounded-pill py-1 px-2.5 small" style="background: #0b2545; border: 1px solid #38bdf8;" onclick="seleccionarPreguntaIdalgo('entregar_tarea')">📝 Entregar Tareas</button>
-                            <button type="button" class="btn btn-sm text-white rounded-pill py-1 px-2.5 small" style="background: #0b2545; border: 1px solid #f87171;" onclick="seleccionarPreguntaIdalgo('fecha_limite')">⏰ Fechas Límite</button>
-                            <button type="button" class="btn btn-sm text-white rounded-pill py-1 px-2.5 small" style="background: #0b2545; border: 1px solid #4ade80;" onclick="seleccionarPreguntaIdalgo('calificaciones')">📈 Ver Calificaciones</button>
-                            <button type="button" class="btn btn-sm text-white rounded-pill py-1 px-2.5 small" style="background: #0b2545; border: 1px solid #c084fc;" onclick="seleccionarPreguntaIdalgo('mejoras')">🔄 Planes de Mejora</button>
-                        </div>
-                        <p class="small text-white-50 mb-0">Si tu caso requiere atención especial del personal administrativo, puedes <a href="/Pqr/Index" class="fw-bold text-warning text-decoration-underline">radicar una PQR oficial aquí</a>.</p>
-                    `;
-                    agregarBurbujaIdalgo(fallbackHtml);
-                }
-            }
-
-            function seleccionarPreguntaIdalgoDirecta(clave) {
-                const info = chatIdalgoRespuestas[clave];
-                if (info) {
-                    agregarBurbujaIdalgo(info.contenido);
-                }
-            }
-
-            function agregarBurbujaUsuario(texto) {
-                const cont = document.getElementById('chatIdalgoMensajes');
-                if (!cont) return;
-
-                const wrapper = document.createElement('div');
-                wrapper.className = 'd-flex justify-content-end mb-3';
-                wrapper.innerHTML = `
-                    <div class="p-3 rounded-4 text-white shadow-sm" style="background: linear-gradient(135deg, #1d6fa5 0%, #2980b9 100%); max-width: 82%;">
-                        <div class="small fw-semibold mb-0" style="line-height: 1.4;">${texto}</div>
-                    </div>
-                `;
-                cont.appendChild(wrapper);
-                cont.scrollTop = cont.scrollHeight;
-            }
-
-            function mostrarEscribiendoIdalgo() {
-                const cont = document.getElementById('chatIdalgoMensajes');
-                if (!cont) return;
-
-                const typingDiv = document.createElement('div');
-                typingDiv.id = 'chatIdalgoTyping';
-                typingDiv.className = 'd-flex align-items-center gap-2 mb-3';
-                typingDiv.innerHTML = `
-                    <img src="/images/idalgo.png" style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:1.5px solid #f59e0b;background:#fff;" alt="Idalgo" />
-                    <div class="p-2.5 px-3 rounded-pill shadow-sm text-white-50 small d-flex align-items-center gap-2" style="background: #134074; border: 1px solid rgba(255,255,255,0.15);">
-                        <span class="spinner-grow spinner-grow-sm text-warning" style="width: 0.65rem; height: 0.65rem;" role="status"></span>
-                        <span style="font-size: 0.8rem; color: #cbd5e1;">Idalgo está consultando la guía...</span>
-                    </div>
-                `;
-                cont.appendChild(typingDiv);
-                cont.scrollTop = cont.scrollHeight;
-            }
-
-            function quitarEscribiendoIdalgo() {
-                const typing = document.getElementById('chatIdalgoTyping');
-                if (typing) typing.remove();
-            }
-
-            function agregarBurbujaIdalgo(htmlContenido) {
-                const cont = document.getElementById('chatIdalgoMensajes');
-                if (!cont) return;
-
-                const wrapper = document.createElement('div');
-                wrapper.className = 'd-flex align-items-start gap-3 mb-3';
-                wrapper.innerHTML = `
-                    <img src="/images/idalgo.png" style="width:42px;height:42px;border-radius:50%;object-fit:cover;border:2px solid #f59e0b;background:#fff;flex-shrink:0;" alt="Idalgo" />
-                    <div class="p-3 rounded-4 shadow-sm text-white" style="background: #134074; border: 1px solid rgba(255,255,255,0.15); max-width: 88%;">
-                        <div class="fw-bold text-warning mb-1 small d-flex align-items-center gap-1">
-                            <span>🦉 Idalgo &bull; Mascota Guía PAE</span>
-                        </div>
-                        <div class="small" style="line-height: 1.5; color: #f1f5f9;">
-                            ${htmlContenido}
-                        </div>
-                        <div class="mt-2 pt-2 border-top d-flex justify-content-between align-items-center" style="border-color: rgba(255,255,255,0.12) !important;">
-                            <small class="text-white-50" style="font-size: 0.72rem;">¿Te sirvió esta respuesta?</small>
-                            <div class="btn-group btn-group-sm">
-                                <button type="button" class="btn btn-outline-light py-0 px-2 rounded-pill" onclick="this.parentElement.innerHTML='<span class=\\'badge bg-success-subtle text-success border border-success-subtle\\'>¡Me alegra ayudarte! 🦉</span>'"><i class="bi bi-hand-thumbs-up"></i></button>
-                                <button type="button" class="btn btn-outline-warning py-0 px-2 rounded-pill ms-1" onclick="abrirPqrDesdeChat()"><i class="bi bi-headset"></i> PQR</button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                cont.appendChild(wrapper);
-                cont.scrollTop = cont.scrollHeight;
-            }
-
-            function abrirPqrDesdeChat() {
-                window.location.href = '@Url.Action("Index", "Pqr")';
+            function reiniciarChatIdalgo() {
+                const contenedor = document.getElementById('chatIdalgoMensajes');
+                if (!contenedor) return;
+                const dict = obtenerDiccionarioIdalgo();
+                contenedor.innerHTML = '';
+                agregarBurbujaIdalgo(dict.saludo, false);
             }
         </script>
 
@@ -1149,8 +1098,5 @@
                 }
             });
         </script>
-        <!-- Modal Global de Protección de Datos de Menores (Decreto 1074 de 2015) -->
-        <partial name="_ModalProteccionDatosMenor" />
-
     </body>
 </html>
