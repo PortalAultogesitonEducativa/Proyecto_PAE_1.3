@@ -732,15 +732,6 @@ namespace ProyectoPAE.Controllers
             if (userId == null) return RedirectToAction("Index", "Login");
 
             var usuario = _context.Usuarios.Find(userId);
-
-            // Si hay un cambio de correo esperando confirmación, se muestra en la pantalla
-            _context.AsegurarEsquemaCambioCorreo();
-            var ahora = DateTime.Now;
-            ViewBag.CambioCorreoPendiente = _context.CambiosCorreo
-                .Where(cc => cc.IdUsuario == userId.Value && !cc.Usado && cc.FechaExpiracion > ahora)
-                .OrderByDescending(cc => cc.FechaSolicitud)
-                .FirstOrDefault();
-
             return View(usuario);
         }
 
@@ -756,7 +747,7 @@ namespace ProyectoPAE.Controllers
             {
                 usuarioBd.TELEFONO = usuarioEditado.TELEFONO;
                 usuarioBd.DIRECCION = usuarioEditado.DIRECCION;
-                // El correo NO se cambia aquí: se hace desde Correo/Solicitar y solo se aplica al confirmar el enlace (RF-03.2)
+                usuarioBd.CORREO_ELECTRONICO = usuarioEditado.CORREO_ELECTRONICO;
 
                 // Crear notificación de actualización de perfil
                 var notifPerfil = new Notificacion
@@ -872,7 +863,7 @@ namespace ProyectoPAE.Controllers
             string rolSesion = (HttpContext.Session.GetString("UserRol") ?? "").Trim().ToLower();
             string rolNotif = rolSesion;
             if (rolNotif == "profesor") rolNotif = "docente";
-            if (rolNotif == "admin") rolNotif = "admin_skip"; 
+            if (rolNotif == "admin") rolNotif = "admin_skip";
 
             string userTarget = $"user_{userId}";
 
@@ -1097,6 +1088,38 @@ namespace ProyectoPAE.Controllers
                 citaciones = citaciones,
                 observaciones = observaciones
             });
+        }
+
+        // ─── CAMBIO DE IDIOMA (INTERNACIONALIZACIÓN ES / EN) ────────────────────────
+        [HttpGet]
+        [HttpPost]
+        public IActionResult CambiarIdioma(string cultura, string? returnUrl = null)
+        {
+            string idiomaValido = IdiomaService.NormalizarIdioma(cultura);
+
+            Response.Cookies.Append(
+                Microsoft.AspNetCore.Localization.CookieRequestCultureProvider.DefaultCookieName,
+                Microsoft.AspNetCore.Localization.CookieRequestCultureProvider.MakeCookieValue(
+                    new Microsoft.AspNetCore.Localization.RequestCulture(idiomaValido)
+                ),
+                new CookieOptions
+                {
+                    Expires = DateTimeOffset.UtcNow.AddYears(1),
+                    IsEssential = true,
+                    HttpOnly = false,
+                    SameSite = SameSiteMode.Lax,
+                    Path = "/"
+                }
+            );
+
+            HttpContext.Session.SetString("IdiomaActual", idiomaValido);
+
+            if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
+            {
+                return LocalRedirect(returnUrl);
+            }
+
+            return RedirectToAction("Index", "Home");
         }
     }
 
