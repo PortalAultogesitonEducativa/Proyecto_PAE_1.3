@@ -3508,10 +3508,6 @@
                         <i class="bi bi-chat-heart-fill"></i>
                         <span>Módulo PQR</span>
                     </button>
-                    <button type="button" class="pae-sidebar-nav-item" onclick="location.href='@Url.Action("Index", "SolicitudCertificado")'">
-                        <i class="bi bi-hourglass-split"></i>
-                        <span>Mis Solicitudes</span>
-                    </button>
                     <button type="button" class="pae-sidebar-nav-item" data-subid="estudiante-mejoras" onclick="verModuloMejoras()">
                         <i class="bi bi-shield-check"></i>
                         <span>Planes de Nivelación</span>
@@ -3597,19 +3593,6 @@
                         <p class="small text-muted">Radica y consulta tus solicitudes, peticiones o inquietudes escolares.</p>
                         <a href="@Url.Action("Index", "Pqr")" class="btn btn-estudiante-solido btn-sm mt-auto w-100 text-white" onclick="event.stopPropagation()">
                             Acceder a PQR
-                        </a>
-                    </div>
-                </div>
-                <!-- 7. Mis Solicitudes de Certificado -->
-                <div class="col-md-4 mb-4">
-                    <div class="card p-4 text-center border-0 shadow-sm h-100 card-hover card-estudiante-limpia"
-                         style="border-top: 2px solid #000000 !important; cursor: pointer;"
-                         onclick="location.href='@Url.Action("Index", "SolicitudCertificado")'">
-                        <i class="bi bi-hourglass-split fs-2 mb-2" style="color: #6f42c1;"></i>
-                        <h5 style="color: #6f42c1; font-weight: bold;">Mis Solicitudes de Certificado</h5>
-                        <p class="small text-muted">Consulta el estado y la fecha límite de tus certificados solicitados.</p>
-                        <a href="@Url.Action("Index", "SolicitudCertificado")" class="btn btn-estudiante-solido btn-sm mt-auto w-100 text-white" onclick="event.stopPropagation()">
-                            Ver mis solicitudes
                         </a>
                     </div>
                 </div>
