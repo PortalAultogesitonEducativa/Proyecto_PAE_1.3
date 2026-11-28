@@ -106,8 +106,6 @@ namespace ProyectoPAE.Servicios
                     UsarPanelEstudiante => true,
                     VerCertificados => true,
                     ParticiparPQR => true,
-                    SolicitarCertificado => true,
-                    VerSolicitudesCertificado => true,
                     _ => false
                 },
                 "acudiente" => permiso switch
